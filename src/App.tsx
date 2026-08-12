@@ -25,6 +25,12 @@ import {
   type RatingShape,
   type RatingState,
 } from "./assets/components/atoms/RatingIcon";
+import { BookCard } from "./assets/components/molecules/BookCard";
+import { BookCardReading } from "./assets/components/molecules/BookCardReading";
+import { SeriesCard } from "./assets/components/molecules/SeriesCard";
+import { TabBar, type TabKey } from "./assets/components/molecules/TabBar";
+import { SectionHeader } from "./assets/components/atoms/SectionHeader";
+import { Logo } from "./assets/components/atoms/Logo";
 
 function App() {
   const [demoTags, setDemoTags] = useState<string[]>([
@@ -56,6 +62,7 @@ function App() {
     "wine",
   ];
   const states: RatingState[] = ["empty", "full", "half"];
+  const [activeTab, setActiveTab] = useState<TabKey>("mesa");
 
   function IconGroup({
     shapes,
@@ -86,7 +93,13 @@ function App() {
   return (
     <div className="min-h-screen bg-bg p-4 space-y-8">
       <ThemeToggle />
-
+      <section>
+        <h2 className="font-display text-display-md text-text mb-3">Logo</h2>
+        <div className="flex items-center gap-6">
+          <Logo variant="full" className="h-10" />
+          <Logo variant="icon" className="h-10 w-10" />
+        </div>
+      </section>
       <section>
         <h2 className="font-display text-display-md text-text mb-3">DogEar</h2>
         <div className="flex gap-4">
@@ -97,7 +110,6 @@ function App() {
           <DogEar status="abandonado" />
         </div>
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">Badge</h2>
         <div className="flex flex-wrap gap-2">
@@ -108,7 +120,6 @@ function App() {
           <Badge status="abandonado" />
         </div>
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           Tag — editable
@@ -118,7 +129,6 @@ function App() {
           onChange={(tags) => console.log("Etiquetas:", tags)}
         />
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           Tag — solo lectura
@@ -130,7 +140,6 @@ function App() {
           <Tag label="LGBTQ+" />
         </HorizontalScroller>
       </section>
-
       <section className="space-y-3">
         <h2 className="font-display text-display-md text-text mb-3">
           Input — con ícono
@@ -139,14 +148,12 @@ function App() {
         <Input icon={Lock} type="password" placeholder="Contraseña..." />
         <Input icon={User} type="text" placeholder="Nombre o seudónimo..." />
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           SearchBar
         </h2>
         <SearchBar onCameraClick={() => console.log("Abrir escáner")} />
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           TagInput
@@ -156,7 +163,6 @@ function App() {
           Tags agregadas: {demoTags.join(", ")}
         </p>
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           DateInput
@@ -166,14 +172,12 @@ function App() {
           <DateInput placeholder="Fecha de finalización" />
         </div>
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           Textarea
         </h2>
         <Textarea placeholder="Escribe tus pensamientos aquí..." />
       </section>
-
       <section className="space-y-3">
         <h2 className="font-display text-display-md text-text mb-3">Button</h2>
         <Button variant="primary">Iniciar Sesión</Button>
@@ -188,7 +192,6 @@ function App() {
           Deshabilitado
         </Button>
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           FilterBar (Estante)
@@ -198,7 +201,6 @@ function App() {
           Filtro activo: {filter}
         </p>
       </section>
-
       <section className="space-y-3">
         <h2 className="font-display text-display-md text-text mb-3">Toggle</h2>
         <Toggle
@@ -218,7 +220,6 @@ function App() {
           disabled
         />
       </section>
-
       <section className="space-y-4">
         <h2 className="font-display text-display-md text-text mb-3">Avatar</h2>
         <div className="flex items-end gap-4">
@@ -236,7 +237,6 @@ function App() {
           />
         </div>
       </section>
-
       <section className="space-y-3">
         <h2 className="font-display text-display-md text-text mb-3">
           RatingIcon
@@ -260,7 +260,6 @@ function App() {
           value={2.5}
         />
       </section>
-
       <section>
         <h2 className="font-display text-display-md text-text mb-3">
           RatingIcon — set completo
@@ -274,6 +273,94 @@ function App() {
           <IconGroup shapes={redShapes} color="var(--color-accent-wishlist)" />
         </div>
       </section>
+      <section>
+        <h2 className="font-display text-display-md text-text mb-3">
+          BookCard — cuadrícula
+        </h2>
+        <div className="grid grid-cols-2 gap-4 max-w-sm">
+          <BookCard
+            title="Título corto ejemplo"
+            author="Autor del libro"
+            status="pendiente"
+            onClick={() => console.log("Abrir libro")}
+          />
+          <BookCard
+            title="Título largo ejemplo lalalalala"
+            author="Autor del libro"
+            status="leyendo"
+            isFavorite
+            onClick={() => console.log("Abrir libro")}
+          />
+          <BookCard
+            title="Título corto ejemplo"
+            author="Autor del libro"
+            status="terminado"
+            isFavorite
+          />
+          <BookCard
+            title="Título largo ejemplo lalalalala"
+            author="Autor del libro"
+            status="abandonado"
+          />
+        </div>
+      </section>
+      <section className="space-y-3 max-w-sm">
+        <h2 className="font-display text-display-md text-text mb-3">
+          BookCard — horizontal (Mesa)
+        </h2>
+        <BookCardReading
+          title="Título del libro para llenar 2 líneas."
+          author="Autor del libro"
+          progressPercent={50}
+          progressLabel="Pág. 120"
+          onUpdateClick={() => console.log("Actualizar progreso")}
+        />
+        <BookCardReading
+          title="Título del libro para llenar 2 líneas."
+          author="Autor del libro"
+          progressPercent={50}
+          onUpdateClick={() => console.log("Actualizar progreso")}
+        />
+        <BookCardReading
+          title="Título del libro para llenar 2 líneas."
+          author="Autor del libro"
+          progressPercent={50}
+          progressLabel="01h 23m 04s"
+          onUpdateClick={() => console.log("Actualizar progreso")}
+        />
+      </section>
+      <section>
+        <h2 className="font-display text-display-md text-text mb-3">
+          SeriesCard
+        </h2>
+        <div className="grid grid-cols-2 gap-4 max-w-sm">
+          <SeriesCard
+            title="Título corto ejemplo"
+            author="Autor de la saga"
+            status="leyendo"
+            covers={[
+              "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300",
+              "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300",
+              undefined,
+            ]}
+          />
+          <SeriesCard
+            title="Título corto ejemplo"
+            author="Autor de la saga"
+            status="pendiente"
+            isFavorite
+          />
+        </div>
+      </section>
+      <section className="space-y-4">
+        <SectionHeader title="Configuración" variant="title" />
+        <SectionHeader title="Tema de la aplicación" variant="subtitle" />
+      </section>
+      
+
+      <div className="pb-20" />{" "}
+      {/* espacio para que el contenido no quede tapado por la TabBar */}
+      <TabBar active={activeTab} onChange={setActiveTab} />
     </div>
   );
 }
