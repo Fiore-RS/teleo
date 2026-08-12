@@ -8,6 +8,7 @@ type LogoVariant = 'full' | 'icon'
 
 interface LogoProps {
   variant?: LogoVariant
+  onClick?: () => void
   className?: string
 }
 
@@ -16,9 +17,20 @@ const sources: Record<LogoVariant, { light: string; dark: string }> = {
   icon: { light: logoIcon, dark: logoIconDark },
 }
 
-export function Logo({ variant = 'full', className = '' }: LogoProps) {
+export function Logo({ variant = 'full', onClick, className = '' }: LogoProps) {
   const { resolvedTheme } = useTheme()
   const src = sources[variant][resolvedTheme]
+  const isClickable = Boolean(onClick)
+  const Wrapper = isClickable ? 'button' : 'div'
 
-  return <img src={src} alt="Teleo" className={className} />
+  return (
+    <Wrapper
+      onClick={onClick}
+      type={isClickable ? 'button' : undefined}
+      aria-label={isClickable ? 'Ir al inicio' : undefined}
+      className="inline-block"
+    >
+      <img src={src} alt="Teleo" className={className} />
+    </Wrapper>
+  )
 }
