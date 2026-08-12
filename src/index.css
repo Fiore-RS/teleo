@@ -1,1 +1,76 @@
 @import "tailwindcss";
+
+/* Modo oscuro activado por clase .dark (para tu ThemeToggle manual, no por preferencia del sistema) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --teleo-surface: #FFF9F0;
+  --teleo-border: #E7DAC7;
+  --teleo-bg: #F8EFE1;
+  --teleo-text: #2B211B;
+  --teleo-text-secondary: #6B5B4E;
+  --teleo-state-abandoned: #9B948C;
+  --teleo-state-pending: #5B7A88;
+  --teleo-accent-wishlist: #7A2E3A;
+  --teleo-accent-reading: #C68A3D;
+  --teleo-accent-finished: #3F5B4E;
+}
+
+.dark {
+  --teleo-surface: #2A211A;
+  --teleo-border: #3A2E24;
+  --teleo-bg: #1E1712;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-state-abandoned: #6E6660;
+  --teleo-state-pending: #89ADBA;
+  --teleo-accent-wishlist: #A8465A;
+  --teleo-accent-reading: #E3A857;
+  --teleo-accent-finished: #6B8F7C;
+}
+
+@theme {
+  --color-surface: var(--teleo-surface);
+  --color-border: var(--teleo-border);
+  --color-bg: var(--teleo-bg);
+  --color-text: var(--teleo-text);
+  --color-text-secondary: var(--teleo-text-secondary);
+  --color-state-abandoned: var(--teleo-state-abandoned);
+  --color-state-pending: var(--teleo-state-pending);
+  --color-accent-wishlist: var(--teleo-accent-wishlist);
+  --color-accent-reading: var(--teleo-accent-reading);
+  --color-accent-finished: var(--teleo-accent-finished);
+
+  --font-display: "Fraunces", serif;
+  --font-body: "Karla", sans-serif;
+  --font-handwritten: "Caveat", cursive;
+
+  --text-display-xl: 44px;
+  --text-display-xl--line-height: 1.1;
+  --text-display-lg: 30px;
+  --text-display-lg--line-height: 1.15;
+  --text-display-md: 21px;
+  --text-display-md--line-height: 1.2;
+
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.4;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 1.45;
+  --text-body-sm: 12px;
+  --text-body-sm--line-height: 1.4;
+
+  --text-hand-lg: 24px;
+  --text-hand-lg--line-height: 1.2;
+  --text-hand-md: 18px;
+  --text-hand-md--line-height: 1.2;
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
