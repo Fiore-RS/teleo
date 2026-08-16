@@ -14,7 +14,7 @@ export function getProgressInfo(book: Book): { percent: number; label?: string }
   return { percent: 0 }
 }
 
-function formatDuration(totalSeconds: number): string {
+export function formatDuration(totalSeconds: number): string {
   const h = Math.floor(totalSeconds / 3600)
   const m = Math.floor((totalSeconds % 3600) / 60)
   const s = totalSeconds % 60

@@ -1,0 +1,1 @@
+alter table profiles add column is_deactivated boolean not null default false;

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ImageOff, Heart, Pencil } from 'lucide-react'
 import { useBook } from '../hooks/useBook'
 import { useReviewExists } from '../hooks/useReviewExists'
@@ -15,6 +14,7 @@ import { FavoriteToggle } from '../assets/components/atoms/FavoriteToggle'
 import { Button } from '../assets/components/atoms/Button'
 import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { statusLabel, type ReadingStatus } from '../lib/status'
+import { Resena } from './Resena'
 
 const categoryOptions = [
   { value: 'Novela', label: 'Novela' },
@@ -41,11 +41,11 @@ interface DetalleLibroProps {
 }
 
 export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) {
-  const navigate = useNavigate()
-  const { book, tags, updateBook, addTag, removeTag, deleteBook } = useBook(bookId)
-  const { exists: hasReview } = useReviewExists(bookId)
+  const { book, tags, isLoading, updateBook, addTag, removeTag, deleteBook } = useBook(bookId)
+  const { exists: hasReview, refetch: refetchReview } = useReviewExists(bookId)
 
   const [isEditing, setIsEditing] = useState(false)
+  const [isResenaOpen, setIsResenaOpen] = useState(false)
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
   const [draft, setDraft] = useState<{
     title: string; author: string
@@ -85,9 +85,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
         className="w-full max-w-sm bg-surface rounded-3xl p-6 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {!book ? (
-  <p className="text-center text-text-secondary py-10">Cargando...</p>
-) : (
+        {isLoading || !book ? (
+          <p className="text-center text-text-secondary py-10">Cargando...</p>
+        ) : (
           <>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display italic text-display-md text-accent-wishlist">
@@ -146,7 +146,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 )}
 
                 {book.status === 'terminado' && (
-                  <Button variant={hasReview ? 'primary' : 'green'} className="mt-5" onClick={() => navigate(`/libro/${bookId}/resena`)}>
+                  <Button variant={hasReview ? 'primary' : 'green'} className="mt-5" onClick={() => setIsResenaOpen(true)}>
                     {hasReview ? 'Ver Reseña de Lectura' : 'Crear Reseña de Lectura'}
                   </Button>
                 )}
@@ -215,6 +215,16 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           if (wasSuccess) onDeleted()
         }}
       />
+
+      {isResenaOpen && (
+        <Resena
+          bookId={bookId}
+          onClose={() => {
+            setIsResenaOpen(false)
+            refetchReview()
+          }}
+        />
+      )}
     </div>
   )
 }

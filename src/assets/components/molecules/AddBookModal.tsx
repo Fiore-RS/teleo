@@ -10,14 +10,15 @@ interface AddBookModalProps {
   isOpen: boolean
   onClose: () => void
   sagaId?: string
+  initialStatus?: 'pendiente' | 'deseado'
   onAdd: (book: {
     title: string; author: string | null; cover_url: string | null
     total_pages: number | null; language: string | null; category: string | null
-    isbn: string | null; status: 'pendiente'; saga_id?: string
+    isbn: string | null; status: 'pendiente' | 'deseado'; saga_id?: string
   }) => Promise<{ error: unknown }>
 }
 
-export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalProps) {
+export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendiente', onAdd }: AddBookModalProps) {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [result, setResult] = useState<BookSearchResult | null>(null)
@@ -66,7 +67,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalPro
     language: result.language ?? null,
     category: result.category ?? null,
     isbn: result.isbn ?? null,
-    status: 'pendiente',
+    status: initialStatus,
     saga_id: sagaId,
   })
   setIsSaving(false)

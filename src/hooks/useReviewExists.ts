@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export function useReviewExists(bookId: string | undefined) {
   const [exists, setExists] = useState(false)
 
-  useEffect(() => {
+  const refetch = useCallback(async () => {
     if (!bookId) return
-    supabase.from('reviews').select('id').eq('book_id', bookId).maybeSingle()
-      .then(({ data }) => setExists(Boolean(data)))
+    const { data } = await supabase.from('reviews').select('id').eq('book_id', bookId).maybeSingle()
+    setExists(Boolean(data))
   }, [bookId])
 
-  return { exists }
+  useEffect(() => { refetch() }, [refetch])
+
+  return { exists, refetch }
 }
