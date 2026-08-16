@@ -5,6 +5,12 @@ import { Modal } from '../atoms/Modal'
 import { SegmentedTabs } from '../atoms/SegmentedTabs'
 import { Button } from '../atoms/Button'
 import { Avatar } from '../atoms/Avatar'
+import { useTheme } from '../../../hooks/useTheme'
+
+// Mismos valores que --teleo-text en index.css, para que el QR
+// siempre contraste con el fondo (bg-bg) del tema activo.
+const QR_COLOR_LIGHT = '#2B211B'
+const QR_COLOR_DARK = '#F3E9DA'
 
 interface ShareModalProps {
   isOpen: boolean
@@ -17,6 +23,8 @@ interface ShareModalProps {
 
 export function ShareModal({ isOpen, onClose, title, url, avatarUrl, caption }: ShareModalProps) {
   const [mode, setMode] = useState<'qr' | 'link'>('qr')
+  const { resolvedTheme } = useTheme()
+  const qrColor = resolvedTheme === 'dark' ? QR_COLOR_DARK : QR_COLOR_LIGHT
 
   async function handleShare() {
     if (navigator.share) {
@@ -44,7 +52,7 @@ export function ShareModal({ isOpen, onClose, title, url, avatarUrl, caption }: 
 
       {mode === 'qr' ? (
         <div className="bg-bg rounded-2xl p-6 mt-4 flex flex-col items-center">
-          <QRCodeSVG value={url} size={160} fgColor="#2B211B" bgColor="transparent" />
+          <QRCodeSVG value={url} size={160} fgColor={qrColor} bgColor="transparent" />
           <p className="text-body-sm text-text-secondary mt-3 text-center">Escanea para ver mi perfil.</p>
         </div>
       ) : (
