@@ -2,9 +2,18 @@ import { useState } from 'react'
 import { ScanBarcode, Search, ImageOff } from 'lucide-react'
 import { Modal } from '../atoms/Modal'
 import { Input } from '../atoms/Input'
+import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
 import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
+import type { ReadingStatus } from '../../../lib/status'
+
+const statusOptions: { value: ReadingStatus; label: string }[] = [
+  { value: 'pendiente', label: 'Pendiente' },
+  { value: 'leyendo', label: 'Leyendo' },
+  { value: 'terminado', label: 'Terminado' },
+  { value: 'abandonado', label: 'Abandonado' },
+]
 
 interface AddBookModalProps {
   isOpen: boolean
@@ -14,7 +23,7 @@ interface AddBookModalProps {
   onAdd: (book: {
     title: string; author: string | null; cover_url: string | null
     total_pages: number | null; language: string | null; category: string | null
-    isbn: string | null; status: 'pendiente' | 'deseado'; saga_id?: string
+    isbn: string | null; status: ReadingStatus; saga_id?: string
   }) => Promise<{ error: unknown }>
 }
 
@@ -26,6 +35,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
   const [notFound, setNotFound] = useState(false)
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [status, setStatus] = useState<ReadingStatus>(initialStatus)
+
+  const canPickStatus = initialStatus !== 'deseado'
 
   function reset() {
     setQuery('')
@@ -33,6 +45,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
     setResult(null)
     setNotFound(false)
     setIsSearching(false)
+    setStatus(initialStatus)
   }
 
   function handleClose() {
@@ -70,7 +83,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
       language: result.language ?? null,
       category: result.category ?? null,
       isbn: result.isbn ?? null,
-      status: initialStatus,
+      status: canPickStatus ? status : initialStatus,
       saga_id: sagaId,
     })
     setIsSaving(false)
@@ -191,6 +204,13 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
                 </div>
               )}
             </div>
+
+            {canPickStatus && (
+              <div className="mt-4">
+                <label className="text-body-sm text-text-secondary block mb-1">Estado de lectura</label>
+                <Select options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as ReadingStatus)} />
+              </div>
+            )}
 
             <div className="flex gap-3 mt-6">
               <Button variant="outline" onClick={() => setResult(null)}>

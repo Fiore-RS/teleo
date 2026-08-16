@@ -21,11 +21,14 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-ki
 import { SortableItem } from "../assets/components/atoms/SortableItem";
 
 const categoryOptions = [
+  { value: "Libro", label: "Libro" },
   { value: "Novela", label: "Novela" },
-  { value: "Ensayo", label: "Ensayo" },
-  { value: "Poesía", label: "Poesía" },
-  { value: "Cómic/Manga", label: "Cómic/Manga" },
-  { value: "No ficción", label: "No ficción" },
+  { value: "Novela gráfica", label: "Novela gráfica" },
+  { value: "Novela ligera", label: "Novela ligera" },
+  { value: "Cómic", label: "Cómic" },
+  { value: "Manga", label: "Manga" },
+  { value: "Manhua", label: "Manhua" },
+  { value: "Manhwa", label: "Manhwa" },
 ];
 
 const statusOptions = (Object.keys(statusLabel) as ReadingStatus[]).map(

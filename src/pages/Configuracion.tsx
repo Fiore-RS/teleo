@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Share2, Link as LinkIcon,
-  Upload, Download, Pause, Trash2, ChevronRight, Trash2 as ClearIcon, LogOut,
+  Upload, Download, Pause, Trash2, ChevronRight, ChevronLeft, Trash2 as ClearIcon, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -27,9 +27,26 @@ const privacyFields = [
   { key: 'show_wishlist', label: 'Mostrar lista de deseados' },
 ] as const
 
+function SectionHeading({ title, danger = false }: { title: string; danger?: boolean }) {
+  return (
+    <div className="mt-8 mb-3">
+      <h2
+        className={
+          danger
+            ? 'font-display italic text-display-md text-accent-wishlist'
+            : 'font-body text-body-lg font-semibold text-accent-wishlist'
+        }
+      >
+        {title}
+      </h2>
+      <div className="h-1.5 rounded-full bg-border mt-2" />
+    </div>
+  )
+}
+
 function ListItem({ icon: Icon, label, onClick }: { icon: typeof User; label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="w-full flex items-center gap-3 bg-surface border border-border rounded-xl px-4 py-3">
+    <button onClick={onClick} className="w-full flex items-center gap-3 bg-surface border border-border rounded-xl px-4 py-3.5">
       <Icon size={18} className="text-text-secondary shrink-0" />
       <span className="text-body-md text-text flex-1 text-left">{label}</span>
       <ChevronRight size={18} className="text-text-secondary shrink-0" />
@@ -77,29 +94,33 @@ export function Configuracion() {
   }
 
   return (
-    <div className="min-h-screen bg-bg p-6">
-      <button onClick={() => navigate('/perfil')} className="text-body-sm text-text-secondary mb-4">← Regresar a Perfil</button>
+    <div className="min-h-screen bg-bg p-6 pb-10">
+      <button onClick={() => navigate('/perfil')} className="flex items-center gap-1 text-body-md font-medium text-accent-wishlist mb-4 -ml-1">
+        <ChevronLeft size={20} strokeWidth={2} />
+        Regresar a Perfil
+      </button>
 
       <h1 className="font-display italic text-display-lg text-accent-wishlist">Configuración</h1>
-      <p className="text-body-md text-text-secondary mt-1">Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto.</p>
+      <div className="h-1.5 rounded-full bg-border mt-3" />
+      <p className="text-body-md text-text-secondary mt-3">Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto.</p>
 
-      <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Tema de la aplicación</h2>
+      <SectionHeading title="Tema de la aplicación" />
       <ThemeToggle />
 
-      <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Ajustes de cuenta</h2>
+      <SectionHeading title="Ajustes de cuenta" />
       <div className="space-y-2">
         <ListItem icon={User} label="Cambiar nombre de usuario" onClick={() => navigate('/configuracion/usuario')} />
         <ListItem icon={Mail} label="Cambiar correo" onClick={() => navigate('/configuracion/correo')} />
         <ListItem icon={Lock} label="Cambiar contraseña" onClick={() => navigate('/configuracion/contrasena')} />
       </div>
 
-      <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Compartir</h2>
+      <SectionHeading title="Compartir" />
       <div className="space-y-2">
         <ListItem icon={Share2} label="Compartir perfil" onClick={() => setShareTarget('perfil')} />
         <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => setShareTarget('deseados')} />
       </div>
 
-      <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Visibilidad del perfil</h2>
+      <SectionHeading title="Visibilidad del perfil" />
       <div className="space-y-2">
         {privacyFields.map(({ key, label }) => (
           <PrivacyToggleRow
@@ -111,7 +132,7 @@ export function Configuracion() {
         ))}
       </div>
 
-      <h2 className="font-body text-body-lg font-semibold text-accent-wishlist mt-8 mb-2">Zona de peligro</h2>
+      <SectionHeading title="Zona de peligro" danger />
       <div className="space-y-2">
         <ListItem icon={LogOut} label="Cerrar sesión" onClick={() => setConfirmAction('cerrarSesion')} />
         <ListItem icon={Upload} label="Exportar datos" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />

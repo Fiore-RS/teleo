@@ -32,10 +32,10 @@ export function Cuaderno() {
 
   return (
     <div className="min-h-screen bg-bg p-4">
-      <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
-
-      <div className="mt-10 space-y-6">
+      <div className="mt-4 space-y-6">
         <SectionHeader title="Tu diario de lectura" rightContent={`${String(filtered.length).padStart(3, '0')} reseñas`} />
+
+        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
 
         <Button variant="primary" onClick={() => setIsPickerOpen(true)}>Agregar Reseña Nueva</Button>
 
@@ -46,28 +46,41 @@ export function Cuaderno() {
 
         <div className="space-y-4">
           {filtered.map((r) => (
-            <div key={r.id} className="flex gap-3 bg-surface border border-border rounded-2xl p-4">
-              <div className="relative w-16 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
-                {r.book.cover_url ? (
-                  <img src={r.book.cover_url} alt={r.book.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center"><ImageOff size={16} className="text-text-secondary" /></div>
-                )}
+            <div key={r.id} className="bg-surface border border-border rounded-2xl p-4">
+              <div className="flex gap-3">
+                <div className="relative w-24 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
+                  {r.book.cover_url ? (
+                    <img src={r.book.cover_url} alt={r.book.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center"><ImageOff size={16} className="text-text-secondary" /></div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-body-md text-text line-clamp-2">{r.book.title}</p>
+                  <p className="text-body-sm text-text-secondary line-clamp-1 mt-1">{r.book.author}</p>
+
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <span className="text-body-sm text-text-secondary bg-bg rounded-full px-3 py-1">
+                      Inicio: {r.book.start_date ?? '—'}
+                    </span>
+                    <span className="text-body-sm text-text-secondary bg-bg rounded-full px-3 py-1">
+                      Fin: {r.book.end_date ?? '—'}
+                    </span>
+                  </div>
+
+                  <RatingRow shape="star" color="var(--color-accent-reading)" value={r.general_rating ?? 0} size={16} className="mt-3" />
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-body-md text-text line-clamp-2">{r.book.title}</p>
-                <p className="text-body-sm text-text-secondary line-clamp-1">{r.book.author}</p>
-                <p className="text-body-sm text-text-secondary mt-1">
-                  Inicio: {r.book.start_date ?? '—'} &nbsp; Fin: {r.book.end_date ?? '—'}
+
+              {r.general_comments && (
+                <p className="text-body-sm text-text-secondary line-clamp-3 mt-3 bg-bg rounded-2xl p-4">
+                  {r.general_comments}
                 </p>
-                <RatingRow shape="star" color="var(--color-accent-reading)" value={r.general_rating ?? 0} size={16} />
-                {r.general_comments && (
-                  <p className="text-body-sm text-text-secondary line-clamp-2 mt-1">{r.general_comments}</p>
-                )}
-                <Button variant="primary" className="mt-2 py-2! text-body-sm!" onClick={() => setSelectedBookId(r.book_id)}>
-                  Ver Reseña Completa
-                </Button>
-              </div>
+              )}
+
+              <Button variant="amber" className="mt-3 w-full" onClick={() => setSelectedBookId(r.book_id)}>
+                Ver Reseña Completa
+              </Button>
             </div>
           ))}
         </div>

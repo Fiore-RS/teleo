@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Pencil, Flag, Menu } from 'lucide-react'
+import { Camera, SquarePen, Flag, Menu } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
@@ -8,8 +8,8 @@ import { useProfileStats } from '../hooks/useProfileStats'
 import { useAnnualGoal } from '../hooks/useAnnualGoal'
 import { useProfileLists } from '../hooks/useProfileLists'
 import { useLibraryBooks } from '../hooks/useLibraryBooks'
-import { SearchBar } from '../assets/components/molecules/SearchBar'
 import { StatBox } from '../assets/components/atoms/StatBox'
+import { SectionHeader } from '../assets/components/atoms/SectionHeader'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
 import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
 import { BioEditModal } from '../assets/components/molecules/BioEditModal'
@@ -49,41 +49,42 @@ export function Perfil() {
 
   return (
     <div className="min-h-screen bg-bg p-4">
-      <SearchBar />
-
-      <div className="mt-10 space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display italic text-display-lg text-accent-wishlist">Tu rincón personal</h2>
-          <button onClick={() => navigate('/configuracion')} aria-label="Configuración">
-            <Menu size={22} className="text-text" />
-          </button>
-        </div>
-        <div className="border-b-6 border-border -mt-4" />
+      <div className="mt-4 space-y-10">
+        <SectionHeader
+          title="Tu rincón personal"
+          rightContent={
+            <button onClick={() => navigate('/configuracion')} aria-label="Configuración">
+              <Menu size={22} className="text-accent-wishlist" />
+            </button>
+          }
+        />
 
         <div className="text-center">
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="relative w-28 h-28 rounded-full mx-auto bg-accent-wishlist flex items-center justify-center overflow-hidden"
+            className="relative z-0 w-56 h-56 max-w-[60%] aspect-square rounded-full mx-auto bg-accent-wishlist flex items-center justify-center overflow-hidden"
           >
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
-              <Camera size={32} className="text-surface" />
+              <Camera size={64} strokeWidth={1.5} className="text-surface" />
             )}
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
 
-          <div className="bg-surface border border-border rounded-2xl p-4 mt-4 text-left">
-            <div className="flex items-center justify-between">
-              <p className="font-display italic text-display-md text-text">@{profile?.username}</p>
+          <div className="relative z-10 -mt-12 bg-surface border border-border rounded-3xl p-4 pt-6 text-left">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-display italic text-display-lg text-text truncate">@{profile?.username}</p>
+              <button onClick={() => setIsBioModalOpen(true)} aria-label="Editar perfil" className="text-text shrink-0">
+                <SquarePen size={22} strokeWidth={1.75} />
+              </button>
             </div>
-            <button onClick={() => setIsBioModalOpen(true)} className="flex items-start gap-2 mt-2 w-full text-left">
-              <p className="text-body-sm text-text-secondary flex-1">
+            <div className="bg-bg rounded-xl p-4 mt-3">
+              <p className="text-body-md text-text-secondary">
                 {profile?.bio || 'Agrega una descripción sobre ti...'}
               </p>
-              <Pencil size={14} className="text-text-secondary shrink-0 mt-1" />
-            </button>
+            </div>
           </div>
         </div>
 
@@ -95,6 +96,10 @@ export function Perfil() {
               <p className="font-display text-display-lg text-text">{annualCompletedCount} de {annualGoal}</p>
               <p className="text-body-md text-text-secondary">libros del {currentYear}</p>
               <ProgressBar percent={goalPercent} className="mt-4" />
+              <div className="flex items-center justify-between mt-1.5">
+                <span className="text-body-sm text-text-secondary">{annualCompletedCount} de {annualGoal}</span>
+                <span className="text-body-sm text-text-secondary">{Math.round(goalPercent)}%</span>
+              </div>
             </div>
           </div>
         )}
@@ -104,10 +109,10 @@ export function Perfil() {
             <h3 className="font-display italic text-display-md text-accent-wishlist">Racha diaria más extensa</h3>
             <div className="border-b-6 border-border mt-2 mb-3" />
             <div className="bg-surface border border-border rounded-2xl p-6 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-accent-finished flex items-center justify-center shrink-0">
-                <Flag size={18} className="text-surface" />
+              <div className="w-12 h-12 rounded-full bg-accent-finished flex items-center justify-center shrink-0">
+                <Flag size={22} className="text-surface" />
               </div>
-              <p className="font-body text-body-lg text-text">{stats.longestStreak} días seguidos</p>
+              <p className="font-display text-display-md text-text">{stats.longestStreak} días seguidos</p>
             </div>
           </div>
         )}
@@ -116,7 +121,7 @@ export function Perfil() {
           <div>
             <h3 className="font-display italic text-display-md text-accent-wishlist">Estadísticas</h3>
             <div className="border-b-6 border-border mt-2 mb-3" />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-5">
               <StatBox label="Páginas leídas" value={stats.pagesRead.toLocaleString()} />
               <StatBox label="Tiempo escuchado" value={formatDuration(stats.audioSeconds)} />
               <StatBox label="Libros terminados" value={String(stats.finishedCount)} />
@@ -182,7 +187,7 @@ export function Perfil() {
         )}
       </div>
 
-      <div className="pb-10" />
+      <div className="pb-24" />
       <TabBar active="perfil" onChange={handleTabBarChange} />
 
       <BioEditModal

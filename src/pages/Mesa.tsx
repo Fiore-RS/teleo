@@ -5,7 +5,6 @@ import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
 import { useReadingStreak } from "../hooks/useReadingStreak";
 import { useAnnualGoal } from "../hooks/useAnnualGoal";
 import { getProgressInfo } from "../lib/progress";
-import { SearchBar } from "../assets/components/molecules/SearchBar";
 import { SectionHeader } from "../assets/components/atoms/SectionHeader";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
 import { ProgressBar } from "../assets/components/atoms/ProgressBar";
@@ -34,9 +33,7 @@ export function Mesa() {
 
   return (
     <div className="min-h-screen bg-bg p-4 space-y-10">
-      <SearchBar onCameraClick={() => console.log("Escanear")} />
-
-      <section>
+      <section className="mt-4">
         <SectionHeader title="Leyendo ahora" variant="title" />
         <div className="space-y-3 mt-3">
           {booksLoading && (

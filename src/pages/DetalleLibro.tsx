@@ -19,11 +19,14 @@ import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
 import { DurationMaskInput } from '../assets/components/atoms/DurationMaskInput'
 
 const categoryOptions = [
+  { value: 'Libro', label: 'Libro' },
   { value: 'Novela', label: 'Novela' },
-  { value: 'Ensayo', label: 'Ensayo' },
-  { value: 'Poesía', label: 'Poesía' },
-  { value: 'Cómic/Manga', label: 'Cómic/Manga' },
-  { value: 'No ficción', label: 'No ficción' },
+  { value: 'Novela gráfica', label: 'Novela gráfica' },
+  { value: 'Novela ligera', label: 'Novela ligera' },
+  { value: 'Cómic', label: 'Cómic' },
+  { value: 'Manga', label: 'Manga' },
+  { value: 'Manhua', label: 'Manhua' },
+  { value: 'Manhwa', label: 'Manhwa' },
 ]
 
 const statusOptions = (Object.keys(statusLabel) as ReadingStatus[]).map((value) => ({
@@ -186,20 +189,32 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <label className="text-body-sm text-text-secondary block mb-1 mt-4">Formato</label>
 <SegmentedTabs options={formatOptions} active={draft.format} onChange={(format) => setDraft({ ...draft, format })} />
 
-{draft.format === 'audiolibro' ? (
+{draft.format !== 'digital' ? (
+  <div className="grid grid-cols-2 gap-3 mt-4">
+    <div>
+      {draft.format === 'audiolibro' ? (
+        <>
+          <label className="text-body-sm text-text-secondary block mb-1">Duración</label>
+          <DurationMaskInput value={draft.totalDuration} onChange={(v) => setDraft({ ...draft, totalDuration: v })} />
+        </>
+      ) : (
+        <>
+          <label className="text-body-sm text-text-secondary block mb-1">Páginas</label>
+          <Input type="number" placeholder="000" value={draft.totalPages} onChange={(e) => setDraft({ ...draft, totalPages: e.target.value })} />
+        </>
+      )}
+    </div>
+    <div>
+      <label className="text-body-sm text-text-secondary block mb-1">Idioma</label>
+      <Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
+    </div>
+  </div>
+) : (
   <>
-    <label className="text-body-sm text-text-secondary block mb-1 mt-4">Duración total</label>
-    <DurationMaskInput value={draft.totalDuration} onChange={(v) => setDraft({ ...draft, totalDuration: v })} />
+    <label className="text-body-sm text-text-secondary block mb-1 mt-4">Idioma</label>
+    <Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
   </>
-) : draft.format === 'fisico' ? (
-  <>
-    <label className="text-body-sm text-text-secondary block mb-1 mt-4">Número de páginas</label>
-    <Input type="number" placeholder="000" value={draft.totalPages} onChange={(e) => setDraft({ ...draft, totalPages: e.target.value })} />
-  </>
-) : null}
-
-<label className="text-body-sm text-text-secondary block mb-1 mt-4">Idioma</label>
-<Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
+)}
 
 <div className="grid grid-cols-2 gap-3 mt-4">
                   <div>

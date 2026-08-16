@@ -5,9 +5,11 @@ interface StatBoxProps {
 
 export function StatBox({ label, value }: StatBoxProps) {
   return (
-    <div className="bg-bg rounded-xl p-3">
-      <p className="text-body-sm text-text-secondary">{label}</p>
-      <p className="font-display text-display-md text-text mt-1">{value}</p>
+    <div>
+      <p className="text-body-md text-text-secondary mb-2">{label}</p>
+      <div className="bg-surface border border-border rounded-xl py-4 px-3 text-center">
+        <p className="font-body text-body-lg font-semibold text-text">{value}</p>
+      </div>
     </div>
   )
 }

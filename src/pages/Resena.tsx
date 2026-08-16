@@ -218,6 +218,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
                 <label className="text-body-sm text-text-secondary block mb-1 mt-5">Personaje favorito</label>
                 <FavoriteCharacterEditor
+                  userId={user?.id}
                   name={draft.favorite_character_name} notes={draft.favorite_character_notes} photoUrl={draft.favorite_character_photo_url}
                   onNameChange={(v) => setDraft({ ...draft, favorite_character_name: v })}
                   onNotesChange={(v) => setDraft({ ...draft, favorite_character_notes: v })}

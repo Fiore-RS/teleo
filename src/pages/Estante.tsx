@@ -127,16 +127,16 @@ export function Estante() {
 
   return (
     <div className="min-h-screen bg-bg p-4">
-      <SearchBar
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        onCameraClick={() => setIsAddBookOpen(true)}
-      />
-
-      <div className="mt-10 space-y-6">
+      <div className="mt-4 space-y-6">
         <SectionHeader
           title="Tu librería privada"
           rightContent={`${String(count).padStart(3, "0")} ${tab}`}
+        />
+
+        <SearchBar
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onCameraClick={() => setIsAddBookOpen(true)}
         />
 
         <SegmentedTabs
