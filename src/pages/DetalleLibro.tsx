@@ -15,6 +15,8 @@ import { Button } from '../assets/components/atoms/Button'
 import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { statusLabel, type ReadingStatus } from '../lib/status'
 import { Resena } from './Resena'
+import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
+import { DurationMaskInput } from '../assets/components/atoms/DurationMaskInput'
 
 const categoryOptions = [
   { value: 'Novela', label: 'Novela' },
@@ -48,31 +50,43 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const [isResenaOpen, setIsResenaOpen] = useState(false)
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
   const [draft, setDraft] = useState<{
-    title: string; author: string
-    format: 'fisico' | 'digital' | 'audiolibro'
-    category: string; status: ReadingStatus
-  } | null>(null)
+  title: string; author: string
+  format: 'fisico' | 'digital' | 'audiolibro'
+  category: string; status: ReadingStatus
+  language: string; totalPages: string; totalDuration: string
+} | null>(null)
 
   function startEditing() {
-    if (!book) return
-    setDraft({
-      title: book.title,
-      author: book.author ?? '',
-      format: (book.format ?? 'fisico') as 'fisico' | 'digital' | 'audiolibro',
-      category: book.category ?? 'Novela',
-      status: book.status as ReadingStatus,
-    })
-    setIsEditing(true)
-  }
+  if (!book) return
+  setDraft({
+    title: book.title,
+    author: book.author ?? '',
+    format: (book.format ?? 'fisico') as 'fisico' | 'digital' | 'audiolibro',
+    category: book.category ?? 'Novela',
+    status: book.status as ReadingStatus,
+    language: book.language ?? '',
+    totalPages: book.total_pages ? String(book.total_pages) : '',
+    totalDuration: book.total_duration_seconds ? secondsToTimeInput(book.total_duration_seconds) : '',
+  })
+  setIsEditing(true)
+}
 
   async function handleSave() {
-    if (!draft) return
-    await updateBook({
-      title: draft.title, author: draft.author || null,
-      format: draft.format, category: draft.category, status: draft.status,
-    })
-    setIsEditing(false)
-  }
+  if (!draft) return
+
+  const totalDurationSeconds = draft.format === 'audiolibro'
+    ? parseDurationInput(draft.totalDuration)
+    : null
+
+  await updateBook({
+    title: draft.title, author: draft.author || null,
+    format: draft.format, category: draft.category, status: draft.status,
+    language: draft.language || null,
+    total_pages: draft.format !== 'audiolibro' && draft.totalPages ? parseInt(draft.totalPages, 10) : null,
+    total_duration_seconds: totalDurationSeconds,
+  })
+  setIsEditing(false)
+}
 
   async function handleDelete() {
     const ok = await deleteBook()
@@ -170,9 +184,24 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <Input value={draft.author} onChange={(e) => setDraft({ ...draft, author: e.target.value })} />
 
                 <label className="text-body-sm text-text-secondary block mb-1 mt-4">Formato</label>
-                <SegmentedTabs options={formatOptions} active={draft.format} onChange={(format) => setDraft({ ...draft, format })} />
+<SegmentedTabs options={formatOptions} active={draft.format} onChange={(format) => setDraft({ ...draft, format })} />
 
-                <div className="grid grid-cols-2 gap-3 mt-4">
+{draft.format === 'audiolibro' ? (
+  <>
+    <label className="text-body-sm text-text-secondary block mb-1 mt-4">Duración total</label>
+    <DurationMaskInput value={draft.totalDuration} onChange={(v) => setDraft({ ...draft, totalDuration: v })} />
+  </>
+) : draft.format === 'fisico' ? (
+  <>
+    <label className="text-body-sm text-text-secondary block mb-1 mt-4">Número de páginas</label>
+    <Input type="number" placeholder="000" value={draft.totalPages} onChange={(e) => setDraft({ ...draft, totalPages: e.target.value })} />
+  </>
+) : null}
+
+<label className="text-body-sm text-text-secondary block mb-1 mt-4">Idioma</label>
+<Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
+
+<div className="grid grid-cols-2 gap-3 mt-4">
                   <div>
                     <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
                     <Select options={categoryOptions} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />

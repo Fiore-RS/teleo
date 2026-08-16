@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useProfileStats } from '../hooks/useProfileStats'
+import { useAnnualGoal } from '../hooks/useAnnualGoal'
 import { useProfileLists } from '../hooks/useProfileLists'
 import { useLibraryBooks } from '../hooks/useLibraryBooks'
 import { SearchBar } from '../assets/components/molecules/SearchBar'
@@ -23,6 +24,7 @@ export function Perfil() {
   const { profile, updateProfile } = useProfile(user?.id)
   const { uploadAvatar, isUploading } = useAvatarUpload(user?.id)
   const { stats } = useProfileStats(user?.id)
+  const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(user?.id)
   const { currentlyReading, favorites, recommended, wishlist, refetch: refetchLists } = useProfileLists(user?.id)
   const { addBook } = useLibraryBooks(user?.id)
 
@@ -32,7 +34,7 @@ export function Perfil() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
 
   const currentYear = new Date().getFullYear()
-  const goalPercent = profile?.annual_goal ? Math.min(100, (stats.finishedCount / profile.annual_goal) * 100) : 0
+  const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -51,11 +53,11 @@ export function Perfil() {
 
       <div className="mt-10 space-y-6">
         <div className="flex items-center justify-between">
-  <h2 className="font-display italic text-display-lg text-accent-wishlist">Tu rincón personal</h2>
-  <button onClick={() => navigate('/configuracion')} aria-label="Configuración">
-    <Menu size={22} className="text-text" />
-  </button>
-</div>
+          <h2 className="font-display italic text-display-lg text-accent-wishlist">Tu rincón personal</h2>
+          <button onClick={() => navigate('/configuracion')} aria-label="Configuración">
+            <Menu size={22} className="text-text" />
+          </button>
+        </div>
         <div className="border-b-6 border-border -mt-4" />
 
         <div className="text-center">
@@ -90,7 +92,7 @@ export function Perfil() {
             <h3 className="font-display italic text-display-md text-accent-wishlist">Meta anual de lectura</h3>
             <div className="border-b-6 border-border mt-2 mb-3" />
             <div className="bg-surface border border-border rounded-2xl p-6 text-center">
-              <p className="font-display text-display-lg text-text">{stats.finishedCount} de {profile.annual_goal}</p>
+              <p className="font-display text-display-lg text-text">{annualCompletedCount} de {annualGoal}</p>
               <p className="text-body-md text-text-secondary">libros del {currentYear}</p>
               <ProgressBar percent={goalPercent} className="mt-4" />
             </div>

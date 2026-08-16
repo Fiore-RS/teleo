@@ -5,6 +5,7 @@ interface Stats {
   pagesRead: number
   audioSeconds: number
   finishedCount: number
+  finishedThisYearCount: number
   readingCount: number
   wishlistCount: number
   abandonedCount: number
@@ -15,7 +16,7 @@ interface Stats {
 }
 
 const emptyStats: Stats = {
-  pagesRead: 0, audioSeconds: 0, finishedCount: 0, readingCount: 0,
+  pagesRead: 0, audioSeconds: 0, finishedCount: 0, finishedThisYearCount: 0, readingCount: 0,
   wishlistCount: 0, abandonedCount: 0, sagaCount: 0, reviewCount: 0,
   longestStreak: 0, yearsBreakdown: [],
 }
@@ -63,6 +64,9 @@ export function useProfileStats(userId: string | undefined) {
     const allBooks = books ?? []
     const finished = allBooks.filter((b) => b.status === 'terminado')
 
+    const currentYear = new Date().getFullYear()
+    const finishedThisYear = finished.filter((b) => b.end_date && parseInt(b.end_date.slice(0, 4), 10) === currentYear)
+
     const pagesRead = finished.reduce((sum, b) => sum + (b.total_pages ?? 0), 0)
     const audioSeconds = finished
       .filter((b) => b.format === 'audiolibro')
@@ -71,7 +75,7 @@ export function useProfileStats(userId: string | undefined) {
     const yearCounts = new Map<number, number>()
     finished.forEach((b) => {
       if (!b.end_date) return
-      const year = new Date(b.end_date).getFullYear()
+      const year = parseInt(b.end_date.slice(0, 4), 10)
       yearCounts.set(year, (yearCounts.get(year) ?? 0) + 1)
     })
     const yearsBreakdown = Array.from(yearCounts.entries())
@@ -84,6 +88,7 @@ export function useProfileStats(userId: string | undefined) {
       pagesRead,
       audioSeconds,
       finishedCount: finished.length,
+      finishedThisYearCount: finishedThisYear.length,
       readingCount: allBooks.filter((b) => b.status === 'leyendo').length,
       wishlistCount: allBooks.filter((b) => b.status === 'deseado').length,
       abandonedCount: allBooks.filter((b) => b.status === 'abandonado').length,

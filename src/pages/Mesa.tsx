@@ -14,14 +14,16 @@ import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
 import { getGoalMessage } from "../lib/goalMessage";
+import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 
 export function Mesa() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { books, isLoading: booksLoading } = useCurrentlyReading(user?.id);
+  const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
   const { streak, markedToday, markToday } = useReadingStreak(user?.id);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const { goal, completedCount, updateGoal } = useAnnualGoal(user?.id);
+  const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
 
   const goalPercent =
     goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
@@ -55,7 +57,7 @@ export function Mesa() {
                 coverUrl={book.cover_url ?? undefined}
                 progressPercent={percent}
                 progressLabel={label}
-                onUpdateClick={() => navigate(`/libro/${book.id}/actualizar`)}
+                onUpdateClick={() => setUpdatingBookId(book.id)}
               />
             );
           })}
@@ -118,6 +120,14 @@ export function Mesa() {
         currentGoal={goal}
         onSave={updateGoal}
       />
+
+      {updatingBookId && (
+  <UpdateProgressModal
+    bookId={updatingBookId}
+    onClose={() => setUpdatingBookId(null)}
+    onUpdated={refetchBooks}
+  />
+)}
     </div>
   );
 }

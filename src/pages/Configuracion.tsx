@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Share2, Link as LinkIcon,
-  Upload, Download, Paintbrush, Pause, Trash2, ChevronRight,
+  Upload, Download, Pause, Trash2, ChevronRight, Trash2 as ClearIcon,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -11,8 +11,9 @@ import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareModal } from '../assets/components/molecules/ShareModal'
 import { PrivacyToggleRow } from '../assets/components/molecules/PrivacyToggleRow'
-import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { Button } from '../assets/components/atoms/Button'
+import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
+import { ThemeToggle } from '../assets/components/atoms/ThemeToggle'
 
 const privacyFields = [
   { key: 'show_annual_goal', label: 'Mostrar meta anual' },
@@ -76,6 +77,9 @@ export function Configuracion() {
       <h1 className="font-display italic text-display-lg text-accent-wishlist">Configuración</h1>
       <p className="text-body-md text-text-secondary mt-1">Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto.</p>
 
+      <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Tema de la aplicación</h2>
+<ThemeToggle />
+
       <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Ajustes de cuenta</h2>
       <div className="space-y-2">
         <ListItem icon={User} label="Cambiar nombre de usuario" onClick={() => navigate('/configuracion/usuario')} />
@@ -121,7 +125,7 @@ export function Configuracion() {
             input.click()
           }}
         />
-        <ListItem icon={Paintbrush} label="Vaciar datos" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
+        <ListItem icon={ClearIcon} label="Vaciar datos" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
         <ListItem icon={Pause} label="Desactivar cuenta" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
         <ListItem icon={Trash2} label="Eliminar cuenta" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
       </div>
@@ -137,25 +141,56 @@ export function Configuracion() {
         />
       )}
 
-      {(confirmAction === 'exportar' || confirmAction === 'vaciar') && (
-        <ConfirmDialog
+      {confirmAction === 'exportar' && (
+        <ActionConfirmModal
           isOpen
           status={dialogState}
-          itemLabel={confirmAction === 'exportar' ? 'exportación' : 'librería'}
+          icon={Upload}
+          iconVariant="reading"
+          confirmTitle="¿Exportar datos?"
+          confirmDescription="Exportarás todos los datos de tu librería virtual: libros, reseñas, estadísticas..."
+          confirmLabel="Exportar"
+          confirmVariant="amber"
+          successTitle="¡Exportado con éxito!"
+          successDescription="Tu archivo se descargó correctamente."
           onConfirm={handleConfirmAction}
           onClose={() => setConfirmAction(null)}
         />
       )}
 
       {confirmAction === 'importar' && (
-        <ConfirmDialog
+        <ActionConfirmModal
           isOpen
           status={dialogState}
-          itemLabel="importación"
+          icon={Download}
+          iconVariant="pending"
+          confirmTitle="¿Importar datos?"
+          confirmDescription="Importarás datos a tu librería virtual."
+          confirmLabel="Importar"
+          confirmVariant="slate"
+          successTitle="¡Importado con éxito!"
+          successDescription="Tus datos se agregaron correctamente a tu librería."
           onConfirm={() => setConfirmAction(null)}
           onClose={() => setConfirmAction(null)}
         />
       )}
+
+      {confirmAction === 'vaciar' && (
+  <ActionConfirmModal
+    isOpen
+    status={dialogState}
+    icon={ClearIcon}
+    iconVariant="reading"
+    confirmTitle="Limpieza de estantes"
+    confirmDescription="Estás a punto de vaciar tu diario de lectura. Todas tus reseñas, notas marginales y estadísticas acumuladas desaparecerán como tinta bajo la lluvia. Esta acción es permanente e irreversible."
+    confirmLabel="Vaciar Mi Librería"
+    confirmVariant="amber"
+    successTitle="¡Librería vaciada!"
+    successDescription="Todos tus libros y sagas fueron eliminados correctamente."
+    onConfirm={handleConfirmAction}
+    onClose={() => setConfirmAction(null)}
+  />
+)}
 
       {confirmAction === 'desactivar' && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>

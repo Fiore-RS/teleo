@@ -7,6 +7,10 @@ export function getProgressInfo(book: Book): { percent: number; label?: string }
     const percent = ((book.current_duration_seconds ?? 0) / book.total_duration_seconds) * 100
     return { percent, label: formatDuration(book.current_duration_seconds ?? 0) }
   }
+  if (book.format === 'digital') {
+    const percent = book.progress_percent ?? 0
+    return { percent }
+  }
   if (book.total_pages) {
     const percent = ((book.current_page ?? 0) / book.total_pages) * 100
     return { percent, label: `Pág. ${book.current_page ?? 0}` }

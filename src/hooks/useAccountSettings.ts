@@ -5,12 +5,16 @@ export function useAccountSettings(userId: string | undefined) {
   const [isSaving, setIsSaving] = useState(false)
 
   async function updateUsername(newUsername: string) {
-    if (!userId) return { error: 'No hay usuario' }
-    setIsSaving(true)
-    const { error } = await supabase.from('profiles').update({ username: newUsername }).eq('id', userId)
-    setIsSaving(false)
-    return { error: error?.message ?? null }
+  if (!userId) return { error: 'No hay usuario' }
+  setIsSaving(true)
+  const { error } = await supabase.from('profiles').update({ username: newUsername }).eq('id', userId)
+  setIsSaving(false)
+
+  if (error?.code === 'P0001') {
+    return { error: 'Solo puedes cambiar tu nombre de usuario una vez cada 14 días.' }
   }
+  return { error: error?.message ?? null }
+}
 
   async function updateEmail(newEmail: string) {
     setIsSaving(true)

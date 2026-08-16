@@ -1,0 +1,1 @@
+alter table books add column progress_percent numeric check (progress_percent between 0 and 100);
