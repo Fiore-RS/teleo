@@ -69,7 +69,7 @@ export function Configuracion() {
   const [dialogState, setDialogState] = useState<'confirm' | 'success' | 'error'>('confirm')
   const [deleteChecked, setDeleteChecked] = useState(false)
 
-  const profileUrl = `${window.location.origin}/@${profile?.username ?? ''}`
+  const profileUrl = `${window.location.origin}${import.meta.env.BASE_URL}@${profile?.username ?? ''}`
   const wishlistUrl = `${profileUrl}/deseados`
 
   async function handleSignOut() {
