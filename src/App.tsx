@@ -15,21 +15,29 @@ import { PerfilPublico } from './pages/PerfilPublico'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LoadingScreen />} />
-      <Route path="/inicio" element={<Inicio />} />
-      <Route path="/mesa" element={<Mesa />} />
-      <Route path="/estante" element={<Estante />} />
-      <Route path="/cuaderno" element={<Cuaderno />} />
-      <Route path="/perfil" element={<Perfil />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/registro" element={<Registro />} />
-      <Route path="/configuracion" element={<Configuracion />} />
-      <Route path="/configuracion/usuario" element={<CambiarUsuario />} />
-      <Route path="/configuracion/correo" element={<CambiarCorreo />} />
-      <Route path="/configuracion/contrasena" element={<CambiarContrasena />} />
-      <Route path="/@:username" element={<PerfilPublico />} />
-    </Routes>
+    // Teleo está pensada para móvil. En pantallas anchas (PC), en vez de
+    // estirar el contenido borde a borde, lo centramos en una columna con
+    // ancho de teléfono — mismo patrón que usan WhatsApp Web o Notion en
+    // su vista móvil.
+    <div className="min-h-screen bg-border">
+      <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl">
+        <Routes>
+          <Route path="/" element={<LoadingScreen />} />
+          <Route path="/inicio" element={<Inicio />} />
+          <Route path="/mesa" element={<Mesa />} />
+          <Route path="/estante" element={<Estante />} />
+          <Route path="/cuaderno" element={<Cuaderno />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
+          <Route path="/configuracion" element={<Configuracion />} />
+          <Route path="/configuracion/usuario" element={<CambiarUsuario />} />
+          <Route path="/configuracion/correo" element={<CambiarCorreo />} />
+          <Route path="/configuracion/contrasena" element={<CambiarContrasena />} />
+          <Route path="/@:username" element={<PerfilPublico />} />
+        </Routes>
+      </div>
+    </div>
   );
 }
 

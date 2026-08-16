@@ -17,7 +17,7 @@ interface TabBarProps {
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border flex justify-around items-center pt-2"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-120 bg-surface border-t border-border flex justify-around items-center pt-2"
       style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
     >
       {tabs.map(({ key, label, icon: Icon }) => {
