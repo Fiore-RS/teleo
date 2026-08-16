@@ -6,7 +6,6 @@ import { Estante } from "./pages/Estante";
 import { Cuaderno } from "./pages/Cuaderno";
 import { Login } from "./pages/Login";
 import { Registro } from "./pages/Registro";
-import { Playground } from "./pages/PlayGround";
 import { Perfil } from "./pages/Perfil";
 import { Configuracion } from "./pages/Configuracion";
 import { CambiarUsuario } from "./pages/CambiarUsuario";
@@ -25,7 +24,6 @@ function App() {
       <Route path="/perfil" element={<Perfil />} />
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
-      <Route path="/playground" element={<Playground />} />
       <Route path="/configuracion" element={<Configuracion />} />
       <Route path="/configuracion/usuario" element={<CambiarUsuario />} />
       <Route path="/configuracion/correo" element={<CambiarCorreo />} />
