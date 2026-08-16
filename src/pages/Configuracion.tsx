@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Share2, Link as LinkIcon,
-  Upload, Download, Pause, Trash2, ChevronRight, Trash2 as ClearIcon,
+  Upload, Download, Pause, Trash2, ChevronRight, Trash2 as ClearIcon, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -14,6 +14,7 @@ import { PrivacyToggleRow } from '../assets/components/molecules/PrivacyToggleRo
 import { Button } from '../assets/components/atoms/Button'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
 import { ThemeToggle } from '../assets/components/atoms/ThemeToggle'
+import { supabase } from '../lib/supabase'
 
 const privacyFields = [
   { key: 'show_annual_goal', label: 'Mostrar meta anual' },
@@ -46,13 +47,18 @@ export function Configuracion() {
 
   const [shareTarget, setShareTarget] = useState<'perfil' | 'deseados' | null>(null)
   const [confirmAction, setConfirmAction] = useState<
-    'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
+    'cerrarSesion' | 'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
   >(null)
   const [dialogState, setDialogState] = useState<'confirm' | 'success' | 'error'>('confirm')
   const [deleteChecked, setDeleteChecked] = useState(false)
 
   const profileUrl = `${window.location.origin}/@${profile?.username ?? ''}`
   const wishlistUrl = `${profileUrl}/deseados`
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    navigate('/inicio')
+  }
 
   async function handleConfirmAction() {
     if (confirmAction === 'exportar') {
@@ -78,7 +84,7 @@ export function Configuracion() {
       <p className="text-body-md text-text-secondary mt-1">Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto.</p>
 
       <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Tema de la aplicación</h2>
-<ThemeToggle />
+      <ThemeToggle />
 
       <h2 className="font-body text-body-lg font-semibold text-text mt-8 mb-2">Ajustes de cuenta</h2>
       <div className="space-y-2">
@@ -107,6 +113,7 @@ export function Configuracion() {
 
       <h2 className="font-body text-body-lg font-semibold text-accent-wishlist mt-8 mb-2">Zona de peligro</h2>
       <div className="space-y-2">
+        <ListItem icon={LogOut} label="Cerrar sesión" onClick={() => setConfirmAction('cerrarSesion')} />
         <ListItem icon={Upload} label="Exportar datos" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
         <ListItem
           icon={Download}
@@ -139,6 +146,22 @@ export function Configuracion() {
           avatarUrl={profile?.avatar_url ?? undefined}
           caption={profile?.bio ?? ''}
         />
+      )}
+
+      {confirmAction === 'cerrarSesion' && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>
+          <div className="w-full max-w-sm bg-surface rounded-3xl p-6 text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="w-14 h-14 rounded-full bg-state-pending flex items-center justify-center mx-auto mb-4">
+              <LogOut size={24} className="text-surface" />
+            </div>
+            <h3 className="font-display text-display-md text-text">¿Cerrar sesión?</h3>
+            <p className="text-body-md text-text-secondary mt-2">
+              Tendrás que iniciar sesión de nuevo para volver a tu rincón de lectura.
+            </p>
+            <Button variant="slate" className="mt-5" onClick={handleSignOut}>Cerrar Sesión</Button>
+            <Button variant="outline" className="mt-3" onClick={() => setConfirmAction(null)}>Cancelar</Button>
+          </div>
+        </div>
       )}
 
       {confirmAction === 'exportar' && (
@@ -176,21 +199,21 @@ export function Configuracion() {
       )}
 
       {confirmAction === 'vaciar' && (
-  <ActionConfirmModal
-    isOpen
-    status={dialogState}
-    icon={ClearIcon}
-    iconVariant="reading"
-    confirmTitle="Limpieza de estantes"
-    confirmDescription="Estás a punto de vaciar tu diario de lectura. Todas tus reseñas, notas marginales y estadísticas acumuladas desaparecerán como tinta bajo la lluvia. Esta acción es permanente e irreversible."
-    confirmLabel="Vaciar Mi Librería"
-    confirmVariant="amber"
-    successTitle="¡Librería vaciada!"
-    successDescription="Todos tus libros y sagas fueron eliminados correctamente."
-    onConfirm={handleConfirmAction}
-    onClose={() => setConfirmAction(null)}
-  />
-)}
+        <ActionConfirmModal
+          isOpen
+          status={dialogState}
+          icon={ClearIcon}
+          iconVariant="reading"
+          confirmTitle="Limpieza de estantes"
+          confirmDescription="Estás a punto de vaciar tu diario de lectura. Todas tus reseñas, notas marginales y estadísticas acumuladas desaparecerán como tinta bajo la lluvia. Esta acción es permanente e irreversible."
+          confirmLabel="Vaciar Mi Librería"
+          confirmVariant="amber"
+          successTitle="¡Librería vaciada!"
+          successDescription="Todos tus libros y sagas fueron eliminados correctamente."
+          onConfirm={handleConfirmAction}
+          onClose={() => setConfirmAction(null)}
+        />
+      )}
 
       {confirmAction === 'desactivar' && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>
