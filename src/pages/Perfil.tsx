@@ -7,13 +7,11 @@ import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useProfileStats } from '../hooks/useProfileStats'
 import { useAnnualGoal } from '../hooks/useAnnualGoal'
 import { useProfileLists } from '../hooks/useProfileLists'
-import { useLibraryBooks } from '../hooks/useLibraryBooks'
 import { StatBox } from '../assets/components/atoms/StatBox'
 import { SectionHeader } from '../assets/components/atoms/SectionHeader'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
 import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
 import { BioEditModal } from '../assets/components/molecules/BioEditModal'
-import { AddBookModal } from '../assets/components/molecules/AddBookModal'
 import { DetalleLibro } from './DetalleLibro'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { formatDuration } from '../lib/progress'
@@ -26,11 +24,9 @@ export function Perfil() {
   const { stats } = useProfileStats(user?.id)
   const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(user?.id)
   const { currentlyReading, favorites, recommended, wishlist, refetch: refetchLists } = useProfileLists(user?.id)
-  const { addBook } = useLibraryBooks(user?.id)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isBioModalOpen, setIsBioModalOpen] = useState(false)
-  const [isAddWishOpen, setIsAddWishOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
 
   const currentYear = new Date().getFullYear()
@@ -182,7 +178,6 @@ export function Perfil() {
             books={wishlist}
             onBookClick={(id) => setSelectedBookId(id)}
             onSeeAll={() => navigate('/estante')}
-            onAdd={() => setIsAddWishOpen(true)}
           />
         )}
       </div>
@@ -195,17 +190,6 @@ export function Perfil() {
         onClose={() => setIsBioModalOpen(false)}
         currentBio={profile?.bio ?? ''}
         onSave={async (bio) => updateProfile({ bio })}
-      />
-
-      <AddBookModal
-        isOpen={isAddWishOpen}
-        onClose={() => setIsAddWishOpen(false)}
-        initialStatus="deseado"
-        onAdd={async (book) => {
-          const result = await addBook(book)
-          if (!result.error) refetchLists()
-          return result
-        }}
       />
 
       {selectedBookId && (

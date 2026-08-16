@@ -21,7 +21,7 @@ import { DetalleSaga } from "../pages/DetalleSaga";
 import { AddSagaModal } from "../assets/components/molecules/AddSagaModal";
 import {
   DndContext,
-  closestCenter,
+  closestCorners,
   PointerSensor,
   TouchSensor,
   useSensor,
@@ -179,7 +179,7 @@ export function Estante() {
         {tab === "libros" && (
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={closestCorners}
             onDragEnd={handleBookDragEnd}
           >
             <SortableContext
@@ -207,7 +207,7 @@ export function Estante() {
         {tab === "sagas" && (
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={closestCorners}
             onDragEnd={handleSagaDragEnd}
           >
             <SortableContext

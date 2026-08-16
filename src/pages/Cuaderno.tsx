@@ -86,7 +86,7 @@ export function Cuaderno() {
         </div>
       </div>
 
-      <div className="pb-10" />
+      <div className="pb-24" />
       <TabBar active="cuaderno" onChange={handleTabBarChange} />
 
       <SelectReviewBookModal

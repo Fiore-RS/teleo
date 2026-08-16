@@ -1,4 +1,3 @@
-import { Plus } from 'lucide-react'
 import { HorizontalScroller } from '../atoms/HorizontalScroller'
 import type { Database } from '../../../types/database'
 import type { ReadingStatus } from '../../../lib/status'
@@ -12,10 +11,9 @@ interface ProfileBookShelfProps {
   books: Book[]
   onBookClick: (bookId: string) => void
   onSeeAll?: () => void
-  onAdd?: () => void
 }
 
-export function ProfileBookShelf({ title, books, onBookClick, onSeeAll, onAdd }: ProfileBookShelfProps) {
+export function ProfileBookShelf({ title, books, onBookClick, onSeeAll }: ProfileBookShelfProps) {
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -26,7 +24,7 @@ export function ProfileBookShelf({ title, books, onBookClick, onSeeAll, onAdd }:
       </div>
       <div className="border-b-6 border-border mt-2 mb-3" />
 
-      {books.length === 0 && !onAdd && (
+      {books.length === 0 && (
         <p className="text-body-sm text-text-secondary">Nada por aquí todavía.</p>
       )}
 
@@ -47,15 +45,6 @@ export function ProfileBookShelf({ title, books, onBookClick, onSeeAll, onAdd }:
             <DogEar status={book.status as ReadingStatus} size={26} className="absolute top-0 right-0" />
           </button>
         ))}
-        {onAdd && (
-          <button
-            onClick={onAdd}
-            className="w-28 shrink-0 aspect-2/3 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1"
-          >
-            <Plus size={22} className="text-text-secondary" />
-            <span className="text-body-sm text-text-secondary">Agregar</span>
-          </button>
-        )}
       </HorizontalScroller>
     </div>
   )
