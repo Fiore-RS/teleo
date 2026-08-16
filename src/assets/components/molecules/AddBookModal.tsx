@@ -4,7 +4,7 @@ import { Modal } from '../atoms/Modal'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
-import { searchBooksByQuery, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
+import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 
 interface AddBookModalProps {
   isOpen: boolean
@@ -21,6 +21,7 @@ interface AddBookModalProps {
 export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendiente', onAdd }: AddBookModalProps) {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
+  const [results, setResults] = useState<BookSearchResult[]>([])
   const [result, setResult] = useState<BookSearchResult | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [isScannerOpen, setIsScannerOpen] = useState(false)
@@ -28,6 +29,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
 
   function reset() {
     setQuery('')
+    setResults([])
     setResult(null)
     setNotFound(false)
     setIsSearching(false)
@@ -42,9 +44,10 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
     if (!query.trim()) return
     setIsSearching(true)
     setNotFound(false)
-    const found = await searchBooksByQuery(query.trim())
+    setResults([])
+    const found = await searchBooksByQueryMultiple(query.trim(), 3)
     setIsSearching(false)
-    found ? setResult(found) : setNotFound(true)
+    found.length > 0 ? setResults(found) : setNotFound(true)
   }
 
   async function handleIsbnDetected(isbn: string) {
@@ -57,27 +60,29 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
   }
 
   async function handleAdd() {
-  if (!result) return
-  setIsSaving(true)
-  const { error } = await onAdd({
-    title: result.title,
-    author: result.author ?? null,
-    cover_url: result.coverUrl ?? null,
-    total_pages: result.totalPages ?? null,
-    language: result.language ?? null,
-    category: result.category ?? null,
-    isbn: result.isbn ?? null,
-    status: initialStatus,
-    saga_id: sagaId,
-  })
-  setIsSaving(false)
-  if (!error) handleClose()
-}
+    if (!result) return
+    setIsSaving(true)
+    const { error } = await onAdd({
+      title: result.title,
+      author: result.author ?? null,
+      cover_url: result.coverUrl ?? null,
+      total_pages: result.totalPages ?? null,
+      language: result.language ?? null,
+      category: result.category ?? null,
+      isbn: result.isbn ?? null,
+      status: initialStatus,
+      saga_id: sagaId,
+    })
+    setIsSaving(false)
+    if (!error) handleClose()
+  }
+
+  const showResultsList = results.length > 0 && !result
 
   return (
     <>
       <Modal isOpen={isOpen} onClose={handleClose} title="Nuevo libro para el estante">
-        {!result ? (
+        {!result && !showResultsList ? (
           <div className="space-y-4">
             <p className="text-body-md text-text-secondary">
               Busca un libro o escanea su código de barras para agregarlo a tu colección.
@@ -120,7 +125,37 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
               </p>
             )}
           </div>
-        ) : (
+        ) : showResultsList ? (
+          <div>
+            <p className="text-body-md text-text-secondary mb-4 text-center">
+              Encontramos {results.length} coincidencia{results.length > 1 ? 's' : ''}. Elige la más parecida:
+            </p>
+            <div className="space-y-2">
+              {results.map((r, i) => (
+                <button
+                  key={i}
+                  onClick={() => setResult(r)}
+                  className="w-full flex gap-3 items-center bg-bg rounded-xl p-2 text-left"
+                >
+                  <div className="w-12 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-border">
+                    {r.coverUrl ? (
+                      <img src={r.coverUrl} alt={r.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageOff size={14} className="text-text-secondary" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-body-md text-text line-clamp-2">{r.title}</p>
+                    {r.author && <p className="text-body-sm text-text-secondary line-clamp-1">{r.author}</p>}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <Button variant="outline" className="mt-4" onClick={reset}>Buscar de nuevo</Button>
+          </div>
+        ) : result ? (
           <div>
             <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border mb-4">
               {result.coverUrl ? (
@@ -159,14 +194,14 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
 
             <div className="flex gap-3 mt-6">
               <Button variant="outline" onClick={() => setResult(null)}>
-                Cancelar
+                {results.length > 0 ? 'Volver a la lista' : 'Cancelar'}
               </Button>
               <Button variant="primary" onClick={handleAdd} isLoading={isSaving}>
                 Agregar
               </Button>
             </div>
           </div>
-        )}
+        ) : null}
       </Modal>
 
       <BarcodeScannerModal

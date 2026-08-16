@@ -74,3 +74,12 @@ export async function searchBookByIsbn(isbn: string): Promise<BookSearchResult |
     isbn,
   }
 }
+
+export async function searchBooksByQueryMultiple(query: string, maxResults = 3): Promise<BookSearchResult[]> {
+  const url = withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=${maxResults}`)
+  const res = await fetch(url)
+  if (!res.ok) return []
+  const data = await res.json()
+  const items: GoogleVolume[] = data.items ?? []
+  return items.map((item) => mapGoogleVolume(item))
+}
