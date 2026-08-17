@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  User, Mail, Lock, Share2, Link as LinkIcon,
+  User, Mail, Lock,
+  // Share2, Link as LinkIcon, // TODO: reactivar cuando se arregle la sección "Compartir"
   Upload, Download, Pause, Trash2, ChevronRight, ChevronLeft, Trash2 as ClearIcon, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
@@ -9,7 +10,7 @@ import { useProfile } from '../hooks/useProfile'
 import { useDataExport } from '../hooks/useDataExport'
 import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
-import { ShareModal } from '../assets/components/molecules/ShareModal'
+// import { ShareModal } from '../assets/components/molecules/ShareModal' // TODO: reactivar cuando se arregle la sección "Compartir"
 import { PrivacyToggleRow } from '../assets/components/molecules/PrivacyToggleRow'
 import { Button } from '../assets/components/atoms/Button'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
@@ -62,15 +63,17 @@ export function Configuracion() {
   const { importData } = useDataImport(user?.id)
   const { clearAllData, deactivateAccount, deleteAccount, isProcessing } = useDangerZone(user?.id)
 
-  const [shareTarget, setShareTarget] = useState<'perfil' | 'deseados' | null>(null)
+  // TODO: reactivar cuando se arregle la sección "Compartir"
+  // const [shareTarget, setShareTarget] = useState<'perfil' | 'deseados' | null>(null)
   const [confirmAction, setConfirmAction] = useState<
     'cerrarSesion' | 'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
   >(null)
   const [dialogState, setDialogState] = useState<'confirm' | 'success' | 'error'>('confirm')
   const [deleteChecked, setDeleteChecked] = useState(false)
 
-  const profileUrl = `${window.location.origin}${import.meta.env.BASE_URL}#/@${profile?.username ?? ''}`
-  const wishlistUrl = `${profileUrl}/deseados`
+  // TODO: reactivar cuando se arregle la sección "Compartir"
+  // const profileUrl = `${window.location.origin}${import.meta.env.BASE_URL}#/@${profile?.username ?? ''}`
+  // const wishlistUrl = `${profileUrl}/deseados`
 
   async function handleSignOut() {
     await supabase.auth.signOut()
@@ -114,11 +117,13 @@ export function Configuracion() {
         <ListItem icon={Lock} label="Cambiar contraseña" onClick={() => navigate('/configuracion/contrasena')} />
       </div>
 
+      {/* TODO: reactivar cuando se arregle la sección "Compartir"
       <SectionHeading title="Compartir" />
       <div className="space-y-2">
         <ListItem icon={Share2} label="Compartir perfil" onClick={() => setShareTarget('perfil')} />
         <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => setShareTarget('deseados')} />
       </div>
+      */}
 
       <SectionHeading title="Visibilidad del perfil" />
       <div className="space-y-2">
@@ -158,6 +163,7 @@ export function Configuracion() {
         <ListItem icon={Trash2} label="Eliminar cuenta" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
       </div>
 
+      {/* TODO: reactivar cuando se arregle la sección "Compartir"
       {shareTarget && (
         <ShareModal
           isOpen
@@ -168,6 +174,7 @@ export function Configuracion() {
           caption={profile?.bio ?? ''}
         />
       )}
+      */}
 
       {confirmAction === 'cerrarSesion' && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>
