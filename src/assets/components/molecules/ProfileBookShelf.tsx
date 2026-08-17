@@ -9,7 +9,7 @@ type Book = Database['public']['Tables']['books']['Row']
 interface ProfileBookShelfProps {
   title: string
   books: Book[]
-  onBookClick: (bookId: string) => void
+  onBookClick?: (bookId: string) => void
   onSeeAll?: () => void
 }
 
@@ -29,22 +29,33 @@ export function ProfileBookShelf({ title, books, onBookClick, onSeeAll }: Profil
       )}
 
       <HorizontalScroller>
-        {books.map((book) => (
-          <button
-            key={book.id}
-            onClick={() => onBookClick(book.id)}
-            className="relative w-28 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border"
-          >
-            {book.cover_url ? (
-              <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <ImageOff size={16} className="text-text-secondary" />
-              </div>
-            )}
-            <DogEar status={book.status as ReadingStatus} size={26} className="absolute top-0 right-0" />
-          </button>
-        ))}
+        {books.map((book) => {
+          const cover = (
+            <>
+              {book.cover_url ? (
+                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ImageOff size={16} className="text-text-secondary" />
+                </div>
+              )}
+              <DogEar status={book.status as ReadingStatus} size={26} className="absolute top-0 right-0" />
+            </>
+          )
+          return onBookClick ? (
+            <button
+              key={book.id}
+              onClick={() => onBookClick(book.id)}
+              className="relative w-28 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border"
+            >
+              {cover}
+            </button>
+          ) : (
+            <div key={book.id} className="relative w-28 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
+              {cover}
+            </div>
+          )
+        })}
       </HorizontalScroller>
     </div>
   )

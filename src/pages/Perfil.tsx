@@ -1,20 +1,16 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, SquarePen, Flag, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useProfileStats } from '../hooks/useProfileStats'
 import { useAnnualGoal } from '../hooks/useAnnualGoal'
 import { useProfileLists } from '../hooks/useProfileLists'
-import { StatBox } from '../assets/components/atoms/StatBox'
-import { SectionHeader } from '../assets/components/atoms/SectionHeader'
-import { ProgressBar } from '../assets/components/atoms/ProgressBar'
-import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
 import { BioEditModal } from '../assets/components/molecules/BioEditModal'
 import { DetalleLibro } from './DetalleLibro'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
-import { formatDuration } from '../lib/progress'
+import { ProfileView } from './ProfileView'
 
 export function Perfil() {
   const navigate = useNavigate()
@@ -29,9 +25,6 @@ export function Perfil() {
   const [isBioModalOpen, setIsBioModalOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
 
-  const currentYear = new Date().getFullYear()
-  const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
-
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -44,146 +37,48 @@ export function Perfil() {
   }
 
   return (
-    <div className="min-h-screen bg-bg p-4">
-      <div className="mt-4 space-y-10">
-        <SectionHeader
-          title="Tu rincón personal"
-          rightContent={
-            <button onClick={() => navigate('/configuracion')} aria-label="Configuración">
-              <Menu size={22} className="text-accent-wishlist" />
-            </button>
-          }
-        />
-
-        <div className="text-center">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="relative z-0 w-56 h-56 max-w-[60%] aspect-square rounded-full mx-auto bg-accent-wishlist flex items-center justify-center overflow-hidden"
-          >
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <Camera size={64} strokeWidth={1.5} className="text-surface" />
-            )}
+    <>
+      <ProfileView
+        readOnly={false}
+        username={profile?.username}
+        bio={profile?.bio}
+        avatarUrl={profile?.avatar_url}
+        headerRight={
+          <button onClick={() => navigate('/configuracion')} aria-label="Configuración">
+            <Menu size={22} className="text-accent-wishlist" />
           </button>
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+        }
+        onAvatarClick={() => fileInputRef.current?.click()}
+        isUploadingAvatar={isUploading}
+        onEditBioClick={() => setIsBioModalOpen(true)}
+        showAnnualGoal={profile?.show_annual_goal}
+        annualGoal={annualGoal}
+        annualCompletedCount={annualCompletedCount}
+        showDailyStreak={profile?.show_daily_streak}
+        longestStreak={stats.longestStreak}
+        showStats={profile?.show_stats}
+        stats={stats}
+        showYearsInBooks={profile?.show_years_in_books}
+        yearsBreakdown={stats.yearsBreakdown}
+        showCurrentlyReading={profile?.show_currently_reading}
+        currentlyReading={currentlyReading}
+        showFavorites={profile?.show_favorites}
+        favorites={favorites}
+        showRecommended={profile?.show_recommended}
+        recommended={recommended}
+        showWishlist={profile?.show_wishlist}
+        wishlist={wishlist}
+        onBookClick={(id) => setSelectedBookId(id)}
+        onSeeAllBooks={() => navigate('/estante')}
+        footer={
+          <>
+            <div className="pb-24" />
+            <TabBar active="perfil" onChange={handleTabBarChange} />
+          </>
+        }
+      />
 
-          <div className="relative z-10 -mt-12 bg-surface border border-border rounded-3xl p-4 pt-6 text-left">
-            <div className="flex items-center justify-between gap-2">
-              <p className="font-display italic text-display-lg text-text truncate">@{profile?.username}</p>
-              <button onClick={() => setIsBioModalOpen(true)} aria-label="Editar perfil" className="text-text shrink-0">
-                <SquarePen size={22} strokeWidth={1.75} />
-              </button>
-            </div>
-            <div className="bg-bg rounded-xl p-4 mt-3">
-              <p className="text-body-md text-text-secondary">
-                {profile?.bio || 'Agrega una descripción sobre ti...'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {profile?.show_annual_goal && (
-          <div>
-            <h3 className="font-display italic text-display-md text-accent-wishlist">Meta anual de lectura</h3>
-            <div className="border-b-6 border-border mt-2 mb-3" />
-            <div className="bg-surface border border-border rounded-2xl p-6 text-center">
-              <p className="font-display text-display-lg text-text">{annualCompletedCount} de {annualGoal}</p>
-              <p className="text-body-md text-text-secondary">libros del {currentYear}</p>
-              <ProgressBar percent={goalPercent} className="mt-4" />
-              <div className="flex items-center justify-between mt-1.5">
-                <span className="text-body-sm text-text-secondary">{annualCompletedCount} de {annualGoal}</span>
-                <span className="text-body-sm text-text-secondary">{Math.round(goalPercent)}%</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {profile?.show_daily_streak && (
-          <div>
-            <h3 className="font-display italic text-display-md text-accent-wishlist">Racha diaria más extensa</h3>
-            <div className="border-b-6 border-border mt-2 mb-3" />
-            <div className="bg-surface border border-border rounded-2xl p-6 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-accent-finished flex items-center justify-center shrink-0">
-                <Flag size={22} className="text-surface" />
-              </div>
-              <p className="font-display text-display-md text-text">{stats.longestStreak} días seguidos</p>
-            </div>
-          </div>
-        )}
-
-        {profile?.show_stats && (
-          <div>
-            <h3 className="font-display italic text-display-md text-accent-wishlist">Estadísticas</h3>
-            <div className="border-b-6 border-border mt-2 mb-3" />
-            <div className="grid grid-cols-2 gap-x-4 gap-y-5">
-              <StatBox label="Páginas leídas" value={stats.pagesRead.toLocaleString()} />
-              <StatBox label="Tiempo escuchado" value={formatDuration(stats.audioSeconds)} />
-              <StatBox label="Libros terminados" value={String(stats.finishedCount)} />
-              <StatBox label="Libros en proceso" value={String(stats.readingCount)} />
-              <StatBox label="Libros deseados" value={String(stats.wishlistCount)} />
-              <StatBox label="Libros abandonados" value={String(stats.abandonedCount)} />
-              <StatBox label="Sagas registradas" value={String(stats.sagaCount)} />
-              <StatBox label="Reseñas escritas" value={String(stats.reviewCount)} />
-            </div>
-          </div>
-        )}
-
-        {profile?.show_years_in_books && stats.yearsBreakdown.length > 0 && (
-          <div>
-            <h3 className="font-display italic text-display-md text-accent-wishlist">Mis años en libros</h3>
-            <div className="border-b-6 border-border mt-2 mb-3" />
-            <div className="grid grid-cols-2 gap-3">
-              {stats.yearsBreakdown.map(({ year, count }) => (
-                <div key={year} className="bg-surface border border-border rounded-2xl p-4 text-center">
-                  <p className="font-display text-display-lg text-accent-wishlist">{year}</p>
-                  <p className="text-body-sm text-text-secondary">{count} libros terminados</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {profile?.show_currently_reading && (
-          <ProfileBookShelf
-            title="Leyendo ahora"
-            books={currentlyReading}
-            onBookClick={(id) => setSelectedBookId(id)}
-            onSeeAll={() => navigate('/estante')}
-          />
-        )}
-
-        {profile?.show_favorites && (
-          <ProfileBookShelf
-            title="Favoritos"
-            books={favorites}
-            onBookClick={(id) => setSelectedBookId(id)}
-            onSeeAll={() => navigate('/estante')}
-          />
-        )}
-
-        {profile?.show_recommended && (
-          <ProfileBookShelf
-            title="Recomendados"
-            books={recommended}
-            onBookClick={(id) => setSelectedBookId(id)}
-            onSeeAll={() => navigate('/estante')}
-          />
-        )}
-
-        {profile?.show_wishlist && (
-          <ProfileBookShelf
-            title="Lista de deseados"
-            books={wishlist}
-            onBookClick={(id) => setSelectedBookId(id)}
-            onSeeAll={() => navigate('/estante')}
-          />
-        )}
-      </div>
-
-      <div className="pb-24" />
-      <TabBar active="perfil" onChange={handleTabBarChange} />
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
 
       <BioEditModal
         isOpen={isBioModalOpen}
@@ -199,6 +94,6 @@ export function Perfil() {
           onDeleted={() => { setSelectedBookId(null); refetchLists() }}
         />
       )}
-    </div>
+    </>
   )
 }
