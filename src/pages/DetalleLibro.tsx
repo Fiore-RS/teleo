@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ImageOff, Heart, Pencil } from 'lucide-react'
+import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
+import { useCoverUpload } from '../hooks/useCoverUpload'
 import { useReviewExists } from '../hooks/useReviewExists'
 import { DogEar } from '../assets/components/atoms/DogEar'
 import { Badge } from '../assets/components/atoms/Badge'
@@ -46,8 +48,19 @@ interface DetalleLibroProps {
 }
 
 export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) {
+  const { user } = useAuth()
   const { book, tags, isLoading, updateBook, addTag, removeTag, deleteBook } = useBook(bookId)
   const { exists: hasReview, refetch: refetchReview } = useReviewExists(bookId)
+  const { uploadCover, isUploading } = useCoverUpload(user?.id)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = await uploadCover(file)
+    if (url) await updateBook({ cover_url: url })
+    e.target.value = ''
+  }
 
   const [isEditing, setIsEditing] = useState(false)
   const [isResenaOpen, setIsResenaOpen] = useState(false)
@@ -128,11 +141,28 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 </span>
               )}
               {isEditing && (
-                <span className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm">
+                <button
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={isUploading}
+                  aria-label="Cambiar portada"
+                  className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm"
+                >
                   <Pencil size={14} className="text-accent-reading" />
-                </span>
+                </button>
               )}
             </div>
+            {isEditing && (
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverChange}
+                className="hidden"
+              />
+            )}
+            {isEditing && isUploading && (
+              <p className="text-body-sm text-text-secondary text-center -mt-2 mb-2">Subiendo portada...</p>
+            )}
 
             {!isEditing ? (
               <>
@@ -270,5 +300,5 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
         />
       )}
     </div>
-  )
-}
+  ) 
+} 
