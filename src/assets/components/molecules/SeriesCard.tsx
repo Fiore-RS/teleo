@@ -21,10 +21,10 @@ const placeholderBg = [
 function CoverBadges({ status, isFavorite }: { status: ReadingStatus; isFavorite?: boolean }) {
   return (
     <>
-      <DogEar status={status} size={36} className="absolute top-0 right-0" />
+      <DogEar status={status} size={28} className="absolute top-0 right-0" />
       {isFavorite && (
-        <span className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm">
-          <Heart size={14} fill="var(--color-accent-wishlist)" color="var(--color-accent-wishlist)" />
+        <span className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-surface flex items-center justify-center shadow-sm">
+          <Heart size={12} fill="var(--color-accent-wishlist)" color="var(--color-accent-wishlist)" />
         </span>
       )}
     </>
@@ -50,13 +50,13 @@ export function SeriesCard({
       ) : (
         <div className="relative flex aspect-4/5 w-full drop-shadow-md">
           {bookCount >= 3 && (
-            <div className="relative w-4 h-[92%] mt-[8%] rounded-t-md rounded-l-md overflow-hidden shrink-0" style={{ backgroundColor: placeholderBg[2] }}>
+            <div className="relative w-3 h-[92%] mt-[8%] rounded-t-md rounded-l-md overflow-hidden shrink-0" style={{ backgroundColor: placeholderBg[2] }}>
               {cover3 && <img src={cover3} alt="" className="w-full h-full object-cover" />}
               <div className="absolute inset-y-0 right-0 w-1/2 bg-linear-to-r from-transparent to-black/25" />
             </div>
           )}
           <div
-            className={`relative w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md overflow-hidden shrink-0 ${bookCount >= 3 ? '-ml-1' : ''}`}
+            className={`relative w-5 h-[96%] mt-[4%] rounded-t-md rounded-l-md overflow-hidden shrink-0 ${bookCount >= 3 ? '-ml-1' : ''}`}
             style={{ backgroundColor: placeholderBg[1] }}
           >
             {cover2 && <img src={cover2} alt="" className="w-full h-full object-cover" />}
@@ -73,4 +73,4 @@ export function SeriesCard({
       {author && <p className="text-body-sm font-body text-text-secondary line-clamp-1">{author}</p>}
     </button>
   )
-}
+} 

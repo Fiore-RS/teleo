@@ -204,7 +204,7 @@ export function Estante() {
                 items={filteredBooks.map((b) => b.id)}
                 strategy={rectSortingStrategy}
               >
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-3 gap-3">
                   {filteredBooks.map((book) => (
                     <SortableItem key={book.id} id={book.id}>
                       <BookCard
@@ -221,7 +221,7 @@ export function Estante() {
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-3 gap-3">
               {filteredBooks.map((book) => (
                 <BookCard
                   key={book.id}
@@ -248,7 +248,7 @@ export function Estante() {
                 items={filteredSagas.map((s) => s.id)}
                 strategy={rectSortingStrategy}
               >
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-3 gap-3">
                   {filteredSagas.map((saga) => (
                     <SortableItem key={saga.id} id={saga.id}>
                       <SeriesCard
@@ -266,7 +266,7 @@ export function Estante() {
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-3 gap-3">
               {filteredSagas.map((saga) => (
                 <SeriesCard
                   key={saga.id}

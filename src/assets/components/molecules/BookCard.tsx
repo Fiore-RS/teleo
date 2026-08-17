@@ -30,11 +30,11 @@ export function BookCard({
           </div>
         )}
 
-        <DogEar status={status} size={36} className="absolute top-0 right-0" />
+        <DogEar status={status} size={28} className="absolute top-0 right-0" />
 
         {isFavorite && (
-          <span className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm">
-            <Heart size={14} fill="var(--color-accent-wishlist)" color="var(--color-accent-wishlist)" />
+          <span className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-surface flex items-center justify-center shadow-sm">
+            <Heart size={12} fill="var(--color-accent-wishlist)" color="var(--color-accent-wishlist)" />
           </span>
         )}
       </div>
