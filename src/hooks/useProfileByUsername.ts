@@ -12,10 +12,16 @@ export function useProfileByUsername(username: string | undefined) {
   useEffect(() => {
     if (!username) return
     setIsLoading(true)
+    // ilike en vez de eq: la búsqueda no distingue mayúsculas/minúsculas.
+    // El username se guarda tal cual se escribió al registrarse (sin
+    // normalizar a minúsculas), así que "@Fiito" y "@fiito" deben
+    // encontrar el mismo perfil. Se escapan los comodines de LIKE
+    // (%, _, \) para que el username se compare literal, no como patrón.
+    const escaped = username.replace(/[\\%_]/g, (c) => `\\${c}`)
     supabase
       .from('profiles')
       .select('*')
-      .eq('username', username)
+      .ilike('username', escaped)
       .maybeSingle()
       .then(({ data }) => {
         setProfile(data ?? null)
