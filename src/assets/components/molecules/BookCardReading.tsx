@@ -2,6 +2,7 @@ import { ImageOff } from 'lucide-react'
 import { DogEar } from '../atoms/DogEar'
 import { ProgressBar } from '../atoms/ProgressBar'
 import { Button } from '../atoms/Button'
+import { CoverImage } from '../atoms/CoverImage'
 
 interface BookCardReadingProps {
   title: string
@@ -24,7 +25,7 @@ export function BookCardReading({
     <div className="flex gap-3 bg-surface rounded-2xl p-3 border border-border">
       <div className="relative w-20 shrink-0 aspect-2/3 rounded-xl overflow-hidden bg-border">
         {coverUrl ? (
-          <img src={coverUrl} alt={title} className="w-full h-full object-cover" />
+          <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageOff size={22} strokeWidth={1.5} className="text-text-secondary" />

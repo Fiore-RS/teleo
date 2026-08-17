@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ImageOff } from 'lucide-react'
+import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
 import { useReview } from '../hooks/useReview'
@@ -33,7 +34,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
   const [isEditing, setIsEditing] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
-  const [isDraftReview, setIsDraftReview] = useState(false)
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
   const [draft, setDraft] = useState<{
     start_date: string; end_date: string; general_rating: number
@@ -41,7 +41,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     favorite_character_name: string; favorite_character_notes: string; favorite_character_photo_url: string
   } | null>(null)
 
-  async function startEditing() {
+  function startEditing() {
     setDraft({
       start_date: book?.start_date ?? '',
       end_date: book?.end_date ?? '',
@@ -52,21 +52,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
       favorite_character_notes: review?.favorite_character_notes ?? '',
       favorite_character_photo_url: review?.favorite_character_photo_url ?? '',
     })
-    if (!review) {
-      setIsDraftReview(true)
-      await createReview({})
-    }
     setIsEditing(true)
-  }
-
-  async function handleCancelEdit() {
-    if (isDraftReview) {
-      await deleteReview()
-      setIsDraftReview(false)
-      onClose()
-    } else {
-      setIsEditing(false)
-    }
   }
 
   async function handleSave() {
@@ -91,7 +77,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     } else {
       await updateReview(reviewPayload)
     }
-    setIsDraftReview(false)
     setIsEditing(false)
   }
 
@@ -114,7 +99,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
             <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border mb-4">
               {book.cover_url ? (
-                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"><ImageOff size={24} className="text-text-secondary" /></div>
               )}
@@ -259,8 +244,14 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                   <Toggle checked={draft.recommends} onChange={(v) => setDraft({ ...draft, recommends: v })} />
                 </div>
 
+                {!review && (
+                  <p className="text-body-sm text-text-secondary mt-3">
+                    Guarda la reseña primero para poder agregar calificaciones personalizadas y citas favoritas.
+                  </p>
+                )}
+
                 <div className="flex gap-3 mt-5">
-                  <Button variant="outline" onClick={handleCancelEdit}>Cancelar</Button>
+                  <Button variant="outline" onClick={() => (review ? setIsEditing(false) : onClose())}>Cancelar</Button>
                   <Button variant="green" onClick={handleSave}>Guardar Cambios</Button>
                 </div>
               </>

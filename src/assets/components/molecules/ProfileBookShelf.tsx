@@ -2,6 +2,7 @@ import { HorizontalScroller } from '../atoms/HorizontalScroller'
 import type { Database } from '../../../types/database'
 import type { ReadingStatus } from '../../../lib/status'
 import { DogEar } from '../atoms/DogEar'
+import { CoverImage } from '../atoms/CoverImage'
 import { ImageOff } from 'lucide-react'
 
 type Book = Database['public']['Tables']['books']['Row']
@@ -33,7 +34,7 @@ export function ProfileBookShelf({ title, books, onBookClick, onSeeAll }: Profil
           const cover = (
             <>
               {book.cover_url ? (
-                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageOff size={16} className="text-text-secondary" />

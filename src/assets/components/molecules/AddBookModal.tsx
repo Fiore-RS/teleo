@@ -4,6 +4,7 @@ import { Modal } from '../atoms/Modal'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
+import { CoverImage } from '../atoms/CoverImage'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
 import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 import type { ReadingStatus } from '../../../lib/status'
@@ -13,13 +14,13 @@ const statusOptions: { value: ReadingStatus; label: string }[] = [
   { value: 'leyendo', label: 'Leyendo' },
   { value: 'terminado', label: 'Terminado' },
   { value: 'abandonado', label: 'Abandonado' },
-  { value: 'deseado', label: 'Deseado' },
 ]
 
 interface AddBookModalProps {
   isOpen: boolean
   onClose: () => void
   sagaId?: string
+  initialStatus?: 'pendiente' | 'deseado'
   onAdd: (book: {
     title: string; author: string | null; cover_url: string | null
     total_pages: number | null; language: string | null; category: string | null
@@ -27,7 +28,7 @@ interface AddBookModalProps {
   }) => Promise<{ error: unknown }>
 }
 
-export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalProps) {
+export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendiente', onAdd }: AddBookModalProps) {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [results, setResults] = useState<BookSearchResult[]>([])
@@ -35,7 +36,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalPro
   const [notFound, setNotFound] = useState(false)
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [status, setStatus] = useState<ReadingStatus>('pendiente')
+  const [status, setStatus] = useState<ReadingStatus>(initialStatus)
+
+  const canPickStatus = initialStatus !== 'deseado'
 
   function reset() {
     setQuery('')
@@ -43,7 +46,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalPro
     setResult(null)
     setNotFound(false)
     setIsSearching(false)
-    setStatus('pendiente')
+    setStatus(initialStatus)
   }
 
   function handleClose() {
@@ -81,7 +84,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalPro
       language: result.language ?? null,
       category: result.category ?? null,
       isbn: result.isbn ?? null,
-      status,
+      status: canPickStatus ? status : initialStatus,
       saga_id: sagaId,
     })
     setIsSaving(false)
@@ -150,7 +153,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalPro
                 >
                   <div className="w-12 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-border">
                     {r.coverUrl ? (
-                      <img src={r.coverUrl} alt={r.title} className="w-full h-full object-cover" />
+                      <CoverImage src={r.coverUrl} alt={r.title} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <ImageOff size={14} className="text-text-secondary" />
@@ -170,7 +173,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalPro
           <div>
             <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border mb-4">
               {result.coverUrl ? (
-                <img src={result.coverUrl} alt={result.title} className="w-full h-full object-cover" />
+                <CoverImage src={result.coverUrl} alt={result.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageOff size={24} className="text-text-secondary" />
@@ -203,10 +206,12 @@ export function AddBookModal({ isOpen, onClose, sagaId, onAdd }: AddBookModalPro
               )}
             </div>
 
-            <div className="mt-4">
-              <label className="text-body-sm text-text-secondary block mb-1">Estado de lectura</label>
-              <Select options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as ReadingStatus)} />
-            </div>
+            {canPickStatus && (
+              <div className="mt-4">
+                <label className="text-body-sm text-text-secondary block mb-1">Estado de lectura</label>
+                <Select options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as ReadingStatus)} />
+              </div>
+            )}
 
             <div className="flex gap-3 mt-6">
               <Button variant="outline" onClick={() => setResult(null)}>

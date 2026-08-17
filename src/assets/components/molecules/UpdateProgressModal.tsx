@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ImageOff } from 'lucide-react'
+import { CoverImage } from '../atoms/CoverImage'
 import { useBook } from '../../../hooks/useBook'
 import { getProgressInfo } from '../../../lib/progress'
 import { parseDurationInput, secondsToTimeInput } from '../../../lib/duration'
@@ -91,7 +92,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
             <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border mb-4">
               {book.cover_url ? (
-                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"><ImageOff size={24} className="text-text-secondary" /></div>
               )}

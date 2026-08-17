@@ -3,6 +3,7 @@ import { ImageOff, Heart, Trash2, ArrowUpDown } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
 import { DogEar } from "../assets/components/atoms/DogEar";
+import { CoverImage } from "../assets/components/atoms/CoverImage";
 import { Badge } from "../assets/components/atoms/Badge";
 import { Input } from "../assets/components/atoms/Input";
 import { Select } from "../assets/components/atoms/Select";
@@ -70,7 +71,7 @@ function SagaStackPreview({
     return (
       <div className="relative aspect-4/5 w-32 mx-auto my-4 rounded-xl overflow-hidden bg-accent-finished drop-shadow-md">
         {covers[0] ? (
-          <img src={covers[0]} alt="" className="w-full h-full object-cover" />
+          <CoverImage src={covers[0]} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageOff size={20} className="text-surface" />
@@ -101,7 +102,7 @@ function SagaStackPreview({
       {bookCount >= 3 && (
         <div className="relative w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md overflow-hidden shrink-0 bg-accent-wishlist">
           {covers[2] && (
-            <img
+            <CoverImage
               src={covers[2]}
               alt=""
               className="w-full h-full object-cover"
@@ -113,12 +114,12 @@ function SagaStackPreview({
         className={`relative w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md overflow-hidden shrink-0 bg-accent-reading ${bookCount >= 3 ? "-ml-1" : ""}`}
       >
         {covers[1] && (
-          <img src={covers[1]} alt="" className="w-full h-full object-cover" />
+          <CoverImage src={covers[1]} alt="" className="w-full h-full object-cover" />
         )}
       </div>
       <div className="relative flex-1 h-full -ml-2 rounded-xl overflow-hidden bg-accent-finished">
         {covers[0] ? (
-          <img src={covers[0]} alt="" className="w-full h-full object-cover" />
+          <CoverImage src={covers[0]} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageOff size={20} className="text-surface" />
@@ -311,7 +312,7 @@ export function DetalleSaga({
                               >
                                 <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
                                   {book.cover_url ? (
-                                    <img
+                                    <CoverImage
                                       src={book.cover_url}
                                       alt={book.title}
                                       className="w-full h-full object-cover"
@@ -363,7 +364,7 @@ export function DetalleSaga({
                         >
                           <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
                             {book.cover_url ? (
-                              <img
+                              <CoverImage
                                 src={book.cover_url}
                                 alt={book.title}
                                 className="w-full h-full object-cover"
@@ -485,7 +486,7 @@ export function DetalleSaga({
                             <div className="flex gap-3 items-center bg-bg rounded-2xl p-3">
                               <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
                                 {book.cover_url ? (
-                                  <img
+                                  <CoverImage
                                     src={book.cover_url}
                                     alt={book.title}
                                     className="w-full h-full object-cover"
@@ -529,7 +530,7 @@ export function DetalleSaga({
                       <div key={book.id} className="flex gap-3 items-center bg-bg rounded-2xl p-3">
                         <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
                           {book.cover_url ? (
-                            <img
+                            <CoverImage
                               src={book.cover_url}
                               alt={book.title}
                               className="w-full h-full object-cover"

@@ -1,5 +1,6 @@
 import { Heart, ImageOff } from 'lucide-react'
 import { DogEar } from '../atoms/DogEar'
+import { CoverImage } from '../atoms/CoverImage'
 import type { ReadingStatus } from '../../../lib/status'
 
 interface BookCardProps {
@@ -23,7 +24,7 @@ export function BookCard({
     <button onClick={onClick} className="text-left w-full">
       <div className="relative aspect-2/3 w-full rounded-xl overflow-hidden bg-border">
         {coverUrl ? (
-          <img src={coverUrl} alt={title} className="w-full h-full object-cover" />
+          <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ImageOff size={28} strokeWidth={1.5} className="text-text-secondary" />

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { ImageOff, Heart, Pencil } from 'lucide-react'
+import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
 import { useCoverUpload } from '../hooks/useCoverUpload'
@@ -128,7 +129,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
             <div className="relative aspect-2/3 w-36 mx-auto rounded-xl overflow-hidden bg-border mb-4">
               {book.cover_url ? (
-                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageOff size={24} className="text-text-secondary" />
@@ -300,5 +301,5 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
         />
       )}
     </div>
-  ) 
-} 
+  )
+}

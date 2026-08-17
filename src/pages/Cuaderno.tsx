@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ImageOff } from 'lucide-react'
+import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews } from '../hooks/useReviews'
 import { SearchBar } from '../assets/components/molecules/SearchBar'
@@ -50,7 +51,7 @@ export function Cuaderno() {
               <div className="flex gap-3">
                 <div className="relative w-24 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
                   {r.book.cover_url ? (
-                    <img src={r.book.cover_url} alt={r.book.title} className="w-full h-full object-cover" />
+                    <CoverImage src={r.book.cover_url ?? undefined} alt={r.book.title} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center"><ImageOff size={16} className="text-text-secondary" /></div>
                   )}
@@ -86,7 +87,7 @@ export function Cuaderno() {
         </div>
       </div>
 
-      <div className="pb-24" />
+      <div className="pb-10" />
       <TabBar active="cuaderno" onChange={handleTabBarChange} />
 
       <SelectReviewBookModal

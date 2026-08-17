@@ -1,5 +1,6 @@
 import { Heart, ImageOff } from 'lucide-react'
 import { DogEar } from '../atoms/DogEar'
+import { CoverImage } from '../atoms/CoverImage'
 import type { ReadingStatus } from '../../../lib/status'
 
 interface SeriesCardProps {
@@ -44,14 +45,14 @@ export function SeriesCard({
         </div>
       ) : bookCount === 1 ? (
         <div className="relative aspect-4/5 w-full rounded-xl overflow-hidden drop-shadow-md" style={{ backgroundColor: placeholderBg[0] }}>
-          {cover1 && <img src={cover1} alt={title} className="w-full h-full object-cover" />}
+          {cover1 && <CoverImage src={cover1} alt={title} className="w-full h-full object-cover" />}
           <CoverBadges status={status} isFavorite={isFavorite} />
         </div>
       ) : (
         <div className="relative flex aspect-4/5 w-full drop-shadow-md">
           {bookCount >= 3 && (
             <div className="relative w-3 h-[92%] mt-[8%] rounded-t-md rounded-l-md overflow-hidden shrink-0" style={{ backgroundColor: placeholderBg[2] }}>
-              {cover3 && <img src={cover3} alt="" className="w-full h-full object-cover" />}
+              {cover3 && <CoverImage src={cover3} alt="" className="w-full h-full object-cover" />}
               <div className="absolute inset-y-0 right-0 w-1/2 bg-linear-to-r from-transparent to-black/25" />
             </div>
           )}
@@ -59,11 +60,11 @@ export function SeriesCard({
             className={`relative w-5 h-[96%] mt-[4%] rounded-t-md rounded-l-md overflow-hidden shrink-0 ${bookCount >= 3 ? '-ml-1' : ''}`}
             style={{ backgroundColor: placeholderBg[1] }}
           >
-            {cover2 && <img src={cover2} alt="" className="w-full h-full object-cover" />}
+            {cover2 && <CoverImage src={cover2} alt="" className="w-full h-full object-cover" />}
             <div className="absolute inset-y-0 right-0 w-1/2 bg-linear-to-r from-transparent to-black/20" />
           </div>
           <div className="relative flex-1 h-full -ml-2 rounded-xl overflow-hidden" style={{ backgroundColor: placeholderBg[0] }}>
-            {cover1 && <img src={cover1} alt={title} className="w-full h-full object-cover" />}
+            {cover1 && <CoverImage src={cover1} alt={title} className="w-full h-full object-cover" />}
             <CoverBadges status={status} isFavorite={isFavorite} />
           </div>
         </div>

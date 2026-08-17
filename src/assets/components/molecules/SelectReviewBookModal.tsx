@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ImageOff } from 'lucide-react'
+import { CoverImage } from '../atoms/CoverImage'
 import { Modal } from '../atoms/Modal'
 import { Input } from '../atoms/Input'
 import { useReviewableBooks } from '../../../hooks/useReviewableBooks'
@@ -35,7 +36,7 @@ export function SelectReviewBookModal({ isOpen, onClose, userId, onSelect }: Sel
           <button key={book.id} onClick={() => onSelect(book.id)} className="w-full flex gap-3 items-center bg-bg rounded-xl p-2 text-left">
             <div className="w-10 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-border">
               {book.cover_url ? (
-                <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"><ImageOff size={14} className="text-text-secondary" /></div>
               )}
