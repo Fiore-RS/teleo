@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowUpDown } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
@@ -21,7 +22,7 @@ import { DetalleSaga } from "../pages/DetalleSaga";
 import { AddSagaModal } from "../assets/components/molecules/AddSagaModal";
 import {
   DndContext,
-  closestCorners,
+  closestCenter,
   PointerSensor,
   TouchSensor,
   useSensor,
@@ -61,6 +62,7 @@ export function Estante() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [selectedSagaId, setSelectedSagaId] = useState<string | null>(null);
   const [isAddSagaOpen, setIsAddSagaOpen] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -96,6 +98,7 @@ export function Estante() {
   function handleTabSwitch(newTab: LibraryTab) {
     setTab(newTab);
     setFilter("todos");
+    setIsReordering(false);
   }
 
   function handleBookDragEnd(event: DragEndEvent) {
@@ -150,14 +153,28 @@ export function Estante() {
 
         <FilterBar value={filter} onChange={setFilter} />
 
-        <Button
-          variant="primary"
-          onClick={() =>
-            tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true)
-          }
-        >
-          {tab === "libros" ? "Agregar Libro Nuevo" : "Agregar Saga Nueva"}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="primary"
+            className="flex-1"
+            onClick={() =>
+              tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true)
+            }
+          >
+            {tab === "libros" ? "Agregar Libro Nuevo" : "Agregar Saga Nueva"}
+          </Button>
+
+          {((tab === "libros" && filteredBooks.length > 1) || (tab === "sagas" && filteredSagas.length > 1)) && (
+            <button
+              onClick={() => setIsReordering((v) => !v)}
+              className="inline-flex items-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface shrink-0"
+              style={{ backgroundColor: "var(--color-state-pending)" }}
+            >
+              <ArrowUpDown size={15} />
+              {isReordering ? "Listo" : "Organizar"}
+            </button>
+          )}
+        </div>
 
         {isLoading && (
           <p className="text-body-md text-text-secondary text-center">
@@ -177,64 +194,97 @@ export function Estante() {
         )}
 
         {tab === "libros" && (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragEnd={handleBookDragEnd}
-          >
-            <SortableContext
-              items={filteredBooks.map((b) => b.id)}
-              strategy={rectSortingStrategy}
+          isReordering ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleBookDragEnd}
             >
-              <div className="grid grid-cols-2 gap-5">
-                {filteredBooks.map((book) => (
-                  <SortableItem key={book.id} id={book.id}>
-                    <BookCard
-                      title={book.title}
-                      author={book.author ?? undefined}
-                      coverUrl={book.cover_url ?? undefined}
-                      status={book.status as ReadingStatus}
-                      isFavorite={book.is_favorite ?? false}
-                      onClick={() => setSelectedBookId(book.id)}
-                    />
-                  </SortableItem>
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={filteredBooks.map((b) => b.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-2 gap-5">
+                  {filteredBooks.map((book) => (
+                    <SortableItem key={book.id} id={book.id}>
+                      <BookCard
+                        title={book.title}
+                        author={book.author ?? undefined}
+                        coverUrl={book.cover_url ?? undefined}
+                        status={book.status as ReadingStatus}
+                        isFavorite={book.is_favorite ?? false}
+                        onClick={() => setSelectedBookId(book.id)}
+                      />
+                    </SortableItem>
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="grid grid-cols-2 gap-5">
+              {filteredBooks.map((book) => (
+                <BookCard
+                  key={book.id}
+                  title={book.title}
+                  author={book.author ?? undefined}
+                  coverUrl={book.cover_url ?? undefined}
+                  status={book.status as ReadingStatus}
+                  isFavorite={book.is_favorite ?? false}
+                  onClick={() => setSelectedBookId(book.id)}
+                />
+              ))}
+            </div>
+          )
         )}
 
         {tab === "sagas" && (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragEnd={handleSagaDragEnd}
-          >
-            <SortableContext
-              items={filteredSagas.map((s) => s.id)}
-              strategy={rectSortingStrategy}
+          isReordering ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleSagaDragEnd}
             >
-              <div className="grid grid-cols-2 gap-5">
-                {filteredSagas.map((saga) => (
-                  <SortableItem key={saga.id} id={saga.id}>
-                    <SeriesCard
-                      title={saga.title}
-                      author={saga.author ?? undefined}
-                      covers={saga.covers}
-                      bookCount={saga.bookCount}
-                      status={(saga.status ?? "pendiente") as ReadingStatus}
-                      isFavorite={saga.is_favorite ?? false}
-                      onClick={() => setSelectedSagaId(saga.id)}
-                    />
-                  </SortableItem>
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={filteredSagas.map((s) => s.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-2 gap-5">
+                  {filteredSagas.map((saga) => (
+                    <SortableItem key={saga.id} id={saga.id}>
+                      <SeriesCard
+                        title={saga.title}
+                        author={saga.author ?? undefined}
+                        covers={saga.covers}
+                        bookCount={saga.bookCount}
+                        status={(saga.status ?? "pendiente") as ReadingStatus}
+                        isFavorite={saga.is_favorite ?? false}
+                        onClick={() => setSelectedSagaId(saga.id)}
+                      />
+                    </SortableItem>
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="grid grid-cols-2 gap-5">
+              {filteredSagas.map((saga) => (
+                <SeriesCard
+                  key={saga.id}
+                  title={saga.title}
+                  author={saga.author ?? undefined}
+                  covers={saga.covers}
+                  bookCount={saga.bookCount}
+                  status={(saga.status ?? "pendiente") as ReadingStatus}
+                  isFavorite={saga.is_favorite ?? false}
+                  onClick={() => setSelectedSagaId(saga.id)}
+                />
+              ))}
+            </div>
+          )
         )}
       </div>
 
-      <div className="pb-10" />
+      <div className="pb-24" />
       <TabBar active="estante" onChange={handleTabBarChange} />
 
       <AddBookModal

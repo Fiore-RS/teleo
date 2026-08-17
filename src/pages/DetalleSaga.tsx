@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ImageOff, Heart, Trash2 } from "lucide-react";
+import { ImageOff, Heart, Trash2, ArrowUpDown } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
 import { DogEar } from "../assets/components/atoms/DogEar";
@@ -163,6 +163,7 @@ export function DetalleSaga({
   } = useSaga(sagaId);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isReorderingBooks, setIsReorderingBooks] = useState(false);
   const [deleteState, setDeleteState] = useState<
     "closed" | "confirm" | "success" | "error"
     >("closed");
@@ -200,6 +201,7 @@ export function DetalleSaga({
       status: (saga.status ?? "pendiente") as ReadingStatus,
     });
     setIsEditing(true);
+    setIsReorderingBooks(false);
   }
 
   async function handleSave() {
@@ -211,6 +213,7 @@ export function DetalleSaga({
       status: draft.status,
     });
     setIsEditing(false);
+    setIsReorderingBooks(false);
   }
 
   async function handleDelete() {
@@ -278,63 +281,126 @@ export function DetalleSaga({
                   Libros agregados
                 </h3>
                 <div className="border-b-6 border-border mt-2 mb-3" />
-                <Button variant="primary" onClick={() => setIsSelectBookOpen(true)}>
-                  Agregar Libro
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button variant="primary" className="flex-1" onClick={() => setIsSelectBookOpen(true)}>
+                    Agregar Libro
+                  </Button>
+                  {books.length > 1 && (
+                    <button
+                      onClick={() => setIsReorderingBooks((v) => !v)}
+                      className="inline-flex items-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface shrink-0"
+                      style={{ backgroundColor: "var(--color-state-pending)" }}
+                    >
+                      <ArrowUpDown size={15} />
+                      {isReorderingBooks ? "Listo" : "Organizar"}
+                    </button>
+                  )}
+                </div>
 
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
-                  <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-3 mt-3">
-                      {books.map((book, i) => {
-                        const { percent, label } = getProgressInfo(book);
-                        return (
-                          <SortableItem key={book.id} id={book.id}>
-                            <div
-                              onClick={() => onOpenBook(book.id)}
-                              className="flex gap-3 bg-bg rounded-2xl p-3 cursor-pointer"
-                            >
-                              <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
-                                {book.cover_url ? (
-                                  <img
-                                    src={book.cover_url}
-                                    alt={book.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <ImageOff size={14} className="text-text-secondary" />
-                                  </div>
-                                )}
-                                <DogEar
-                                  status={book.status as ReadingStatus}
-                                  size={20}
-                                  className="absolute top-0 right-0"
-                                />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-body-sm text-text-secondary">
-                                  Libro {String(i + 1).padStart(2, "0")}
-                                </p>
-                                <p className="text-body-md text-text line-clamp-1">{book.title}</p>
-                                {book.status === "leyendo" ? (
-                                  <div className="mt-1">
-                                    <div className="flex justify-between text-body-sm text-text-secondary">
-                                      {label && <span>{label}</span>}
-                                      <span>{Math.round(percent)}%</span>
+                {isReorderingBooks ? (
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
+                    <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-3 mt-3">
+                        {books.map((book, i) => {
+                          const { percent, label } = getProgressInfo(book);
+                          return (
+                            <SortableItem key={book.id} id={book.id}>
+                              <div
+                                onClick={() => onOpenBook(book.id)}
+                                className="flex gap-3 bg-bg rounded-2xl p-3 cursor-pointer"
+                              >
+                                <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
+                                  {book.cover_url ? (
+                                    <img
+                                      src={book.cover_url}
+                                      alt={book.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <ImageOff size={14} className="text-text-secondary" />
                                     </div>
-                                    <ProgressBar percent={percent} />
-                                  </div>
-                                ) : (
-                                  <Badge status={book.status as ReadingStatus} className="mt-1" />
-                                )}
+                                  )}
+                                  <DogEar
+                                    status={book.status as ReadingStatus}
+                                    size={20}
+                                    className="absolute top-0 right-0"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-body-sm text-text-secondary">
+                                    Libro {String(i + 1).padStart(2, "0")}
+                                  </p>
+                                  <p className="text-body-md text-text line-clamp-1">{book.title}</p>
+                                  {book.status === "leyendo" ? (
+                                    <div className="mt-1">
+                                      <div className="flex justify-between text-body-sm text-text-secondary">
+                                        {label && <span>{label}</span>}
+                                        <span>{Math.round(percent)}%</span>
+                                      </div>
+                                      <ProgressBar percent={percent} />
+                                    </div>
+                                  ) : (
+                                    <Badge status={book.status as ReadingStatus} className="mt-1" />
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </SortableItem>
-                        );
-                      })}
-                    </div>
-                  </SortableContext>
-                </DndContext>
+                            </SortableItem>
+                          );
+                        })}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                ) : (
+                  <div className="space-y-3 mt-3">
+                    {books.map((book, i) => {
+                      const { percent, label } = getProgressInfo(book);
+                      return (
+                        <div
+                          key={book.id}
+                          onClick={() => onOpenBook(book.id)}
+                          className="flex gap-3 bg-bg rounded-2xl p-3 cursor-pointer"
+                        >
+                          <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
+                            {book.cover_url ? (
+                              <img
+                                src={book.cover_url}
+                                alt={book.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <ImageOff size={14} className="text-text-secondary" />
+                              </div>
+                            )}
+                            <DogEar
+                              status={book.status as ReadingStatus}
+                              size={20}
+                              className="absolute top-0 right-0"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-body-sm text-text-secondary">
+                              Libro {String(i + 1).padStart(2, "0")}
+                            </p>
+                            <p className="text-body-md text-text line-clamp-1">{book.title}</p>
+                            {book.status === "leyendo" ? (
+                              <div className="mt-1">
+                                <div className="flex justify-between text-body-sm text-text-secondary">
+                                  {label && <span>{label}</span>}
+                                  <span>{Math.round(percent)}%</span>
+                                </div>
+                                <ProgressBar percent={percent} />
+                              </div>
+                            ) : (
+                              <Badge status={book.status as ReadingStatus} className="mt-1" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 <Button variant="amber" className="mt-5" onClick={startEditing}>
                   Editar Saga
@@ -394,56 +460,111 @@ export function DetalleSaga({
                   Libros agregados
                 </h3>
                 <div className="border-b-6 border-border mt-2 mb-3" />
-                <Button variant="primary" onClick={() => setIsSelectBookOpen(true)}>
-                  Agregar Libro
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button variant="primary" className="flex-1" onClick={() => setIsSelectBookOpen(true)}>
+                    Agregar Libro
+                  </Button>
+                  {books.length > 1 && (
+                    <button
+                      onClick={() => setIsReorderingBooks((v) => !v)}
+                      className="inline-flex items-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface shrink-0"
+                      style={{ backgroundColor: "var(--color-state-pending)" }}
+                    >
+                      <ArrowUpDown size={15} />
+                      {isReorderingBooks ? "Listo" : "Organizar"}
+                    </button>
+                  )}
+                </div>
 
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
-                  <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-3 mt-3">
-                      {books.map((book, i) => (
-                        <SortableItem key={book.id} id={book.id}>
-                          <div className="flex gap-3 items-center bg-bg rounded-2xl p-3">
-                            <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
-                              {book.cover_url ? (
-                                <img
-                                  src={book.cover_url}
-                                  alt={book.title}
-                                  className="w-full h-full object-cover"
+                {isReorderingBooks ? (
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
+                    <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-3 mt-3">
+                        {books.map((book, i) => (
+                          <SortableItem key={book.id} id={book.id}>
+                            <div className="flex gap-3 items-center bg-bg rounded-2xl p-3">
+                              <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
+                                {book.cover_url ? (
+                                  <img
+                                    src={book.cover_url}
+                                    alt={book.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <ImageOff size={14} className="text-text-secondary" />
+                                  </div>
+                                )}
+                                <DogEar
+                                  status={book.status as ReadingStatus}
+                                  size={20}
+                                  className="absolute top-0 right-0"
                                 />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <ImageOff size={14} className="text-text-secondary" />
-                                </div>
-                              )}
-                              <DogEar
-                                status={book.status as ReadingStatus}
-                                size={20}
-                                className="absolute top-0 right-0"
-                              />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-body-sm text-text-secondary">
+                                  Libro {String(i + 1).padStart(2, "0")}
+                                </p>
+                                <p className="text-body-md text-text line-clamp-1">{book.title}</p>
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeBookFromSaga(book.id);
+                                }}
+                                aria-label="Quitar de la saga"
+                                className="text-accent-wishlist shrink-0"
+                              >
+                                <Trash2 size={18} />
+                              </button>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-body-sm text-text-secondary">
-                                Libro {String(i + 1).padStart(2, "0")}
-                              </p>
-                              <p className="text-body-md text-text line-clamp-1">{book.title}</p>
+                          </SortableItem>
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                ) : (
+                  <div className="space-y-3 mt-3">
+                    {books.map((book, i) => (
+                      <div key={book.id} className="flex gap-3 items-center bg-bg rounded-2xl p-3">
+                        <div className="relative w-12 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
+                          {book.cover_url ? (
+                            <img
+                              src={book.cover_url}
+                              alt={book.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageOff size={14} className="text-text-secondary" />
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeBookFromSaga(book.id);
-                              }}
-                              aria-label="Quitar de la saga"
-                              className="text-accent-wishlist shrink-0"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </SortableItem>
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
+                          )}
+                          <DogEar
+                            status={book.status as ReadingStatus}
+                            size={20}
+                            className="absolute top-0 right-0"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-body-sm text-text-secondary">
+                            Libro {String(i + 1).padStart(2, "0")}
+                          </p>
+                          <p className="text-body-md text-text line-clamp-1">{book.title}</p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeBookFromSaga(book.id);
+                          }}
+                          aria-label="Quitar de la saga"
+                          className="text-accent-wishlist shrink-0"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex gap-3 mt-5">
                   <Button variant="outline" onClick={() => setDeleteState("confirm")}>
