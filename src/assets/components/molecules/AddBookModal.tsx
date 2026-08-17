@@ -14,6 +14,7 @@ const statusOptions: { value: ReadingStatus; label: string }[] = [
   { value: 'leyendo', label: 'Leyendo' },
   { value: 'terminado', label: 'Terminado' },
   { value: 'abandonado', label: 'Abandonado' },
+  { value: 'deseado', label: 'Deseado' },
 ]
 
 interface AddBookModalProps {
