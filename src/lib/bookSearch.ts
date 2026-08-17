@@ -36,14 +36,15 @@ interface GoogleVolume {
 }
 
 /** Google Books devuelve por defecto una miniatura chica (~128px) con un efecto de "página curvada".
- *  Acá pedimos la versión de mayor resolución disponible y le quitamos ese efecto. */
+ *  Acá pedimos la versión de mayor resolución disponible y le quitamos ese efecto.
+ *  Nota: NO forzamos el parámetro zoom, porque pedir un nivel de zoom que Google no tiene
+ *  escaneado para ese libro en particular hace que la imagen falle ("no disponible"). */
 function bestCoverUrl(imageLinks?: GoogleImageLinks): string | undefined {
   const raw = imageLinks?.extraLarge ?? imageLinks?.large ?? imageLinks?.medium ?? imageLinks?.small ?? imageLinks?.thumbnail
   if (!raw) return undefined
   return raw
     .replace('http://', 'https://')
     .replace(/&edge=curl/, '')
-    .replace(/zoom=\d/, 'zoom=3')
 }
 
 function mapGoogleVolume(volume: GoogleVolume, fallbackIsbn?: string): BookSearchResult {
