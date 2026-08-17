@@ -39,7 +39,7 @@ export function BookCard({
         )}
       </div>
 
-      <p className="mt-2 text-body-md font-body text-text line-clamp-1">{title}</p>
+      <p className="mt-2 text-body-md font-body text-text line-clamp-2">{title}</p>
       {author && (
         <p className="text-body-sm font-body text-text-secondary line-clamp-1">{author}</p>
       )}
