@@ -15,6 +15,14 @@ function withKey(url: string): string {
   return API_KEY ? `${url}&key=${API_KEY}` : url
 }
 
+interface GoogleImageLinks {
+  thumbnail?: string
+  small?: string
+  medium?: string
+  large?: string
+  extraLarge?: string
+}
+
 interface GoogleVolume {
   volumeInfo?: {
     title?: string
@@ -22,9 +30,20 @@ interface GoogleVolume {
     pageCount?: number
     language?: string
     categories?: string[]
-    imageLinks?: { thumbnail?: string }
+    imageLinks?: GoogleImageLinks
     industryIdentifiers?: { type: string; identifier: string }[]
   }
+}
+
+/** Google Books devuelve por defecto una miniatura chica (~128px) con un efecto de "página curvada".
+ *  Acá pedimos la versión de mayor resolución disponible y le quitamos ese efecto. */
+function bestCoverUrl(imageLinks?: GoogleImageLinks): string | undefined {
+  const raw = imageLinks?.extraLarge ?? imageLinks?.large ?? imageLinks?.medium ?? imageLinks?.small ?? imageLinks?.thumbnail
+  if (!raw) return undefined
+  return raw
+    .replace('http://', 'https://')
+    .replace(/&edge=curl/, '')
+    .replace(/zoom=\d/, 'zoom=3')
 }
 
 function mapGoogleVolume(volume: GoogleVolume, fallbackIsbn?: string): BookSearchResult {
@@ -34,7 +53,7 @@ function mapGoogleVolume(volume: GoogleVolume, fallbackIsbn?: string): BookSearc
   return {
     title: info.title ?? 'Título desconocido',
     author: info.authors?.join(', '),
-    coverUrl: info.imageLinks?.thumbnail?.replace('http://', 'https://'),
+    coverUrl: bestCoverUrl(info.imageLinks),
     totalPages: info.pageCount,
     language: info.language,
     category: info.categories?.[0],
@@ -69,7 +88,7 @@ export async function searchBookByIsbn(isbn: string): Promise<BookSearchResult |
   return {
     title: entry.title ?? 'Título desconocido',
     author: entry.authors?.map((a: { name: string }) => a.name).join(', '),
-    coverUrl: entry.cover?.medium,
+    coverUrl: entry.cover?.large ?? entry.cover?.medium,
     totalPages: entry.number_of_pages,
     isbn,
   }
