@@ -40,7 +40,6 @@ export function Cuaderno() {
 
         <Button variant="primary" onClick={() => setIsPickerOpen(true)}>Agregar Reseña Nueva</Button>
 
-        {isLoading && <p className="text-body-md text-text-secondary text-center">Cargando...</p>}
         {!isLoading && filtered.length === 0 && (
           <p className="text-body-md text-text-secondary text-center">Aún no tienes reseñas escritas.</p>
         )}

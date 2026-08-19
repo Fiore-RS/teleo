@@ -1,15 +1,17 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowUpDown } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowUpDown, SlidersHorizontal, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { SearchBar } from "../assets/components/molecules/SearchBar";
 import { SegmentedTabs } from "../assets/components/atoms/SegmentedTabs";
+import { FilterBar } from "../assets/components/molecules/FilterBar";
 import {
-  FilterBar,
-  type FilterValue,
-} from "../assets/components/molecules/FilterBar";
+  FilterModal,
+  defaultAdvancedFilters,
+  type AdvancedFilters,
+} from "../assets/components/molecules/FilterModal";
 import { Button } from "../assets/components/atoms/Button";
 import { BookCard } from "../assets/components/molecules/BookCard";
 import { SeriesCard } from "../assets/components/molecules/SeriesCard";
@@ -40,6 +42,7 @@ type LibraryTab = "libros" | "sagas";
 
 export function Estante() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const {
     books,
@@ -56,7 +59,9 @@ export function Estante() {
   } = useLibrarySagas(user?.id);
 
   const [tab, setTab] = useState<LibraryTab>("libros");
-  const [filter, setFilter] = useState<FilterValue>("todos");
+  const [advFilters, setAdvFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
+  const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | null>(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -64,32 +69,62 @@ export function Estante() {
   const [isAddSagaOpen, setIsAddSagaOpen] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
 
+  // Soporta llegar desde "Ver todos" en Perfil con un filtro ya activado,
+  // ej. /estante?filtro=deseado o /estante?filtro=favoritos
+  useEffect(() => {
+    const filtro = searchParams.get("filtro");
+    if (!filtro) return;
+
+    setTab("libros");
+    if (filtro === "favoritos" || filtro === "recomendados") {
+      setQuickFlag(filtro);
+      setAdvFilters(defaultAdvancedFilters);
+    } else {
+      setQuickFlag(null);
+      setAdvFilters({ ...defaultAdvancedFilters, status: filtro as AdvancedFilters["status"] });
+    }
+    setSearchParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
+  const hasActiveAdvFilters =
+    advFilters.language !== "todos" || advFilters.category !== "todos" || advFilters.format !== "todos";
+
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
-      const matchesFilter = filter === "todos" || book.status === filter;
+      const matchesFilter = advFilters.status === "todos" || book.status === advFilters.status;
+      const matchesLanguage =
+        advFilters.language === "todos" || (book.language ?? "").toLowerCase() === advFilters.language;
+      const matchesCategory = advFilters.category === "todos" || book.category === advFilters.category;
+      const matchesFormat = advFilters.format === "todos" || book.format === advFilters.format;
+      const matchesQuickFlag =
+        !quickFlag || (quickFlag === "favoritos" ? book.is_favorite : book.is_recommended);
       const matchesSearch =
         !search.trim() ||
         book.title.toLowerCase().includes(search.toLowerCase()) ||
         (book.author ?? "").toLowerCase().includes(search.toLowerCase());
-      return matchesFilter && matchesSearch;
+      return (
+        matchesFilter && matchesLanguage && matchesCategory && matchesFormat && matchesQuickFlag && matchesSearch
+      );
     });
-  }, [books, filter, search]);
+  }, [books, advFilters, quickFlag, search]);
 
   const filteredSagas = useMemo(() => {
     return sagas.filter((saga) => {
-      const matchesFilter = filter === "todos" || saga.status === filter;
+      const matchesFilter = advFilters.status === "todos" || saga.status === advFilters.status;
+      const matchesCategory = advFilters.category === "todos" || saga.category === advFilters.category;
       const matchesSearch =
         !search.trim() ||
         saga.title.toLowerCase().includes(search.toLowerCase()) ||
         (saga.author ?? "").toLowerCase().includes(search.toLowerCase());
-      return matchesFilter && matchesSearch;
+      return matchesFilter && matchesCategory && matchesSearch;
     });
-  }, [sagas, filter, search]);
+  }, [sagas, advFilters, search]);
 
   function handleTabBarChange(t: TabKey) {
     navigate(`/${t}`);
@@ -97,7 +132,8 @@ export function Estante() {
 
   function handleTabSwitch(newTab: LibraryTab) {
     setTab(newTab);
-    setFilter("todos");
+    setAdvFilters(defaultAdvancedFilters);
+    setQuickFlag(null);
     setIsReordering(false);
   }
 
@@ -151,7 +187,40 @@ export function Estante() {
           ]}
         />
 
-        <FilterBar value={filter} onChange={setFilter} />
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <FilterBar
+              value={advFilters.status}
+              onChange={(status) => {
+                setAdvFilters((prev) => ({ ...prev, status }));
+                setQuickFlag(null);
+              }}
+            />
+          </div>
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            aria-label="Filtros"
+            className="relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-body-sm font-body text-surface shrink-0"
+            style={{ backgroundColor: "var(--color-accent-wishlist)" }}
+          >
+            <SlidersHorizontal size={15} />
+            Filtros
+            {hasActiveAdvFilters && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-accent-reading border-2 border-bg" />
+            )}
+          </button>
+        </div>
+
+        {quickFlag && (
+          <div className="flex items-center justify-between bg-bg border border-border rounded-xl px-4 py-2">
+            <span className="text-body-sm text-text">
+              Mostrando: {quickFlag === "favoritos" ? "Favoritos" : "Recomendados"}
+            </span>
+            <button onClick={() => setQuickFlag(null)} aria-label="Quitar filtro" className="text-text-secondary">
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <Button
@@ -175,12 +244,6 @@ export function Estante() {
             </button>
           )}
         </div>
-
-        {isLoading && (
-          <p className="text-body-md text-text-secondary text-center">
-            Cargando...
-          </p>
-        )}
 
         {!isLoading && tab === "libros" && filteredBooks.length === 0 && (
           <p className="text-body-md text-text-secondary text-center">
@@ -328,6 +391,17 @@ export function Estante() {
         onAdded={(newSagaId) => {
           refetchSagas();
           setSelectedSagaId(newSagaId);
+        }}
+      />
+
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        tab={tab}
+        value={advFilters}
+        onApply={(filters) => {
+          setAdvFilters(filters);
+          setQuickFlag(null);
         }}
       />
     </div>

@@ -88,9 +88,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={onClose}>
       <div className="w-full max-w-sm bg-surface rounded-3xl p-6 max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        {isLoading || !book ? (
-          <p className="text-center text-text-secondary py-10">Cargando...</p>
-        ) : (
+        {isLoading || !book ? null : (
           <>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display italic text-display-md text-accent-wishlist">Reseña final</h2>

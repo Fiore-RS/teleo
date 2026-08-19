@@ -56,7 +56,7 @@ interface ProfileViewProps {
   wishlist?: Book[]
 
   onBookClick?: (bookId: string) => void
-  onSeeAllBooks?: () => void
+  onSeeAllBooks?: (list: 'leyendo' | 'favoritos' | 'recomendados' | 'deseado') => void
 
   footer?: ReactNode
 }
@@ -199,19 +199,39 @@ export function ProfileView({
         )}
 
         {showCurrentlyReading && (
-          <ProfileBookShelf title="Leyendo ahora" books={currentlyReading} onBookClick={onBookClick} onSeeAll={onSeeAllBooks} />
+          <ProfileBookShelf
+            title="Leyendo ahora"
+            books={currentlyReading}
+            onBookClick={onBookClick}
+            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('leyendo') : undefined}
+          />
         )}
 
         {showFavorites && (
-          <ProfileBookShelf title="Favoritos" books={favorites} onBookClick={onBookClick} onSeeAll={onSeeAllBooks} />
+          <ProfileBookShelf
+            title="Favoritos"
+            books={favorites}
+            onBookClick={onBookClick}
+            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('favoritos') : undefined}
+          />
         )}
 
         {showRecommended && (
-          <ProfileBookShelf title="Recomendados" books={recommended} onBookClick={onBookClick} onSeeAll={onSeeAllBooks} />
+          <ProfileBookShelf
+            title="Recomendados"
+            books={recommended}
+            onBookClick={onBookClick}
+            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('recomendados') : undefined}
+          />
         )}
 
         {showWishlist && (
-          <ProfileBookShelf title="Lista de deseados" books={wishlist} onBookClick={onBookClick} onSeeAll={onSeeAllBooks} />
+          <ProfileBookShelf
+            title="Lista de deseados"
+            books={wishlist}
+            onBookClick={onBookClick}
+            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('deseado') : undefined}
+          />
         )}
       </div>
 

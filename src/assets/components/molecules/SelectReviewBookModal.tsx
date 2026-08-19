@@ -26,7 +26,6 @@ export function SelectReviewBookModal({ isOpen, onClose, userId, onSelect }: Sel
     <Modal isOpen={isOpen} onClose={onClose} title="Elige un libro para reseñar">
       <Input placeholder="Buscar en tus libros terminados..." value={search} onChange={(e) => setSearch(e.target.value)} />
       <div className="space-y-2 mt-4 max-h-96 overflow-y-auto">
-        {isLoading && <p className="text-body-md text-text-secondary text-center py-4">Cargando...</p>}
         {!isLoading && filtered.length === 0 && (
           <p className="text-body-md text-text-secondary text-center py-4">
             No tienes libros terminados sin reseña todavía.

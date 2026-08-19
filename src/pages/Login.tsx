@@ -18,11 +18,10 @@ export function Login() {
     setError(null)
     setIsLoading(true)
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-
-    setIsLoading(false)
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
     if (signInError) {
+      setIsLoading(false)
       setError(
         signInError.message.includes('Email not confirmed')
           ? 'Confirma tu correo antes de iniciar sesión.'
@@ -31,7 +30,19 @@ export function Login() {
       return
     }
 
-    navigate('/mesa', { replace: true })
+    let hasSeenIntro = true
+    const userId = signInData.user?.id
+    if (userId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('has_seen_intro')
+        .eq('id', userId)
+        .single()
+      hasSeenIntro = profile?.has_seen_intro ?? false
+    }
+
+    setIsLoading(false)
+    navigate(hasSeenIntro ? '/mesa' : '/bienvenida', { replace: true })
   }
 
   return (

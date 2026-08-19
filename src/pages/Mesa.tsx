@@ -36,9 +36,6 @@ export function Mesa() {
       <section className="mt-4">
         <SectionHeader title="Leyendo ahora" variant="title" />
         <div className="space-y-3 mt-3">
-          {booksLoading && (
-            <p className="text-body-md text-text-secondary">Cargando...</p>
-          )}
           {!booksLoading && books.length === 0 && (
             <p className="text-body-md text-text-secondary">
               No tienes libros en progreso todavía.

@@ -95,11 +95,69 @@ export async function searchBookByIsbn(isbn: string): Promise<BookSearchResult |
   }
 }
 
+interface OpenLibraryDoc {
+  title?: string
+  author_name?: string[]
+  cover_i?: number
+  number_of_pages_median?: number
+  language?: string[]
+  isbn?: string[]
+}
+
+const OL_LANGUAGE_CODES: Record<string, string> = {
+  spa: 'es', eng: 'en', fre: 'fr', fra: 'fr', ger: 'de', por: 'pt', ita: 'it',
+}
+
+function mapOpenLibraryDoc(doc: OpenLibraryDoc): BookSearchResult {
+  return {
+    title: doc.title ?? 'Título desconocido',
+    author: doc.author_name?.join(', '),
+    coverUrl: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg` : undefined,
+    totalPages: doc.number_of_pages_median,
+    language: doc.language?.[0] ? (OL_LANGUAGE_CODES[doc.language[0]] ?? doc.language[0]) : undefined,
+    isbn: doc.isbn?.[0],
+  }
+}
+
+/** Busca en Google Books y, si no alcanza el número de resultados pedido (algunos libros —
+ *  sobre todo ediciones en español, cómics/manga o títulos menos conocidos — no aparecen ahí),
+ *  completa con Open Library para ampliar las posibilidades de encontrar el libro. */
 export async function searchBooksByQueryMultiple(query: string, maxResults = 3): Promise<BookSearchResult[]> {
-  const url = withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=${maxResults}`)
-  const res = await fetch(url)
-  if (!res.ok) return []
-  const data = await res.json()
-  const items: GoogleVolume[] = data.items ?? []
-  return items.map((item) => mapGoogleVolume(item))
+  const results: BookSearchResult[] = []
+
+  try {
+    const url = withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=${maxResults}`)
+    const res = await fetch(url)
+    if (res.ok) {
+      const data = await res.json()
+      const items: GoogleVolume[] = data.items ?? []
+      results.push(...items.map((item) => mapGoogleVolume(item)))
+    }
+  } catch {
+    // seguimos con Open Library aunque Google Books falle
+  }
+
+  if (results.length < maxResults) {
+    try {
+      const olRes = await fetch(
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${maxResults}&fields=title,author_name,cover_i,number_of_pages_median,language,isbn`
+      )
+      if (olRes.ok) {
+        const olData = await olRes.json()
+        const docs: OpenLibraryDoc[] = olData.docs ?? []
+        const existingTitles = new Set(results.map((r) => r.title.toLowerCase()))
+        for (const doc of docs) {
+          if (results.length >= maxResults) break
+          const mapped = mapOpenLibraryDoc(doc)
+          if (existingTitles.has(mapped.title.toLowerCase())) continue
+          results.push(mapped)
+          existingTitles.add(mapped.title.toLowerCase())
+        }
+      }
+    } catch {
+      // si también falla Open Library, devolvemos lo que sí encontramos
+    }
+  }
+
+  return results
 }

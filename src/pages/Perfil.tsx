@@ -69,7 +69,7 @@ export function Perfil() {
         showWishlist={profile?.show_wishlist}
         wishlist={wishlist}
         onBookClick={(id) => setSelectedBookId(id)}
-        onSeeAllBooks={() => navigate('/estante')}
+        onSeeAllBooks={(list) => navigate(`/estante?filtro=${list}`)}
         footer={
           <>
             <div className="pb-24" />

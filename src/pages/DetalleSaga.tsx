@@ -174,6 +174,7 @@ export function DetalleSaga({
     author: string;
     category: string;
     status: ReadingStatus;
+    totalBooks: string;
   } | null>(null);
 
   const sensors = useSensors(
@@ -200,6 +201,7 @@ export function DetalleSaga({
       author: saga.author ?? "",
       category: saga.category ?? "Novela",
       status: (saga.status ?? "pendiente") as ReadingStatus,
+      totalBooks: saga.total_books ? String(saga.total_books) : "",
     });
     setIsEditing(true);
     setIsReorderingBooks(false);
@@ -212,6 +214,7 @@ export function DetalleSaga({
       author: draft.author || null,
       category: draft.category,
       status: draft.status,
+      total_books: draft.totalBooks ? parseInt(draft.totalBooks, 10) : null,
     });
     setIsEditing(false);
     setIsReorderingBooks(false);
@@ -237,9 +240,7 @@ export function DetalleSaga({
         className="w-full max-w-sm bg-surface rounded-3xl p-6 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {!saga ? (
-          <p className="text-center text-text-secondary py-10">Cargando...</p>
-        ) : (
+        {!saga ? null : (
           <>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display italic text-display-md text-accent-wishlist">
@@ -263,12 +264,19 @@ export function DetalleSaga({
                   <div>
                     <p className="text-body-md text-text-secondary">{saga.author}</p>
                     <p className="text-body-sm text-text-secondary">
-                      {books.length} de {books.length} libros
+                      {saga.total_books
+                        ? `${books.length} de ${saga.total_books} libros`
+                        : `${books.length} libro${books.length === 1 ? "" : "s"}`}
                     </p>
                   </div>
                   <Badge status={(saga.status ?? "pendiente") as ReadingStatus} />
                 </div>
                 {saga.category && <p className="text-body-md text-text mt-2">{saga.category}</p>}
+                {saga.total_books ? (
+                  <div className="mt-3">
+                    <ProgressBar percent={Math.min(100, (books.length / saga.total_books) * 100)} />
+                  </div>
+                ) : null}
 
                 <SagaStackPreview
                   bookCount={books.length}
@@ -448,6 +456,20 @@ export function DetalleSaga({
                     />
                   </div>
                 </div>
+
+                <label className="text-body-sm text-text-secondary block mb-1 mt-4">
+                  Cantidad total de libros de la saga
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  placeholder={`Ej. ${Math.max(books.length, 1)}`}
+                  value={draft.totalBooks}
+                  onChange={(e) => setDraft({ ...draft, totalBooks: e.target.value })}
+                />
+                <p className="text-body-sm text-text-secondary mt-1">
+                  Déjalo vacío si todavía no sabes cuántos libros tendrá.
+                </p>
 
                 <label className="text-body-sm text-text-secondary block mb-1 mt-4">
                   Marcar como favorito

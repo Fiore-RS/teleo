@@ -14,13 +14,25 @@ export function LoadingScreen() {
 
     async function checkSession() {
       const { data } = await supabase.auth.getSession()
+      const userId = data.session?.user.id
+
+      let hasSeenIntro = true
+      if (userId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('has_seen_intro')
+          .eq('id', userId)
+          .single()
+        hasSeenIntro = profile?.has_seen_intro ?? false
+      }
+
       const elapsed = Date.now() - start
       const remaining = Math.max(0, MIN_SPLASH_MS - elapsed)
 
       setTimeout(() => {
         if (!isMounted) return
         if (data.session) {
-          navigate('/mesa', { replace: true })
+          navigate(hasSeenIntro ? '/mesa' : '/bienvenida', { replace: true })
         } else {
           navigate('/inicio', { replace: true })
         }

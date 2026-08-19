@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { ScanBarcode, Search, ImageOff } from 'lucide-react'
+import { ScanBarcode, Search, ImageOff, PenLine } from 'lucide-react'
 import { Modal } from '../atoms/Modal'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
 import { CoverImage } from '../atoms/CoverImage'
+import { SegmentedTabs } from '../atoms/SegmentedTabs'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
 import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 import type { ReadingStatus } from '../../../lib/status'
+import { categoryOptions, languageOptions, formatOptions, type BookFormat } from '../../../lib/options'
 
 const statusOptions: { value: ReadingStatus; label: string }[] = [
   { value: 'pendiente', label: 'Pendiente' },
@@ -17,16 +19,36 @@ const statusOptions: { value: ReadingStatus; label: string }[] = [
   { value: 'deseado', label: 'Deseado' },
 ]
 
+interface NewBookPayload {
+  title: string; author: string | null; cover_url: string | null
+  total_pages: number | null; language: string | null; category: string | null
+  isbn: string | null; format?: BookFormat | null; status: ReadingStatus; saga_id?: string
+}
+
 interface AddBookModalProps {
   isOpen: boolean
   onClose: () => void
   sagaId?: string
   initialStatus?: 'pendiente' | 'deseado'
-  onAdd: (book: {
-    title: string; author: string | null; cover_url: string | null
-    total_pages: number | null; language: string | null; category: string | null
-    isbn: string | null; status: ReadingStatus; saga_id?: string
-  }) => Promise<{ error: unknown }>
+  onAdd: (book: NewBookPayload) => Promise<{ error: unknown }>
+}
+
+interface ManualDraft {
+  title: string
+  author: string
+  category: string
+  language: string
+  format: BookFormat
+  totalPages: string
+  isbn: string
+  status: ReadingStatus
+}
+
+function emptyManualDraft(status: ReadingStatus): ManualDraft {
+  return {
+    title: '', author: '', category: 'Novela', language: 'es',
+    format: 'fisico', totalPages: '', isbn: '', status,
+  }
 }
 
 export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendiente', onAdd }: AddBookModalProps) {
@@ -38,6 +60,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<ReadingStatus>(initialStatus)
+  const [isManual, setIsManual] = useState(false)
+  const [manualDraft, setManualDraft] = useState<ManualDraft>(emptyManualDraft(initialStatus))
 
   const canPickStatus = initialStatus !== 'deseado'
 
@@ -48,6 +72,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
     setNotFound(false)
     setIsSearching(false)
     setStatus(initialStatus)
+    setIsManual(false)
+    setManualDraft(emptyManualDraft(initialStatus))
   }
 
   function handleClose() {
@@ -92,12 +118,122 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
     if (!error) handleClose()
   }
 
+  async function handleManualCreate() {
+    if (!manualDraft.title.trim()) return
+    setIsSaving(true)
+    const { error } = await onAdd({
+      title: manualDraft.title.trim(),
+      author: manualDraft.author.trim() || null,
+      cover_url: null,
+      total_pages: manualDraft.totalPages ? parseInt(manualDraft.totalPages, 10) : null,
+      language: manualDraft.language || null,
+      category: manualDraft.category || null,
+      isbn: manualDraft.isbn.trim() || null,
+      format: manualDraft.format,
+      status: canPickStatus ? manualDraft.status : initialStatus,
+      saga_id: sagaId,
+    })
+    setIsSaving(false)
+    if (!error) handleClose()
+  }
+
   const showResultsList = results.length > 0 && !result
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={handleClose} title="Nuevo libro para el estante">
-        {!result && !showResultsList ? (
+      <Modal isOpen={isOpen} onClose={handleClose} title={isManual ? 'Crear libro desde cero' : 'Nuevo libro para el estante'}>
+        {isManual ? (
+          <div className="space-y-4">
+            <div>
+              <label className="text-body-sm text-text-secondary block mb-1">Título</label>
+              <Input
+                placeholder="Título del libro"
+                value={manualDraft.title}
+                onChange={(e) => setManualDraft({ ...manualDraft, title: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="text-body-sm text-text-secondary block mb-1">Autor</label>
+              <Input
+                placeholder="Autor del libro"
+                value={manualDraft.author}
+                onChange={(e) => setManualDraft({ ...manualDraft, author: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="text-body-sm text-text-secondary block mb-1">Formato</label>
+              <SegmentedTabs
+                options={formatOptions}
+                active={manualDraft.format}
+                onChange={(format) => setManualDraft({ ...manualDraft, format })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
+                <Select
+                  options={categoryOptions}
+                  value={manualDraft.category}
+                  onChange={(e) => setManualDraft({ ...manualDraft, category: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-body-sm text-text-secondary block mb-1">Idioma</label>
+                <Select
+                  options={languageOptions}
+                  value={manualDraft.language}
+                  onChange={(e) => setManualDraft({ ...manualDraft, language: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-body-sm text-text-secondary block mb-1">Páginas</label>
+                <Input
+                  type="number"
+                  placeholder="000"
+                  value={manualDraft.totalPages}
+                  onChange={(e) => setManualDraft({ ...manualDraft, totalPages: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-body-sm text-text-secondary block mb-1">ISBN (opcional)</label>
+                <Input
+                  placeholder="ISBN"
+                  value={manualDraft.isbn}
+                  onChange={(e) => setManualDraft({ ...manualDraft, isbn: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {canPickStatus && (
+              <div>
+                <label className="text-body-sm text-text-secondary block mb-1">Estado de lectura</label>
+                <Select
+                  options={statusOptions}
+                  value={manualDraft.status}
+                  onChange={(e) => setManualDraft({ ...manualDraft, status: e.target.value as ReadingStatus })}
+                />
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-2">
+              <Button variant="outline" onClick={() => setIsManual(false)}>Volver</Button>
+              <Button
+                variant="primary"
+                onClick={handleManualCreate}
+                isLoading={isSaving}
+                disabled={!manualDraft.title.trim()}
+              >
+                Crear Libro
+              </Button>
+            </div>
+          </div>
+        ) : !result && !showResultsList ? (
           <div className="space-y-4">
             <p className="text-body-md text-text-secondary">
               Busca un libro o escanea su código de barras para agregarlo a tu colección.
@@ -114,6 +250,15 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
+              <Button
+                variant="primary"
+                className="mt-2 flex items-center justify-center gap-2"
+                onClick={handleSearch}
+                disabled={!query.trim()}
+              >
+                <Search size={18} />
+                Buscar
+              </Button>
             </div>
 
             <p className="text-center text-body-sm text-text-secondary">ó</p>
@@ -121,7 +266,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
             <div>
               <label className="text-body-sm text-text-secondary block mb-1">Escaneo rápido</label>
               <Button
-                variant="primary"
+                variant="slate"
                 onClick={() => setIsScannerOpen(true)}
                 className="flex items-center justify-center gap-2"
               >
@@ -139,6 +284,15 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
                 No encontramos ese libro. Intenta con otro título o el ISBN exacto.
               </p>
             )}
+
+            <button
+              type="button"
+              onClick={() => setIsManual(true)}
+              className="w-full flex items-center justify-center gap-2 text-body-sm text-text-secondary underline underline-offset-2"
+            >
+              <PenLine size={14} />
+              ¿No lo encuentras? Créalo desde cero
+            </button>
           </div>
         ) : showResultsList ? (
           <div>

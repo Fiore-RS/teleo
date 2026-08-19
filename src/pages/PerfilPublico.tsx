@@ -13,7 +13,7 @@ export function PerfilPublico() {
   const { currentlyReading, favorites, recommended, wishlist } = useProfileLists(profile?.id)
 
   if (isLoading) {
-    return <div className="min-h-screen bg-bg flex items-center justify-center text-text-secondary">Cargando...</div>
+    return <div className="min-h-screen bg-bg" />
   }
 
   if (notFound || !profile) {
