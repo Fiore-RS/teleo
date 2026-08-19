@@ -296,7 +296,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         ) : !result && !showResultsList ? (
           <div className="space-y-4">
             <p className="text-body-md text-text-secondary">
-              Busca un libro o escanea su código de barras para agregarlo a tu colección.
+              Busca un libro para agregarlo a tu colección.
             </p>
 
             <div>
@@ -327,14 +327,14 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
               <label className="text-body-sm text-text-secondary block mb-1">Escaneo rápido</label>
               <Button
                 variant="slate"
-                onClick={() => setIsScannerOpen(true)}
+                disabled
                 className="flex items-center justify-center gap-2"
               >
                 <ScanBarcode size={18} />
                 Escanear código de barras
               </Button>
               <p className="text-body-sm text-text-secondary mt-2">
-                Abre la cámara para detectar el ISBN automáticamente.
+                Esta opción estará disponible próximamente.
               </p>
             </div>
 
