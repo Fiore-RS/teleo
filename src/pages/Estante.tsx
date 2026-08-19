@@ -6,7 +6,6 @@ import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { SearchBar } from "../assets/components/molecules/SearchBar";
 import { SegmentedTabs } from "../assets/components/atoms/SegmentedTabs";
-import { FilterBar } from "../assets/components/molecules/FilterBar";
 import {
   FilterModal,
   defaultAdvancedFilters,
@@ -93,7 +92,10 @@ export function Estante() {
   );
 
   const hasActiveAdvFilters =
-    advFilters.language !== "todos" || advFilters.category !== "todos" || advFilters.format !== "todos";
+    advFilters.status !== "todos" ||
+    advFilters.language !== "todos" ||
+    advFilters.category !== "todos" ||
+    advFilters.format !== "todos";
 
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
@@ -187,30 +189,6 @@ export function Estante() {
           ]}
         />
 
-        <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <FilterBar
-              value={advFilters.status}
-              onChange={(status) => {
-                setAdvFilters((prev) => ({ ...prev, status }));
-                setQuickFlag(null);
-              }}
-            />
-          </div>
-          <button
-            onClick={() => setIsFilterModalOpen(true)}
-            aria-label="Filtros"
-            className="relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-body-sm font-body text-surface shrink-0"
-            style={{ backgroundColor: "var(--color-accent-wishlist)" }}
-          >
-            <SlidersHorizontal size={15} />
-            Filtros
-            {hasActiveAdvFilters && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-accent-reading border-2 border-bg" />
-            )}
-          </button>
-        </div>
-
         {quickFlag && (
           <div className="flex items-center justify-between bg-bg border border-border rounded-xl px-4 py-2">
             <span className="text-body-sm text-text">
@@ -222,27 +200,37 @@ export function Estante() {
           </div>
         )}
 
-        <div className="flex items-center gap-3">
-          <Button
-            variant="primary"
-            className="flex-1"
-            onClick={() =>
-              tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true)
-            }
-          >
-            {tab === "libros" ? "Agregar Libro Nuevo" : "Agregar Saga Nueva"}
-          </Button>
+        <Button
+          variant="primary"
+          onClick={() =>
+            tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true)
+          }
+        >
+          {tab === "libros" ? "Agregar Libro Nuevo" : "Agregar Saga Nueva"}
+        </Button>
 
-          {((tab === "libros" && filteredBooks.length > 1) || (tab === "sagas" && filteredSagas.length > 1)) && (
-            <button
-              onClick={() => setIsReordering((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface shrink-0"
-              style={{ backgroundColor: "var(--color-state-pending)" }}
-            >
-              <ArrowUpDown size={15} />
-              {isReordering ? "Listo" : "Organizar"}
-            </button>
-          )}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            aria-label="Filtros"
+            className="relative flex-1 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface"
+            style={{ backgroundColor: "var(--color-state-pending)" }}
+          >
+            <SlidersHorizontal size={15} />
+            Filtros
+            {hasActiveAdvFilters && (
+              <span className="absolute top-1.5 right-3 w-2.5 h-2.5 rounded-full bg-accent-reading border-2 border-bg" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setIsReordering((v) => !v)}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface"
+            style={{ backgroundColor: "var(--color-state-pending)" }}
+          >
+            <ArrowUpDown size={15} />
+            {isReordering ? "Listo" : "Organizar"}
+          </button>
         </div>
 
         {!isLoading && tab === "libros" && filteredBooks.length === 0 && (
