@@ -17,7 +17,25 @@ export function useLibraryBooks(userId: string | undefined) {
       .select('*')
       .eq('user_id', userId)
       .order('estante_sort_order', { ascending: true })
-    setBooks(data ?? [])
+      .order('created_at', { ascending: true })
+
+    const rows = data ?? []
+
+    // Auto-reparación: libros importados desde una copia de seguridad (useDataImport) u
+    // otras rutas que no fijen estante_sort_order pueden quedar en null, lo que rompe el
+    // cálculo de posición al reordenar en Estante. Postgres ya los ordena al final (NULLS
+    // LAST), así que apenas detectamos alguno sin orden le asignamos uno válido y consecutivo.
+    const missingOrder = rows.filter((b) => b.estante_sort_order === null)
+    if (missingOrder.length > 0) {
+      let nextOrder = rows.reduce((max, b) => Math.max(max, b.estante_sort_order ?? 0), 0) + 1000
+      for (const book of missingOrder) {
+        book.estante_sort_order = nextOrder
+        await supabase.from('books').update({ estante_sort_order: nextOrder }).eq('id', book.id)
+        nextOrder += 1000
+      }
+    }
+
+    setBooks(rows)
     setIsLoading(false)
   }, [userId])
 

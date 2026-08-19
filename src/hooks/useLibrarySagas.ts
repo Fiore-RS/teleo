@@ -19,9 +19,28 @@ export function useLibrarySagas(userId: string | undefined) {
       .select('*')
       .eq('user_id', userId)
       .order('estante_sort_order', { ascending: true })
+      .order('created_at', { ascending: true })
+
+    const rows = sagaRows ?? []
+
+    // Auto-reparación: sagas creadas antes de este fix (o restauradas desde una copia de
+    // seguridad importada) pueden haber quedado con estante_sort_order null. Con varias
+    // sagas en null el cálculo de posición al reordenar no tiene de dónde partir y el
+    // drag and drop se siente roto (ej. solo deja mover en una dirección). Postgres ya las
+    // ordena al final (NULLS LAST), así que apenas detectamos alguna sin orden le asignamos
+    // uno válido y consecutivo — sin esperar a que se aplique una migración manual.
+    const missingOrder = rows.filter((s) => s.estante_sort_order === null)
+    if (missingOrder.length > 0) {
+      let nextOrder = rows.reduce((max, s) => Math.max(max, s.estante_sort_order ?? 0), 0) + 1000
+      for (const saga of missingOrder) {
+        saga.estante_sort_order = nextOrder
+        await supabase.from('sagas').update({ estante_sort_order: nextOrder }).eq('id', saga.id)
+        nextOrder += 1000
+      }
+    }
 
     const withCovers = await Promise.all(
-      (sagaRows ?? []).map(async (saga) => {
+      rows.map(async (saga) => {
         const [{ data: books }, { count }] = await Promise.all([
           supabase
             .from('books')

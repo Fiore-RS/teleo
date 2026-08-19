@@ -48,9 +48,10 @@ export function useDataImport(userId: string | undefined) {
       const sagaIdMap = new Map<string, string>()
       const importedSagas = parsed.sagas ?? []
       if (importedSagas.length > 0) {
-        const rows = importedSagas.map((s) => ({
+        const rows = importedSagas.map((s, i) => ({
           user_id: userId, title: s.title, author: s.author,
           category: s.category, status: s.status, is_favorite: s.is_favorite ?? false,
+          estante_sort_order: (i + 1) * 1000,
         }))
         const { data: inserted, error } = await supabase.from('sagas').insert(rows).select('id')
         if (error) throw error
@@ -61,7 +62,7 @@ export function useDataImport(userId: string | undefined) {
       const bookIdMap = new Map<string, string>()
       const importedBooks = parsed.books ?? []
       if (importedBooks.length > 0) {
-        const rows = importedBooks.map((b) => ({
+        const rows = importedBooks.map((b, i) => ({
           user_id: userId,
           saga_id: b.saga_id ? sagaIdMap.get(b.saga_id) ?? null : null,
           title: b.title, author: b.author, cover_url: b.cover_url,
@@ -70,6 +71,7 @@ export function useDataImport(userId: string | undefined) {
           total_pages: b.total_pages, current_page: b.current_page,
           total_duration_seconds: b.total_duration_seconds, current_duration_seconds: b.current_duration_seconds,
           start_date: b.start_date, end_date: b.end_date, abandon_reason: b.abandon_reason,
+          estante_sort_order: (i + 1) * 1000,
         }))
         const { data: inserted, error } = await supabase.from('books').insert(rows).select('id')
         if (error) throw error
