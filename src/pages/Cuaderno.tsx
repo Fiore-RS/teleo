@@ -9,6 +9,7 @@ import { SectionHeader } from '../assets/components/atoms/SectionHeader'
 import { Button } from '../assets/components/atoms/Button'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
+import { ScrollToTopButton } from '../assets/components/atoms/ScrollToTopButton'
 import { SelectReviewBookModal } from '../assets/components/molecules/SelectReviewBookModal'
 import { Resena } from './Resena'
 
@@ -87,6 +88,7 @@ export function Cuaderno() {
       </div>
 
       <div className="pb-10" />
+      <ScrollToTopButton />
       <TabBar active="cuaderno" onChange={handleTabBarChange} />
 
       <SelectReviewBookModal

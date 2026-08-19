@@ -16,6 +16,7 @@ import { BookCard } from "../assets/components/molecules/BookCard";
 import { SeriesCard } from "../assets/components/molecules/SeriesCard";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
+import { ScrollToTopButton } from "../assets/components/atoms/ScrollToTopButton";
 import type { ReadingStatus } from "../lib/status";
 import { SectionHeader } from "../assets/components/atoms/SectionHeader";
 import { DetalleLibro } from "../pages/DetalleLibro";
@@ -336,6 +337,7 @@ export function Estante() {
       </div>
 
       <div className="pb-24" />
+      <ScrollToTopButton />
       <TabBar active="estante" onChange={handleTabBarChange} />
 
       <AddBookModal
