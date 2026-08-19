@@ -341,6 +341,7 @@ export function Estante() {
       <AddBookModal
         isOpen={isAddBookOpen}
         onClose={() => setIsAddBookOpen(false)}
+        userId={user?.id}
         onAdd={addBook}
       />
 

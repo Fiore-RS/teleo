@@ -1,15 +1,18 @@
-import { useState } from 'react'
-import { ScanBarcode, Search, ImageOff, PenLine } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ScanBarcode, Search, ImageOff, PenLine, Pencil } from 'lucide-react'
 import { Modal } from '../atoms/Modal'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
 import { CoverImage } from '../atoms/CoverImage'
 import { SegmentedTabs } from '../atoms/SegmentedTabs'
+import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
 import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 import type { ReadingStatus } from '../../../lib/status'
 import { categoryOptions, languageOptions, formatOptions, type BookFormat } from '../../../lib/options'
+import { useCoverUpload } from '../../../hooks/useCoverUpload'
+import { parseDurationInput } from '../../../lib/duration'
 
 const statusOptions: { value: ReadingStatus; label: string }[] = [
   { value: 'pendiente', label: 'Pendiente' },
@@ -23,12 +26,14 @@ interface NewBookPayload {
   title: string; author: string | null; cover_url: string | null
   total_pages: number | null; language: string | null; category: string | null
   isbn: string | null; format?: BookFormat | null; status: ReadingStatus; saga_id?: string
+  total_duration_seconds?: number | null
 }
 
 interface AddBookModalProps {
   isOpen: boolean
   onClose: () => void
   sagaId?: string
+  userId?: string
   initialStatus?: 'pendiente' | 'deseado'
   onAdd: (book: NewBookPayload) => Promise<{ error: unknown }>
 }
@@ -40,18 +45,20 @@ interface ManualDraft {
   language: string
   format: BookFormat
   totalPages: string
+  totalDuration: string
   isbn: string
   status: ReadingStatus
+  coverUrl: string | null
 }
 
 function emptyManualDraft(status: ReadingStatus): ManualDraft {
   return {
     title: '', author: '', category: 'Novela', language: 'es',
-    format: 'fisico', totalPages: '', isbn: '', status,
+    format: 'fisico', totalPages: '', totalDuration: '', isbn: '', status, coverUrl: null,
   }
 }
 
-export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendiente', onAdd }: AddBookModalProps) {
+export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 'pendiente', onAdd }: AddBookModalProps) {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [results, setResults] = useState<BookSearchResult[]>([])
@@ -62,8 +69,18 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
   const [status, setStatus] = useState<ReadingStatus>(initialStatus)
   const [isManual, setIsManual] = useState(false)
   const [manualDraft, setManualDraft] = useState<ManualDraft>(emptyManualDraft(initialStatus))
+  const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const canPickStatus = initialStatus !== 'deseado'
+
+  async function handleManualCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = await uploadCover(file)
+    if (url) setManualDraft((prev) => ({ ...prev, coverUrl: url }))
+    e.target.value = ''
+  }
 
   function reset() {
     setQuery('')
@@ -121,11 +138,13 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
   async function handleManualCreate() {
     if (!manualDraft.title.trim()) return
     setIsSaving(true)
+    const isAudiobook = manualDraft.format === 'audiolibro'
     const { error } = await onAdd({
       title: manualDraft.title.trim(),
       author: manualDraft.author.trim() || null,
-      cover_url: null,
-      total_pages: manualDraft.totalPages ? parseInt(manualDraft.totalPages, 10) : null,
+      cover_url: manualDraft.coverUrl,
+      total_pages: !isAudiobook && manualDraft.totalPages ? parseInt(manualDraft.totalPages, 10) : null,
+      total_duration_seconds: isAudiobook ? parseDurationInput(manualDraft.totalDuration) : null,
       language: manualDraft.language || null,
       category: manualDraft.category || null,
       isbn: manualDraft.isbn.trim() || null,
@@ -144,6 +163,35 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
       <Modal isOpen={isOpen} onClose={handleClose} title={isManual ? 'Crear libro desde cero' : 'Nuevo libro para el estante'}>
         {isManual ? (
           <div className="space-y-4">
+            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border">
+              {manualDraft.coverUrl ? (
+                <CoverImage src={manualDraft.coverUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <ImageOff size={24} className="text-text-secondary" />
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => coverInputRef.current?.click()}
+                disabled={isUploadingCover || !userId}
+                aria-label="Agregar portada desde el dispositivo"
+                className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm disabled:opacity-50"
+              >
+                <Pencil size={14} className="text-accent-reading" />
+              </button>
+            </div>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleManualCoverChange}
+              className="hidden"
+            />
+            {isUploadingCover && (
+              <p className="text-body-sm text-text-secondary text-center -mt-2">Subiendo portada...</p>
+            )}
+
             <div>
               <label className="text-body-sm text-text-secondary block mb-1">Título</label>
               <Input
@@ -192,13 +240,25 @@ export function AddBookModal({ isOpen, onClose, sagaId, initialStatus = 'pendien
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-body-sm text-text-secondary block mb-1">Páginas</label>
-                <Input
-                  type="number"
-                  placeholder="000"
-                  value={manualDraft.totalPages}
-                  onChange={(e) => setManualDraft({ ...manualDraft, totalPages: e.target.value })}
-                />
+                {manualDraft.format === 'audiolibro' ? (
+                  <>
+                    <label className="text-body-sm text-text-secondary block mb-1">Duración</label>
+                    <DurationMaskInput
+                      value={manualDraft.totalDuration}
+                      onChange={(v) => setManualDraft({ ...manualDraft, totalDuration: v })}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <label className="text-body-sm text-text-secondary block mb-1">Páginas</label>
+                    <Input
+                      type="number"
+                      placeholder="000"
+                      value={manualDraft.totalPages}
+                      onChange={(e) => setManualDraft({ ...manualDraft, totalPages: e.target.value })}
+                    />
+                  </>
+                )}
               </div>
               <div>
                 <label className="text-body-sm text-text-secondary block mb-1">ISBN (opcional)</label>
