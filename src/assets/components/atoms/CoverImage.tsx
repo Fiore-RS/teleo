@@ -13,8 +13,16 @@ function upgradedSrc(src: string): string | null {
 type CoverImageProps = ImgHTMLAttributes<HTMLImageElement> & { src?: string }
 
 export function CoverImage({ src, ...props }: CoverImageProps) {
-  const upgraded = src ? upgradedSrc(src) : null
-  const [currentSrc, setCurrentSrc] = useState(upgraded ?? src)
+  const [prevSrc, setPrevSrc] = useState(src)
+  const [currentSrc, setCurrentSrc] = useState(src ? upgradedSrc(src) ?? src : undefined)
+
+  // Si el src cambia (ej. se subió una portada nueva), reseteamos el estado durante
+  // el render en vez de esperar a un efecto — así la imagen se actualiza de inmediato
+  // sin necesidad de refrescar la página.
+  if (src !== prevSrc) {
+    setPrevSrc(src)
+    setCurrentSrc(src ? upgradedSrc(src) ?? src : undefined)
+  }
 
   if (!src) return null
 

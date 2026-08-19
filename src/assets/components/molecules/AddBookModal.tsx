@@ -67,6 +67,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<ReadingStatus>(initialStatus)
+  const [category, setCategory] = useState('Novela')
   const [isManual, setIsManual] = useState(false)
   const [manualDraft, setManualDraft] = useState<ManualDraft>(emptyManualDraft(initialStatus))
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
@@ -89,8 +90,14 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setNotFound(false)
     setIsSearching(false)
     setStatus(initialStatus)
+    setCategory('Novela')
     setIsManual(false)
     setManualDraft(emptyManualDraft(initialStatus))
+  }
+
+  function selectResult(r: BookSearchResult) {
+    setResult(r)
+    setCategory(r.category || 'Novela')
   }
 
   function handleClose() {
@@ -114,7 +121,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setNotFound(false)
     const found = await searchBookByIsbn(isbn)
     setIsSearching(false)
-    found ? setResult(found) : setNotFound(true)
+    found ? selectResult(found) : setNotFound(true)
   }
 
   async function handleAdd() {
@@ -126,7 +133,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       cover_url: result.coverUrl ?? null,
       total_pages: result.totalPages ?? null,
       language: result.language ?? null,
-      category: result.category ?? null,
+      category: category || null,
       isbn: result.isbn ?? null,
       status: canPickStatus ? status : initialStatus,
       saga_id: sagaId,
@@ -363,7 +370,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
               {results.map((r, i) => (
                 <button
                   key={i}
-                  onClick={() => setResult(r)}
+                  onClick={() => selectResult(r)}
                   className="w-full flex gap-3 items-center bg-bg rounded-xl p-2 text-left"
                 >
                   <div className="w-12 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-border">
@@ -421,11 +428,11 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                   {result.language.toUpperCase()}
                 </div>
               )}
-              {result.category && (
-                <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text col-span-2">
-                  {result.category}
-                </div>
-              )}
+            </div>
+
+            <div className="mt-4">
+              <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
+              <Select options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
             </div>
 
             {canPickStatus && (
