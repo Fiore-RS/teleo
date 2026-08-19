@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  User, Mail, Lock, Info,
-  // Share2, Link as LinkIcon, // TODO: reactivar cuando se arregle la sección "Compartir"
+  User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, ChevronRight, ChevronLeft, Trash2 as ClearIcon, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
@@ -45,9 +44,17 @@ function SectionHeading({ title, danger = false }: { title: string; danger?: boo
   )
 }
 
-function ListItem({ icon: Icon, label, onClick }: { icon: typeof User; label: string; onClick: () => void }) {
+function ListItem({
+  icon: Icon, label, onClick, disabled = false,
+}: { icon: typeof User; label: string; onClick: () => void; disabled?: boolean }) {
   return (
-    <button onClick={onClick} className="w-full flex items-center gap-3 bg-surface border border-border rounded-xl px-4 py-3.5">
+    <button
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`w-full flex items-center gap-3 bg-surface border border-border rounded-xl px-4 py-3.5 ${
+        disabled ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+    >
       <Icon size={18} className="text-text-secondary shrink-0" />
       <span className="text-body-md text-text flex-1 text-left">{label}</span>
       <ChevronRight size={18} className="text-text-secondary shrink-0" />
@@ -117,13 +124,14 @@ export function Configuracion() {
         <ListItem icon={Lock} label="Cambiar contraseña" onClick={() => navigate('/configuracion/contrasena')} />
       </div>
 
-      {/* TODO: reactivar cuando se arregle la sección "Compartir"
       <SectionHeading title="Compartir" />
       <div className="space-y-2">
-        <ListItem icon={Share2} label="Compartir perfil" onClick={() => setShareTarget('perfil')} />
-        <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => setShareTarget('deseados')} />
+        <ListItem icon={Share2} label="Compartir perfil" onClick={() => {}} disabled />
+        <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => {}} disabled />
       </div>
-      */}
+      <p className="text-body-sm text-text-secondary mt-2">
+        Esta opción estará disponible próximamente.
+      </p>
 
       <SectionHeading title="Información" />
       <div className="space-y-2">

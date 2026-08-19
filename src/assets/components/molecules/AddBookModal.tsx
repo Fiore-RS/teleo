@@ -68,6 +68,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<ReadingStatus>(initialStatus)
   const [category, setCategory] = useState('Novela')
+  const [format, setFormat] = useState<BookFormat>('fisico')
   const [isManual, setIsManual] = useState(false)
   const [manualDraft, setManualDraft] = useState<ManualDraft>(emptyManualDraft(initialStatus))
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
@@ -91,6 +92,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setIsSearching(false)
     setStatus(initialStatus)
     setCategory('Novela')
+    setFormat('fisico')
     setIsManual(false)
     setManualDraft(emptyManualDraft(initialStatus))
   }
@@ -135,6 +137,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       language: result.language ?? null,
       category: category || null,
       isbn: result.isbn ?? null,
+      format,
       status: canPickStatus ? status : initialStatus,
       saga_id: sagaId,
     })
@@ -433,6 +436,11 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             <div className="mt-4">
               <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
               <Select options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
+            </div>
+
+            <div className="mt-4">
+              <label className="text-body-sm text-text-secondary block mb-1">Formato</label>
+              <Select options={formatOptions} value={format} onChange={(e) => setFormat(e.target.value as BookFormat)} />
             </div>
 
             {canPickStatus && (
