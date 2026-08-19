@@ -18,12 +18,13 @@ export function getProgressInfo(book: Book): { percent: number; label?: string }
   return { percent: 0 }
 }
 
+/** Formatea segundos como hh:mm:ss, siempre con las 3 unidades (para que "tiempo
+ *  escuchado" se lea igual en toda la app: stat de Perfil, progreso de audiolibro
+ *  en Mesa/DetalleSaga, totales del modal "Libros leídos en 20XX", etc.) */
 export function formatDuration(totalSeconds: number): string {
-  const h = Math.floor(totalSeconds / 3600)
-  const m = Math.floor((totalSeconds % 3600) / 60)
-  const s = totalSeconds % 60
-  if (h > 0) {
-    return `${String(h).padStart(2, '0')}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`
-  }
-  return `${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`
+  const total = Math.max(0, Math.floor(totalSeconds))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }

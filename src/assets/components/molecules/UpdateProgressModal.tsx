@@ -17,7 +17,7 @@ interface UpdateProgressModalProps {
 }
 
 export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgressModalProps) {
-  const { book, updateBook, deleteBook } = useBook(bookId)
+  const { book, updateBook } = useBook(bookId)
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
@@ -64,11 +64,6 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     setIsSaving(false)
     onUpdated()
     onClose()
-  }
-
-  async function handleDelete() {
-    const ok = await deleteBook()
-    if (ok) { onUpdated(); onClose() }
   }
 
   async function handleAbandonConfirm(data: { abandon_reason: string; start_date: string; end_date: string }) {
@@ -142,10 +137,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
             </div>
             {error && <p className="text-body-sm text-accent-wishlist mt-2">{error}</p>}
 
-            <div className="flex gap-3 mt-4">
-              <Button variant="outline" onClick={handleDelete}>Eliminar</Button>
-              <Button variant="slate" onClick={() => setIsAbandonOpen(true)}>Abandonar</Button>
-            </div>
+            <Button variant="slate" className="mt-4" onClick={() => setIsAbandonOpen(true)}>Abandonar</Button>
 
             <Button variant="green" className="mt-3" onClick={handleMarkFinished} isLoading={isSaving}>
               Marcar como Terminado

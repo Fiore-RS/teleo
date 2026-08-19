@@ -6,8 +6,10 @@ import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useProfileStats } from '../hooks/useProfileStats'
 import { useAnnualGoal } from '../hooks/useAnnualGoal'
+import { useGoalHistory } from '../hooks/useGoalHistory'
 import { useProfileLists } from '../hooks/useProfileLists'
 import { BioEditModal } from '../assets/components/molecules/BioEditModal'
+import { YearBooksModal } from '../assets/components/molecules/YearBooksModal'
 import { DetalleLibro } from './DetalleLibro'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { ProfileView } from './ProfileView'
@@ -19,11 +21,13 @@ export function Perfil() {
   const { uploadAvatar, isUploading } = useAvatarUpload(user?.id)
   const { stats } = useProfileStats(user?.id)
   const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(user?.id)
+  const { history: goalHistory } = useGoalHistory(user?.id)
   const { currentlyReading, favorites, recommended, wishlist, refetch: refetchLists } = useProfileLists(user?.id)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isBioModalOpen, setIsBioModalOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  const [selectedYear, setSelectedYear] = useState<number | null>(null)
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -54,12 +58,14 @@ export function Perfil() {
         showAnnualGoal={profile?.show_annual_goal}
         annualGoal={annualGoal}
         annualCompletedCount={annualCompletedCount}
+        goalHistory={goalHistory}
         showDailyStreak={profile?.show_daily_streak}
         longestStreak={stats.longestStreak}
         showStats={profile?.show_stats}
         stats={stats}
         showYearsInBooks={profile?.show_years_in_books}
         yearsBreakdown={stats.yearsBreakdown}
+        onYearClick={(year) => setSelectedYear(year)}
         showCurrentlyReading={profile?.show_currently_reading}
         currentlyReading={currentlyReading}
         showFavorites={profile?.show_favorites}
@@ -94,6 +100,13 @@ export function Perfil() {
           onDeleted={() => { setSelectedBookId(null); refetchLists() }}
         />
       )}
+
+      <YearBooksModal
+        isOpen={selectedYear !== null}
+        onClose={() => setSelectedYear(null)}
+        userId={user?.id}
+        year={selectedYear}
+      />
     </>
   )
 }

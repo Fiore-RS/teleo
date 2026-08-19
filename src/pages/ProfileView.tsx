@@ -6,6 +6,7 @@ import { ProgressBar } from '../assets/components/atoms/ProgressBar'
 import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
 import { formatDuration } from '../lib/progress'
 import type { Database } from '../types/database'
+import type { GoalHistoryEntry } from '../hooks/useGoalHistory'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -45,6 +46,10 @@ interface ProfileViewProps {
 
   showYearsInBooks?: boolean | null
   yearsBreakdown?: { year: number; count: number }[]
+  onYearClick?: (year: number) => void
+
+  /** Historial de metas de lectura por año — solo se muestra en el perfil propio (no readOnly) */
+  goalHistory?: GoalHistoryEntry[]
 
   showCurrentlyReading?: boolean | null
   currentlyReading?: Book[]
@@ -79,6 +84,8 @@ export function ProfileView({
   stats,
   showYearsInBooks,
   yearsBreakdown = [],
+  onYearClick,
+  goalHistory = [],
   showCurrentlyReading,
   currentlyReading = [],
   showFavorites,
@@ -153,6 +160,24 @@ export function ProfileView({
           </div>
         )}
 
+        {!readOnly && goalHistory.length > 0 && (
+          <div>
+            <h3 className="font-display italic text-display-md text-accent-wishlist">Metas de lectura</h3>
+            <div className="border-b-6 border-border mt-2 mb-3" />
+            <div className="space-y-3">
+              {goalHistory.map((entry) => (
+                <div key={entry.year} className="bg-surface border border-border rounded-2xl p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-display text-display-md text-text">{entry.year}</p>
+                    <p className="text-body-sm text-text-secondary">{entry.completedCount} de {entry.goal} libros</p>
+                  </div>
+                  <p className="text-body-sm text-text-secondary mt-1">{entry.message}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {showDailyStreak && (
           <div>
             <h3 className="font-display italic text-display-md text-accent-wishlist">Racha diaria más extensa</h3>
@@ -188,12 +213,23 @@ export function ProfileView({
             <h3 className="font-display italic text-display-md text-accent-wishlist">Mis años en libros</h3>
             <div className="border-b-6 border-border mt-2 mb-3" />
             <div className="grid grid-cols-2 gap-3">
-              {yearsBreakdown.map(({ year, count }) => (
-                <div key={year} className="bg-surface border border-border rounded-2xl p-4 text-center">
-                  <p className="font-display text-display-lg text-accent-wishlist">{year}</p>
-                  <p className="text-body-sm text-text-secondary">{count} libros terminados</p>
-                </div>
-              ))}
+              {yearsBreakdown.map(({ year, count }) =>
+                onYearClick ? (
+                  <button
+                    key={year}
+                    onClick={() => onYearClick(year)}
+                    className="bg-surface border border-border rounded-2xl p-4 text-center active:opacity-80 transition-opacity"
+                  >
+                    <p className="font-display text-display-lg text-accent-wishlist">{year}</p>
+                    <p className="text-body-sm text-text-secondary">{count} libros terminados</p>
+                  </button>
+                ) : (
+                  <div key={year} className="bg-surface border border-border rounded-2xl p-4 text-center">
+                    <p className="font-display text-display-lg text-accent-wishlist">{year}</p>
+                    <p className="text-body-sm text-text-secondary">{count} libros terminados</p>
+                  </div>
+                )
+              )}
             </div>
           </div>
         )}

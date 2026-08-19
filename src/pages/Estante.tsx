@@ -26,7 +26,6 @@ import {
   DndContext,
   closestCenter,
   PointerSensor,
-  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -87,9 +86,12 @@ export function Estante() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Activación por "mantener presionado" (delay) en vez de por distancia: así un gesto
+  // normal de scroll (que mueve rápido) no dispara el drag, y solo se arma cuando el dedo
+  // se mantiene quieto sobre una tarjeta unos instantes. Un solo PointerSensor cubre mouse
+  // y touch — usar además un TouchSensor por separado generaba conflictos entre ambos.
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
   const hasActiveAdvFilters =
@@ -233,6 +235,12 @@ export function Estante() {
             {isReordering ? "Listo" : "Organizar"}
           </button>
         </div>
+
+        {isReordering && (
+          <p className="text-body-sm text-text-secondary text-center">
+            Mantén presionado unos instantes para arrastrar y organizar tu estante a tu gusto.
+          </p>
+        )}
 
         {!isLoading && tab === "libros" && filteredBooks.length === 0 && (
           <p className="text-body-md text-text-secondary text-center">

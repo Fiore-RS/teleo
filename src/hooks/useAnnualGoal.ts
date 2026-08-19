@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
+/** Meta anual de lectura del usuario, leída/escrita como una fila por año en
+ *  `reading_goals`. Al usar el año en curso como parte de la clave, el "reinicio"
+ *  cada 1 de enero es automático: simplemente no existe todavía una fila para el
+ *  año nuevo, así que la meta empieza en 0 sin necesidad de ningún job/cron. */
 export function useAnnualGoal(userId: string | undefined) {
   const [goal, setGoal] = useState(0)
   const [completedCount, setCompletedCount] = useState(0)
@@ -11,8 +15,8 @@ export function useAnnualGoal(userId: string | undefined) {
     setIsLoading(true)
     const year = new Date().getFullYear()
 
-    const [{ data: profile }, { count }] = await Promise.all([
-      supabase.from('profiles').select('annual_goal').eq('id', userId).single(),
+    const [{ data: goalRow }, { count }] = await Promise.all([
+      supabase.from('reading_goals').select('goal').eq('user_id', userId).eq('year', year).maybeSingle(),
       supabase
         .from('books')
         .select('*', { count: 'exact', head: true })
@@ -22,7 +26,7 @@ export function useAnnualGoal(userId: string | undefined) {
         .lte('end_date', `${year}-12-31`),
     ])
 
-    setGoal(profile?.annual_goal ?? 0)
+    setGoal(goalRow?.goal ?? 0)
     setCompletedCount(count ?? 0)
     setIsLoading(false)
   }, [userId])
@@ -33,7 +37,8 @@ export function useAnnualGoal(userId: string | undefined) {
 
   async function updateGoal(newGoal: number) {
     if (!userId) return
-    await supabase.from('profiles').update({ annual_goal: newGoal }).eq('id', userId)
+    const year = new Date().getFullYear()
+    await supabase.from('reading_goals').upsert({ user_id: userId, year, goal: newGoal }, { onConflict: 'user_id,year' })
     await refetch()
   }
 
