@@ -26,10 +26,15 @@ interface AddSagaModalProps {
   isOpen: boolean
   onClose: () => void
   userId: string | undefined
+  /** Sagas ya existentes del usuario — se usan solo para calcular el próximo
+   *  estante_sort_order (igual que se hace en useLibraryBooks.addBook), así la saga
+   *  nueva puede reordenarse en Estante desde el primer momento en vez de quedar con
+   *  estante_sort_order null. */
+  existingSagas: { estante_sort_order: number | null }[]
   onAdded: (newSagaId: string) => void
 }
 
-export function AddSagaModal({ isOpen, onClose, userId, onAdded }: AddSagaModalProps) {
+export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }: AddSagaModalProps) {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [category, setCategory] = useState('Novela')
@@ -55,6 +60,9 @@ export function AddSagaModal({ isOpen, onClose, userId, onAdded }: AddSagaModalP
   async function handleCreate() {
     if (!userId || !title.trim()) return
     setIsSaving(true)
+    const maxOrder = existingSagas.length > 0
+      ? Math.max(...existingSagas.map((s) => s.estante_sort_order ?? 0))
+      : 0
     const { data, error } = await supabase
       .from('sagas')
       .insert({
@@ -65,6 +73,7 @@ export function AddSagaModal({ isOpen, onClose, userId, onAdded }: AddSagaModalP
         status,
         total_books: totalBooks ? parseInt(totalBooks, 10) : null,
         is_favorite: isFavorite,
+        estante_sort_order: maxOrder + 1000,
       })
       .select('id')
       .single()

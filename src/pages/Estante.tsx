@@ -377,6 +377,7 @@ export function Estante() {
         isOpen={isAddSagaOpen}
         onClose={() => setIsAddSagaOpen(false)}
         userId={user?.id}
+        existingSagas={sagas}
         onAdded={(newSagaId) => {
           refetchSagas();
           setSelectedSagaId(newSagaId);
