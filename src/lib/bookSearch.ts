@@ -18,6 +18,25 @@ function withKey(url: string): string {
   return API_KEY ? `${url}&key=${API_KEY}` : url
 }
 
+/** Reintenta automáticamente ante fallos transitorios (caída de red momentánea, o un 429/5xx
+ *  de la API) — esto es justo lo que hacía que a veces una búsqueda por nombre no encontrara
+ *  nada la primera vez y hubiera que darle "Buscar" varias veces hasta que funcionara. Con
+ *  este helper el reintento pasa solo, con una pequeña espera creciente entre intentos, sin
+ *  que el usuario tenga que notarlo ni volver a tocar el botón. */
+async function fetchWithRetry(url: string, init?: RequestInit, attempts = 3): Promise<Response | null> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(url, init)
+      const isTransientError = !res.ok && (res.status === 429 || res.status >= 500)
+      if (!isTransientError || i === attempts - 1) return res
+    } catch {
+      if (i === attempts - 1) return null
+    }
+    await new Promise((resolve) => setTimeout(resolve, 300 * (i + 1)))
+  }
+  return null
+}
+
 interface GoogleImageLinks {
   thumbnail?: string
   small?: string
@@ -67,8 +86,8 @@ function mapGoogleVolume(volume: GoogleVolume, fallbackIsbn?: string): BookSearc
 
 export async function searchBooksByQuery(query: string): Promise<BookSearchResult | null> {
   const url = withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=1`)
-  const res = await fetch(url)
-  if (!res.ok) return null
+  const res = await fetchWithRetry(url)
+  if (!res || !res.ok) return null
   const data = await res.json()
   const first = data.items?.[0]
   return first ? mapGoogleVolume(first) : null
@@ -76,15 +95,15 @@ export async function searchBooksByQuery(query: string): Promise<BookSearchResul
 
 export async function searchBookByIsbn(isbn: string): Promise<BookSearchResult | null> {
   const url = withKey(`${GOOGLE_BOOKS_API}?q=isbn:${isbn}`)
-  const res = await fetch(url)
-  if (res.ok) {
+  const res = await fetchWithRetry(url)
+  if (res?.ok) {
     const data = await res.json()
     const first = data.items?.[0]
     if (first) return mapGoogleVolume(first, isbn)
   }
 
-  const olRes = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`)
-  if (!olRes.ok) return null
+  const olRes = await fetchWithRetry(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`)
+  if (!olRes || !olRes.ok) return null
   const olData = await olRes.json()
   const entry = olData[`ISBN:${isbn}`]
   if (!entry) return null
@@ -170,12 +189,12 @@ const ANILIST_SEARCH_QUERY = `
  *  para encontrar títulos que ni Google Books ni Open Library indexan bien. */
 async function searchAniListManga(query: string, maxResults: number): Promise<BookSearchResult[]> {
   try {
-    const res = await fetch('https://graphql.anilist.co', {
+    const res = await fetchWithRetry('https://graphql.anilist.co', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({ query: ANILIST_SEARCH_QUERY, variables: { search: query, perPage: maxResults } }),
     })
-    if (!res.ok) return []
+    if (!res || !res.ok) return []
     const data = await res.json()
     const media: AniListMedia[] = data?.data?.Page?.media ?? []
     return media.map(mapAniListMedia)
@@ -193,8 +212,8 @@ export async function searchBooksByQueryMultiple(query: string, maxResults = 3):
 
   try {
     const url = withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=${maxResults}`)
-    const res = await fetch(url)
-    if (res.ok) {
+    const res = await fetchWithRetry(url)
+    if (res?.ok) {
       const data = await res.json()
       const items: GoogleVolume[] = data.items ?? []
       results.push(...items.map((item) => mapGoogleVolume(item)))
@@ -205,10 +224,10 @@ export async function searchBooksByQueryMultiple(query: string, maxResults = 3):
 
   if (results.length < maxResults) {
     try {
-      const olRes = await fetch(
+      const olRes = await fetchWithRetry(
         `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${maxResults}&fields=title,author_name,cover_i,number_of_pages_median,language,isbn`
       )
-      if (olRes.ok) {
+      if (olRes?.ok) {
         const olData = await olRes.json()
         const docs: OpenLibraryDoc[] = olData.docs ?? []
         const existingTitles = new Set(results.map((r) => r.title.toLowerCase()))

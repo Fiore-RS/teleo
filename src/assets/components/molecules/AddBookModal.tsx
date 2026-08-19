@@ -108,7 +108,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   }
 
   async function handleSearch() {
-    if (!query.trim()) return
+    if (!query.trim() || isSearching) return
     setIsSearching(true)
     setNotFound(false)
     setResults([])
@@ -324,7 +324,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                 variant="primary"
                 className="mt-2 flex items-center justify-center gap-2"
                 onClick={handleSearch}
-                disabled={!query.trim()}
+                disabled={!query.trim() || isSearching}
               >
                 <Search size={18} />
                 Buscar
