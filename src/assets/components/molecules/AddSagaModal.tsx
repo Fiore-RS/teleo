@@ -34,6 +34,7 @@ export function AddSagaModal({ isOpen, onClose, userId, onAdded }: AddSagaModalP
   const [author, setAuthor] = useState('')
   const [category, setCategory] = useState('Novela')
   const [status, setStatus] = useState<ReadingStatus>('pendiente')
+  const [totalBooks, setTotalBooks] = useState('')
   const [isFavorite, setIsFavorite] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -42,6 +43,7 @@ export function AddSagaModal({ isOpen, onClose, userId, onAdded }: AddSagaModalP
     setAuthor('')
     setCategory('Novela')
     setStatus('pendiente')
+    setTotalBooks('')
     setIsFavorite(false)
   }
 
@@ -61,6 +63,7 @@ export function AddSagaModal({ isOpen, onClose, userId, onAdded }: AddSagaModalP
         author: author.trim() || null,
         category,
         status,
+        total_books: totalBooks ? parseInt(totalBooks, 10) : null,
         is_favorite: isFavorite,
       })
       .select('id')
@@ -101,6 +104,20 @@ export function AddSagaModal({ isOpen, onClose, userId, onAdded }: AddSagaModalP
           />
         </div>
       </div>
+
+      <label className="text-body-sm text-text-secondary block mb-1 mt-4">
+        Cantidad total de libros de la saga
+      </label>
+      <Input
+        type="number"
+        min={1}
+        placeholder="Ej. 5"
+        value={totalBooks}
+        onChange={(e) => setTotalBooks(e.target.value)}
+      />
+      <p className="text-body-sm text-text-secondary mt-1">
+        Déjalo vacío si todavía no sabes cuántos libros tendrá.
+      </p>
 
       <label className="text-body-sm text-text-secondary block mb-1 mt-4">Marcar como favorito</label>
       <FavoriteToggle isFavorite={isFavorite} onToggle={() => setIsFavorite((prev) => !prev)} />

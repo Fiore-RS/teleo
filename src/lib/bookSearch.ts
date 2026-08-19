@@ -6,6 +6,9 @@ export interface BookSearchResult {
   language?: string
   category?: string
   isbn?: string
+  /** true cuando el resultado viene de una fuente que describe la serie completa
+   *  (ej. AniList) en vez de una edición/volumen específico — no trae ISBN ni páginas. */
+  isSeriesLevel?: boolean
 }
 
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes'
@@ -119,9 +122,72 @@ function mapOpenLibraryDoc(doc: OpenLibraryDoc): BookSearchResult {
   }
 }
 
+interface AniListMedia {
+  title?: { romaji?: string; english?: string }
+  coverImage?: { extraLarge?: string; large?: string }
+  format?: string
+  countryOfOrigin?: string
+  staff?: { edges?: { node?: { name?: { full?: string } } }[] }
+}
+
+/** AniList clasifica por país de origen y formato — lo traducimos a las categorías que
+ *  ya usa Teleo (Manga/Manhwa/Manhua/Novela ligera). */
+function mapAniListCategory(format?: string, countryOfOrigin?: string): string {
+  if (format === 'NOVEL') return 'Novela ligera'
+  if (countryOfOrigin === 'KR') return 'Manhwa'
+  if (countryOfOrigin === 'CN' || countryOfOrigin === 'TW') return 'Manhua'
+  return 'Manga'
+}
+
+function mapAniListMedia(media: AniListMedia): BookSearchResult {
+  return {
+    title: media.title?.english ?? media.title?.romaji ?? 'Título desconocido',
+    author: media.staff?.edges?.[0]?.node?.name?.full,
+    coverUrl: media.coverImage?.extraLarge ?? media.coverImage?.large,
+    category: mapAniListCategory(media.format, media.countryOfOrigin),
+    isSeriesLevel: true,
+  }
+}
+
+const ANILIST_SEARCH_QUERY = `
+  query ($search: String, $perPage: Int) {
+    Page(perPage: $perPage) {
+      media(search: $search, type: MANGA, sort: SEARCH_MATCH) {
+        title { romaji english }
+        coverImage { extraLarge large }
+        format
+        countryOfOrigin
+        staff(sort: RELEVANCE, perPage: 1) {
+          edges { node { name { full } } }
+        }
+      }
+    }
+  }
+`
+
+/** AniList es una base de datos de series (manga/manhwa/manhua/novela ligera), no de ediciones
+ *  individuales — no tiene ISBN ni conteo de páginas por volumen. Se usa como último recurso
+ *  para encontrar títulos que ni Google Books ni Open Library indexan bien. */
+async function searchAniListManga(query: string, maxResults: number): Promise<BookSearchResult[]> {
+  try {
+    const res = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ query: ANILIST_SEARCH_QUERY, variables: { search: query, perPage: maxResults } }),
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    const media: AniListMedia[] = data?.data?.Page?.media ?? []
+    return media.map(mapAniListMedia)
+  } catch {
+    return []
+  }
+}
+
 /** Busca en Google Books y, si no alcanza el número de resultados pedido (algunos libros —
- *  sobre todo ediciones en español, cómics/manga o títulos menos conocidos — no aparecen ahí),
- *  completa con Open Library para ampliar las posibilidades de encontrar el libro. */
+ *  sobre todo ediciones en español o títulos menos conocidos — no aparecen ahí), completa con
+ *  Open Library. Si todavía faltan resultados, agrega AniList como última fuente, pensada
+ *  especialmente para manga, manhwa, manhua y novela ligera. */
 export async function searchBooksByQueryMultiple(query: string, maxResults = 3): Promise<BookSearchResult[]> {
   const results: BookSearchResult[] = []
 
@@ -134,7 +200,7 @@ export async function searchBooksByQueryMultiple(query: string, maxResults = 3):
       results.push(...items.map((item) => mapGoogleVolume(item)))
     }
   } catch {
-    // seguimos con Open Library aunque Google Books falle
+    // seguimos con las demás fuentes aunque Google Books falle
   }
 
   if (results.length < maxResults) {
@@ -155,7 +221,18 @@ export async function searchBooksByQueryMultiple(query: string, maxResults = 3):
         }
       }
     } catch {
-      // si también falla Open Library, devolvemos lo que sí encontramos
+      // si también falla Open Library, seguimos con AniList
+    }
+  }
+
+  if (results.length < maxResults) {
+    const aniListResults = await searchAniListManga(query, maxResults - results.length)
+    const existingTitles = new Set(results.map((r) => r.title.toLowerCase()))
+    for (const mapped of aniListResults) {
+      if (results.length >= maxResults) break
+      if (existingTitles.has(mapped.title.toLowerCase())) continue
+      results.push(mapped)
+      existingTitles.add(mapped.title.toLowerCase())
     }
   }
 

@@ -403,6 +403,13 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
               <p className="text-body-md text-text-secondary text-center mt-1">{result.author}</p>
             )}
 
+            {result.isSeriesLevel && (
+              <p className="text-body-sm text-text-secondary text-center mt-2">
+                Este resultado corresponde a la serie completa, no a un volumen específico —
+                no incluye páginas ni ISBN. Puedes editarlo después de agregarlo.
+              </p>
+            )}
+
             <div className="grid grid-cols-2 gap-2 mt-4">
               {result.totalPages && (
                 <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">
