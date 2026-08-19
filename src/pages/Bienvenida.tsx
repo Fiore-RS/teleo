@@ -53,7 +53,7 @@ export function Bienvenida() {
       <div className="text-center mt-4">
         <Logo variant="icon" className="h-12 mx-auto" />
         <h1 className="font-display italic text-display-lg text-text mt-4">
-          ¡Bienvenida a Teleo!
+          ¡Teleo te da la bienvenida!
         </h1>
         <p className="font-body text-body-md text-text-secondary mt-2">
           Un vistazo rápido antes de empezar a construir tu rincón de lectura.
@@ -74,9 +74,14 @@ export function Bienvenida() {
         ))}
       </div>
 
-      <Button variant="primary" className="mt-6" onClick={handleStart} isLoading={isSaving}>
-        Empezar a leer
-      </Button>
+      <div className="space-y-3 mt-6">
+        <Button variant="primary" onClick={handleStart} isLoading={isSaving}>
+          Empezar a leer
+        </Button>
+        <Button variant="outline" onClick={() => navigate('/tutorial')}>
+          Tutorial para navegar por Teleo
+        </Button>
+      </div>
     </div>
   )
 }

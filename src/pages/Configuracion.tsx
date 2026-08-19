@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  User, Mail, Lock,
+  User, Mail, Lock, Info,
   // Share2, Link as LinkIcon, // TODO: reactivar cuando se arregle la sección "Compartir"
   Upload, Download, Pause, Trash2, ChevronRight, ChevronLeft, Trash2 as ClearIcon, LogOut,
 } from 'lucide-react'
@@ -124,6 +124,11 @@ export function Configuracion() {
         <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => setShareTarget('deseados')} />
       </div>
       */}
+
+      <SectionHeading title="Información" />
+      <div className="space-y-2">
+        <ListItem icon={Info} label="Tutorial para navegar por Teleo" onClick={() => navigate('/tutorial')} />
+      </div>
 
       <SectionHeading title="Visibilidad del perfil" />
       <div className="space-y-2">

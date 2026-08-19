@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
 import { Inicio } from "./pages/Inicio";
 import { Bienvenida } from "./pages/Bienvenida";
+import { Tutorial } from "./pages/Tutorial";
 import { Mesa } from "./pages/Mesa";
 import { Estante } from "./pages/Estante";
 import { Cuaderno } from "./pages/Cuaderno";
@@ -26,6 +27,7 @@ function App() {
           <Route path="/" element={<LoadingScreen />} />
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/bienvenida" element={<Bienvenida />} />
+          <Route path="/tutorial" element={<Tutorial />} />
           <Route path="/mesa" element={<Mesa />} />
           <Route path="/estante" element={<Estante />} />
           <Route path="/cuaderno" element={<Cuaderno />} />
