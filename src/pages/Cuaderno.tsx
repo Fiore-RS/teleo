@@ -45,49 +45,37 @@ export function Cuaderno() {
           <p className="text-body-md text-text-secondary text-center">Aún no tienes reseñas escritas.</p>
         )}
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-2.5">
           {filtered.map((r) => (
-            <div key={r.id} className="bg-surface border border-border rounded-2xl p-4">
-              <div className="flex gap-3">
-                <div className="relative w-24 shrink-0 aspect-2/3 rounded-lg overflow-hidden bg-border">
-                  {r.book.cover_url ? (
-                    <CoverImage src={r.book.cover_url ?? undefined} alt={r.book.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center"><ImageOff size={16} className="text-text-secondary" /></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-body-md text-text line-clamp-2">{r.book.title}</p>
-                  <p className="text-body-sm text-text-secondary line-clamp-1 mt-1">{r.book.author}</p>
-
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <span className="text-body-sm text-text-secondary bg-bg rounded-full px-3 py-1">
-                      Inicio: {r.book.start_date ?? '—'}
-                    </span>
-                    <span className="text-body-sm text-text-secondary bg-bg rounded-full px-3 py-1">
-                      Fin: {r.book.end_date ?? '—'}
-                    </span>
-                  </div>
-
-                  <RatingRow shape="star" color="var(--color-accent-reading)" value={r.general_rating ?? 0} size={16} className="mt-3" />
-                </div>
+            <div key={r.id} className="bg-surface border border-border rounded-xl p-2.5 flex flex-col">
+              <div className="relative aspect-2/3 w-full rounded-lg overflow-hidden bg-border">
+                {r.book.cover_url ? (
+                  <CoverImage src={r.book.cover_url ?? undefined} alt={r.book.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center"><ImageOff size={18} className="text-text-secondary" /></div>
+                )}
               </div>
 
+              <p className="text-body-sm text-text line-clamp-2 mt-1.5">{r.book.title}</p>
+              <p className="text-body-sm text-text-secondary line-clamp-1 mt-0.5">{r.book.author}</p>
+
+              <RatingRow shape="star" color="var(--color-accent-reading)" value={r.general_rating ?? 0} size={12} className="mt-1.5" />
+
               {r.general_comments && (
-                <p className="text-body-sm text-text-secondary line-clamp-3 mt-3 bg-bg rounded-2xl p-4">
+                <p className="text-body-sm text-text-secondary line-clamp-2 mt-1.5 bg-bg rounded-lg p-2">
                   {r.general_comments}
                 </p>
               )}
 
-              <Button variant="amber" className="mt-3 w-full" onClick={() => setSelectedBookId(r.book_id)}>
-                Ver Reseña Completa
+              <Button variant="amber" className="mt-2 w-full py-2! text-body-sm!" onClick={() => setSelectedBookId(r.book_id)}>
+                Ver Reseña
               </Button>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="pb-10" />
+      <div className="pb-24" />
       <ScrollToTopButton />
       <TabBar active="cuaderno" onChange={handleTabBarChange} />
 
