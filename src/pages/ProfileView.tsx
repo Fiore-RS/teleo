@@ -160,24 +160,6 @@ export function ProfileView({
           </div>
         )}
 
-        {!readOnly && goalHistory.length > 0 && (
-          <div>
-            <h3 className="font-display italic text-display-md text-accent-wishlist">Metas de lectura</h3>
-            <div className="border-b-6 border-border mt-2 mb-3" />
-            <div className="space-y-3">
-              {goalHistory.map((entry) => (
-                <div key={entry.year} className="bg-surface border border-border rounded-2xl p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="font-display text-display-md text-text">{entry.year}</p>
-                    <p className="text-body-sm text-text-secondary">{entry.completedCount} de {entry.goal} libros</p>
-                  </div>
-                  <p className="text-body-sm text-text-secondary mt-1">{entry.message}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {showDailyStreak && (
           <div>
             <h3 className="font-display italic text-display-md text-accent-wishlist">Racha diaria más extensa</h3>
@@ -204,6 +186,21 @@ export function ProfileView({
               <StatBox label="Libros abandonados" value={String(stats.abandonedCount)} />
               <StatBox label="Sagas registradas" value={String(stats.sagaCount)} />
               <StatBox label="Reseñas escritas" value={String(stats.reviewCount)} />
+            </div>
+          </div>
+        )}
+
+        {!readOnly && goalHistory.length > 0 && (
+          <div>
+            <h3 className="font-display italic text-display-md text-accent-wishlist">Metas de lectura</h3>
+            <div className="border-b-6 border-border mt-2 mb-3" />
+            <div className="grid grid-cols-2 gap-3">
+              {goalHistory.map((entry) => (
+                <div key={entry.year} className="bg-surface border border-border rounded-2xl p-4 text-center">
+                  <p className="font-display text-display-lg text-accent-wishlist">{entry.year}</p>
+                  <p className="text-body-sm text-text-secondary">{entry.completedCount} de {entry.goal} libros</p>
+                </div>
+              ))}
             </div>
           </div>
         )}
