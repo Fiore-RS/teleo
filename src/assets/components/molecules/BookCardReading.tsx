@@ -1,4 +1,4 @@
-import { ImageOff } from 'lucide-react'
+import { ImageOff, TriangleAlert } from 'lucide-react'
 import { DogEar } from '../atoms/DogEar'
 import { ProgressBar } from '../atoms/ProgressBar'
 import { Button } from '../atoms/Button'
@@ -10,6 +10,9 @@ interface BookCardReadingProps {
   coverUrl?: string
   progressPercent: number
   progressLabel?: string
+  /** true cuando el libro está "leyendo" pero no tiene fecha de inicio — muestra un ícono de
+   *  advertencia en la esquina de la portada para llamar la atención. */
+  missingStartDate?: boolean
   onUpdateClick: () => void
 }
 
@@ -19,6 +22,7 @@ export function BookCardReading({
   coverUrl,
   progressPercent,
   progressLabel,
+  missingStartDate = false,
   onUpdateClick,
 }: BookCardReadingProps) {
   return (
@@ -32,6 +36,14 @@ export function BookCardReading({
           </div>
         )}
         <DogEar status="leyendo" size={28} className="absolute top-0 right-0" />
+        {missingStartDate && (
+          <span
+            className="absolute top-1 left-1 w-6 h-6 rounded-full bg-accent-reading flex items-center justify-center shadow-sm"
+            title="Sin fecha de inicio"
+          >
+            <TriangleAlert size={14} className="text-surface" />
+          </span>
+        )}
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col justify-between">

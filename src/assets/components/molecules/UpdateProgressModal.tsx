@@ -8,6 +8,7 @@ import { ProgressBar } from '../atoms/ProgressBar'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
 import { AbandonarLibroModal } from './AbandonarLibroModal'
+import { MissingStartDateModal } from './MissingStartDateModal'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
 
 interface UpdateProgressModalProps {
@@ -22,9 +23,13 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Se descarta (ignora) el aviso de fecha de inicio faltante localmente, sin tocar la base
+  // de datos, para que no vuelva a aparecer mientras este modal siga abierto.
+  const [startDatePromptIgnored, setStartDatePromptIgnored] = useState(false)
 
   const isAudio = book?.format === 'audiolibro'
   const isDigital = book?.format === 'digital'
+  const showMissingStartDatePrompt = !!book && book.status === 'leyendo' && !book.start_date && !startDatePromptIgnored
 
   useEffect(() => {
     if (!book) return
@@ -71,6 +76,11 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     setIsAbandonOpen(false)
     onUpdated()
     onClose()
+  }
+
+  async function handleSetMissingStartDate(startDate: string) {
+    await updateBook({ start_date: startDate })
+    onUpdated()
   }
 
   return (
@@ -155,6 +165,12 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
           onConfirm={handleAbandonConfirm}
         />
       )}
+
+      <MissingStartDateModal
+        isOpen={showMissingStartDatePrompt}
+        onConfirm={handleSetMissingStartDate}
+        onIgnore={() => setStartDatePromptIgnored(true)}
+      />
     </div>
   )
 }

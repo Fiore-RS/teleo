@@ -51,6 +51,7 @@ export function Mesa() {
                 coverUrl={book.cover_url ?? undefined}
                 progressPercent={percent}
                 progressLabel={label}
+                missingStartDate={!book.start_date}
                 onUpdateClick={() => setUpdatingBookId(book.id)}
               />
             );

@@ -6,7 +6,6 @@ import { useBook } from '../hooks/useBook'
 import { useCoverUpload } from '../hooks/useCoverUpload'
 import { useReviewExists } from '../hooks/useReviewExists'
 import { DogEar } from '../assets/components/atoms/DogEar'
-import { Badge } from '../assets/components/atoms/Badge'
 import { Tag } from '../assets/components/atoms/Tag'
 import { HorizontalScroller } from '../assets/components/atoms/HorizontalScroller'
 import { TagInput } from '../assets/components/molecules/TagInput'
@@ -16,6 +15,9 @@ import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
 import { FavoriteToggle } from '../assets/components/atoms/FavoriteToggle'
 import { Button } from '../assets/components/atoms/Button'
 import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
+import { StartReadingDateModal } from '../assets/components/molecules/StartReadingDateModal'
+import { StatusMenu } from '../assets/components/molecules/StatusMenu'
+import { AbandonarLibroModal } from '../assets/components/molecules/AbandonarLibroModal'
 import { statusLabel, type ReadingStatus } from '../lib/status'
 import { Resena } from './Resena'
 import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
@@ -65,7 +67,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
   const [isEditing, setIsEditing] = useState(false)
   const [isResenaOpen, setIsResenaOpen] = useState(false)
+  const [isAbandonOpen, setIsAbandonOpen] = useState(false)
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
+  // Actualización de estado pendiente de confirmar: cuando se marca un libro como "leyendo"
+  // (desde "Retomar Lectura" o desde el selector de Estado al editar), se guarda acá la
+  // actualización a aplicar y se pregunta primero si hoy debe quedar como fecha de inicio.
+  const [pendingLeyendoUpdate, setPendingLeyendoUpdate] = useState<Parameters<typeof updateBook>[0] | null>(null)
   const [draft, setDraft] = useState<{
   title: string; author: string
   format: 'fisico' | 'digital' | 'audiolibro'
@@ -95,19 +102,59 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     ? parseDurationInput(draft.totalDuration)
     : null
 
-  await updateBook({
+  const updates = {
     title: draft.title, author: draft.author || null,
     format: draft.format, category: draft.category, status: draft.status,
     language: draft.language || null,
     total_pages: draft.format !== 'audiolibro' && draft.totalPages ? parseInt(draft.totalPages, 10) : null,
     total_duration_seconds: totalDurationSeconds,
-  })
+  }
+
+  // Si se está marcando el libro como "leyendo" (y no lo estaba ya), se pregunta primero
+  // si hoy debe quedar como fecha de inicio antes de guardar — ver applyPendingLeyendoUpdate.
+  if (draft.status === 'leyendo' && book?.status !== 'leyendo') {
+    setPendingLeyendoUpdate(updates)
+    return
+  }
+
+  await updateBook(updates)
   setIsEditing(false)
 }
+
+  async function applyPendingLeyendoUpdate(withStartDate: boolean) {
+    if (!pendingLeyendoUpdate) return
+    await updateBook(
+      withStartDate
+        ? { ...pendingLeyendoUpdate, start_date: new Date().toISOString().slice(0, 10) }
+        : pendingLeyendoUpdate
+    )
+    setPendingLeyendoUpdate(null)
+    setIsEditing(false)
+  }
 
   async function handleDelete() {
     const ok = await deleteBook()
     setDeleteState(ok ? 'success' : 'error')
+  }
+
+  // Cambio rápido de estado desde el menú en cascada de la insignia (StatusMenu), sin
+  // necesidad de entrar a "Editar Libro" — cada destino conserva el mismo flujo/datos
+  // adicionales que ya se le pedían al usuario en el resto de la app para ese estado.
+  function handleStatusChange(newStatus: ReadingStatus) {
+    if (newStatus === 'leyendo') {
+      setPendingLeyendoUpdate({ status: 'leyendo' })
+    } else if (newStatus === 'terminado') {
+      updateBook({ status: 'terminado', end_date: new Date().toISOString().slice(0, 10) })
+    } else if (newStatus === 'abandonado') {
+      setIsAbandonOpen(true)
+    } else {
+      updateBook({ status: newStatus })
+    }
+  }
+
+  async function handleAbandonConfirm(data: { abandon_reason: string; start_date: string; end_date: string }) {
+    await updateBook({ status: 'abandonado', ...data })
+    setIsAbandonOpen(false)
   }
 
   return (
@@ -168,7 +215,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <h3 className="font-display italic text-display-md text-accent-wishlist text-center">{book.title}</h3>
                 <div className="flex items-center justify-between mt-2">
                   <p className="text-body-md text-text-secondary">{book.author}</p>
-                  <Badge status={book.status as ReadingStatus} />
+                  <StatusMenu status={book.status as ReadingStatus} onChange={handleStatusChange} />
                 </div>
 
                 {tags.length > 0 && (
@@ -197,7 +244,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   </Button>
                 )}
                 {book.status === 'abandonado' && (
-                  <Button variant="green" className="mt-5" onClick={() => updateBook({ status: 'leyendo' })}>
+                  <Button variant="green" className="mt-5" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
                     Retomar Lectura
                   </Button>
                 )}
@@ -288,6 +335,22 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           if (wasSuccess) onDeleted()
         }}
       />
+
+      <StartReadingDateModal
+        isOpen={pendingLeyendoUpdate !== null}
+        onConfirm={() => applyPendingLeyendoUpdate(true)}
+        onDismiss={() => applyPendingLeyendoUpdate(false)}
+      />
+
+      {book && (
+        <AbandonarLibroModal
+          isOpen={isAbandonOpen}
+          onClose={() => setIsAbandonOpen(false)}
+          bookTitle={book.title}
+          initialStartDate={book.start_date ?? ''}
+          onConfirm={handleAbandonConfirm}
+        />
+      )}
 
       {isResenaOpen && (
         <Resena
