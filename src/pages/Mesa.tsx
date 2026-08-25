@@ -1,4 +1,4 @@
-import { Flag, Check, ArrowUpDown, Pencil } from "lucide-react";
+import { Flag, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
@@ -17,6 +17,7 @@ import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
 import { EditListNameModal } from "../assets/components/molecules/EditListNameModal";
+import { PriorityListMenu } from "../assets/components/molecules/PriorityListMenu";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
 import { StartReadingDateModal } from "../assets/components/molecules/StartReadingDateModal";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
@@ -32,9 +33,10 @@ import {
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
+import { HorizontalScroller } from "../assets/components/atoms/HorizontalScroller";
 
 export function Mesa() {
   const navigate = useNavigate();
@@ -123,22 +125,14 @@ export function Mesa() {
           title={priorityListName}
           variant="title"
           rightContent={
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsEditListNameOpen(true)}
-                aria-label="Editar nombre de la lista"
-              >
-                <Pencil size={14} />
-              </button>
-              {priorityBooks.length > 0 && (
-                <button
-                  onClick={() => navigate("/estante?filtro=temporada")}
-                  className="underline underline-offset-2"
-                >
-                  Ver en Estante
-                </button>
-              )}
-            </div>
+            <PriorityListMenu
+              isReordering={isPriorityReordering}
+              canReorder={priorityBooks.length > 1}
+              canViewInEstante={priorityBooks.length > 0}
+              onEditName={() => setIsEditListNameOpen(true)}
+              onToggleReorder={() => setIsPriorityReordering((v) => !v)}
+              onViewInEstante={() => navigate("/estante?filtro=temporada")}
+            />
           }
         />
 
@@ -148,51 +142,44 @@ export function Mesa() {
           </p>
         ) : (
           <>
-            {priorityBooks.length > 1 && (
-              <button
-                onClick={() => setIsPriorityReordering((v) => !v)}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-body-sm font-body text-surface"
-                style={{ backgroundColor: "var(--color-state-pending)" }}
-              >
-                <ArrowUpDown size={14} />
-                {isPriorityReordering ? "Listo" : "Organizar"}
-              </button>
-            )}
             {isPriorityReordering && (
-              <p className="text-body-sm text-text-secondary text-center mt-2">
+              <p className="text-body-sm text-text-secondary text-center mt-3">
                 Mantén presionado unos instantes para arrastrar y organizar tu lista.
               </p>
             )}
 
             {isPriorityReordering ? (
               <DndContext sensors={prioritySensors} collisionDetection={closestCenter} onDragEnd={handlePriorityDragEnd}>
-                <SortableContext items={priorityBooks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-                  <div className="space-y-3 mt-3">
+                <SortableContext items={priorityBooks.map((b) => b.id)} strategy={horizontalListSortingStrategy}>
+                  <HorizontalScroller className="mt-3">
                     {priorityBooks.map((book) => (
-                      <SortableItem key={book.id} id={book.id}>
-                        <BookCardPriority
-                          title={book.title}
-                          author={book.author ?? undefined}
-                          coverUrl={book.cover_url ?? undefined}
-                          onStartReading={() => setPendingStartId(book.id)}
-                        />
-                      </SortableItem>
+                      <div key={book.id} className="w-32 shrink-0">
+                        <SortableItem id={book.id} axis="x">
+                          <BookCardPriority
+                            title={book.title}
+                            author={book.author ?? undefined}
+                            coverUrl={book.cover_url ?? undefined}
+                            onStartReading={() => setPendingStartId(book.id)}
+                          />
+                        </SortableItem>
+                      </div>
                     ))}
-                  </div>
+                  </HorizontalScroller>
                 </SortableContext>
               </DndContext>
             ) : (
-              <div className="space-y-3 mt-3">
+              <HorizontalScroller className="mt-3">
                 {priorityBooks.map((book) => (
-                  <BookCardPriority
-                    key={book.id}
-                    title={book.title}
-                    author={book.author ?? undefined}
-                    coverUrl={book.cover_url ?? undefined}
-                    onStartReading={() => setPendingStartId(book.id)}
-                  />
+                  <div key={book.id} className="w-32 shrink-0">
+                    <BookCardPriority
+                      title={book.title}
+                      author={book.author ?? undefined}
+                      coverUrl={book.cover_url ?? undefined}
+                      onStartReading={() => setPendingStartId(book.id)}
+                    />
+                  </div>
                 ))}
-              </div>
+              </HorizontalScroller>
             )}
           </>
         )}
