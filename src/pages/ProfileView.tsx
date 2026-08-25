@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Camera, SquarePen, Flag } from 'lucide-react'
+import { Camera, SquarePen, Flag, Check } from 'lucide-react'
 import { SectionHeader } from '../assets/components/atoms/SectionHeader'
 import { StatBox } from '../assets/components/atoms/StatBox'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
@@ -101,6 +101,21 @@ export function ProfileView({
   const currentYear = new Date().getFullYear()
   const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
 
+  // "Mis años en libros" y "Metas de lectura" contaban prácticamente lo mismo (año → libros
+  // terminados ese año) en dos secciones separadas — se combinan acá en una sola lista por
+  // año: si ese año tuvo una meta registrada se compara contra ella ("X de Y libros"), y si
+  // no, se muestra el conteo simple ("X libros terminados") como antes.
+  const goalByYear = new Map(goalHistory.map((g) => [g.year, g]))
+  const yearsInBooks = [
+    ...new Set([...yearsBreakdown.map((y) => y.year), ...goalHistory.map((g) => g.year)]),
+  ]
+    .sort((a, b) => b - a)
+    .map((year) => {
+      const goalEntry = goalByYear.get(year)
+      const count = yearsBreakdown.find((y) => y.year === year)?.count ?? goalEntry?.completedCount ?? 0
+      return { year, count, goal: goalEntry?.goal }
+    })
+
   const avatarContent = avatarUrl ? (
     <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
   ) : (
@@ -190,43 +205,42 @@ export function ProfileView({
           </div>
         )}
 
-        {!readOnly && goalHistory.length > 0 && (
-          <div>
-            <h3 className="font-display italic text-display-md text-accent-wishlist">Metas de lectura</h3>
-            <div className="border-b-6 border-border mt-2 mb-3" />
-            <div className="grid grid-cols-2 gap-3">
-              {goalHistory.map((entry) => (
-                <div key={entry.year} className="bg-surface border border-border rounded-2xl p-4 text-center">
-                  <p className="font-display text-display-lg text-accent-wishlist">{entry.year}</p>
-                  <p className="text-body-sm text-text-secondary">{entry.completedCount} de {entry.goal} libros</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {showYearsInBooks && yearsBreakdown.length > 0 && (
+        {showYearsInBooks && yearsInBooks.length > 0 && (
           <div>
             <h3 className="font-display italic text-display-md text-accent-wishlist">Mis años en libros</h3>
             <div className="border-b-6 border-border mt-2 mb-3" />
             <div className="grid grid-cols-2 gap-3">
-              {yearsBreakdown.map(({ year, count }) =>
-                onYearClick ? (
+              {yearsInBooks.map(({ year, count, goal }) => {
+                const metGoal = typeof goal === 'number' && goal > 0 && count >= goal
+                const subtitle =
+                  typeof goal === 'number'
+                    ? `${count} de ${goal} libros`
+                    : `${count} libro${count === 1 ? '' : 's'} terminado${count === 1 ? '' : 's'}`
+
+                const badge = metGoal && (
+                  <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent-finished flex items-center justify-center">
+                    <Check size={13} strokeWidth={2.5} className="text-surface" />
+                  </span>
+                )
+
+                return onYearClick ? (
                   <button
                     key={year}
                     onClick={() => onYearClick(year)}
-                    className="bg-surface border border-border rounded-2xl p-4 text-center active:opacity-80 transition-opacity"
+                    className="relative bg-surface border border-border rounded-2xl p-4 text-center active:opacity-80 transition-opacity"
                   >
+                    {badge}
                     <p className="font-display text-display-lg text-accent-wishlist">{year}</p>
-                    <p className="text-body-sm text-text-secondary">{count} libros terminados</p>
+                    <p className="text-body-sm text-text-secondary">{subtitle}</p>
                   </button>
                 ) : (
-                  <div key={year} className="bg-surface border border-border rounded-2xl p-4 text-center">
+                  <div key={year} className="relative bg-surface border border-border rounded-2xl p-4 text-center">
+                    {badge}
                     <p className="font-display text-display-lg text-accent-wishlist">{year}</p>
-                    <p className="text-body-sm text-text-secondary">{count} libros terminados</p>
+                    <p className="text-body-sm text-text-secondary">{subtitle}</p>
                   </div>
                 )
-              )}
+              })}
             </div>
           </div>
         )}
