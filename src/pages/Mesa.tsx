@@ -228,10 +228,6 @@ export function Mesa() {
         </div>
       </section>
 
-      <p className="text-center font-handwritten text-hand-lg text-text-secondary italic px-4">
-        "El que lee mucho y anda mucho, ve mucho y sabe mucho"
-      </p>
-
       <div className="pb-10" />
       <TabBar active="mesa" onChange={handleTabChange} />
 
