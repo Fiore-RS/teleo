@@ -21,9 +21,11 @@ export interface YearInBooksData {
 
 const emptyData: YearInBooksData = { totalBooks: 0, totalPages: 0, totalAudioSeconds: 0, months: [] }
 
-/** Trae los libros terminados de un usuario en un año puntual, agrupados por mes —
- *  usado por el modal "Libros leídos en 20XX" que se abre desde la tarjeta de año en
- *  Perfil. Solo se activa cuando `year` no es null (el modal está abierto). */
+/** Trae las lecturas completadas de un usuario en un año puntual (desde `reading_history`,
+ *  no directamente los libros "terminado" — así una relectura terminada ese año aparece
+ *  como una entrada más, aunque sea el mismo libro), agrupadas por mes. Usado por el modal
+ *  "Libros leídos en 20XX" que se abre desde la tarjeta de año en Perfil. Solo se activa
+ *  cuando `year` no es null (el modal está abierto). */
 export function useYearInBooks(userId: string | undefined, year: number | null) {
   const [data, setData] = useState<YearInBooksData>(emptyData)
   const [isLoading, setIsLoading] = useState(false)
@@ -35,34 +37,46 @@ export function useYearInBooks(userId: string | undefined, year: number | null) 
     }
     setIsLoading(true)
 
-    const { data: rows } = await supabase
-      .from('books')
-      .select('id, title, cover_url, end_date, total_pages, total_duration_seconds, format')
+    const { data: historyRows } = await supabase
+      .from('reading_history')
+      .select('book_id, end_date')
       .eq('user_id', userId)
-      .eq('status', 'terminado')
       .gte('end_date', `${year}-01-01`)
       .lte('end_date', `${year}-12-31`)
       .order('end_date', { ascending: true })
 
-    const books = rows ?? []
-    const totalPages = books.reduce((sum, b) => sum + (b.total_pages ?? 0), 0)
-    const totalAudioSeconds = books
-      .filter((b) => b.format === 'audiolibro')
-      .reduce((sum, b) => sum + (b.total_duration_seconds ?? 0), 0)
+    const reads = historyRows ?? []
+    const bookIds = [...new Set(reads.map((r) => r.book_id))]
+
+    let books: { id: string; title: string; cover_url: string | null; total_pages: number | null; total_duration_seconds: number | null; format: string | null }[] = []
+    if (bookIds.length > 0) {
+      const { data: bookRows } = await supabase
+        .from('books')
+        .select('id, title, cover_url, total_pages, total_duration_seconds, format')
+        .in('id', bookIds)
+      books = bookRows ?? []
+    }
+    const bookById = new Map(books.map((b) => [b.id, b]))
+
+    const totalPages = reads.reduce((sum, r) => sum + (bookById.get(r.book_id)?.total_pages ?? 0), 0)
+    const totalAudioSeconds = reads
+      .filter((r) => bookById.get(r.book_id)?.format === 'audiolibro')
+      .reduce((sum, r) => sum + (bookById.get(r.book_id)?.total_duration_seconds ?? 0), 0)
 
     const byMonth = new Map<number, YearBookEntry[]>()
-    for (const b of books) {
-      if (!b.end_date) continue
-      const month = parseInt(b.end_date.slice(5, 7), 10)
+    for (const r of reads) {
+      const book = bookById.get(r.book_id)
+      if (!book) continue
+      const month = parseInt(r.end_date.slice(5, 7), 10)
       const list = byMonth.get(month) ?? []
-      list.push({ id: b.id, title: b.title, cover_url: b.cover_url })
+      list.push({ id: book.id, title: book.title, cover_url: book.cover_url })
       byMonth.set(month, list)
     }
     const months = Array.from(byMonth.entries())
       .sort(([a], [b]) => a - b)
       .map(([month, monthBooks]) => ({ month, books: monthBooks }))
 
-    setData({ totalBooks: books.length, totalPages, totalAudioSeconds, months })
+    setData({ totalBooks: reads.length, totalPages, totalAudioSeconds, months })
     setIsLoading(false)
   }, [userId, year])
 

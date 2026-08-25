@@ -7,9 +7,9 @@ export interface GoalHistoryEntry {
   completedCount: number
 }
 
-/** Historial de metas anuales de lectura: una fila de `reading_goals` por año,
- *  cruzada con la cantidad de libros terminados ese mismo año, para mostrar en
- *  la sección "Metas de lectura" del perfil. */
+/** Historial de metas anuales de lectura: una fila de `reading_goals` por año, cruzada con
+ *  la cantidad de lecturas completadas ese mismo año (según `reading_history`, que cuenta
+ *  cada relectura terminada ese año además de la primera lectura). */
 export function useGoalHistory(userId: string | undefined) {
   const [history, setHistory] = useState<GoalHistoryEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -18,15 +18,14 @@ export function useGoalHistory(userId: string | undefined) {
     if (!userId) return
     setIsLoading(true)
 
-    const [{ data: goalRows }, { data: bookRows }] = await Promise.all([
+    const [{ data: goalRows }, { data: historyRows }] = await Promise.all([
       supabase.from('reading_goals').select('year, goal').eq('user_id', userId).order('year', { ascending: false }),
-      supabase.from('books').select('end_date').eq('user_id', userId).eq('status', 'terminado').not('end_date', 'is', null),
+      supabase.from('reading_history').select('end_date').eq('user_id', userId),
     ])
 
     const countsByYear = new Map<number, number>()
-    for (const b of bookRows ?? []) {
-      if (!b.end_date) continue
-      const year = parseInt(b.end_date.slice(0, 4), 10)
+    for (const h of historyRows ?? []) {
+      const year = parseInt(h.end_date.slice(0, 4), 10)
       countsByYear.set(year, (countsByYear.get(year) ?? 0) + 1)
     }
 

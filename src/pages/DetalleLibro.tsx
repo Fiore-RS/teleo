@@ -5,6 +5,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
 import { useCoverUpload } from '../hooks/useCoverUpload'
 import { useReviewExists } from '../hooks/useReviewExists'
+import { useBookReadCount } from '../hooks/useBookReadCount'
+import { recordBookCompletion } from '../lib/readingHistory'
 import { DogEar } from '../assets/components/atoms/DogEar'
 import { Tag } from '../assets/components/atoms/Tag'
 import { HorizontalScroller } from '../assets/components/atoms/HorizontalScroller'
@@ -54,6 +56,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const { user } = useAuth()
   const { book, tags, isLoading, updateBook, addTag, removeTag, deleteBook } = useBook(bookId)
   const { exists: hasReview, refetch: refetchReview } = useReviewExists(bookId)
+  const { count: readCount, refetch: refetchReadCount } = useBookReadCount(bookId)
   const { uploadCover, isUploading } = useCoverUpload(user?.id)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
@@ -123,11 +126,20 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
   async function applyPendingLeyendoUpdate(withStartDate: boolean) {
     if (!pendingLeyendoUpdate) return
-    await updateBook(
-      withStartDate
-        ? { ...pendingLeyendoUpdate, start_date: new Date().toISOString().slice(0, 10) }
-        : pendingLeyendoUpdate
-    )
+
+    // Si el libro ya estaba "terminado", esto es una relectura (por el botón "Leer de
+    // nuevo" o eligiendo "Leyendo" desde el menú de estado/edición): la lectura anterior ya
+    // quedó guardada en el historial cuando se marcó terminada, así que acá solo se reinicia
+    // el progreso de esta nueva vuelta y se limpia la fecha de fin, que ya no aplica hasta
+    // que se vuelva a terminar. Si venía de "abandonado" (Retomar Lectura), no se reinicia
+    // nada — se sigue desde donde se dejó.
+    const isReread = book?.status === 'terminado'
+
+    await updateBook({
+      ...pendingLeyendoUpdate,
+      ...(isReread ? { current_page: 0, progress_percent: 0, current_duration_seconds: 0, end_date: null } : {}),
+      ...(withStartDate ? { start_date: new Date().toISOString().slice(0, 10) } : {}),
+    })
     setPendingLeyendoUpdate(null)
     setIsEditing(false)
   }
@@ -140,11 +152,16 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   // Cambio rápido de estado desde el menú en cascada de la insignia (StatusMenu), sin
   // necesidad de entrar a "Editar Libro" — cada destino conserva el mismo flujo/datos
   // adicionales que ya se le pedían al usuario en el resto de la app para ese estado.
-  function handleStatusChange(newStatus: ReadingStatus) {
+  async function handleStatusChange(newStatus: ReadingStatus) {
     if (newStatus === 'leyendo') {
       setPendingLeyendoUpdate({ status: 'leyendo' })
     } else if (newStatus === 'terminado') {
-      updateBook({ status: 'terminado', end_date: new Date().toISOString().slice(0, 10) })
+      const endDate = new Date().toISOString().slice(0, 10)
+      await updateBook({ status: 'terminado', end_date: endDate })
+      // Se guarda esta lectura en el historial (primera vez o relectura) para que "Mis años
+      // en libros" y la meta anual cuenten este libro en el año en que se terminó.
+      await recordBookCompletion({ bookId, userId: user?.id, startDate: book?.start_date ?? null, endDate })
+      refetchReadCount()
     } else if (newStatus === 'abandonado') {
       setIsAbandonOpen(true)
     } else {
@@ -229,6 +246,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   {book.language && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">{book.language}</div>}
                   {book.format && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">{formatOptions.find((f) => f.value === book.format)?.label}</div>}
                   {book.category && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">{book.category}</div>}
+                  {readCount > 1 && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">Leído {readCount} veces</div>}
                 </div>
 
                 {book.status === 'abandonado' && book.abandon_reason && (
@@ -241,6 +259,11 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 {book.status === 'terminado' && (
                   <Button variant={hasReview ? 'primary' : 'green'} className="mt-5" onClick={() => setIsResenaOpen(true)}>
                     {hasReview ? 'Ver Reseña de Lectura' : 'Crear Reseña de Lectura'}
+                  </Button>
+                )}
+                {book.status === 'terminado' && (
+                  <Button variant="slate" className="mt-3" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
+                    Leer de nuevo
                   </Button>
                 )}
                 {book.status === 'abandonado' && (

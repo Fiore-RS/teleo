@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { ImageOff } from 'lucide-react'
 import { CoverImage } from '../atoms/CoverImage'
+import { useAuth } from '../../../hooks/useAuth'
 import { useBook } from '../../../hooks/useBook'
 import { getProgressInfo } from '../../../lib/progress'
 import { parseDurationInput, secondsToTimeInput } from '../../../lib/duration'
+import { recordBookCompletion } from '../../../lib/readingHistory'
 import { ProgressBar } from '../atoms/ProgressBar'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
@@ -20,6 +22,7 @@ interface UpdateProgressModalProps {
 }
 
 export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgressModalProps) {
+  const { user } = useAuth()
   const { book, updateBook } = useBook(bookId)
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -68,8 +71,13 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   }
 
   async function handleMarkFinished() {
+    if (!book) return
     setIsSaving(true)
-    await updateBook({ status: 'terminado', end_date: new Date().toISOString().slice(0, 10) })
+    const endDate = new Date().toISOString().slice(0, 10)
+    await updateBook({ status: 'terminado', end_date: endDate })
+    // Se guarda esta lectura en el historial (sea la primera vez o una relectura) para que
+    // "Mis años en libros" y la meta anual cuenten este libro en el año en que se terminó.
+    await recordBookCompletion({ bookId, userId: user?.id, startDate: book.start_date, endDate })
     setIsSaving(false)
     onUpdated()
     setShowReviewPrompt(true)

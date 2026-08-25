@@ -4,6 +4,7 @@ import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
 import { useReview } from '../hooks/useReview'
+import { useBookHistory } from '../hooks/useBookHistory'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
 import { DateInput } from '../assets/components/atoms/DateInput'
 import { Textarea } from '../assets/components/atoms/Textarea'
@@ -31,6 +32,10 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     addCustomRating, updateCustomRating, removeCustomRating,
     addQuote, removeQuote,
   } = useReview(bookId, user?.id)
+  const { history: readingHistory } = useBookHistory(bookId)
+  // La primera entrada (más reciente) es el ciclo actual, ya mostrado arriba con
+  // book.start_date/end_date — acá solo se listan las lecturas ANTERIORES a esa.
+  const pastReads = readingHistory.slice(1)
 
   const [isEditing, setIsEditing] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
@@ -124,6 +129,19 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                     <p className="text-body-md text-text">{book.end_date ?? '—'}</p>
                   </div>
                 </div>
+
+                {pastReads.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-body-sm text-text-secondary mb-2">Lecturas anteriores</p>
+                    <div className="space-y-2">
+                      {pastReads.map((h) => (
+                        <div key={h.id} className="bg-bg rounded-xl p-3 text-body-md text-text text-center">
+                          {h.start_date ? `${h.start_date} — ${h.end_date}` : h.end_date}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <p className="text-body-sm text-text-secondary mt-4 mb-1">Calificaciones</p>
                 <div className="space-y-2">

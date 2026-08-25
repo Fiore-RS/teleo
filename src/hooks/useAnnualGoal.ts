@@ -15,13 +15,15 @@ export function useAnnualGoal(userId: string | undefined) {
     setIsLoading(true)
     const year = new Date().getFullYear()
 
+    // Se cuenta desde `reading_history` (no `books` directamente) para que una relectura
+    // terminada este año también sume hacia la meta anual, sin depender de que sea la
+    // primera vez que se termina el libro.
     const [{ data: goalRow }, { count }] = await Promise.all([
       supabase.from('reading_goals').select('goal').eq('user_id', userId).eq('year', year).maybeSingle(),
       supabase
-        .from('books')
+        .from('reading_history')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
-        .eq('status', 'terminado')
         .gte('end_date', `${year}-01-01`)
         .lte('end_date', `${year}-12-31`),
     ])
