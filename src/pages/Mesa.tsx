@@ -1,11 +1,13 @@
-import { Flag, Check, ArrowUpDown } from "lucide-react";
+import { Flag, Check, ArrowUpDown, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
 import { useReadingStreak } from "../hooks/useReadingStreak";
 import { useAnnualGoal } from "../hooks/useAnnualGoal";
 import { usePriorityBooks } from "../hooks/usePriorityBooks";
+import { useProfile } from "../hooks/useProfile";
 import { getProgressInfo } from "../lib/progress";
+import { DEFAULT_PRIORITY_LIST_NAME, getPriorityListName } from "../lib/priorityList";
 import { SectionHeader } from "../assets/components/atoms/SectionHeader";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
 import { BookCardPriority } from "../assets/components/molecules/BookCardPriority";
@@ -14,6 +16,7 @@ import { Button } from "../assets/components/atoms/Button";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
+import { EditListNameModal } from "../assets/components/molecules/EditListNameModal";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
 import { StartReadingDateModal } from "../assets/components/molecules/StartReadingDateModal";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
@@ -44,12 +47,16 @@ export function Mesa() {
     reorderBook: reorderPriorityBook,
     startReading,
   } = usePriorityBooks(user?.id)
+  const { profile, updateProfile } = useProfile(user?.id)
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isUnmarkOpen, setIsUnmarkOpen] = useState(false);
   const [isPriorityReordering, setIsPriorityReordering] = useState(false)
   const [pendingStartId, setPendingStartId] = useState<string | null>(null)
+  const [isEditListNameOpen, setIsEditListNameOpen] = useState(false)
   const { goal, completedCount, updateGoal } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
+
+  const priorityListName = getPriorityListName(profile?.priority_list_name)
 
   const goalPercent =
     goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
@@ -113,23 +120,31 @@ export function Mesa() {
 
       <section>
         <SectionHeader
-          title="Mi lista de esta temporada"
+          title={priorityListName}
           variant="title"
           rightContent={
-            priorityBooks.length > 0 && (
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate("/estante?filtro=temporada")}
-                className="underline underline-offset-2"
+                onClick={() => setIsEditListNameOpen(true)}
+                aria-label="Editar nombre de la lista"
               >
-                Ver en Estante
+                <Pencil size={14} />
               </button>
-            )
+              {priorityBooks.length > 0 && (
+                <button
+                  onClick={() => navigate("/estante?filtro=temporada")}
+                  className="underline underline-offset-2"
+                >
+                  Ver en Estante
+                </button>
+              )}
+            </div>
           }
         />
 
         {!priorityLoading && priorityBooks.length === 0 ? (
           <p className="text-body-md text-text-secondary mt-3">
-            Aún no has agregado libros a tu lista de esta temporada. Márcalos desde Detalle del Libro.
+            Aún no has agregado libros a {priorityListName}. Márcalos desde Detalle del Libro.
           </p>
         ) : (
           <>
@@ -247,6 +262,16 @@ export function Mesa() {
           await unmarkToday()
         }}
         onDismiss={() => setIsUnmarkOpen(false)}
+      />
+
+      <EditListNameModal
+        isOpen={isEditListNameOpen}
+        onClose={() => setIsEditListNameOpen(false)}
+        currentName={profile?.priority_list_name ?? ""}
+        defaultName={DEFAULT_PRIORITY_LIST_NAME}
+        onSave={async (name) => {
+          await updateProfile({ priority_list_name: name })
+        }}
       />
 
       <StartReadingDateModal

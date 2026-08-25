@@ -4,6 +4,8 @@ import { ArrowUpDown, SlidersHorizontal, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
+import { useProfile } from "../hooks/useProfile";
+import { getPriorityListName } from "../lib/priorityList";
 import { SearchBar } from "../assets/components/molecules/SearchBar";
 import { SegmentedTabs } from "../assets/components/atoms/SegmentedTabs";
 import {
@@ -56,6 +58,8 @@ export function Estante() {
     refetch: refetchSagas,
     reorderSaga,
   } = useLibrarySagas(user?.id);
+  const { profile } = useProfile(user?.id);
+  const priorityListName = getPriorityListName(profile?.priority_list_name);
 
   const [tab, setTab] = useState<LibraryTab>("libros");
   const [advFilters, setAdvFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
@@ -205,7 +209,7 @@ export function Estante() {
                 ? "Favoritos"
                 : quickFlag === "recomendados"
                   ? "Recomendados"
-                  : "Mi lista de esta temporada"}
+                  : priorityListName}
             </span>
             <button onClick={() => setQuickFlag(null)} aria-label="Quitar filtro" className="text-text-secondary">
               <X size={16} />
