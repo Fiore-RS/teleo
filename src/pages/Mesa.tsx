@@ -1,4 +1,4 @@
-import { Flag } from "lucide-react";
+import { Flag, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
@@ -71,10 +71,11 @@ export function Mesa() {
             {streak} días seguidos
           </p>
           <Button
-            variant="green"
+            variant={markedToday ? "outline" : "green"}
             className="mt-4"
             onClick={() => (markedToday ? setIsUnmarkOpen(true) : markToday())}
           >
+            {markedToday && <Check size={18} strokeWidth={2.5} />}
             {markedToday ? "Sesión de hoy marcada" : "Marcar sesión de hoy"}
           </Button>
         </div>
