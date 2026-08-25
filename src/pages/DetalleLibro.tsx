@@ -15,6 +15,7 @@ import { Input } from '../assets/components/atoms/Input'
 import { Select } from '../assets/components/atoms/Select'
 import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
 import { FavoriteToggle } from '../assets/components/atoms/FavoriteToggle'
+import { PriorityToggle } from '../assets/components/atoms/PriorityToggle'
 import { Button } from '../assets/components/atoms/Button'
 import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { StartReadingDateModal } from '../assets/components/molecules/StartReadingDateModal'
@@ -97,6 +98,18 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   })
   setIsEditing(true)
 }
+
+  // Igual que el favorito: se guarda al toque, sin esperar a "Guardar Cambios". Si recién se
+  // está marcando como prioridad (no lo era antes), se le da un orden inicial al final de la
+  // lista, igual que estante_sort_order/saga_sort_order.
+  function handleTogglePriority() {
+    if (!book) return
+    const nextPriority = !book.is_priority
+    updateBook({
+      is_priority: nextPriority,
+      ...(nextPriority ? { priority_sort_order: Date.now() } : {}),
+    })
+  }
 
   async function handleSave() {
   if (!draft) return
@@ -334,8 +347,20 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 </div>
                 <div className="mt-2"><TagInput onAdd={addTag} /></div>
 
-                <label className="text-body-sm text-text-secondary block mb-1 mt-4">Marcar como favorito</label>
-                <FavoriteToggle isFavorite={book.is_favorite ?? false} onToggle={() => updateBook({ is_favorite: !book.is_favorite })} />
+                <div className={`grid gap-3 mt-4 ${draft.status === 'pendiente' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  <div>
+                    <label className="text-body-sm text-text-secondary block mb-1 text-center">Favorito</label>
+                    <FavoriteToggle isFavorite={book.is_favorite ?? false} onToggle={() => updateBook({ is_favorite: !book.is_favorite })} />
+                  </div>
+                  {draft.status === 'pendiente' && (
+                    <div>
+                      <label className="text-body-sm text-text-secondary block mb-1 text-center">
+                        Esta temporada
+                      </label>
+                      <PriorityToggle isPriority={book.is_priority ?? false} onToggle={handleTogglePriority} />
+                    </div>
+                  )}
+                </div>
 
                 <div className="flex gap-3 mt-5">
                   <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>

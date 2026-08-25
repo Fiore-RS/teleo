@@ -7,6 +7,7 @@ import { Button } from '../atoms/Button'
 import { CoverImage } from '../atoms/CoverImage'
 import { SegmentedTabs } from '../atoms/SegmentedTabs'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
+import { PriorityToggle } from '../atoms/PriorityToggle'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
 import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 import type { ReadingStatus } from '../../../lib/status'
@@ -27,6 +28,7 @@ interface NewBookPayload {
   total_pages: number | null; language: string | null; category: string | null
   isbn: string | null; format?: BookFormat | null; status: ReadingStatus; saga_id?: string
   total_duration_seconds?: number | null
+  is_priority?: boolean; priority_sort_order?: number
 }
 
 interface AddBookModalProps {
@@ -71,6 +73,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const [format, setFormat] = useState<BookFormat>('fisico')
   const [isManual, setIsManual] = useState(false)
   const [manualDraft, setManualDraft] = useState<ManualDraft>(emptyManualDraft(initialStatus))
+  const [isPriority, setIsPriority] = useState(false)
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
@@ -95,6 +98,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setFormat('fisico')
     setIsManual(false)
     setManualDraft(emptyManualDraft(initialStatus))
+    setIsPriority(false)
   }
 
   function selectResult(r: BookSearchResult) {
@@ -129,6 +133,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   async function handleAdd() {
     if (!result) return
     setIsSaving(true)
+    const resolvedStatus = canPickStatus ? status : initialStatus
     const { error } = await onAdd({
       title: result.title,
       author: result.author ?? null,
@@ -138,8 +143,11 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       category: category || null,
       isbn: result.isbn ?? null,
       format,
-      status: canPickStatus ? status : initialStatus,
+      status: resolvedStatus,
       saga_id: sagaId,
+      ...(resolvedStatus === 'pendiente' && isPriority
+        ? { is_priority: true, priority_sort_order: Date.now() }
+        : {}),
     })
     setIsSaving(false)
     if (!error) handleClose()
@@ -149,6 +157,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     if (!manualDraft.title.trim()) return
     setIsSaving(true)
     const isAudiobook = manualDraft.format === 'audiolibro'
+    const resolvedStatus = canPickStatus ? manualDraft.status : initialStatus
     const { error } = await onAdd({
       title: manualDraft.title.trim(),
       author: manualDraft.author.trim() || null,
@@ -159,8 +168,11 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       category: manualDraft.category || null,
       isbn: manualDraft.isbn.trim() || null,
       format: manualDraft.format,
-      status: canPickStatus ? manualDraft.status : initialStatus,
+      status: resolvedStatus,
       saga_id: sagaId,
+      ...(resolvedStatus === 'pendiente' && isPriority
+        ? { is_priority: true, priority_sort_order: Date.now() }
+        : {}),
     })
     setIsSaving(false)
     if (!error) handleClose()
@@ -288,6 +300,15 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                   value={manualDraft.status}
                   onChange={(e) => setManualDraft({ ...manualDraft, status: e.target.value as ReadingStatus })}
                 />
+              </div>
+            )}
+
+            {canPickStatus && manualDraft.status === 'pendiente' && (
+              <div>
+                <label className="text-body-sm text-text-secondary block mb-1">
+                  Agregar a mi lista de esta temporada
+                </label>
+                <PriorityToggle isPriority={isPriority} onToggle={() => setIsPriority((prev) => !prev)} />
               </div>
             )}
 
@@ -447,6 +468,15 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
               <div className="mt-4">
                 <label className="text-body-sm text-text-secondary block mb-1">Estado de lectura</label>
                 <Select options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as ReadingStatus)} />
+              </div>
+            )}
+
+            {canPickStatus && status === 'pendiente' && (
+              <div className="mt-4">
+                <label className="text-body-sm text-text-secondary block mb-1">
+                  Agregar a mi lista de esta temporada
+                </label>
+                <PriorityToggle isPriority={isPriority} onToggle={() => setIsPriority((prev) => !prev)} />
               </div>
             )}
 

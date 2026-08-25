@@ -1,36 +1,86 @@
-import { Flag, Check } from "lucide-react";
+import { Flag, Check, ArrowUpDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
 import { useReadingStreak } from "../hooks/useReadingStreak";
 import { useAnnualGoal } from "../hooks/useAnnualGoal";
+import { usePriorityBooks } from "../hooks/usePriorityBooks";
 import { getProgressInfo } from "../lib/progress";
 import { SectionHeader } from "../assets/components/atoms/SectionHeader";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
+import { BookCardPriority } from "../assets/components/molecules/BookCardPriority";
 import { ProgressBar } from "../assets/components/atoms/ProgressBar";
 import { Button } from "../assets/components/atoms/Button";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
+import { StartReadingDateModal } from "../assets/components/molecules/StartReadingDateModal";
+import { SortableItem } from "../assets/components/atoms/SortableItem";
 import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 
 export function Mesa() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
   const { streak, markedToday, markToday, unmarkToday } = useReadingStreak(user?.id);
+  const {
+    books: priorityBooks,
+    isLoading: priorityLoading,
+    reorderBook: reorderPriorityBook,
+    startReading,
+  } = usePriorityBooks(user?.id)
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isUnmarkOpen, setIsUnmarkOpen] = useState(false);
+  const [isPriorityReordering, setIsPriorityReordering] = useState(false)
+  const [pendingStartId, setPendingStartId] = useState<string | null>(null)
   const { goal, completedCount, updateGoal } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
 
   const goalPercent =
     goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
 
+  // Mismo mecanismo de activación por "mantener presionado" que ya se usa en Estante, para
+  // no disparar el drag con un gesto normal de scroll.
+  const prioritySensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  );
+
   function handleTabChange(tab: TabKey) {
     navigate(`/${tab}`);
+  }
+
+  function handlePriorityDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = priorityBooks.findIndex((b) => b.id === active.id)
+    const newIndex = priorityBooks.findIndex((b) => b.id === over.id)
+    const reordered = arrayMove(priorityBooks, oldIndex, newIndex)
+    const droppedIndex = reordered.findIndex((b) => b.id === active.id)
+    const beforeId = reordered[droppedIndex - 1]?.id ?? null
+    const afterId = reordered[droppedIndex + 1]?.id ?? null
+    reorderPriorityBook(active.id as string, beforeId, afterId)
+  }
+
+  async function confirmStartReading(withStartDate: boolean) {
+    if (!pendingStartId) return
+    await startReading(pendingStartId, withStartDate ? new Date().toISOString().slice(0, 10) : null)
+    setPendingStartId(null)
+    refetchBooks()
   }
 
   return (
@@ -59,6 +109,78 @@ export function Mesa() {
             );
           })}
         </div>
+      </section>
+
+      <section>
+        <SectionHeader
+          title="Mi lista de esta temporada"
+          variant="title"
+          rightContent={
+            priorityBooks.length > 0 && (
+              <button
+                onClick={() => navigate("/estante?filtro=temporada")}
+                className="underline underline-offset-2"
+              >
+                Ver en Estante
+              </button>
+            )
+          }
+        />
+
+        {!priorityLoading && priorityBooks.length === 0 ? (
+          <p className="text-body-md text-text-secondary mt-3">
+            Aún no has agregado libros a tu lista de esta temporada. Márcalos desde Detalle del Libro.
+          </p>
+        ) : (
+          <>
+            {priorityBooks.length > 1 && (
+              <button
+                onClick={() => setIsPriorityReordering((v) => !v)}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-body-sm font-body text-surface"
+                style={{ backgroundColor: "var(--color-state-pending)" }}
+              >
+                <ArrowUpDown size={14} />
+                {isPriorityReordering ? "Listo" : "Organizar"}
+              </button>
+            )}
+            {isPriorityReordering && (
+              <p className="text-body-sm text-text-secondary text-center mt-2">
+                Mantén presionado unos instantes para arrastrar y organizar tu lista.
+              </p>
+            )}
+
+            {isPriorityReordering ? (
+              <DndContext sensors={prioritySensors} collisionDetection={closestCenter} onDragEnd={handlePriorityDragEnd}>
+                <SortableContext items={priorityBooks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+                  <div className="space-y-3 mt-3">
+                    {priorityBooks.map((book) => (
+                      <SortableItem key={book.id} id={book.id}>
+                        <BookCardPriority
+                          title={book.title}
+                          author={book.author ?? undefined}
+                          coverUrl={book.cover_url ?? undefined}
+                          onStartReading={() => setPendingStartId(book.id)}
+                        />
+                      </SortableItem>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            ) : (
+              <div className="space-y-3 mt-3">
+                {priorityBooks.map((book) => (
+                  <BookCardPriority
+                    key={book.id}
+                    title={book.title}
+                    author={book.author ?? undefined}
+                    coverUrl={book.cover_url ?? undefined}
+                    onStartReading={() => setPendingStartId(book.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       <section>
@@ -125,6 +247,12 @@ export function Mesa() {
           await unmarkToday()
         }}
         onDismiss={() => setIsUnmarkOpen(false)}
+      />
+
+      <StartReadingDateModal
+        isOpen={pendingStartId !== null}
+        onConfirm={() => confirmStartReading(true)}
+        onDismiss={() => confirmStartReading(false)}
       />
 
       {updatingBookId && (

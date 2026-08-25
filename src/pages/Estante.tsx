@@ -59,7 +59,7 @@ export function Estante() {
 
   const [tab, setTab] = useState<LibraryTab>("libros");
   const [advFilters, setAdvFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
-  const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | null>(null);
+  const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | "temporada" | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
@@ -75,7 +75,7 @@ export function Estante() {
     if (!filtro) return;
 
     setTab("libros");
-    if (filtro === "favoritos" || filtro === "recomendados") {
+    if (filtro === "favoritos" || filtro === "recomendados" || filtro === "temporada") {
       setQuickFlag(filtro);
       setAdvFilters(defaultAdvancedFilters);
     } else {
@@ -108,7 +108,12 @@ export function Estante() {
       const matchesCategory = advFilters.category === "todos" || book.category === advFilters.category;
       const matchesFormat = advFilters.format === "todos" || book.format === advFilters.format;
       const matchesQuickFlag =
-        !quickFlag || (quickFlag === "favoritos" ? book.is_favorite : book.is_recommended);
+        !quickFlag ||
+        (quickFlag === "favoritos"
+          ? book.is_favorite
+          : quickFlag === "recomendados"
+            ? book.is_recommended
+            : book.is_priority);
       const matchesSearch =
         !search.trim() ||
         book.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -195,7 +200,12 @@ export function Estante() {
         {quickFlag && (
           <div className="flex items-center justify-between bg-bg border border-border rounded-xl px-4 py-2">
             <span className="text-body-sm text-text">
-              Mostrando: {quickFlag === "favoritos" ? "Favoritos" : "Recomendados"}
+              Mostrando:{" "}
+              {quickFlag === "favoritos"
+                ? "Favoritos"
+                : quickFlag === "recomendados"
+                  ? "Recomendados"
+                  : "Mi lista de esta temporada"}
             </span>
             <button onClick={() => setQuickFlag(null)} aria-label="Quitar filtro" className="text-text-secondary">
               <X size={16} />
