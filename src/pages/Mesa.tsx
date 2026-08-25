@@ -12,6 +12,7 @@ import { Button } from "../assets/components/atoms/Button";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
+import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
 import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 
@@ -19,8 +20,9 @@ export function Mesa() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
-  const { streak, markedToday, markToday } = useReadingStreak(user?.id);
+  const { streak, markedToday, markToday, unmarkToday } = useReadingStreak(user?.id);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [isUnmarkOpen, setIsUnmarkOpen] = useState(false);
   const { goal, completedCount, updateGoal } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
 
@@ -71,8 +73,7 @@ export function Mesa() {
           <Button
             variant="green"
             className="mt-4"
-            onClick={markToday}
-            disabled={markedToday}
+            onClick={() => (markedToday ? setIsUnmarkOpen(true) : markToday())}
           >
             {markedToday ? "Sesión de hoy marcada" : "Marcar sesión de hoy"}
           </Button>
@@ -114,6 +115,15 @@ export function Mesa() {
         onClose={() => setIsGoalModalOpen(false)}
         currentGoal={goal}
         onSave={updateGoal}
+      />
+
+      <UnmarkStreakModal
+        isOpen={isUnmarkOpen}
+        onConfirm={async () => {
+          setIsUnmarkOpen(false)
+          await unmarkToday()
+        }}
+        onDismiss={() => setIsUnmarkOpen(false)}
       />
 
       {updatingBookId && (

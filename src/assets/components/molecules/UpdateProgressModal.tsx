@@ -9,7 +9,9 @@ import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
 import { AbandonarLibroModal } from './AbandonarLibroModal'
 import { MissingStartDateModal } from './MissingStartDateModal'
+import { WriteReviewPromptModal } from './WriteReviewPromptModal'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
+import { Resena } from '../../../pages/Resena'
 
 interface UpdateProgressModalProps {
   bookId: string
@@ -22,6 +24,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
+  const [isReviewOpen, setIsReviewOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Se descarta (ignora) el aviso de fecha de inicio faltante localmente, sin tocar la base
   // de datos, para que no vuelva a aparecer mientras este modal siga abierto.
@@ -68,6 +72,21 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     await updateBook({ status: 'terminado', end_date: new Date().toISOString().slice(0, 10) })
     setIsSaving(false)
     onUpdated()
+    setShowReviewPrompt(true)
+  }
+
+  function handleReviewAccept() {
+    setShowReviewPrompt(false)
+    setIsReviewOpen(true)
+  }
+
+  function handleReviewIgnore() {
+    setShowReviewPrompt(false)
+    onClose()
+  }
+
+  function handleReviewClose() {
+    setIsReviewOpen(false)
     onClose()
   }
 
@@ -171,6 +190,14 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         onConfirm={handleSetMissingStartDate}
         onIgnore={() => setStartDatePromptIgnored(true)}
       />
+
+      <WriteReviewPromptModal
+        isOpen={showReviewPrompt}
+        onAccept={handleReviewAccept}
+        onIgnore={handleReviewIgnore}
+      />
+
+      {isReviewOpen && <Resena bookId={bookId} onClose={handleReviewClose} />}
     </div>
   )
 }
