@@ -369,19 +369,11 @@ export function Estante() {
         onAdd={addBook}
       />
 
-      {selectedBookId && (
-        <DetalleLibro
-          bookId={selectedBookId}
-          onClose={() => {
-            setSelectedBookId(null);
-            refetchBooks();
-          }}
-          onDeleted={() => {
-            setSelectedBookId(null);
-            refetchBooks();
-          }}
-        />
-      )}
+      {/* DetalleSaga va ANTES que DetalleLibro a propósito: ambos son overlays "fixed
+          inset-0 z-50", y con el mismo z-index gana el que aparece más abajo en el DOM. Se
+          puede abrir un libro DESDE dentro de una saga (onOpenBook), así que el modal del
+          libro siempre debe quedar por encima del de la saga cuando los dos están abiertos a
+          la vez. */}
       {selectedSagaId && (
         <DetalleSaga
           sagaId={selectedSagaId}
@@ -393,6 +385,19 @@ export function Estante() {
           onDeleted={() => {
             setSelectedSagaId(null);
             refetchSagas();
+          }}
+        />
+      )}
+      {selectedBookId && (
+        <DetalleLibro
+          bookId={selectedBookId}
+          onClose={() => {
+            setSelectedBookId(null);
+            refetchBooks();
+          }}
+          onDeleted={() => {
+            setSelectedBookId(null);
+            refetchBooks();
           }}
         />
       )}
