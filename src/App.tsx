@@ -6,6 +6,7 @@ import { Tutorial } from "./pages/Tutorial";
 import { Mesa } from "./pages/Mesa";
 import { Estante } from "./pages/Estante";
 import { Cuaderno } from "./pages/Cuaderno";
+import { Bitacora } from "./pages/Bitacora";
 import { Login } from "./pages/Login";
 import { Registro } from "./pages/Registro";
 import { Perfil } from "./pages/Perfil";
@@ -31,6 +32,7 @@ function App() {
           <Route path="/mesa" element={<Mesa />} />
           <Route path="/estante" element={<Estante />} />
           <Route path="/cuaderno" element={<Cuaderno />} />
+          <Route path="/bitacora" element={<Bitacora />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />

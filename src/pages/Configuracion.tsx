@@ -14,6 +14,8 @@ import { PrivacyToggleRow } from '../assets/components/molecules/PrivacyToggleRo
 import { Button } from '../assets/components/atoms/Button'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
 import { ThemeToggle } from '../assets/components/atoms/ThemeToggle'
+import { Select } from '../assets/components/atoms/Select'
+import { currencyOptions } from '../lib/currencies'
 import { supabase } from '../lib/supabase'
 
 const privacyFields = [
@@ -116,6 +118,17 @@ export function Configuracion() {
 
       <SectionHeading title="Tema de la aplicación" />
       <ThemeToggle />
+
+      <SectionHeading title="Moneda" />
+      <Select
+        options={currencyOptions}
+        value={profile?.currency ?? undefined}
+        onChange={(e) => updateProfile({ currency: e.target.value })}
+        placeholder="Elige la moneda de tu cuenta"
+      />
+      <p className="text-body-sm text-text-secondary mt-2">
+        Se usa para mostrar el valor de tu biblioteca en Bitácora.
+      </p>
 
       <SectionHeading title="Ajustes de cuenta" />
       <div className="space-y-2">

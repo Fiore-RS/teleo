@@ -22,6 +22,7 @@ import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakMo
 import { StartReadingDateModal } from "../assets/components/molecules/StartReadingDateModal";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
 import { getGoalMessage } from "../lib/goalMessage";
+import { todayLocalDate } from "../lib/date";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 import {
   DndContext,
@@ -87,7 +88,7 @@ export function Mesa() {
 
   async function confirmStartReading(withStartDate: boolean) {
     if (!pendingStartId) return
-    await startReading(pendingStartId, withStartDate ? new Date().toISOString().slice(0, 10) : null)
+    await startReading(pendingStartId, withStartDate ? todayLocalDate() : null)
     setPendingStartId(null)
     refetchBooks()
   }

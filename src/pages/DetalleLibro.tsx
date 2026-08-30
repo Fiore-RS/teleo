@@ -25,6 +25,8 @@ import { statusLabel, type ReadingStatus } from '../lib/status'
 import { Resena } from './Resena'
 import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
 import { DurationMaskInput } from '../assets/components/atoms/DurationMaskInput'
+import { DateInput } from '../assets/components/atoms/DateInput'
+import { todayLocalDate } from '../lib/date'
 
 const categoryOptions = [
   { value: 'Libro', label: 'Libro' },
@@ -82,6 +84,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   format: 'fisico' | 'digital' | 'audiolibro'
   category: string; status: ReadingStatus
   language: string; totalPages: string; totalDuration: string
+  price: string; purchaseDate: string
 } | null>(null)
 
   function startEditing() {
@@ -95,6 +98,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     language: book.language ?? '',
     totalPages: book.total_pages ? String(book.total_pages) : '',
     totalDuration: book.total_duration_seconds ? secondsToTimeInput(book.total_duration_seconds) : '',
+    price: book.price != null ? String(book.price) : '',
+    purchaseDate: book.purchase_date ?? '',
   })
   setIsEditing(true)
 }
@@ -124,6 +129,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     language: draft.language || null,
     total_pages: draft.format !== 'audiolibro' && draft.totalPages ? parseInt(draft.totalPages, 10) : null,
     total_duration_seconds: totalDurationSeconds,
+    price: draft.price ? parseFloat(draft.price) : null,
+    purchase_date: draft.purchaseDate || null,
   }
 
   // Si se está marcando el libro como "leyendo" (y no lo estaba ya), se pregunta primero
@@ -151,7 +158,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     await updateBook({
       ...pendingLeyendoUpdate,
       ...(isReread ? { current_page: 0, progress_percent: 0, current_duration_seconds: 0, end_date: null } : {}),
-      ...(withStartDate ? { start_date: new Date().toISOString().slice(0, 10) } : {}),
+      ...(withStartDate ? { start_date: todayLocalDate() } : {}),
     })
     setPendingLeyendoUpdate(null)
     setIsEditing(false)
@@ -169,7 +176,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     if (newStatus === 'leyendo') {
       setPendingLeyendoUpdate({ status: 'leyendo' })
     } else if (newStatus === 'terminado') {
-      const endDate = new Date().toISOString().slice(0, 10)
+      const endDate = todayLocalDate()
       await updateBook({ status: 'terminado', end_date: endDate })
       // Se guarda esta lectura en el historial (primera vez o relectura) para que "Mis años
       // en libros" y la meta anual cuenten este libro en el año en que se terminó.
@@ -336,6 +343,17 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   <div>
                     <label className="text-body-sm text-text-secondary block mb-1">Estado</label>
                     <Select options={statusOptions} value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as ReadingStatus })} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div>
+                    <label className="text-body-sm text-text-secondary block mb-1">Precio</label>
+                    <Input type="number" step="0.01" placeholder="0.00" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="text-body-sm text-text-secondary block mb-1">Fecha de compra</label>
+                    <DateInput value={draft.purchaseDate} onChange={(e) => setDraft({ ...draft, purchaseDate: e.target.value })} />
                   </div>
                 </div>
 

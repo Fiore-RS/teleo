@@ -1,11 +1,12 @@
-import { Coffee, BookOpen, NotebookPen, User, type LucideIcon } from 'lucide-react'
+import { Coffee, BookOpen, NotebookPen, ScrollText, User, type LucideIcon } from 'lucide-react'
 
-export type TabKey = 'mesa' | 'estante' | 'cuaderno' | 'perfil'
+export type TabKey = 'mesa' | 'estante' | 'cuaderno' | 'bitacora' | 'perfil'
 
 const tabs: { key: TabKey; label: string; icon: LucideIcon }[] = [
   { key: 'mesa', label: 'Mesa', icon: Coffee },
   { key: 'estante', label: 'Estante', icon: BookOpen },
   { key: 'cuaderno', label: 'Cuaderno', icon: NotebookPen },
+  { key: 'bitacora', label: 'Bitácora', icon: ScrollText },
   { key: 'perfil', label: 'Perfil', icon: User },
 ]
 

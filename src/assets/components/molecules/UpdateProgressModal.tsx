@@ -6,6 +6,7 @@ import { useBook } from '../../../hooks/useBook'
 import { getProgressInfo } from '../../../lib/progress'
 import { parseDurationInput, secondsToTimeInput } from '../../../lib/duration'
 import { recordBookCompletion } from '../../../lib/readingHistory'
+import { todayLocalDate } from '../../../lib/date'
 import { ProgressBar } from '../atoms/ProgressBar'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
@@ -73,7 +74,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   async function handleMarkFinished() {
     if (!book) return
     setIsSaving(true)
-    const endDate = new Date().toISOString().slice(0, 10)
+    const endDate = todayLocalDate()
     await updateBook({ status: 'terminado', end_date: endDate })
     // Se guarda esta lectura en el historial (sea la primera vez o una relectura) para que
     // "Mis años en libros" y la meta anual cuenten este libro en el año en que se terminó.

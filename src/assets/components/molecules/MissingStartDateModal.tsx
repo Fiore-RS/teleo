@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Modal } from '../atoms/Modal'
 import { DateInput } from '../atoms/DateInput'
 import { Button } from '../atoms/Button'
+import { todayLocalDate } from '../../../lib/date'
 
 interface MissingStartDateModalProps {
   isOpen: boolean
@@ -12,7 +13,7 @@ interface MissingStartDateModalProps {
 /** Popup que avisa, al abrir "Actualizar progreso", que un libro "leyendo" no tiene fecha de
  *  inicio de lectura seleccionada — permite elegir una ahí mismo o ignorar el aviso. */
 export function MissingStartDateModal({ isOpen, onConfirm, onIgnore }: MissingStartDateModalProps) {
-  const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [startDate, setStartDate] = useState(() => todayLocalDate())
   const [isSaving, setIsSaving] = useState(false)
 
   async function handleConfirm() {
