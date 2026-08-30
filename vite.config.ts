@@ -21,7 +21,7 @@ export default defineConfig({
         scope: '/teleo/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#F8EFE1',
+        background_color: '#7A2E3A',
         theme_color: '#7A2E3A',
         icons: [
           {
