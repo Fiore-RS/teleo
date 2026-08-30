@@ -26,6 +26,7 @@ import { Resena } from './Resena'
 import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
 import { DurationMaskInput } from '../assets/components/atoms/DurationMaskInput'
 import { DateInput } from '../assets/components/atoms/DateInput'
+import { PriceInput } from '../assets/components/atoms/PriceInput'
 import { todayLocalDate } from '../lib/date'
 
 const categoryOptions = [
@@ -349,7 +350,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <div className="grid grid-cols-2 gap-3 mt-4">
                   <div>
                     <label className="text-body-sm text-text-secondary block mb-1">Precio</label>
-                    <Input type="number" step="0.01" placeholder="0.00" value={draft.price} onChange={(e) => setDraft({ ...draft, price: e.target.value })} />
+                    <PriceInput value={draft.price} onChange={(price) => setDraft({ ...draft, price })} />
                   </div>
                   <div>
                     <label className="text-body-sm text-text-secondary block mb-1">Fecha de compra</label>
