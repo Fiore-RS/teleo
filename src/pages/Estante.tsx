@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowUpDown, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
@@ -38,6 +38,8 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
+import { SortMenu, type SortMenuOption } from "../assets/components/molecules/SortMenu";
+import { sortByMode, type LibrarySortMode } from "../lib/librarySort";
 
 type LibraryTab = "libros" | "sagas";
 
@@ -70,7 +72,13 @@ export function Estante() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [selectedSagaId, setSelectedSagaId] = useState<string | null>(null);
   const [isAddSagaOpen, setIsAddSagaOpen] = useState(false);
-  const [isReordering, setIsReordering] = useState(false);
+  // Un modo de orden y un estado de "arrastrando" separados por pestaña (libros/sagas), ya
+  // que cada una tiene su propio orden persistido (estante_sort_order de cada tabla) y no
+  // tiene sentido que activar el drag en una afecte a la otra.
+  const [bookSortMode, setBookSortMode] = useState<LibrarySortMode>("libre");
+  const [sagaSortMode, setSagaSortMode] = useState<LibrarySortMode>("libre");
+  const [isReorderingBooks, setIsReorderingBooks] = useState(false);
+  const [isReorderingSagas, setIsReorderingSagas] = useState(false);
 
   // Soporta llegar desde "Ver todos" en Perfil con un filtro ya activado,
   // ej. /estante?filtro=deseado o /estante?filtro=favoritos
@@ -140,6 +148,73 @@ export function Estante() {
     });
   }, [sagas, advFilters, search]);
 
+  // Los tres modos de solo-vista (título/autor/fecha) se calculan encima de lo ya filtrado;
+  // "libre" devuelve el mismo array, que ya viene en su orden persistido (estante_sort_order).
+  const sortedBooks = useMemo(
+    () =>
+      sortByMode(filteredBooks, bookSortMode, {
+        title: (b) => b.title,
+        author: (b) => b.author,
+        createdAt: (b) => b.created_at,
+      }),
+    [filteredBooks, bookSortMode]
+  );
+  const sortedSagas = useMemo(
+    () =>
+      sortByMode(filteredSagas, sagaSortMode, {
+        title: (s) => s.title,
+        author: (s) => s.author,
+        createdAt: (s) => s.created_at,
+      }),
+    [filteredSagas, sagaSortMode]
+  );
+
+  const bookSortOptions: SortMenuOption<LibrarySortMode>[] = [
+    { key: "titulo", label: "Título", icon: ArrowDownAZ },
+    { key: "autor", label: "Autor", icon: User },
+    { key: "fecha", label: "Fecha agregado", icon: CalendarDays },
+    { key: "libre", label: isReorderingBooks ? "Listo" : "Libre (arrastrar)", icon: Move },
+  ];
+  const sagaSortOptions: SortMenuOption<LibrarySortMode>[] = [
+    { key: "titulo", label: "Título", icon: ArrowDownAZ },
+    { key: "autor", label: "Autor", icon: User },
+    { key: "fecha", label: "Fecha agregado", icon: CalendarDays },
+    { key: "libre", label: isReorderingSagas ? "Listo" : "Libre (arrastrar)", icon: Move },
+  ];
+
+  // Elegir "Libre" activa el modo de arrastrar de una vez (si no se estaba ya en ese modo);
+  // si ya se estaba en "libre", vuelve a elegirlo desde el menú funciona como "Listo" —
+  // apaga el arrastre sin perder el orden manual. Elegir cualquiera de los otros tres
+  // siempre apaga el arrastre, porque no tiene sentido arrastrar sobre una vista ordenada
+  // alfabéticamente o por fecha.
+  function handleBookSortSelect(mode: LibrarySortMode) {
+    if (mode === "libre") {
+      if (bookSortMode === "libre") {
+        setIsReorderingBooks((v) => !v);
+      } else {
+        setBookSortMode("libre");
+        setIsReorderingBooks(true);
+      }
+    } else {
+      setBookSortMode(mode);
+      setIsReorderingBooks(false);
+    }
+  }
+
+  function handleSagaSortSelect(mode: LibrarySortMode) {
+    if (mode === "libre") {
+      if (sagaSortMode === "libre") {
+        setIsReorderingSagas((v) => !v);
+      } else {
+        setSagaSortMode("libre");
+        setIsReorderingSagas(true);
+      }
+    } else {
+      setSagaSortMode(mode);
+      setIsReorderingSagas(false);
+    }
+  }
+
   function handleTabBarChange(t: TabKey) {
     navigate(`/${t}`);
   }
@@ -148,15 +223,14 @@ export function Estante() {
     setTab(newTab);
     setAdvFilters(defaultAdvancedFilters);
     setQuickFlag(null);
-    setIsReordering(false);
   }
 
   function handleBookDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = filteredBooks.findIndex((b) => b.id === active.id);
-    const newIndex = filteredBooks.findIndex((b) => b.id === over.id);
-    const reordered = arrayMove(filteredBooks, oldIndex, newIndex);
+    const oldIndex = sortedBooks.findIndex((b) => b.id === active.id);
+    const newIndex = sortedBooks.findIndex((b) => b.id === over.id);
+    const reordered = arrayMove(sortedBooks, oldIndex, newIndex);
     const droppedIndex = reordered.findIndex((b) => b.id === active.id);
     const beforeId = reordered[droppedIndex - 1]?.id ?? null;
     const afterId = reordered[droppedIndex + 1]?.id ?? null;
@@ -166,9 +240,9 @@ export function Estante() {
   function handleSagaDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = filteredSagas.findIndex((s) => s.id === active.id);
-    const newIndex = filteredSagas.findIndex((s) => s.id === over.id);
-    const reordered = arrayMove(filteredSagas, oldIndex, newIndex);
+    const oldIndex = sortedSagas.findIndex((s) => s.id === active.id);
+    const newIndex = sortedSagas.findIndex((s) => s.id === over.id);
+    const reordered = arrayMove(sortedSagas, oldIndex, newIndex);
     const droppedIndex = reordered.findIndex((s) => s.id === active.id);
     const beforeId = reordered[droppedIndex - 1]?.id ?? null;
     const afterId = reordered[droppedIndex + 1]?.id ?? null;
@@ -240,17 +314,14 @@ export function Estante() {
             )}
           </button>
 
-          <button
-            onClick={() => setIsReordering((v) => !v)}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface"
-            style={{ backgroundColor: "var(--color-state-pending)" }}
-          >
-            <ArrowUpDown size={15} />
-            {isReordering ? "Listo" : "Organizar"}
-          </button>
+          {tab === "libros" ? (
+            <SortMenu options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} className="flex-1" />
+          ) : (
+            <SortMenu options={sagaSortOptions} activeKey={sagaSortMode} onSelect={handleSagaSortSelect} className="flex-1" />
+          )}
         </div>
 
-        {isReordering && (
+        {((tab === "libros" && isReorderingBooks) || (tab === "sagas" && isReorderingSagas)) && (
           <p className="text-body-sm text-text-secondary text-center">
             Mantén presionado unos instantes para arrastrar y organizar tu estante a tu gusto.
           </p>
@@ -268,18 +339,18 @@ export function Estante() {
         )}
 
         {tab === "libros" && (
-          isReordering ? (
+          isReorderingBooks ? (
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleBookDragEnd}
             >
               <SortableContext
-                items={filteredBooks.map((b) => b.id)}
+                items={sortedBooks.map((b) => b.id)}
                 strategy={rectSortingStrategy}
               >
                 <div className="grid grid-cols-3 gap-3">
-                  {filteredBooks.map((book) => (
+                  {sortedBooks.map((book) => (
                     <SortableItem key={book.id} id={book.id}>
                       <BookCard
                         title={book.title}
@@ -296,7 +367,7 @@ export function Estante() {
             </DndContext>
           ) : (
             <div className="grid grid-cols-3 gap-3">
-              {filteredBooks.map((book) => (
+              {sortedBooks.map((book) => (
                 <BookCard
                   key={book.id}
                   title={book.title}
@@ -312,18 +383,18 @@ export function Estante() {
         )}
 
         {tab === "sagas" && (
-          isReordering ? (
+          isReorderingSagas ? (
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleSagaDragEnd}
             >
               <SortableContext
-                items={filteredSagas.map((s) => s.id)}
+                items={sortedSagas.map((s) => s.id)}
                 strategy={rectSortingStrategy}
               >
                 <div className="grid grid-cols-3 gap-3">
-                  {filteredSagas.map((saga) => (
+                  {sortedSagas.map((saga) => (
                     <SortableItem key={saga.id} id={saga.id}>
                       <SeriesCard
                         title={saga.title}
@@ -341,7 +412,7 @@ export function Estante() {
             </DndContext>
           ) : (
             <div className="grid grid-cols-3 gap-3">
-              {filteredSagas.map((saga) => (
+              {sortedSagas.map((saga) => (
                 <SeriesCard
                   key={saga.id}
                   title={saga.title}
