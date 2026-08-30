@@ -59,7 +59,7 @@ export function Bitacora() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { profile } = useProfile(user?.id)
-  const { stats, isLoading } = useLibraryStats(user?.id)
+  const { stats } = useLibraryStats(user?.id)
   const { history: goalHistory } = useGoalHistory(user?.id)
   // Racha actual: mismo hook que ya usa Mesa para el widget de "hoy" (maneja el caso de
   // que aún no se marque hoy pero ayer sí, etc.) — acá solo se lee el número, sin las
@@ -106,10 +106,10 @@ export function Bitacora() {
 
   const currency = profile?.currency
 
-  if (isLoading) {
-    return <div className="min-h-screen bg-bg p-4" />
-  }
-
+  // 2026-08-30 (feedback de Fiorella): no se bloquea el render con un estado de carga
+  // en blanco (como pasaba antes) — igual que Estante/Cuaderno, la página se pinta de una
+  // vez con los valores por defecto de `emptyStats` (todo en 0/vacío) y se actualiza sola
+  // cuando llegan los datos reales, sin el parpadeo de pantalla en blanco.
   return (
     <div className="min-h-screen bg-bg p-4">
       <div className="mt-4 space-y-10">
