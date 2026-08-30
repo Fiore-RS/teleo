@@ -177,11 +177,17 @@ export const DEFAULT_CURRENCY = 'USD'
 /**
  * Formatea un monto de dinero según la moneda de la cuenta. Sin tabla de símbolos a mano —
  * Intl.NumberFormat ya sabe si va $1,234.00 o CRC 1 234,00 según la moneda.
+ *
+ * `useGrouping: 'always'` es necesario porque el locale 'es' por defecto (useGrouping:
+ * 'auto') no agrupa números de 4 cifras — 6300 sale como "6300,00" en vez de "6.300,00" —
+ * y solo empieza a agrupar a partir de 5 cifras. Forzarlo a 'always' asegura el separador
+ * de miles siempre, sin importar cuántas cifras tenga el monto.
  */
 export function formatCurrency(amount: number, currency: string | null | undefined): string {
   return new Intl.NumberFormat('es', {
     style: 'currency',
     currency: currency || DEFAULT_CURRENCY,
     maximumFractionDigits: 2,
+    useGrouping: 'always',
   }).format(amount)
 }
