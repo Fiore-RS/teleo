@@ -188,9 +188,9 @@ export function Bitacora() {
           </div>
 
           <div className="flex items-center justify-center gap-1.5 mt-4 text-body-sm text-text-secondary">
-            <span className="w-2.5 h-2.5 rounded-[2px]" style={{ backgroundColor: 'var(--color-border)' }} />
+            <span className="w-2.5 h-2.5 rounded-xs" style={{ backgroundColor: 'var(--color-border)' }} />
             Sin marcar
-            <span className="w-2.5 h-2.5 rounded-[2px] ml-2" style={{ backgroundColor: 'var(--color-accent-reading)' }} />
+            <span className="w-2.5 h-2.5 rounded-xs ml-2" style={{ backgroundColor: 'var(--color-accent-reading)' }} />
             Leído
           </div>
         </div>
