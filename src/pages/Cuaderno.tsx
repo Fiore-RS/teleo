@@ -13,7 +13,7 @@ import { ScrollToTopButton } from '../assets/components/atoms/ScrollToTopButton'
 import { SelectReviewBookModal } from '../assets/components/molecules/SelectReviewBookModal'
 import { SortMenu, type SortMenuOption } from '../assets/components/molecules/SortMenu'
 import { SortableItem } from '../assets/components/atoms/SortableItem'
-import { sortByMode, type LibrarySortMode } from '../lib/librarySort'
+import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from '../lib/librarySort'
 import { Resena } from './Resena'
 import {
   DndContext,
@@ -67,8 +67,15 @@ export function Cuaderno() {
   const [search, setSearch] = useState('')
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
-  const [sortMode, setSortMode] = useState<LibrarySortMode>('libre')
+  // El modo elegido se guarda en localStorage (mismo mecanismo que Estante) para que no se
+  // reinicie a "libre" cada vez que se refresca la página.
+  const [sortMode, setSortModeState] = useState<LibrarySortMode>(() => getStoredSortMode('cuaderno-resenas'))
   const [isReordering, setIsReordering] = useState(false)
+
+  function setSortMode(mode: LibrarySortMode) {
+    setSortModeState(mode)
+    setStoredSortMode('cuaderno-resenas', mode)
+  }
 
   // Mismo mecanismo de activación por "mantener presionado" que ya se usa en Estante y Mesa.
   const sensors = useSensors(

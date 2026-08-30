@@ -35,3 +35,31 @@ export function sortByMode<T>(items: T[], mode: LibrarySortMode, getters: SortGe
 
   return sorted
 }
+
+const SORT_MODE_STORAGE_PREFIX = 'teleo:sortMode:'
+
+function isLibrarySortMode(value: string | null): value is LibrarySortMode {
+  return value === 'titulo' || value === 'autor' || value === 'fecha' || value === 'libre'
+}
+
+/** El modo elegido en cada menú "Organizar" (Estante-libros, Estante-sagas, Cuaderno) se
+ *  guarda en localStorage para que sobreviva a un refresh de la página — antes se reiniciaba
+ *  siempre a "libre" porque el estado vivía solo en memoria de React. `key` identifica cada
+ *  lista de forma independiente (ej. "estante-libros"). */
+export function getStoredSortMode(key: string): LibrarySortMode {
+  try {
+    const stored = localStorage.getItem(SORT_MODE_STORAGE_PREFIX + key)
+    if (isLibrarySortMode(stored)) return stored
+  } catch {
+    // localStorage no disponible (ej. modo privado) — se usa el valor por defecto.
+  }
+  return 'libre'
+}
+
+export function setStoredSortMode(key: string, mode: LibrarySortMode) {
+  try {
+    localStorage.setItem(SORT_MODE_STORAGE_PREFIX + key, mode)
+  } catch {
+    // Si no se puede guardar, la elección simplemente no persiste — no es crítico.
+  }
+}

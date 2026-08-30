@@ -39,7 +39,7 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
 import { SortMenu, type SortMenuOption } from "../assets/components/molecules/SortMenu";
-import { sortByMode, type LibrarySortMode } from "../lib/librarySort";
+import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from "../lib/librarySort";
 
 type LibraryTab = "libros" | "sagas";
 
@@ -74,11 +74,27 @@ export function Estante() {
   const [isAddSagaOpen, setIsAddSagaOpen] = useState(false);
   // Un modo de orden y un estado de "arrastrando" separados por pestaña (libros/sagas), ya
   // que cada una tiene su propio orden persistido (estante_sort_order de cada tabla) y no
-  // tiene sentido que activar el drag en una afecte a la otra.
-  const [bookSortMode, setBookSortMode] = useState<LibrarySortMode>("libre");
-  const [sagaSortMode, setSagaSortMode] = useState<LibrarySortMode>("libre");
+  // tiene sentido que activar el drag en una afecte a la otra. El modo elegido (título/autor/
+  // fecha/libre) se guarda en localStorage para que no se reinicie al refrescar la página;
+  // el estado de "arrastrando" en sí no se guarda, ese siempre arranca apagado.
+  const [bookSortMode, setBookSortModeState] = useState<LibrarySortMode>(() =>
+    getStoredSortMode("estante-libros")
+  );
+  const [sagaSortMode, setSagaSortModeState] = useState<LibrarySortMode>(() =>
+    getStoredSortMode("estante-sagas")
+  );
   const [isReorderingBooks, setIsReorderingBooks] = useState(false);
   const [isReorderingSagas, setIsReorderingSagas] = useState(false);
+
+  function setBookSortMode(mode: LibrarySortMode) {
+    setBookSortModeState(mode);
+    setStoredSortMode("estante-libros", mode);
+  }
+
+  function setSagaSortMode(mode: LibrarySortMode) {
+    setSagaSortModeState(mode);
+    setStoredSortMode("estante-sagas", mode);
+  }
 
   // Soporta llegar desde "Ver todos" en Perfil con un filtro ya activado,
   // ej. /estante?filtro=deseado o /estante?filtro=favoritos
