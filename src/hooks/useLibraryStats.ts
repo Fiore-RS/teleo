@@ -190,8 +190,10 @@ export function useLibraryStats(userId: string | undefined) {
       ? booksWithPages.reduce((min, b) => (b.total_pages! < min.total_pages! ? b : min))
       : null
 
-    // Autores y series
-    const authorCounts = tally(books.filter((b) => b.status !== 'deseado').map((b) => b.author))
+    // Autores y series — "autor más leído" cuenta solo libros TERMINADOS (feedback de
+    // Fiorella: antes contaba cualquier libro que no fuera deseado, incluyendo los que
+    // sigue leyendo o abandonó, lo cual no refleja a qué autor realmente ha leído más).
+    const authorCounts = tally(finished.map((b) => b.author))
     const sagasCompleted = sagas.filter((s) => s.status === 'terminado').length
     const sagasInProgress = sagas.filter((s) => s.status === 'leyendo').length
     const rereadCounts = new Map<string, number>()

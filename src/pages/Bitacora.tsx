@@ -106,6 +106,14 @@ export function Bitacora() {
 
   const currency = profile?.currency
 
+  // Calificación promedio: redondeada al medio punto más cercano para las estrellas — el
+  // promedio real (ej. 4.3) casi nunca cae justo en un múltiplo de 0.5, y sin este
+  // redondeo la comparación "value >= position - 0.5" de RatingRow terminaba mostrando
+  // menos estrellas de las que el número en texto sugería (4.3 se veía como 4.0 en vez de
+  // la media estrella más cercana). Se usa el mismo valor redondeado tanto en las
+  // estrellas como en el texto para que ambos siempre coincidan.
+  const avgRatingRounded = stats.calificaciones.avgRating != null ? Math.round(stats.calificaciones.avgRating * 2) / 2 : null
+
   // 2026-08-30 (feedback de Fiorella): no se bloquea el render con un estado de carga
   // en blanco (como pasaba antes) — igual que Estante/Cuaderno, la página se pinta de una
   // vez con los valores por defecto de `emptyStats` (todo en 0/vacío) y se actualiza sola
@@ -236,9 +244,9 @@ export function Bitacora() {
         <div>
           <GroupHeader title="Calificaciones" />
           <div className="flex items-center justify-center gap-3 mb-5">
-            <RatingRow shape="star" color="var(--color-accent-reading)" value={stats.calificaciones.avgRating ?? 0} size={22} />
+            <RatingRow shape="star" color="var(--color-accent-reading)" value={avgRatingRounded ?? 0} size={22} />
             <span className="font-display text-display-md text-text">
-              {stats.calificaciones.avgRating ? stats.calificaciones.avgRating.toFixed(1) : '—'}
+              {avgRatingRounded != null ? avgRatingRounded.toFixed(1) : '—'}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-5">
@@ -246,8 +254,13 @@ export function Bitacora() {
             <StatBox label="Peor calificado" value={stats.calificaciones.worstRated?.title ?? '—'} />
             <StatBox label="Citas guardadas" value={String(stats.calificaciones.quotesCount)} className="col-span-2" />
           </div>
-          {stats.calificaciones.hasTie && (
+          {avgRatingRounded != null && (
             <p className="text-body-sm text-text-secondary text-center mt-4">
+              Esta es la calificación promedio entre todos los libros que has calificado.
+            </p>
+          )}
+          {stats.calificaciones.hasTie && (
+            <p className="text-body-sm text-text-secondary text-center mt-2">
               Si hay más de un libro con la misma calificación más alta o más baja, se mostrará uno al azar entre los empatados en cada visita a Bitácora.
             </p>
           )}
