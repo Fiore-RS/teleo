@@ -253,8 +253,9 @@ export function useLibraryStats(userId: string | undefined) {
       .sort((a, b) => b.year - a.year)
     const monthlyThisYear = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, count: monthCounts.get(i + 1) ?? 0 }))
 
-    // Valor de la biblioteca — se excluye siempre de get_public_profile_extras (ver
-    // 0020_library_value.sql), esto solo se usa en la vista privada de Bitácora.
+    // Valor de la biblioteca — dato sensible que nunca se expuso al perfil público (ver
+    // 0020_library_value.sql); ahora que esa página se retiró (ver 0021_retire_public_profile.sql)
+    // esto vive únicamente en la vista privada de Bitácora, como siempre fue la intención.
     const booksWithPrice = books.filter((b) => typeof b.price === 'number')
     const totalInvested = booksWithPrice.reduce((sum, b) => sum + (b.price ?? 0), 0)
     const avgPerBook = booksWithPrice.length > 0 ? totalInvested / booksWithPrice.length : 0

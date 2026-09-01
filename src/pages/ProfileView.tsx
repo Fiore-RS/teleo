@@ -8,9 +8,6 @@ import type { Database } from '../types/database'
 type Book = Database['public']['Tables']['books']['Row']
 
 interface ProfileViewProps {
-  /** true = visitante sin cuenta viendo el perfil de otra persona (sin acciones de edición) */
-  readOnly: boolean
-
   username: string | undefined
   bio: string | null | undefined
   avatarUrl: string | null | undefined
@@ -20,17 +17,12 @@ interface ProfileViewProps {
   isUploadingAvatar?: boolean
   onEditBioClick?: () => void
 
-  showAnnualGoal?: boolean | null
   annualGoal?: number
   annualCompletedCount?: number
 
-  showCurrentlyReading?: boolean | null
   currentlyReading?: Book[]
-  showFavorites?: boolean | null
   favorites?: Book[]
-  showRecommended?: boolean | null
   recommended?: Book[]
-  showWishlist?: boolean | null
   wishlist?: Book[]
 
   onBookClick?: (bookId: string) => void
@@ -39,8 +31,14 @@ interface ProfileViewProps {
   footer?: ReactNode
 }
 
+/** Rincón personal del usuario — antes también servía como la vista de "perfil público"
+ *  que veían visitantes sin cuenta (`readOnly`), con secciones que se podían ocultar una
+ *  por una desde Configuración. Esa página pública se retiró (ver plan en memoria del
+ *  proyecto: reemplazada por la tarjeta compartible de "Compartir perfil"), así que ahora
+ *  este componente SOLO lo ve el dueño de la cuenta y siempre muestra todo — cada sección
+ *  ya maneja su propio estado vacío (ProfileBookShelf) o se oculta sola si no aplica
+ *  (meta anual, cuando no hay una meta puesta). */
 export function ProfileView({
-  readOnly,
   username,
   bio,
   avatarUrl,
@@ -48,16 +46,11 @@ export function ProfileView({
   onAvatarClick,
   isUploadingAvatar,
   onEditBioClick,
-  showAnnualGoal,
   annualGoal = 0,
   annualCompletedCount = 0,
-  showCurrentlyReading,
   currentlyReading = [],
-  showFavorites,
   favorites = [],
-  showRecommended,
   recommended = [],
-  showWishlist,
   wishlist = [],
   onBookClick,
   onSeeAllBooks,
@@ -103,13 +96,13 @@ export function ProfileView({
             </div>
             <div className="bg-bg rounded-xl p-4 mt-3">
               <p className="text-body-md text-text-secondary">
-                {bio || (readOnly ? 'Este usuario no ha escrito una descripción.' : 'Agrega una descripción sobre ti...')}
+                {bio || 'Agrega una descripción sobre ti...'}
               </p>
             </div>
           </div>
         </div>
 
-        {showAnnualGoal && (
+        {annualGoal > 0 && (
           <div>
             <h3 className="font-display italic text-display-md text-accent-wishlist">Meta anual de lectura</h3>
             <div className="border-b-6 border-border mt-2 mb-3" />
@@ -125,41 +118,33 @@ export function ProfileView({
           </div>
         )}
 
-        {showCurrentlyReading && (
-          <ProfileBookShelf
-            title="Leyendo ahora"
-            books={currentlyReading}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('leyendo') : undefined}
-          />
-        )}
+        <ProfileBookShelf
+          title="Leyendo ahora"
+          books={currentlyReading}
+          onBookClick={onBookClick}
+          onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('leyendo') : undefined}
+        />
 
-        {showFavorites && (
-          <ProfileBookShelf
-            title="Favoritos"
-            books={favorites}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('favoritos') : undefined}
-          />
-        )}
+        <ProfileBookShelf
+          title="Favoritos"
+          books={favorites}
+          onBookClick={onBookClick}
+          onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('favoritos') : undefined}
+        />
 
-        {showRecommended && (
-          <ProfileBookShelf
-            title="Recomendados"
-            books={recommended}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('recomendados') : undefined}
-          />
-        )}
+        <ProfileBookShelf
+          title="Recomendados"
+          books={recommended}
+          onBookClick={onBookClick}
+          onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('recomendados') : undefined}
+        />
 
-        {showWishlist && (
-          <ProfileBookShelf
-            title="Lista de deseados"
-            books={wishlist}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('deseado') : undefined}
-          />
-        )}
+        <ProfileBookShelf
+          title="Lista de deseados"
+          books={wishlist}
+          onBookClick={onBookClick}
+          onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('deseado') : undefined}
+        />
       </div>
 
       {footer}

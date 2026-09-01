@@ -37,7 +37,6 @@ export function Perfil() {
   return (
     <>
       <ProfileView
-        readOnly={false}
         username={profile?.username}
         bio={profile?.bio}
         avatarUrl={profile?.avatar_url}
@@ -49,16 +48,11 @@ export function Perfil() {
         onAvatarClick={() => fileInputRef.current?.click()}
         isUploadingAvatar={isUploading}
         onEditBioClick={() => setIsBioModalOpen(true)}
-        showAnnualGoal={profile?.show_annual_goal}
         annualGoal={annualGoal}
         annualCompletedCount={annualCompletedCount}
-        showCurrentlyReading={profile?.show_currently_reading}
         currentlyReading={currentlyReading}
-        showFavorites={profile?.show_favorites}
         favorites={favorites}
-        showRecommended={profile?.show_recommended}
         recommended={recommended}
-        showWishlist={profile?.show_wishlist}
         wishlist={wishlist}
         onBookClick={(id) => setSelectedBookId(id)}
         onSeeAllBooks={(list) => navigate(`/estante?filtro=${list}`)}

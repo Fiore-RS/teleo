@@ -14,7 +14,6 @@ import { Configuracion } from "./pages/Configuracion";
 import { CambiarUsuario } from "./pages/CambiarUsuario";
 import { CambiarCorreo } from "./pages/CambiarCorreo";
 import { CambiarContrasena } from "./pages/CambiarContrasena";
-import { PerfilPublico } from './pages/PerfilPublico'
 
 function App() {
   return (
@@ -40,7 +39,6 @@ function App() {
           <Route path="/configuracion/usuario" element={<CambiarUsuario />} />
           <Route path="/configuracion/correo" element={<CambiarCorreo />} />
           <Route path="/configuracion/contrasena" element={<CambiarContrasena />} />
-          <Route path="/@:username" element={<PerfilPublico />} />
         </Routes>
       </div>
     </div>

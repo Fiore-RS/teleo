@@ -10,21 +10,12 @@ import { useDataExport } from '../hooks/useDataExport'
 import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
-import { PrivacyToggleRow } from '../assets/components/molecules/PrivacyToggleRow'
 import { Button } from '../assets/components/atoms/Button'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
 import { ThemeToggle } from '../assets/components/atoms/ThemeToggle'
 import { Select } from '../assets/components/atoms/Select'
 import { currencyOptions } from '../lib/currencies'
 import { supabase } from '../lib/supabase'
-
-const privacyFields = [
-  { key: 'show_annual_goal', label: 'Mostrar meta anual' },
-  { key: 'show_currently_reading', label: 'Mostrar leyendo ahora' },
-  { key: 'show_favorites', label: 'Mostrar favoritos' },
-  { key: 'show_recommended', label: 'Mostrar recomendados' },
-  { key: 'show_wishlist', label: 'Mostrar lista de deseados' },
-] as const
 
 function SectionHeading({ title, danger = false }: { title: string; danger?: boolean }) {
   return (
@@ -146,17 +137,6 @@ export function Configuracion() {
         <ListItem icon={Info} label="Tutorial para navegar por Teleo" onClick={() => navigate('/tutorial')} />
       </div>
 
-      <SectionHeading title="Visibilidad del perfil" />
-      <div className="space-y-2">
-        {privacyFields.map(({ key, label }) => (
-          <PrivacyToggleRow
-            key={key}
-            label={label}
-            checked={Boolean(profile?.[key])}
-            onChange={(checked) => updateProfile({ [key]: checked })}
-          />
-        ))}
-      </div>
 
       <SectionHeading title="Zona de peligro" danger />
       <div className="space-y-2">
