@@ -72,6 +72,11 @@ export function Estante() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [selectedSagaId, setSelectedSagaId] = useState<string | null>(null);
   const [isAddSagaOpen, setIsAddSagaOpen] = useState(false);
+  // Se incrementa cada vez que se cierra el detalle de un libro, para avisarle a la saga
+  // que pueda estar abierta detras (DetalleSaga) que su estado puede haber cambiado y
+  // tiene que refetchear (su propio useSaga no se entera solo, ya que vive en un
+  // componente separado del modal de libro).
+  const [bookChangeSignal, setBookChangeSignal] = useState(0);
   // Un modo de orden y un estado de "arrastrando" separados por pestaña (libros/sagas), ya
   // que cada una tiene su propio orden persistido (estante_sort_order de cada tabla) y no
   // tiene sentido que activar el drag en una afecte a la otra. El modo elegido (título/autor/
@@ -464,6 +469,7 @@ export function Estante() {
       {selectedSagaId && (
         <DetalleSaga
           sagaId={selectedSagaId}
+          refreshSignal={bookChangeSignal}
           onClose={() => {
             setSelectedSagaId(null);
             refetchSagas();
@@ -481,10 +487,14 @@ export function Estante() {
           onClose={() => {
             setSelectedBookId(null);
             refetchBooks();
+            refetchSagas();
+            setBookChangeSignal((n) => n + 1);
           }}
           onDeleted={() => {
             setSelectedBookId(null);
             refetchBooks();
+            refetchSagas();
+            setBookChangeSignal((n) => n + 1);
           }}
         />
       )}

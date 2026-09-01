@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
+import { recomputeSagaStatus } from '../lib/sagaStatus'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -26,6 +27,11 @@ export function useBook(bookId: string | undefined) {
   async function updateBook(updates: Partial<Book>) {
     if (!bookId) return
     await supabase.from('books').update(updates).eq('id', bookId)
+    // El estado de la saga se recalcula solo cuando cambia el status del libro (es lo único
+    // que afecta el cálculo) y el libro pertenece a una saga.
+    if ('status' in updates && book?.saga_id) {
+      await recomputeSagaStatus(book.saga_id)
+    }
     await refetch(true)
   }
 
@@ -43,7 +49,11 @@ export function useBook(bookId: string | undefined) {
 
   async function deleteBook() {
     if (!bookId) return false
+    const sagaId = book?.saga_id
     const { error } = await supabase.from('books').delete().eq('id', bookId)
+    if (!error && sagaId) {
+      await recomputeSagaStatus(sagaId)
+    }
     return !error
   }
 

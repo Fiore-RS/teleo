@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
+import { recomputeSagaStatus } from '../lib/sagaStatus'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -54,6 +55,9 @@ export function useLibraryBooks(userId: string | undefined) {
 
     if (!error && data) {
       setBooks((prev) => [...prev, data])
+      if (data.saga_id) {
+        await recomputeSagaStatus(data.saga_id)
+      }
     }
     return { data, error }
   }

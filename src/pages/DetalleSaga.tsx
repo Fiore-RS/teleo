@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ImageOff, Heart, Trash2, ArrowUpDown } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
@@ -44,6 +44,10 @@ interface DetalleSagaProps {
   onClose: () => void;
   onOpenBook: (bookId: string) => void;
   onDeleted: () => void;
+  // Cambia (Estante.tsx lo incrementa) cada vez que se cierra el detalle de un libro que se
+  // abrio desde aca adentro (onOpenBook), para que se vuelva a pedir la saga y sus libros:
+  // el status del libro pudo haber cambiado el estado automatico de la saga.
+  refreshSignal?: number;
 }
 
 function SagaStackPreview({
@@ -151,17 +155,27 @@ export function DetalleSaga({
   onClose,
   onOpenBook,
   onDeleted,
+  refreshSignal,
 }: DetalleSagaProps) {
   const { user } = useAuth();
   const {
     saga,
     books,
+    refetch,
     updateSaga,
     assignBookToSaga,
     removeBookFromSaga,
     reorderBookInSaga,
     deleteSaga,
   } = useSaga(sagaId);
+
+  // useSaga ya refetchea solo al montar/cambiar de sagaId, pero no se entera si el status de
+  // uno de sus libros cambio desde el modal de DetalleLibro (vive en un componente hermano).
+  useEffect(() => {
+    if (refreshSignal === undefined) return;
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshSignal]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isReorderingBooks, setIsReorderingBooks] = useState(false);
@@ -306,6 +320,10 @@ export function DetalleSaga({
                   )}
                 </div>
 
+                <Button variant="amber" className="mt-3" onClick={startEditing}>
+                  Editar Saga
+                </Button>
+
                 {isReorderingBooks ? (
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
                     <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
@@ -410,10 +428,6 @@ export function DetalleSaga({
                     })}
                   </div>
                 )}
-
-                <Button variant="amber" className="mt-5" onClick={startEditing}>
-                  Editar Saga
-                </Button>
               </>
             ) : draft ? (
               <>
@@ -497,6 +511,15 @@ export function DetalleSaga({
                       {isReorderingBooks ? "Listo" : "Organizar"}
                     </button>
                   )}
+                </div>
+
+                <div className="flex gap-3 mt-3">
+                  <Button variant="outline" onClick={() => setDeleteState("confirm")}>
+                    Eliminar Saga
+                  </Button>
+                  <Button variant="green" onClick={handleSave}>
+                    Guardar Cambios
+                  </Button>
                 </div>
 
                 {isReorderingBooks ? (
@@ -588,15 +611,6 @@ export function DetalleSaga({
                     ))}
                   </div>
                 )}
-
-                <div className="flex gap-3 mt-5">
-                  <Button variant="outline" onClick={() => setDeleteState("confirm")}>
-                    Eliminar Saga
-                  </Button>
-                  <Button variant="green" onClick={handleSave}>
-                    Guardar Cambios
-                  </Button>
-                </div>
               </>
             ) : null}
           </>

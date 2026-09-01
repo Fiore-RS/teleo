@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
+import { recomputeSagaStatus } from '../lib/sagaStatus'
 
 type Saga = Database['public']['Tables']['sagas']['Row']
 type Book = Database['public']['Tables']['books']['Row']
@@ -40,6 +41,8 @@ export function useSaga(sagaId: string | undefined) {
       .eq('id', book.id)
     if (!error) {
       setBooks((prev) => [...prev, { ...book, saga_id: sagaId ?? null, saga_sort_order: newOrder }])
+      await recomputeSagaStatus(sagaId)
+      await refetch()
     }
     return { error }
   }
@@ -48,6 +51,8 @@ export function useSaga(sagaId: string | undefined) {
     const { error } = await supabase.from('books').update({ saga_id: null }).eq('id', bookId)
     if (!error) {
       setBooks((prev) => prev.filter((b) => b.id !== bookId))
+      await recomputeSagaStatus(sagaId)
+      await refetch()
     }
   }
 
