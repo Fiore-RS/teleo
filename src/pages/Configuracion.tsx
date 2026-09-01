@@ -10,6 +10,7 @@ import { useDataExport } from '../hooks/useDataExport'
 import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
+import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
 import { Button } from '../assets/components/atoms/Button'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
 import { ThemeToggle } from '../assets/components/atoms/ThemeToggle'
@@ -61,14 +62,13 @@ export function Configuracion() {
   const { clearAllData, deactivateAccount, deleteAccount, isProcessing } = useDangerZone(user?.id)
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<
     'cerrarSesion' | 'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
   >(null)
   const [dialogState, setDialogState] = useState<'confirm' | 'success' | 'error'>('confirm')
   const [deleteChecked, setDeleteChecked] = useState(false)
 
-  // "Compartir lista de deseados" sigue pendiente — todavía no tiene un equivalente a la
-  // tarjeta de "Compartir perfil" (ver ShareProfileModal / memoria del proyecto).
 
   async function handleSignOut() {
     await supabase.auth.signOut()
@@ -126,11 +126,8 @@ export function Configuracion() {
       <SectionHeading title="Compartir" />
       <div className="space-y-2">
         <ListItem icon={Share2} label="Compartir perfil" onClick={() => setIsShareModalOpen(true)} />
-        <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => {}} disabled />
+        <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => setIsShareWishlistModalOpen(true)} />
       </div>
-      <p className="text-body-sm text-text-secondary mt-2">
-        Compartir lista de deseados estará disponible próximamente.
-      </p>
 
       <SectionHeading title="Información" />
       <div className="space-y-2">
@@ -172,6 +169,10 @@ export function Configuracion() {
           bio={profile?.bio}
           avatarUrl={profile?.avatar_url}
         />
+      )}
+
+      {isShareWishlistModalOpen && (
+        <ShareWishlistModal onClose={() => setIsShareWishlistModalOpen(false)} userId={user?.id} />
       )}
 
       {confirmAction === 'cerrarSesion' && (
