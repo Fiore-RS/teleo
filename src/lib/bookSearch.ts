@@ -84,15 +84,6 @@ function mapGoogleVolume(volume: GoogleVolume, fallbackIsbn?: string): BookSearc
   }
 }
 
-export async function searchBooksByQuery(query: string): Promise<BookSearchResult | null> {
-  const url = withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=1`)
-  const res = await fetchWithRetry(url)
-  if (!res || !res.ok) return null
-  const data = await res.json()
-  const first = data.items?.[0]
-  return first ? mapGoogleVolume(first) : null
-}
-
 export async function searchBookByIsbn(isbn: string): Promise<BookSearchResult | null> {
   const url = withKey(`${GOOGLE_BOOKS_API}?q=isbn:${isbn}`)
   const res = await fetchWithRetry(url)
