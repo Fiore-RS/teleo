@@ -184,7 +184,7 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
         </div>
       )}
 
-      <p className="text-center text-body-sm text-text-secondary mt-2">Hecho con Teleo — tu diario de lectura</p>
+      <p className="text-center text-body-sm text-text-secondary mt-2">Hecho con Teleo, tu diario de lectura</p>
     </div>
   )
 })

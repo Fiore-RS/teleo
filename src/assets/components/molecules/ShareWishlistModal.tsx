@@ -85,7 +85,7 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
           <p className="text-body-md text-text-secondary">Cargando tu lista...</p>
         ) : (
           <p className="text-body-md text-text">
-            Vas a compartir tu lista de deseados —{' '}
+            Vas a compartir tu lista de deseados: {' '}
             <span className="font-semibold">
               {books.length} libro{books.length === 1 ? '' : 's'}
             </span>
