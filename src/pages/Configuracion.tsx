@@ -20,9 +20,6 @@ import { supabase } from '../lib/supabase'
 
 const privacyFields = [
   { key: 'show_annual_goal', label: 'Mostrar meta anual' },
-  { key: 'show_daily_streak', label: 'Mostrar racha diaria' },
-  { key: 'show_stats', label: 'Mostrar estadísticas' },
-  { key: 'show_years_in_books', label: 'Mostrar años en libros' },
   { key: 'show_currently_reading', label: 'Mostrar leyendo ahora' },
   { key: 'show_favorites', label: 'Mostrar favoritos' },
   { key: 'show_recommended', label: 'Mostrar recomendados' },

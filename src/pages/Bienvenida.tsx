@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Coffee, BookOpen, NotebookPen, User, type LucideIcon } from 'lucide-react'
+import { Coffee, BookOpen, NotebookPen, ScrollText, User, type LucideIcon } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { Logo } from '../assets/components/atoms/Logo'
@@ -29,9 +29,14 @@ const steps: Step[] = [
     description: 'Tu diario de lectura: escribe reseñas, califica tus lecturas y guarda tus citas favoritas.',
   },
   {
+    icon: ScrollText,
+    title: 'Bitácora',
+    description: 'Tu historia con la lectura en números: racha, calendario, colección, calificaciones y el valor de tu biblioteca.',
+  },
+  {
     icon: User,
     title: 'Perfil',
-    description: 'Tu rincón personal: estadísticas, logros y las secciones que decidas compartir con otros.',
+    description: 'Tu rincón personal: tu meta anual, tus favoritos y recomendados, y las secciones que decidas compartir con quienes visiten tu @usuario.',
   },
 ]
 

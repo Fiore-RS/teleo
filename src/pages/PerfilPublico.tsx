@@ -35,21 +35,6 @@ export function PerfilPublico() {
       showAnnualGoal={profile.show_annual_goal && extras.annualGoal !== undefined}
       annualGoal={extras.annualGoal}
       annualCompletedCount={extras.annualFinishedCount}
-      showDailyStreak={profile.show_daily_streak && extras.longestStreak !== undefined}
-      longestStreak={extras.longestStreak}
-      showStats={profile.show_stats}
-      stats={{
-        pagesRead: extras.pagesRead ?? 0,
-        audioSeconds: extras.audioSeconds ?? 0,
-        finishedCount: extras.finishedCount ?? 0,
-        readingCount: extras.readingCount ?? 0,
-        wishlistCount: extras.wishlistCount ?? 0,
-        abandonedCount: extras.abandonedCount ?? 0,
-        sagaCount: extras.sagaCount ?? 0,
-        reviewCount: extras.reviewCount ?? 0,
-      }}
-      showYearsInBooks={profile.show_years_in_books}
-      yearsBreakdown={extras.yearsBreakdown}
       showCurrentlyReading={profile.show_currently_reading}
       currentlyReading={currentlyReading}
       showFavorites={profile.show_favorites}

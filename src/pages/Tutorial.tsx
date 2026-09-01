@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import {
-  Coffee, BookOpen, NotebookPen, User, Settings,
+  Coffee, BookOpen, NotebookPen, ScrollText, User, Settings,
   ChevronLeft, type LucideIcon,
 } from 'lucide-react'
 
@@ -39,10 +39,19 @@ const sections: TutorialSection[] = [
     ],
   },
   {
+    icon: ScrollText,
+    title: 'Bitácora',
+    points: [
+      'Consulta tus estadísticas completas de lectura: páginas leídas, tiempo escuchado, libros terminados y mucho más, además de tu racha actual y tu racha más extensa con un calendario de tus días de lectura.',
+      'Revisa el desglose de tu colección por categoría, formato e idioma, tus autores y series con más libros, y tus calificaciones más altas y más bajas.',
+      'Repasa tu historial de lectura año por año y consulta el valor total de tu biblioteca, si registras el precio y la fecha de compra de tus libros.',
+    ],
+  },
+  {
     icon: User,
     title: 'Perfil',
     points: [
-      'Consulta tus estadísticas de lectura: páginas leídas, libros terminados, años en libros y más.',
+      'Sigue tu meta anual de lectura y consulta lo que estás leyendo ahora, tus favoritos, recomendados y lista de deseados.',
       'Toca "Ver todos" en cualquier lista para saltar directo a tu Estante con ese filtro ya activado.',
       'Comparte tu perfil público con tu @usuario si así lo decides.',
     ],
