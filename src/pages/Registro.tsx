@@ -22,7 +22,10 @@ export function Registro() {
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { username } },
+      options: {
+        data: { username },
+        emailRedirectTo: `${window.location.origin}${window.location.pathname}#/login`,
+      },
     })
 
     setIsLoading(false)

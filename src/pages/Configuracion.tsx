@@ -9,7 +9,7 @@ import { useProfile } from '../hooks/useProfile'
 import { useDataExport } from '../hooks/useDataExport'
 import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
-// import { ShareModal } from '../assets/components/molecules/ShareModal' // TODO: reactivar cuando se arregle la sección "Compartir"
+import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { PrivacyToggleRow } from '../assets/components/molecules/PrivacyToggleRow'
 import { Button } from '../assets/components/atoms/Button'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
@@ -69,17 +69,15 @@ export function Configuracion() {
   const { importData } = useDataImport(user?.id)
   const { clearAllData, deactivateAccount, deleteAccount, isProcessing } = useDangerZone(user?.id)
 
-  // TODO: reactivar cuando se arregle la sección "Compartir"
-  // const [shareTarget, setShareTarget] = useState<'perfil' | 'deseados' | null>(null)
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<
     'cerrarSesion' | 'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
   >(null)
   const [dialogState, setDialogState] = useState<'confirm' | 'success' | 'error'>('confirm')
   const [deleteChecked, setDeleteChecked] = useState(false)
 
-  // TODO: reactivar cuando se arregle la sección "Compartir"
-  // const profileUrl = `${window.location.origin}${import.meta.env.BASE_URL}#/@${profile?.username ?? ''}`
-  // const wishlistUrl = `${profileUrl}/deseados`
+  // "Compartir lista de deseados" sigue pendiente — todavía no tiene un equivalente a la
+  // tarjeta de "Compartir perfil" (ver ShareProfileModal / memoria del proyecto).
 
   async function handleSignOut() {
     await supabase.auth.signOut()
@@ -136,11 +134,11 @@ export function Configuracion() {
 
       <SectionHeading title="Compartir" />
       <div className="space-y-2">
-        <ListItem icon={Share2} label="Compartir perfil" onClick={() => {}} disabled />
+        <ListItem icon={Share2} label="Compartir perfil" onClick={() => setIsShareModalOpen(true)} />
         <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => {}} disabled />
       </div>
       <p className="text-body-sm text-text-secondary mt-2">
-        Esta opción estará disponible próximamente.
+        Compartir lista de deseados estará disponible próximamente.
       </p>
 
       <SectionHeading title="Información" />
@@ -186,18 +184,15 @@ export function Configuracion() {
         <ListItem icon={Trash2} label="Eliminar cuenta" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
       </div>
 
-      {/* TODO: reactivar cuando se arregle la sección "Compartir"
-      {shareTarget && (
-        <ShareModal
-          isOpen
-          onClose={() => setShareTarget(null)}
-          title={shareTarget === 'perfil' ? `@${profile?.username}` : `Lista de deseados de @${profile?.username}`}
-          url={shareTarget === 'perfil' ? profileUrl : wishlistUrl}
-          avatarUrl={profile?.avatar_url ?? undefined}
-          caption={profile?.bio ?? ''}
+      {isShareModalOpen && (
+        <ShareProfileModal
+          onClose={() => setIsShareModalOpen(false)}
+          userId={user?.id}
+          username={profile?.username}
+          bio={profile?.bio}
+          avatarUrl={profile?.avatar_url}
         />
       )}
-      */}
 
       {confirmAction === 'cerrarSesion' && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>
