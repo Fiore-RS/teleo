@@ -36,7 +36,7 @@ const steps: Step[] = [
   {
     icon: User,
     title: 'Perfil',
-    description: 'Tu rincón personal: tu meta anual, tus favoritos y recomendados, y las secciones que decidas compartir con quienes visiten tu @usuario.',
+    description: 'Tu rincón personal: tu meta anual, lo que estás leyendo, tus favoritos y recomendados, y compártelo como una tarjeta con quien quieras.',
   },
 ]
 

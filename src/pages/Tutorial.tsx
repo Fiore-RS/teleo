@@ -53,7 +53,7 @@ const sections: TutorialSection[] = [
     points: [
       'Sigue tu meta anual de lectura y consulta lo que estás leyendo ahora, tus favoritos, recomendados y lista de deseados.',
       'Toca "Ver todos" en cualquier lista para saltar directo a tu Estante con ese filtro ya activado.',
-      'Comparte tu perfil público con tu @usuario si así lo decides.',
+      'Comparte tu perfil como una tarjeta con tu meta, racha y lecturas actuales, desde Configuración.',
     ],
   },
   {
@@ -61,7 +61,8 @@ const sections: TutorialSection[] = [
     title: 'Configuración',
     points: [
       'Cambia el tema de la app, tu nombre de usuario, correo o contraseña.',
-      'Elige qué secciones de tu perfil son visibles para quienes visiten tu @usuario.',
+      'Comparte tu perfil como una imagen: tu meta anual, racha, calendario del mes, lo que estás leyendo y el último libro terminado, lista para enviar o descargar.',
+      'Comparte tu lista de deseados completa como PDF, organizada por autor, para que sepan qué regalarte.',
       'Exporta o importa tus datos, o gestiona tu cuenta (pausarla o eliminarla) cuando lo necesites.',
     ],
   },

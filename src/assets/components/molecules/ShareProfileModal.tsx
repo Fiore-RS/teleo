@@ -175,7 +175,7 @@ export function ShareProfileModal({ onClose, userId, username, bio, avatarUrl }:
             {error && <p className="text-body-sm text-accent-wishlist text-center mt-1">{error}</p>}
             {downloaded && !error && (
               <p className="text-body-sm text-text-secondary text-center mt-1">
-                Imagen descargada — revisa tu carpeta de descargas.
+                Imagen descargada. Revisa tu carpeta de descargas.
               </p>
             )}
           </div>

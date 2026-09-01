@@ -109,7 +109,7 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
         {error && <p className="text-body-sm text-accent-wishlist text-center mt-1">{error}</p>}
         {downloaded && !error && (
           <p className="text-body-sm text-text-secondary text-center mt-1">
-            PDF descargado — revisa tu carpeta de descargas.
+            PDF descargado. Revisa tu carpeta de descargas.
           </p>
         )}
       </div>
