@@ -21,8 +21,6 @@ interface ShareProfileCardProps {
   currentlyReading: Book[]
   recentFinishedBook: Book | null
   recentFinishedRating: number | null
-  recommended: Book[]
-  wishlist: Book[]
 }
 
 /** Fila de texto para un libro dentro de la tarjeta — título + autor, sin portada.
@@ -83,8 +81,6 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
     currentlyReading,
     recentFinishedBook,
     recentFinishedRating,
-    recommended,
-    wishlist,
   },
   ref,
 ) {
@@ -133,7 +129,11 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
             {streak} día{streak === 1 ? '' : 's'} seguidos
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        {/* Apilados en vez de lado a lado (como en Bitácora): acá la tarjeta es angosta
+            (cabe en un modal, no en la pantalla completa), así que 2 meses lado a lado
+            dejaba cada casilla de día demasiado chica para distinguir los números —
+            apilados, cada mes usa todo el ancho de la tarjeta. */}
+        <div className="flex flex-col gap-4">
           <MonthCalendar year={olderMonth.year} month={olderMonth.month} markedDates={sessionDates} />
           <MonthCalendar year={newerMonth.year} month={newerMonth.month} markedDates={sessionDates} />
         </div>
@@ -155,32 +155,6 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
         <div>
           <p className="font-body font-semibold text-body-md text-text mb-2">Terminado recientemente</p>
           <BookRow book={recentFinishedBook} rating={recentFinishedRating} />
-        </div>
-      )}
-
-      {recommended.length > 0 && (
-        <div>
-          <p className="font-body font-semibold text-body-md text-text mb-2">
-            Recomendado <span className="font-normal text-body-sm text-text-secondary">(al azar de tu lista)</span>
-          </p>
-          <div className="flex flex-col gap-2">
-            {recommended.map((book) => (
-              <BookRow key={book.id} book={book} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {wishlist.length > 0 && (
-        <div>
-          <p className="font-body font-semibold text-body-md text-text mb-2">
-            Deseado <span className="font-normal text-body-sm text-text-secondary">(al azar de tu lista)</span>
-          </p>
-          <div className="flex flex-col gap-2">
-            {wishlist.map((book) => (
-              <BookRow key={book.id} book={book} />
-            ))}
-          </div>
         </div>
       )}
 

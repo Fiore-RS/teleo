@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { toBlob } from 'html-to-image'
 import { QRCodeSVG } from 'qrcode.react'
 import { Share2, Download } from 'lucide-react'
@@ -11,9 +11,6 @@ import { useReadingStreak } from '../../../hooks/useReadingStreak'
 import { useProfileLists } from '../../../hooks/useProfileLists'
 import { useShareCardExtras } from '../../../hooks/useShareCardExtras'
 import { useTheme } from '../../../hooks/useTheme'
-import type { Database } from '../../../types/database'
-
-type Book = Database['public']['Tables']['books']['Row']
 
 // Mismos valores que --teleo-text en index.css, para que el QR siempre contraste con
 // el fondo (bg-bg) del tema activo — igual criterio que ShareModal.
@@ -28,10 +25,6 @@ const QR_COLOR_DARK = '#F3E9DA'
 // simplemente queda en blanco en vez de romper la tarjeta entera.
 const TRANSPARENT_PIXEL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII='
-
-function pickRandom(books: Book[], count: number): Book[] {
-  return [...books].sort(() => Math.random() - 0.5).slice(0, count)
-}
 
 interface ShareProfileModalProps {
   onClose: () => void
@@ -59,16 +52,8 @@ export function ShareProfileModal({ onClose, userId, username, bio, avatarUrl }:
 
   const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(userId)
   const { streak } = useReadingStreak(userId)
-  const { currentlyReading, recommended, wishlist } = useProfileLists(userId)
+  const { currentlyReading } = useProfileLists(userId)
   const { recentFinishedBook, recentFinishedRating, sessionDates } = useShareCardExtras(userId)
-
-  // Se resortean cada vez que se abre el modal (no en cada render): la dependencia son
-  // los arreglos que trae useProfileLists, que solo cambian cuando termina su fetch.
-  // Por ahora se muestra solo 1 libro al azar de cada lista (antes eran 3) — decisión de
-  // Fiorella del 2026-09-01, para no saturar la tarjeta ahora que cada libro es una fila
-  // de texto en vez de una portada chica.
-  const randomRecommended = useMemo(() => pickRandom(recommended, 1), [recommended])
-  const randomWishlist = useMemo(() => pickRandom(wishlist, 1), [wishlist])
 
   const appUrl = `${window.location.origin}${import.meta.env.BASE_URL}`
   const qrColor = resolvedTheme === 'dark' ? QR_COLOR_DARK : QR_COLOR_LIGHT
@@ -178,8 +163,6 @@ export function ShareProfileModal({ onClose, userId, username, bio, avatarUrl }:
               currentlyReading={currentlyReading}
               recentFinishedBook={recentFinishedBook}
               recentFinishedRating={recentFinishedRating}
-              recommended={randomRecommended}
-              wishlist={randomWishlist}
             />
           </div>
           <div className="flex flex-col gap-2 mt-5">
