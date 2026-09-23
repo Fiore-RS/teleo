@@ -43,17 +43,17 @@ export function CustomRatingPicker({ isOpen, onClose, onAdd }: CustomRatingPicke
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Calificación personalizada">
-      <label className="text-body-sm text-text-secondary block mb-1">Título</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Título</label>
       <Input placeholder="Título de la calificación" value={title} onChange={(e) => setTitle(e.target.value)} />
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-4">Icono</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Icono</label>
       <div className="grid grid-cols-5 gap-2">
         {icons.map(({ key, Icon }) => (
           <button
             key={key}
             onClick={() => setSelectedIcon(key)}
-            className={`aspect-square rounded-xl flex items-center justify-center border-2 bg-bg ${
-              selectedIcon === key ? 'border-accent-wishlist' : 'border-transparent'
+            className={`aspect-square rounded-xl flex items-center justify-center border-2 bg-surface-2 ${
+              selectedIcon === key ? 'border-primary-text' : 'border-transparent'
             }`}
           >
             <Icon size={22} color={ratingIconColor[key as keyof typeof ratingIconColor]} strokeWidth={1.75} />

@@ -24,8 +24,8 @@ function CoverBadges({ status, isFavorite }: { status: ReadingStatus; isFavorite
     <>
       <DogEar status={status} size={28} className="absolute top-0 right-0" />
       {isFavorite && (
-        <span className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-surface flex items-center justify-center shadow-sm">
-          <Heart size={12} fill="var(--color-accent-wishlist)" color="var(--color-accent-wishlist)" />
+        <span className="absolute bottom-1.5 left-1.5 w-6 h-6 rounded-full bg-surface/95 flex items-center justify-center shadow-sm">
+          <Heart size={12} fill="var(--color-primary)" color="var(--color-primary)" />
         </span>
       )}
     </>
@@ -38,13 +38,13 @@ export function SeriesCard({
   const [cover1, cover2, cover3] = covers
 
   return (
-    <button onClick={onClick} className="text-left w-full">
+    <button onClick={onClick} className="text-left w-full rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text">
       {bookCount === 0 ? (
-        <div className="relative aspect-4/5 w-full rounded-xl overflow-hidden drop-shadow-md flex items-center justify-center" style={{ backgroundColor: placeholderBg[0] }}>
+        <div className="relative aspect-4/5 w-full rounded-[10px] overflow-hidden drop-shadow-md flex items-center justify-center" style={{ backgroundColor: placeholderBg[0] }}>
           <ImageOff size={22} className="text-surface" />
         </div>
       ) : bookCount === 1 ? (
-        <div className="relative aspect-4/5 w-full rounded-xl overflow-hidden drop-shadow-md" style={{ backgroundColor: placeholderBg[0] }}>
+        <div className="relative aspect-4/5 w-full rounded-[10px] overflow-hidden drop-shadow-md" style={{ backgroundColor: placeholderBg[0] }}>
           {cover1 && <CoverImage src={cover1} alt={title} className="w-full h-full object-cover" />}
           <CoverBadges status={status} isFavorite={isFavorite} />
         </div>
@@ -63,16 +63,16 @@ export function SeriesCard({
             {cover2 && <CoverImage src={cover2} alt="" className="w-full h-full object-cover" />}
             <div className="absolute inset-y-0 right-0 w-1/2 bg-linear-to-r from-transparent to-black/20" />
           </div>
-          <div className="relative flex-1 h-full -ml-2 rounded-xl overflow-hidden" style={{ backgroundColor: placeholderBg[0] }}>
+          <div className="relative flex-1 h-full -ml-2 rounded-[10px] overflow-hidden" style={{ backgroundColor: placeholderBg[0] }}>
             {cover1 && <CoverImage src={cover1} alt={title} className="w-full h-full object-cover" />}
             <CoverBadges status={status} isFavorite={isFavorite} />
           </div>
         </div>
       )}
 
-      <div className="mt-2 h-[58px]">
-        <p className="text-body-md font-body text-text line-clamp-2">{title}</p>
-        <p className="text-body-sm font-body text-text-secondary line-clamp-1">{author || ' '}</p>
+      <div className="mt-2 h-[56px]">
+        <p className="text-body-md font-body font-semibold leading-tight text-text line-clamp-2">{title}</p>
+        <p className="text-body-sm font-body text-text-secondary line-clamp-1 mt-0.5">{author || ' '}</p>
       </div>
     </button>
   )

@@ -31,7 +31,7 @@ export function BioEditModal({ isOpen, onClose, currentBio, onSave }: BioEditMod
       />
       <p className="text-body-sm text-text-secondary text-right mt-1">{value.length}/150</p>
       <Button variant="primary" className="mt-3" onClick={handleSave} isLoading={isSaving}>
-        Guardar Cambios
+        Guardar cambios
       </Button>
     </Modal>
   )

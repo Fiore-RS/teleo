@@ -7,17 +7,18 @@ interface BookCardPriorityProps {
   title: string
   author?: string
   coverUrl?: string
+  /** Posición en la lista (1, 2, 3...). Se muestra como un numerito sobre la portada. */
+  position?: number
   onStartReading: () => void
 }
 
-/** Card de "Mi lista de esta temporada" en Mesa — mismo layout vertical que las cards de
- *  reseña en Cuaderno (portada arriba, datos del libro, botón de acción abajo), a pedido de
- *  Fiorella en vez de la card horizontal ancha que se usaba antes (la misma de
- *  `BookCardReading`). Pensada para una grilla de varias columnas, no una lista vertical. */
-export function BookCardPriority({ title, author, coverUrl, onStartReading }: BookCardPriorityProps) {
+/** Libro de "Mi lista de esta temporada" en Mesa: portada arriba, datos del libro y botón de
+ *  acción abajo. Rediseño 2026: sin tarjeta propia (la tarjeta contenedora la pone Mesa), con
+ *  el número de prioridad sobre la portada y el botón siempre alineado abajo. */
+export function BookCardPriority({ title, author, coverUrl, position, onStartReading }: BookCardPriorityProps) {
   return (
-    <div className="bg-surface border border-border rounded-xl p-2.5 flex flex-col">
-      <div className="relative aspect-2/3 w-full rounded-lg overflow-hidden bg-border">
+    <div className="h-full flex flex-col gap-1.5">
+      <div className="relative aspect-2/3 w-full rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]">
         {coverUrl ? (
           <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover" />
         ) : (
@@ -25,16 +26,19 @@ export function BookCardPriority({ title, author, coverUrl, onStartReading }: Bo
             <ImageOff size={18} strokeWidth={1.5} className="text-text-secondary" />
           </div>
         )}
-        <DogEar status="pendiente" size={28} className="absolute top-0 right-0" />
+        {position !== undefined && (
+          <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-surface/90 text-text text-[11px] font-bold flex items-center justify-center">
+            {position}
+          </span>
+        )}
+        <DogEar status="pendiente" size={24} className="absolute top-0 right-0" />
       </div>
 
-      <p className="text-body-sm text-text line-clamp-2 mt-1.5">{title}</p>
-      {author && (
-        <p className="text-body-sm text-text-secondary line-clamp-1 mt-0.5">{author}</p>
-      )}
+      <p className="text-body-md font-semibold text-text leading-tight line-clamp-2 min-h-[2.5em] mt-0.5">{title}</p>
+      {author && <p className="text-body-sm text-text-secondary truncate">{author}</p>}
 
-      <Button variant="green" onClick={onStartReading} className="mt-2 w-full py-2! text-body-sm!">
-        Empezar a leer
+      <Button variant="soft" size="sm" onClick={onStartReading} className="mt-auto px-2!">
+        Empezar
       </Button>
     </div>
   )

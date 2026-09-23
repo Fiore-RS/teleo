@@ -38,7 +38,7 @@ export function StatusMenu({ status, onChange, className = '' }: StatusMenuProps
         type="button"
         onClick={() => setIsOpen((o) => !o)}
         aria-label="Cambiar estado de lectura"
-        className="inline-flex items-center gap-1.5 pl-4 pr-4 py-1.5 rounded-full text-body-sm font-body transition-opacity active:opacity-80"
+        className="inline-flex items-center gap-1.5 pl-4 pr-3 py-1.5 rounded-full text-body-sm font-body font-bold transition-opacity active:opacity-80"
         style={{ backgroundColor: statusColorVar[status], color: 'var(--color-surface)' }}
       >
         {statusLabel[status]}
@@ -48,7 +48,7 @@ export function StatusMenu({ status, onChange, className = '' }: StatusMenuProps
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-xl shadow-lg py-1.5 min-w-40 overflow-hidden"
+          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden"
         >
           {ALL_STATUSES.map((s) => {
             const isSelected = s === status
@@ -60,12 +60,12 @@ export function StatusMenu({ status, onChange, className = '' }: StatusMenuProps
                 aria-selected={isSelected}
                 onClick={() => handleSelect(s)}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-body-md font-body text-left transition-colors ${
-                  isSelected ? 'bg-bg' : 'hover:bg-bg'
+                  isSelected ? 'bg-primary-soft/60' : 'hover:bg-surface-2'
                 }`}
               >
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: statusColorVar[s] }} />
                 <span className="flex-1 text-text truncate">{statusLabel[s]}</span>
-                {isSelected && <Check size={14} className="text-accent-wishlist shrink-0" />}
+                {isSelected && <Check size={14} className="text-primary-text shrink-0" />}
               </button>
             )
           })}

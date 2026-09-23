@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useCachedQuery } from './useCachedQuery'
 
 export interface CountEntry {
   label: string
@@ -114,12 +114,8 @@ function tally(values: (string | null)[]): CountEntry[] {
  *  sección "Valor de tu biblioteca". Reemplaza a `useProfileStats` (que se queda sin uso
  *  una vez que Perfil deja de mostrar Estadísticas/Racha/Años en libros). */
 export function useLibraryStats(userId: string | undefined) {
-  const [stats, setStats] = useState<LibraryStats>(emptyStats)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const refetch = useCallback(async () => {
-    if (!userId) return
-    setIsLoading(true)
+  async function fetchStats(): Promise<LibraryStats> {
+    if (!userId) return emptyStats
 
     const [
       { data: booksData },
@@ -265,7 +261,7 @@ export function useLibraryStats(userId: string | undefined) {
     const wishlistWithPrice = wishlist.filter((b) => typeof b.price === 'number')
     const wishlistCost = wishlistWithPrice.reduce((sum, b) => sum + (b.price ?? 0), 0)
 
-    setStats({
+    return {
       resumen: {
         pagesRead,
         audioSeconds,
@@ -309,11 +305,12 @@ export function useLibraryStats(userId: string | undefined) {
         wishlistCost,
         wishlistWithPriceCount: wishlistWithPrice.length,
       },
-    })
-    setIsLoading(false)
-  }, [userId])
+    }
+  }
 
-  useEffect(() => { refetch() }, [refetch])
+  const { data: stats, isLoading, refetch } = useCachedQuery(['libraryStats', userId], fetchStats, emptyStats, {
+    enabled: !!userId,
+  })
 
   return { stats, isLoading, refetch }
 }

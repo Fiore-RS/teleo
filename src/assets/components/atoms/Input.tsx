@@ -26,7 +26,7 @@ export function Input({
       )}
       <input
         {...props}
-        className={`w-full bg-surface border border-border rounded-xl py-3 text-body-lg font-body text-text placeholder:text-text-secondary focus:outline-none focus:border-accent-wishlist transition-colors ${
+        className={`w-full bg-surface-2 border border-border rounded-2xl py-3 text-body-lg font-body text-text placeholder:text-text-muted focus:outline-none focus:border-primary-text transition-colors ${
           hasIcon && iconPosition === 'left' ? 'pl-11 pr-4' : ''
         } ${hasIcon && iconPosition === 'right' ? 'pl-4 pr-11' : ''} ${
           !hasIcon ? 'px-4' : ''

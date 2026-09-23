@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Coffee, BookOpen, NotebookPen, ScrollText, User, type LucideIcon } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
-import { Logo } from '../assets/components/atoms/Logo'
+import logoIconDark from '../assets/images/logo/logo-icon-dark.svg'
 import { Button } from '../assets/components/atoms/Button'
 
 interface Step {
@@ -54,10 +54,12 @@ export function Bienvenida() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col p-6">
-      <div className="text-center mt-4">
-        <Logo variant="icon" className="h-12 mx-auto" />
-        <h1 className="font-display italic text-display-lg text-text mt-4">
+    <div className="min-h-screen bg-glow-top flex flex-col px-4 pt-8 pb-10">
+      <div className="text-center px-2">
+        <div className="mx-auto w-16 h-16 rounded-[20px] bg-linear-to-br from-primary to-rose shadow-card flex items-center justify-center">
+          <img src={logoIconDark} alt="Teleo" className="w-8 h-8" />
+        </div>
+        <h1 className="font-title text-[clamp(30px,8.5vw,40px)] leading-[1.05] text-text mt-5 text-balance">
           ¡Teleo te da la bienvenida!
         </h1>
         <p className="font-body text-body-md text-text-secondary mt-2">
@@ -65,26 +67,26 @@ export function Bienvenida() {
         </p>
       </div>
 
-      <div className="flex-1 space-y-4 mt-8">
+      <div className="flex-1 flex flex-col gap-3 mt-8 stagger-children">
         {steps.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="flex gap-4 bg-surface border border-border rounded-2xl p-4">
-            <div className="w-11 h-11 shrink-0 rounded-full bg-accent-wishlist flex items-center justify-center">
-              <Icon size={20} className="text-surface" />
-            </div>
-            <div>
-              <h3 className="font-display italic text-display-md text-accent-wishlist">{title}</h3>
-              <p className="text-body-sm text-text-secondary mt-1">{description}</p>
+          <div key={title} className="flex gap-3.5 bg-surface border border-border rounded-card shadow-card p-4">
+            <span className="w-10 h-10 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
+              <Icon size={19} />
+            </span>
+            <div className="min-w-0">
+              <h3 className="font-display font-semibold text-body-lg text-text">{title}</h3>
+              <p className="text-body-sm text-text-secondary mt-0.5">{description}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="space-y-3 mt-6">
+      <div className="flex flex-col gap-2.5 mt-8">
         <Button variant="primary" onClick={handleStart} isLoading={isSaving}>
           Empezar a leer
         </Button>
         <Button variant="outline" onClick={() => navigate('/tutorial')}>
-          Tutorial para navegar por Teleo
+          Ver el tutorial
         </Button>
       </div>
     </div>

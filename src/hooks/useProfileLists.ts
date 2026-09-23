@@ -1,35 +1,38 @@
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
+import { useCachedQuery } from './useCachedQuery'
 
 type Book = Database['public']['Tables']['books']['Row']
 
+interface ProfileLists {
+  currentlyReading: Book[]
+  favorites: Book[]
+  recommended: Book[]
+  wishlist: Book[]
+}
+
+const EMPTY: ProfileLists = { currentlyReading: [], favorites: [], recommended: [], wishlist: [] }
+
 export function useProfileLists(userId: string | undefined) {
-  const [currentlyReading, setCurrentlyReading] = useState<Book[]>([])
-  const [favorites, setFavorites] = useState<Book[]>([])
-  const [recommended, setRecommended] = useState<Book[]>([])
-  const [wishlist, setWishlist] = useState<Book[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { data, isLoading, refetch } = useCachedQuery<ProfileLists>(
+    ['profileLists', userId],
+    async () => {
+      const [{ data: reading }, { data: favs }, { data: rec }, { data: wish }] = await Promise.all([
+        supabase.from('books').select('*').eq('user_id', userId!).eq('status', 'leyendo').limit(6),
+        supabase.from('books').select('*').eq('user_id', userId!).eq('is_favorite', true).limit(6),
+        supabase.from('books').select('*').eq('user_id', userId!).eq('is_recommended', true).limit(6),
+        supabase.from('books').select('*').eq('user_id', userId!).eq('status', 'deseado').limit(6),
+      ])
+      return {
+        currentlyReading: reading ?? [],
+        favorites: favs ?? [],
+        recommended: rec ?? [],
+        wishlist: wish ?? [],
+      }
+    },
+    EMPTY,
+    { enabled: !!userId }
+  )
 
-  const refetch = useCallback(async () => {
-    if (!userId) return
-    setIsLoading(true)
-
-    const [{ data: reading }, { data: favs }, { data: rec }, { data: wish }] = await Promise.all([
-      supabase.from('books').select('*').eq('user_id', userId).eq('status', 'leyendo').limit(6),
-      supabase.from('books').select('*').eq('user_id', userId).eq('is_favorite', true).limit(6),
-      supabase.from('books').select('*').eq('user_id', userId).eq('is_recommended', true).limit(6),
-      supabase.from('books').select('*').eq('user_id', userId).eq('status', 'deseado').limit(6),
-    ])
-
-    setCurrentlyReading(reading ?? [])
-    setFavorites(favs ?? [])
-    setRecommended(rec ?? [])
-    setWishlist(wish ?? [])
-    setIsLoading(false)
-  }, [userId])
-
-  useEffect(() => { refetch() }, [refetch])
-
-  return { currentlyReading, favorites, recommended, wishlist, isLoading, refetch }
+  return { ...data, isLoading, refetch }
 }

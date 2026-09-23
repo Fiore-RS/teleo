@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useAccountSettings } from '../hooks/useAccountSettings'
 import { Input } from '../assets/components/atoms/Input'
 import { Button } from '../assets/components/atoms/Button'
+import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { Lock } from 'lucide-react'
 
 export function CambiarContrasena() {
@@ -23,20 +24,20 @@ export function CambiarContrasena() {
   }
 
   return (
-    <div className="min-h-screen bg-bg p-6">
-      <button onClick={() => navigate('/configuracion')} className="text-body-sm text-text-secondary mb-6">← Regresar</button>
-      <h1 className="font-display text-display-lg text-text text-center">Cambiar contraseña</h1>
-      <p className="text-body-md text-text-secondary text-center mt-2">Elige una nueva contraseña segura.</p>
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
+      <PageHeader title="Cambiar contraseña" subtitle="Elige una nueva contraseña segura." onBack={() => navigate('/configuracion')} backLabel="Regresar a Configuración" />
+      <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-6">Nueva contraseña</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Nueva contraseña</label>
       <Input icon={Lock} type="password" placeholder="Nueva contraseña..." value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-4">Confirmar contraseña</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Confirmar contraseña</label>
       <Input icon={Lock} type="password" placeholder="Confirmar contraseña..." value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
 
-      {error && <p className="text-body-sm text-accent-wishlist text-center mt-3">{error}</p>}
+      {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
 
-      <Button variant="primary" className="mt-6" onClick={handleSave} isLoading={isSaving}>Guardar Cambios</Button>
+      <Button variant="primary" className="mt-6" onClick={handleSave} isLoading={isSaving}>Guardar cambios</Button>
+      </div>
     </div>
   )
 }

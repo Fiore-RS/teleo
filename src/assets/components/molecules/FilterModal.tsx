@@ -41,10 +41,10 @@ export function FilterModal({ isOpen, onClose, tab, value, onApply }: FilterModa
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Filtros">
+    <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Filtros">
       <div className="space-y-4">
         <div>
-          <label className="text-body-sm text-text-secondary block mb-1">Estado</label>
+          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado</label>
           <Select
             options={statusSelectOptions}
             value={value.status}
@@ -53,7 +53,7 @@ export function FilterModal({ isOpen, onClose, tab, value, onApply }: FilterModa
         </div>
 
         <div>
-          <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
+          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Categoría</label>
           <Select
             options={categorySelectOptions}
             value={value.category}
@@ -63,7 +63,7 @@ export function FilterModal({ isOpen, onClose, tab, value, onApply }: FilterModa
 
         {tab === 'libros' && (
           <div>
-            <label className="text-body-sm text-text-secondary block mb-1">Idioma</label>
+            <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Idioma</label>
             <Select
               options={languageSelectOptions}
               value={value.language}
@@ -74,7 +74,7 @@ export function FilterModal({ isOpen, onClose, tab, value, onApply }: FilterModa
 
         {tab === 'libros' && (
           <div>
-            <label className="text-body-sm text-text-secondary block mb-1">Formato</label>
+            <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Formato</label>
             <Select
               options={formatSelectOptions}
               value={value.format}

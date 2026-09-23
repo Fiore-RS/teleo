@@ -47,7 +47,7 @@ export function LoadingScreen() {
   }, [navigate])
 
   return (
-    <div className="min-h-screen bg-accent-wishlist flex items-center justify-center">
+    <div className="min-h-screen bg-linear-to-br from-primary to-rose flex items-center justify-center">
       <img src={logoIconDark} alt="Teleo" className="w-24 h-24 animate-pulse" />
     </div>
   )

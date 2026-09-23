@@ -1,9 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import { useCachedQuery } from './useCachedQuery'
 import { formatLocalDate } from '../lib/date'
 import type { Database } from '../types/database'
 
 type Book = Database['public']['Tables']['books']['Row']
+
+interface ShareCardExtras {
+  recentFinishedBook: Book | null
+  recentFinishedRating: number | null
+  sessionDateList: string[]
+}
+
+const EMPTY: ShareCardExtras = { recentFinishedBook: null, recentFinishedRating: null, sessionDateList: [] }
 
 /** Datos puntuales para la tarjeta de perfil compartible que no cubre ningún hook
  *  existente: el libro terminado más reciente (+ su calificación, si ya tiene reseña),
@@ -11,14 +20,8 @@ type Book = Database['public']['Tables']['books']['Row']
  *  mostrar el mismo calendario de 2 meses que Bitácora) — acotado a esos 2 meses en vez
  *  de traer todo el historial, ya que acá no hace falta navegar hacia atrás. */
 export function useShareCardExtras(userId: string | undefined) {
-  const [recentFinishedBook, setRecentFinishedBook] = useState<Book | null>(null)
-  const [recentFinishedRating, setRecentFinishedRating] = useState<number | null>(null)
-  const [sessionDates, setSessionDates] = useState<Set<string>>(new Set())
-  const [isLoading, setIsLoading] = useState(true)
-
-  const refetch = useCallback(async () => {
-    if (!userId) return
-    setIsLoading(true)
+  async function fetchExtras(): Promise<ShareCardExtras> {
+    if (!userId) return EMPTY
 
     const now = new Date()
     // Rango de 2 meses (el actual + el anterior), igual que el calendario de "Ritmo y
@@ -43,8 +46,9 @@ export function useShareCardExtras(userId: string | undefined) {
         .lte('session_date', rangeEnd),
     ])
 
-    setRecentFinishedBook(finished ?? null)
-    setSessionDates(new Set((sessions ?? []).map((s) => s.session_date)))
+    const recentFinishedBook = finished ?? null
+    const sessionDateList = (sessions ?? []).map((s) => s.session_date)
+    let recentFinishedRating: number | null = null
 
     if (finished) {
       const { data: review } = await supabase
@@ -53,17 +57,17 @@ export function useShareCardExtras(userId: string | undefined) {
         .eq('user_id', userId)
         .eq('book_id', finished.id)
         .maybeSingle()
-      setRecentFinishedRating(review?.general_rating ?? null)
-    } else {
-      setRecentFinishedRating(null)
+      recentFinishedRating = review?.general_rating ?? null
     }
 
-    setIsLoading(false)
-  }, [userId])
+    return { recentFinishedBook, recentFinishedRating, sessionDateList }
+  }
 
-  useEffect(() => {
-    refetch()
-  }, [refetch])
+  const { data, isLoading, refetch } = useCachedQuery(['shareCardExtras', userId], fetchExtras, EMPTY, {
+    enabled: !!userId,
+  })
+  const sessionDates = useMemo(() => new Set(data.sessionDateList), [data.sessionDateList])
+  const { recentFinishedBook, recentFinishedRating } = data
 
   return { recentFinishedBook, recentFinishedRating, sessionDates, isLoading, refetch }
 }

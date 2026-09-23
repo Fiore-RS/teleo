@@ -79,8 +79,8 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
   }
 
   return (
-    <Modal isOpen onClose={onClose} title="Compartir lista de deseados">
-      <div className="bg-bg rounded-2xl p-5 text-center">
+    <Modal variant="sheet" isOpen onClose={onClose} title="Compartir lista de deseados">
+      <div className="bg-surface-2 border border-border rounded-2xl p-5 text-center">
         {isLoading ? (
           <p className="text-body-md text-text-secondary">Cargando tu lista...</p>
         ) : (
@@ -106,7 +106,7 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
             Todavía no tienes libros en tu lista de deseados.
           </p>
         )}
-        {error && <p className="text-body-sm text-accent-wishlist text-center mt-1">{error}</p>}
+        {error && <p className="text-body-sm text-primary-text text-center mt-1">{error}</p>}
         {downloaded && !error && (
           <p className="text-body-sm text-text-secondary text-center mt-1">
             PDF descargado. Revisa tu carpeta de descargas.

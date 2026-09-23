@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MoreVertical, Pencil, ArrowUpDown, BookOpen } from 'lucide-react'
+import { MoreHorizontal, Pencil, ArrowUpDown, BookOpen } from 'lucide-react'
 
 interface PriorityListMenuProps {
   isReordering: boolean
@@ -46,21 +46,21 @@ export function PriorityListMenu({
         type="button"
         onClick={() => setIsOpen((o) => !o)}
         aria-label="Más opciones de la lista"
-        className="text-text-secondary"
+        className="w-[34px] h-[34px] rounded-full border border-border bg-surface-2 text-text-secondary flex items-center justify-center"
       >
-        <MoreVertical size={18} />
+        <MoreHorizontal size={16} />
       </button>
 
       {isOpen && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-xl shadow-lg py-1.5 min-w-48 overflow-hidden"
+          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-48 overflow-hidden"
         >
           <button
             type="button"
             role="menuitem"
             onClick={() => handleSelect(onEditName)}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left text-text hover:bg-bg transition-colors"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left text-text hover:bg-surface-2 transition-colors"
           >
             <Pencil size={16} className="text-text-secondary shrink-0" />
             Editar nombre
@@ -71,7 +71,7 @@ export function PriorityListMenu({
               type="button"
               role="menuitem"
               onClick={() => handleSelect(onToggleReorder)}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left text-text hover:bg-bg transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left text-text hover:bg-surface-2 transition-colors"
             >
               <ArrowUpDown size={16} className="text-text-secondary shrink-0" />
               {isReordering ? 'Listo' : 'Organizar'}
@@ -83,7 +83,7 @@ export function PriorityListMenu({
               type="button"
               role="menuitem"
               onClick={() => handleSelect(onViewInEstante)}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left text-text hover:bg-bg transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left text-text hover:bg-surface-2 transition-colors"
             >
               <BookOpen size={16} className="text-text-secondary shrink-0" />
               Ver en Estante

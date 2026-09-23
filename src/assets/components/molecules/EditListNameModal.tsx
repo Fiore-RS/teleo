@@ -13,7 +13,7 @@ interface EditListNameModalProps {
 
 const MAX_LENGTH = 40
 
-/** Mismo patrón que `EditGoalModal` — un pop up simple con un input y "Guardar Cambios". Dejar
+/** Mismo patrón que `EditGoalModal` — un pop up simple con un input y "Guardar cambios". Dejar
  *  el campo vacío restablece el nombre por defecto (se guarda `null`, no un string vacío). */
 export function EditListNameModal({ isOpen, onClose, currentName, defaultName, onSave }: EditListNameModalProps) {
   const [value, setValue] = useState(currentName)
@@ -32,7 +32,7 @@ export function EditListNameModal({ isOpen, onClose, currentName, defaultName, o
         Personaliza cómo se llama tu lista de prioridad en Mesa. Déjalo vacío para volver a
         "{defaultName}".
       </p>
-      <label className="text-body-sm font-body text-text-secondary mb-1 block">
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
         Nombre de la lista
       </label>
       <Input
@@ -42,7 +42,7 @@ export function EditListNameModal({ isOpen, onClose, currentName, defaultName, o
         onChange={(e) => setValue(e.target.value)}
       />
       <Button variant="primary" className="mt-4" onClick={handleSave} isLoading={isSaving}>
-        Guardar Cambios
+        Guardar cambios
       </Button>
     </Modal>
   )

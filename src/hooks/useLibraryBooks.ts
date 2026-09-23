@@ -1,48 +1,45 @@
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
 import { recomputeSagaStatus } from '../lib/sagaStatus'
 
 type Book = Database['public']['Tables']['books']['Row']
 
+const EMPTY: Book[] = []
+
 export function useLibraryBooks(userId: string | undefined) {
-  const [books, setBooks] = useState<Book[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { data: books, setData: setBooks, isLoading, refetch } = useCachedQuery<Book[]>(
+    ['libraryBooks', userId],
+    async () => {
+      const { data } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', userId!)
+        .order('estante_sort_order', { ascending: true })
+        .order('created_at', { ascending: true })
 
-  const refetch = useCallback(async () => {
-    if (!userId) return
-    setIsLoading(true)
-    const { data } = await supabase
-      .from('books')
-      .select('*')
-      .eq('user_id', userId)
-      .order('estante_sort_order', { ascending: true })
-      .order('created_at', { ascending: true })
+      const rows = data ?? []
 
-    const rows = data ?? []
-
-    // Auto-reparación: libros importados desde una copia de seguridad (useDataImport) u
-    // otras rutas que no fijen estante_sort_order pueden quedar en null, lo que rompe el
-    // cálculo de posición al reordenar en Estante. Postgres ya los ordena al final (NULLS
-    // LAST), así que apenas detectamos alguno sin orden le asignamos uno válido y consecutivo.
-    const missingOrder = rows.filter((b) => b.estante_sort_order === null)
-    if (missingOrder.length > 0) {
-      let nextOrder = rows.reduce((max, b) => Math.max(max, b.estante_sort_order ?? 0), 0) + 1000
-      for (const book of missingOrder) {
-        book.estante_sort_order = nextOrder
-        await supabase.from('books').update({ estante_sort_order: nextOrder }).eq('id', book.id)
-        nextOrder += 1000
+      // Auto-reparación: libros importados desde una copia de seguridad (useDataImport) u
+      // otras rutas que no fijen estante_sort_order pueden quedar en null, lo que rompe el
+      // cálculo de posición al reordenar en Estante. Postgres ya los ordena al final (NULLS
+      // LAST), así que apenas detectamos alguno sin orden le asignamos uno válido y consecutivo.
+      const missingOrder = rows.filter((b) => b.estante_sort_order === null)
+      if (missingOrder.length > 0) {
+        let nextOrder = rows.reduce((max, b) => Math.max(max, b.estante_sort_order ?? 0), 0) + 1000
+        for (const book of missingOrder) {
+          book.estante_sort_order = nextOrder
+          await supabase.from('books').update({ estante_sort_order: nextOrder }).eq('id', book.id)
+          nextOrder += 1000
+        }
       }
-    }
 
-    setBooks(rows)
-    setIsLoading(false)
-  }, [userId])
-
-  useEffect(() => {
-    refetch()
-  }, [refetch])
+      return rows
+    },
+    EMPTY,
+    { enabled: !!userId }
+  )
 
   async function addBook(book: Omit<Database['public']['Tables']['books']['Insert'], 'user_id'>) {
     if (!userId) return { error: new Error('No hay usuario') }

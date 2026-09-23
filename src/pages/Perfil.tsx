@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Menu } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
@@ -14,10 +14,10 @@ import { ProfileView } from './ProfileView'
 export function Perfil() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { profile, updateProfile } = useProfile(user?.id)
+  const { profile, updateProfile, isLoading: profileLoading } = useProfile(user?.id)
   const { uploadAvatar, isUploading } = useAvatarUpload(user?.id)
   const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(user?.id)
-  const { currentlyReading, favorites, recommended, wishlist, refetch: refetchLists } = useProfileLists(user?.id)
+  const { currentlyReading, favorites, recommended, wishlist, refetch: refetchLists, isLoading: listsLoading } = useProfileLists(user?.id)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isBioModalOpen, setIsBioModalOpen] = useState(false)
@@ -38,11 +38,17 @@ export function Perfil() {
     <>
       <ProfileView
         username={profile?.username}
+        isProfileLoading={profileLoading}
+        areListsLoading={listsLoading}
         bio={profile?.bio}
         avatarUrl={profile?.avatar_url}
         headerRight={
-          <button onClick={() => navigate('/configuracion')} aria-label="Configuración">
-            <Menu size={22} className="text-accent-wishlist" />
+          <button
+            onClick={() => navigate('/configuracion')}
+            aria-label="Configuración"
+            className="w-10 h-10 shrink-0 rounded-full bg-surface/20 border border-primary-ink/30 text-primary-ink backdrop-blur-sm flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-ink"
+          >
+            <Settings size={19} />
           </button>
         }
         onAvatarClick={() => fileInputRef.current?.click()}
@@ -58,7 +64,7 @@ export function Perfil() {
         onSeeAllBooks={(list) => navigate(`/estante?filtro=${list}`)}
         footer={
           <>
-            <div className="pb-24" />
+            <div className="pb-28" />
             <TabBar active="perfil" onChange={handleTabBarChange} />
           </>
         }

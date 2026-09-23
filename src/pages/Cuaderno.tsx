@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ImageOff, ArrowDownAZ, User, CalendarDays, Move } from 'lucide-react'
+import { ImageOff, ArrowDownAZ, User, CalendarDays, Move, Plus, Search } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews, type ReviewWithBook } from '../hooks/useReviews'
-import { SearchBar } from '../assets/components/molecules/SearchBar'
-import { SectionHeader } from '../assets/components/atoms/SectionHeader'
-import { Button } from '../assets/components/atoms/Button'
+import { SearchHeader } from '../assets/components/molecules/SearchHeader'
+import { BookTileSkeleton } from '../assets/components/atoms/Skeleton'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { ScrollToTopButton } from '../assets/components/atoms/ScrollToTopButton'
@@ -30,10 +29,18 @@ interface ReviewCardProps {
   onOpen: () => void
 }
 
+/** Reseña en la cuadrícula de El cuaderno. Rediseño 2026: mismo patrón que las portadas de
+ *  El estante (sin tarjeta propia, toda la pieza se toca para abrir la reseña) y el
+ *  comentario como una citita en Fraunces itálica. */
 function ReviewCard({ review, onOpen }: ReviewCardProps) {
   return (
-    <div className="bg-surface border border-border rounded-xl p-2.5 flex flex-col">
-      <div className="relative aspect-2/3 w-full rounded-lg overflow-hidden bg-border">
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`Ver reseña de ${review.book.title}`}
+      className="text-left w-full flex flex-col rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+    >
+      <div className="relative aspect-2/3 w-full rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]">
         {review.book.cover_url ? (
           <CoverImage src={review.book.cover_url ?? undefined} alt={review.book.title} className="w-full h-full object-cover" />
         ) : (
@@ -41,21 +48,17 @@ function ReviewCard({ review, onOpen }: ReviewCardProps) {
         )}
       </div>
 
-      <p className="text-body-sm text-text line-clamp-2 mt-1.5">{review.book.title}</p>
+      <p className="text-body-md font-semibold leading-tight text-text line-clamp-2 mt-2">{review.book.title}</p>
       <p className="text-body-sm text-text-secondary line-clamp-1 mt-0.5">{review.book.author}</p>
 
       <RatingRow shape="star" color="var(--color-accent-reading)" value={review.general_rating ?? 0} size={12} className="mt-1.5" />
 
       {review.general_comments && (
-        <p className="text-body-sm text-text-secondary line-clamp-2 mt-1.5 bg-bg rounded-lg p-2">
+        <p className="font-display italic text-body-sm leading-snug text-text-secondary line-clamp-3 mt-2 bg-surface border border-border rounded-xl px-2.5 py-2">
           {review.general_comments}
         </p>
       )}
-
-      <Button variant="amber" className="mt-2 w-full py-2! text-body-sm!" onClick={onOpen}>
-        Ver Reseña
-      </Button>
-    </div>
+    </button>
   )
 }
 
@@ -65,6 +68,7 @@ export function Cuaderno() {
   const { reviews, isLoading, refetch, reorderReview } = useReviews(user?.id)
 
   const [search, setSearch] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   // El modo elegido se guarda en localStorage (mismo mecanismo que Estante) para que no se
@@ -139,16 +143,49 @@ export function Cuaderno() {
   }
 
   return (
-    <div className="min-h-screen bg-bg p-4">
-      <div className="mt-4 space-y-6">
-        <SectionHeader title="Tu diario de lectura" rightContent={`${String(filtered.length).padStart(3, '0')} reseñas`} />
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <SearchHeader
+        isSearching={isSearching}
+        onCancel={() => {
+          setSearch('')
+          setIsSearching(false)
+        }}
+        value={search}
+        onChange={setSearch}
+        placeholder="Buscar por título o autor"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="h-9 min-[400px]:h-10 flex items-center font-title text-[clamp(30px,8.5vw,44px)] leading-none text-text whitespace-nowrap">
+              Cuaderno
+            </h1>
+            <div className="flex items-start gap-1.5 min-[400px]:gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsSearching(true)}
+                aria-label="Buscar"
+                className="w-9 h-9 min-[400px]:w-10 min-[400px]:h-10 shrink-0 rounded-full bg-surface border border-border shadow-card text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
+              >
+                <Search size={17} />
+              </button>
+              <SortMenu variant="icon" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
+              <button
+                type="button"
+                onClick={() => setIsPickerOpen(true)}
+                aria-label="Escribir reseña nueva"
+                className="w-11 h-11 min-[400px]:w-12 min-[400px]:h-12 -mb-2 shrink-0 rounded-full bg-primary text-primary-ink shadow-card flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+              >
+                <Plus size={24} strokeWidth={2.4} />
+              </button>
+            </div>
+          </div>
+          <p className="font-body text-body-md text-text-secondary mt-1.5 tabular-nums">
+            {isLoading ? '\u00a0' : `${filtered.length} ${filtered.length === 1 ? 'reseña' : 'reseñas'}`}
+          </p>
+        </div>
+      </SearchHeader>
 
-        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
-
-        <Button variant="primary" onClick={() => setIsPickerOpen(true)}>Agregar Reseña Nueva</Button>
-
-        <SortMenu options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
-
+      <div className="space-y-5">
         {isReordering && (
           <p className="text-body-sm text-text-secondary text-center">
             Mantén presionado unos instantes para arrastrar y organizar tus reseñas a tu gusto.
@@ -159,10 +196,17 @@ export function Cuaderno() {
           <p className="text-body-md text-text-secondary text-center">Aún no tienes reseñas escritas.</p>
         )}
 
+        {isLoading && (
+          <div className="grid grid-cols-3 gap-x-3 gap-y-4" aria-label="Cargando">
+            {Array.from({ length: 6 }, (_, i) => (
+              <BookTileSkeleton key={i} />
+            ))}
+          </div>
+        )}
         {isReordering ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReviewDragEnd}>
             <SortableContext items={sortedReviews.map((r) => r.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
                 {sortedReviews.map((r) => (
                   <SortableItem key={r.id} id={r.id}>
                     <ReviewCard review={r} onOpen={() => setSelectedBookId(r.book_id)} />
@@ -172,7 +216,7 @@ export function Cuaderno() {
             </SortableContext>
           </DndContext>
         ) : (
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
             {sortedReviews.map((r) => (
               <ReviewCard key={r.id} review={r} onOpen={() => setSelectedBookId(r.book_id)} />
             ))}

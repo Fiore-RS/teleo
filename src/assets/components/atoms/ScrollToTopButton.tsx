@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { ArrowUp } from 'lucide-react'
 
 /** Botón flotante "volver arriba", pensado para pantallas largas como Estante y
@@ -17,7 +18,8 @@ import { ArrowUp } from 'lucide-react'
  *  el safe-area se aplica aparte, como padding en el contenedor (mismo truco que usa
  *  TabBar), y el `bottom` del botón queda como un valor fijo simple. */
 export function ScrollToTopButton() {
-  return (
+  // Portal a <body>, igual que TabBar, para que no parpadee con el fundido de cambio de pantalla.
+  return createPortal(
     <div
       className="fixed inset-x-0 bottom-0 z-30 pointer-events-none"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -27,11 +29,12 @@ export function ScrollToTopButton() {
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Volver arriba"
-          className="pointer-events-auto absolute right-4 bottom-20 w-11 h-11 rounded-full bg-state-pending text-surface flex items-center justify-center drop-shadow-md active:opacity-80 transition-opacity"
+          className="pointer-events-auto absolute right-4 bottom-[88px] w-11 h-11 rounded-full bg-surface border border-border text-primary-text shadow-float flex items-center justify-center active:opacity-80 transition-opacity"
         >
           <ArrowUp size={20} />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

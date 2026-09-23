@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useCachedQuery } from './useCachedQuery'
 
 export interface YearBookEntry {
   id: string
@@ -27,15 +27,8 @@ const emptyData: YearInBooksData = { totalBooks: 0, totalPages: 0, totalAudioSec
  *  "Libros leídos en 20XX" que se abre desde la tarjeta de año en Perfil. Solo se activa
  *  cuando `year` no es null (el modal está abierto). */
 export function useYearInBooks(userId: string | undefined, year: number | null) {
-  const [data, setData] = useState<YearInBooksData>(emptyData)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const refetch = useCallback(async () => {
-    if (!userId || year === null) {
-      setData(emptyData)
-      return
-    }
-    setIsLoading(true)
+  async function fetchYear(): Promise<YearInBooksData> {
+    if (!userId || year === null) return emptyData
 
     const { data: historyRows } = await supabase
       .from('reading_history')
@@ -76,11 +69,12 @@ export function useYearInBooks(userId: string | undefined, year: number | null) 
       .sort(([a], [b]) => a - b)
       .map(([month, monthBooks]) => ({ month, books: monthBooks }))
 
-    setData({ totalBooks: reads.length, totalPages, totalAudioSeconds, months })
-    setIsLoading(false)
-  }, [userId, year])
+    return { totalBooks: reads.length, totalPages, totalAudioSeconds, months }
+  }
 
-  useEffect(() => { refetch() }, [refetch])
+  const { data, isLoading } = useCachedQuery(['yearInBooks', userId, year], fetchYear, emptyData, {
+    enabled: !!userId && year !== null,
+  })
 
   return { data, isLoading }
 }

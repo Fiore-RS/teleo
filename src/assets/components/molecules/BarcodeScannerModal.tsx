@@ -37,7 +37,7 @@ export function BarcodeScannerModal({ isOpen, onClose, onDetected }: BarcodeScan
   }, [isOpen, onDetected])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Escanear código de barras">
+    <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Escanear código de barras">
       <div id={SCANNER_ID} className="rounded-2xl overflow-hidden" />
       <p className="text-body-sm text-text-secondary text-center mt-3">
         Apunta la cámara al código de barras del libro (ISBN).
