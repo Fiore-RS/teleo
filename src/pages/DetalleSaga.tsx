@@ -238,7 +238,7 @@ export function DetalleSaga({
     books,
     refetch,
     updateSaga,
-    assignBookToSaga,
+    assignBooksToSaga,
     removeBookFromSaga,
     reorderBookInSaga,
     deleteSaga,
@@ -384,7 +384,7 @@ export function DetalleSaga({
         <button
           type="button"
           onClick={() => setIsSelectBookOpen(true)}
-          aria-label="Agregar libro a la saga"
+          aria-label="Agregar libros a la saga"
           className="w-9 h-9 rounded-full bg-primary text-primary-ink flex items-center justify-center"
         >
           <Plus size={18} strokeWidth={2.4} />
@@ -527,7 +527,7 @@ export function DetalleSaga({
         isOpen={isSelectBookOpen}
         onClose={() => setIsSelectBookOpen(false)}
         userId={user?.id}
-        onSelect={assignBookToSaga}
+        onConfirm={assignBooksToSaga}
       />
     </>
   );

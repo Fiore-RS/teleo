@@ -60,18 +60,23 @@ export function useSaga(sagaId: string | undefined) {
     await refetch()
   }
 
-  async function assignBookToSaga(book: Book) {
+  /** Agrega varios libros de una vez (feedback de beta-testers: antes había que abrir el
+   *  selector una vez por libro). Quedan al final de la saga en el orden recibido. Las
+   *  actualizaciones salen en paralelo y el estado de la saga se recalcula una sola vez. */
+  async function assignBooksToSaga(newBooks: Book[]) {
+    if (newBooks.length === 0) return { error: null }
     const maxOrder = books.length > 0 ? Math.max(...books.map((b) => b.saga_sort_order ?? 0)) : 0
-    const newOrder = maxOrder + 1000
-    const { error } = await supabase
-      .from('books')
-      .update({ saga_id: sagaId, saga_sort_order: newOrder })
-      .eq('id', book.id)
-    if (!error) {
-      setBooks((prev) => [...prev, { ...book, saga_id: sagaId ?? null, saga_sort_order: newOrder }])
-      await recomputeSagaStatus(sagaId)
-      await refetch()
-    }
+    const withOrder = newBooks.map((book, i) => ({ book, order: maxOrder + (i + 1) * 1000 }))
+
+    const results = await Promise.all(
+      withOrder.map(({ book, order }) =>
+        supabase.from('books').update({ saga_id: sagaId, saga_sort_order: order }).eq('id', book.id)
+      )
+    )
+    const error = results.find((r) => r.error)?.error ?? null
+
+    await recomputeSagaStatus(sagaId)
+    await refetch()
     return { error }
   }
 
@@ -107,6 +112,6 @@ export function useSaga(sagaId: string | undefined) {
 
   return {
     saga, books, isLoading, refetch, updateSaga,
-    assignBookToSaga, removeBookFromSaga, reorderBookInSaga, deleteSaga,
+    assignBooksToSaga, removeBookFromSaga, reorderBookInSaga, deleteSaga,
   }
 }
