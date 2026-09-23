@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
+  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -20,6 +21,7 @@ import { currencyOptions } from '../lib/currencies'
 import { SettingsGroup, SettingsRow, SettingsField } from '../assets/components/molecules/SettingsList'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { supabase } from '../lib/supabase'
+import { LATEST_VERSION, hasUnseenChangelog } from '../lib/changelog'
 
 export function Configuracion() {
   const navigate = useNavigate()
@@ -36,6 +38,8 @@ export function Configuracion() {
   >(null)
   const [dialogState, setDialogState] = useState<'confirm' | 'success' | 'error'>('confirm')
   const [deleteChecked, setDeleteChecked] = useState(false)
+  // Se lee al entrar; al volver desde Novedades la pantalla se monta de nuevo y ya no aparece.
+  const [hasNews] = useState(hasUnseenChangelog)
 
 
   async function handleSignOut() {
@@ -83,9 +87,26 @@ export function Configuracion() {
       />
 
       <div className="flex flex-col gap-7 stagger-children">
+        <SettingsGroup title="Teleo">
+          <SettingsRow icon={Heart} label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => navigate('/configuracion/detras-de-teleo')} />
+          <SettingsRow icon={Megaphone} label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => navigate('/configuracion/novedades')} />
+        </SettingsGroup>
+
         <SettingsGroup title="Apariencia">
-          <SettingsField icon={Palette} label="Tema de la aplicación" description="Mañana con café o noche con lámpara">
+          <SettingsField icon={Palette} label="Modo de color" description="Mañana con café o noche con lámpara">
             <ThemeToggle />
+          </SettingsField>
+          <SettingsField icon={Paintbrush} label="Tema" description="Pronto podrás elegir otros colores para Teleo">
+            <div className="flex items-center gap-2">
+              <span className="px-4 py-2 rounded-full bg-primary text-primary-ink text-body-md font-bold">Vino</span>
+              <span className="px-3 py-1.5 rounded-full bg-surface-2 border border-border text-body-sm text-text-muted">Próximamente</span>
+            </div>
+          </SettingsField>
+        </SettingsGroup>
+
+        <SettingsGroup title="Sistema">
+          <SettingsField icon={Languages} label="Idioma" description="Por ahora Teleo está solo en español">
+            <Select options={[{ value: 'es', label: 'Español' }]} value="es" disabled />
           </SettingsField>
           <SettingsField icon={Coins} label="Moneda" description="Se usa para mostrar el valor de tu biblioteca en Bitácora">
             <Select
@@ -98,9 +119,10 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Cuenta">
-          <SettingsRow icon={User} label="Cambiar nombre de usuario" description="Tu @usuario en Teleo" onClick={() => navigate('/configuracion/usuario')} />
-          <SettingsRow icon={Mail} label="Cambiar correo" description="El correo con el que inicias sesión" onClick={() => navigate('/configuracion/correo')} />
-          <SettingsRow icon={Lock} label="Cambiar contraseña" description="Actualiza tu clave de acceso" onClick={() => navigate('/configuracion/contrasena')} />
+          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => navigate('/configuracion/usuario')} />
+          <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => navigate('/configuracion/nickname')} />
+          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => navigate('/configuracion/correo')} />
+          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => navigate('/configuracion/contrasena')} />
         </SettingsGroup>
 
         <SettingsGroup title="Compartir">
@@ -110,6 +132,8 @@ export function Configuracion() {
 
         <SettingsGroup title="Información">
           <SettingsRow icon={Info} label="Tutorial de Teleo" description="Un recorrido por cada sección" onClick={() => navigate('/tutorial')} />
+          <SettingsRow icon={ShieldCheck} label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => navigate('/privacidad')} />
+          <SettingsRow icon={FileText} label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => navigate('/terminos')} />
         </SettingsGroup>
 
         <SettingsGroup title="Tus datos">

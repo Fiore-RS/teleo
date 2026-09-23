@@ -17,6 +17,11 @@ import { CambiarContrasena } from "./pages/CambiarContrasena";
 import { Instalar } from "./pages/Instalar";
 import { RecuperarContrasena } from "./pages/RecuperarContrasena";
 import { NuevaContrasena } from "./pages/NuevaContrasena";
+import { CambiarNickname } from "./pages/CambiarNickname";
+import { CorreoConfirmado } from "./pages/CorreoConfirmado";
+import { DetrasDeTeleo } from "./pages/DetrasDeTeleo";
+import { Novedades } from "./pages/Novedades";
+import { Privacidad, Terminos } from "./pages/LegalPage";
 
 function App() {
   const location = useLocation();
@@ -50,6 +55,12 @@ function App() {
           <Route path="/configuracion/usuario" element={<CambiarUsuario />} />
           <Route path="/configuracion/correo" element={<CambiarCorreo />} />
           <Route path="/configuracion/contrasena" element={<CambiarContrasena />} />
+          <Route path="/configuracion/nickname" element={<CambiarNickname />} />
+          <Route path="/configuracion/detras-de-teleo" element={<DetrasDeTeleo />} />
+          <Route path="/configuracion/novedades" element={<Novedades />} />
+          <Route path="/privacidad" element={<Privacidad />} />
+          <Route path="/terminos" element={<Terminos />} />
+          <Route path="/correo-confirmado" element={<CorreoConfirmado />} />
         </Routes>
         </div>
       </div>

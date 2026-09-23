@@ -33,9 +33,11 @@ interface SettingsRowProps {
   disabled?: boolean
   /** Para acciones delicadas (vaciar, eliminar): el texto va en vino. */
   danger?: boolean
+  /** Puntito junto al título, ej. cuando hay una versión nueva en Novedades. */
+  dot?: boolean
 }
 
-export function SettingsRow({ icon: Icon, label, description, onClick, disabled = false, danger = false }: SettingsRowProps) {
+export function SettingsRow({ icon: Icon, label, description, onClick, disabled = false, danger = false, dot = false }: SettingsRowProps) {
   return (
     <button
       type="button"
@@ -49,8 +51,9 @@ export function SettingsRow({ icon: Icon, label, description, onClick, disabled 
         <Icon size={17} />
       </span>
       <span className="flex-1 min-w-0">
-        <span className={`block font-body font-semibold text-body-md ${danger ? 'text-primary-text' : 'text-text'}`}>
+        <span className={`flex items-center gap-2 font-body font-semibold text-body-md ${danger ? 'text-primary-text' : 'text-text'}`}>
           {label}
+          {dot && <span className="w-2 h-2 rounded-full bg-pink" aria-label="Nuevo" />}
         </span>
         {description && <span className="block text-body-sm text-text-secondary mt-0.5">{description}</span>}
       </span>
