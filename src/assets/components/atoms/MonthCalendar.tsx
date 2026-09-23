@@ -52,7 +52,7 @@ export function MonthCalendar({ year, month, markedDates, className = '' }: Mont
               key={key}
               className={`aspect-square rounded-md flex items-center justify-center text-[11px] font-semibold tabular-nums ${
                 isRead
-                  ? 'bg-accent-finished text-surface'
+                  ? 'bg-orange text-on-accent'
                   : isFuture
                     ? 'text-text-muted/60'
                     : 'bg-surface-2 text-text-secondary'

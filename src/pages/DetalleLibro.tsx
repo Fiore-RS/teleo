@@ -295,7 +295,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
                 <div className="flex flex-col gap-2.5 mt-6">
                   {book.status === 'terminado' && (
-                    <Button variant={hasReview ? 'primary' : 'green'} onClick={() => setIsResenaOpen(true)}>
+                    <Button variant={hasReview ? 'soft' : 'primary'} onClick={() => setIsResenaOpen(true)}>
                       <NotebookPen size={18} />
                       {hasReview ? 'Ver reseña de lectura' : 'Crear reseña de lectura'}
                     </Button>
@@ -307,7 +307,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                     </Button>
                   )}
                   {book.status === 'abandonado' && (
-                    <Button variant="green" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
+                    <Button variant="orange" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
                       <Play size={17} />
                       Retomar lectura
                     </Button>

@@ -41,7 +41,7 @@ export function BookCardReading({
         <DogEar status="leyendo" size={26} className="absolute top-0 right-0" />
         {missingStartDate && (
           <span
-            className="absolute top-1 left-1 w-6 h-6 rounded-full bg-accent-reading flex items-center justify-center shadow-sm"
+            className="absolute top-1 left-1 w-6 h-6 rounded-full bg-orange flex items-center justify-center shadow-sm"
             title="Sin fecha de inicio"
           >
             <TriangleAlert size={14} className="text-surface" />

@@ -25,7 +25,7 @@ const iconSize: Record<AvatarSize, number> = {
 }
 
 const variantBg: Record<AvatarVariant, string> = {
-  user: 'bg-accent-wishlist',
+  user: 'bg-primary',
   character: 'bg-border',
 }
 

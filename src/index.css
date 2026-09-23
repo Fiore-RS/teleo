@@ -27,7 +27,8 @@
   --teleo-rose: #B85C6E;           /* final de los degradados */
   --teleo-ornament: #D0A0A4;       /* destellos, líneas punteadas */
 
-  /* estados (doblez de página): mismos significados de siempre */
+  /* estados: colores icónicos, SOLO para la esquina doblada, la insignia de estado y el menú
+     de estado (lib/status.ts). El resto de la interfaz usa la paleta de acentos. */
   --teleo-state-abandoned: #9B948C;
   --teleo-state-pending: #5B7A88;
   --teleo-accent-wishlist: #7A2E3A;
@@ -36,6 +37,25 @@
   --teleo-finished-soft: #DFE6DD;
   --teleo-reading-soft: #F5E6CB;
   --teleo-pending-soft: #DDE7EB;
+
+  /* Acentos (fase 0.7, inspirados en la bandera lesbiana). Dan color a las secciones sin
+     tomar prestados los colores de estado. Cada uno tiene: -text (texto e íconos, pasa AA sobre
+     el crema), base (rellenos), -soft (fondos suaves, círculos de ícono) y -tint (fondo de
+     tarjeta, casi imperceptible). */
+  --teleo-orange-text: #A8481C;
+  --teleo-orange: #EC8A4F;
+  --teleo-orange-soft: #FCE4D4;
+  --teleo-orange-tint: #FEF3EB;
+  --teleo-orange-button: #A8481C;  /* botón relleno con texto claro encima */
+  --teleo-pink-text: #A0336F;
+  --teleo-pink: #D46BA6;
+  --teleo-pink-soft: #F9E1EE;
+  --teleo-pink-tint: #FDF2F8;
+  --teleo-magenta-text: #8E1257;
+  --teleo-magenta: #A8286F;
+  --teleo-magenta-soft: #F2D9E6;
+  --teleo-magenta-tint: #FAEFF5;
+  --teleo-on-accent: #FFF8EE;      /* texto sobre un relleno de acento */
 
   --teleo-shadow-card: 0 1px 2px rgba(90, 40, 40, 0.06), 0 8px 24px -12px rgba(90, 40, 40, 0.18);
   --teleo-shadow-float: 0 10px 30px -10px rgba(90, 40, 40, 0.32);
@@ -68,6 +88,21 @@
   --teleo-reading-soft: #3E3020;
   --teleo-pending-soft: #22313A;
 
+  --teleo-orange-text: #F5A874;
+  --teleo-orange: #EE8A4E;
+  --teleo-orange-soft: #43291B;
+  --teleo-orange-tint: #2E2019;
+  --teleo-orange-button: #EE8A4E;  /* en oscuro el botón es claro y el texto oscuro */
+  --teleo-pink-text: #EFA0CB;
+  --teleo-pink: #DC79B1;
+  --teleo-pink-soft: #42243A;
+  --teleo-pink-tint: #2C1D27;
+  --teleo-magenta-text: #E583B6;
+  --teleo-magenta: #C24A88;
+  --teleo-magenta-soft: #3F1B2F;
+  --teleo-magenta-tint: #2A1822;
+  --teleo-on-accent: #1C1513;
+
   --teleo-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 26px -14px rgba(0, 0, 0, 0.6);
   --teleo-shadow-float: 0 12px 30px -8px rgba(0, 0, 0, 0.7);
 }
@@ -97,6 +132,21 @@
   --color-finished-soft: var(--teleo-finished-soft);
   --color-reading-soft: var(--teleo-reading-soft);
   --color-pending-soft: var(--teleo-pending-soft);
+
+  --color-orange-text: var(--teleo-orange-text);
+  --color-orange: var(--teleo-orange);
+  --color-orange-soft: var(--teleo-orange-soft);
+  --color-orange-tint: var(--teleo-orange-tint);
+  --color-orange-button: var(--teleo-orange-button);
+  --color-pink-text: var(--teleo-pink-text);
+  --color-pink: var(--teleo-pink);
+  --color-pink-soft: var(--teleo-pink-soft);
+  --color-pink-tint: var(--teleo-pink-tint);
+  --color-magenta-text: var(--teleo-magenta-text);
+  --color-magenta: var(--teleo-magenta);
+  --color-magenta-soft: var(--teleo-magenta-soft);
+  --color-magenta-tint: var(--teleo-magenta-tint);
+  --color-on-accent: var(--teleo-on-accent);
 
   --shadow-card: var(--teleo-shadow-card);
   --shadow-float: var(--teleo-shadow-float);

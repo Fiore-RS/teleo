@@ -180,7 +180,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
             {error && <p className="text-body-sm text-primary-text mt-2">{error}</p>}
 
             <div className="flex flex-col gap-2.5 mt-6">
-              <Button variant="green" onClick={handleMarkFinished} isLoading={isSaving}>
+              <Button variant="magenta" onClick={handleMarkFinished} isLoading={isSaving}>
                 <Check size={18} />
                 Marcar como terminado
               </Button>

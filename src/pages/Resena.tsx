@@ -132,7 +132,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                 {book.author && <p className="text-body-md text-text-secondary mt-1">{book.author}</p>}
                 {review && !isEditing && (
                   <div className="mt-2.5">
-                    <RatingRow shape="star" color="var(--color-accent-reading)" value={review.general_rating ?? 0} size={18} />
+                    <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={18} />
                   </div>
                 )}
               </div>
@@ -141,7 +141,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
             {!review && !isEditing && (
               <div className="text-center mt-8">
                 <p className="text-body-md text-text-secondary mb-4">Aún no has escrito una reseña para este libro.</p>
-                <Button variant="green" onClick={startEditing}>
+                <Button variant="primary" onClick={startEditing}>
                   <PenLine size={17} />
                   Crear reseña de lectura
                 </Button>
@@ -181,7 +181,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                 <section>
                   <SectionLabel>Calificaciones</SectionLabel>
                   <div className={`${box} px-4 py-3 space-y-2`}>
-                    <RatingRow label="General" shape="star" color="var(--color-accent-reading)" value={review.general_rating ?? 0} />
+                    <RatingRow label="General" shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} />
                     {customRatings.map((cr) => (
                       <RatingRow key={cr.id} label={cr.label} shape={cr.icon as RatingShape} color={ratingIconColor[cr.icon as RatingShape]} value={cr.value ?? 0} />
                     ))}
@@ -223,7 +223,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
                 <div
                   className={`flex items-center justify-center gap-2 rounded-full py-2.5 text-body-md font-bold ${
-                    review.recommends ? 'bg-finished-soft text-accent-finished' : 'bg-surface-2 border border-border text-text-secondary'
+                    review.recommends ? 'bg-magenta-soft text-magenta-text' : 'bg-surface-2 border border-border text-text-secondary'
                   }`}
                 >
                   <ThumbsUp size={16} className={review.recommends ? '' : 'rotate-180'} />
@@ -260,7 +260,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                   <label className={labelClass}>Calificaciones</label>
                   <div className={`${box} px-4 py-3 space-y-2`}>
                     <RatingRow
-                      label="General" shape="star" color="var(--color-accent-reading)"
+                      label="General" shape="star" color="var(--color-orange)"
                       value={draft.general_rating} onRate={(v) => setDraft({ ...draft, general_rating: v })}
                     />
                     {customRatings.map((cr) => (

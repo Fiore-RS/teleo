@@ -18,7 +18,7 @@ export function WriteReviewPromptModal({ isOpen, onAccept, onIgnore }: WriteRevi
       </p>
       <div className="flex gap-2.5">
         <Button variant="outline" className="flex-1" onClick={onIgnore}>Ignorar</Button>
-        <Button variant="green" className="flex-1" onClick={onAccept}>Aceptar</Button>
+        <Button variant="primary" className="flex-1" onClick={onAccept}>Aceptar</Button>
       </div>
     </Modal>
   )

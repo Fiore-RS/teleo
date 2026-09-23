@@ -69,7 +69,7 @@ function SagaStackPreview({
 }) {
   if (bookCount === 0) {
     return (
-      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} rounded-[10px] overflow-hidden bg-accent-finished drop-shadow-md flex items-center justify-center`}>
+      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} rounded-[10px] overflow-hidden bg-magenta drop-shadow-md flex items-center justify-center`}>
         <ImageOff size={20} className="text-surface" />
       </div>
     );
@@ -77,7 +77,7 @@ function SagaStackPreview({
 
   if (bookCount === 1) {
     return (
-      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} rounded-[10px] overflow-hidden bg-accent-finished drop-shadow-md`}>
+      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} rounded-[10px] overflow-hidden bg-magenta drop-shadow-md`}>
         {covers[0] ? (
           <CoverImage src={covers[0]} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -108,7 +108,7 @@ function SagaStackPreview({
   return (
     <div className={`relative flex aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} drop-shadow-md`}>
       {bookCount >= 3 && (
-        <div className="relative w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md overflow-hidden shrink-0 bg-accent-wishlist">
+        <div className="relative w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md overflow-hidden shrink-0 bg-primary">
           {covers[2] && (
             <CoverImage
               src={covers[2]}
@@ -119,13 +119,13 @@ function SagaStackPreview({
         </div>
       )}
       <div
-        className={`relative w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md overflow-hidden shrink-0 bg-accent-reading ${bookCount >= 3 ? "-ml-1" : ""}`}
+        className={`relative w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md overflow-hidden shrink-0 bg-orange ${bookCount >= 3 ? "-ml-1" : ""}`}
       >
         {covers[1] && (
           <CoverImage src={covers[1]} alt="" className="w-full h-full object-cover" />
         )}
       </div>
-      <div className="relative flex-1 h-full -ml-2 rounded-[10px] overflow-hidden bg-accent-finished">
+      <div className="relative flex-1 h-full -ml-2 rounded-[10px] overflow-hidden bg-magenta">
         {covers[0] ? (
           <CoverImage src={covers[0]} alt="" className="w-full h-full object-cover" />
         ) : (

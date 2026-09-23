@@ -22,8 +22,8 @@ export function ConfirmDialog({ isOpen, status, itemLabel, onConfirm, onClose }:
           status === 'confirm'
             ? 'bg-primary-soft text-primary-text'
             : status === 'success'
-              ? 'bg-finished-soft text-accent-finished'
-              : 'bg-reading-soft text-accent-reading'
+              ? 'bg-magenta-soft text-magenta-text'
+              : 'bg-orange-soft text-orange-text'
         }`}>
           {status === 'confirm' && <Trash2 size={26} />}
           {status === 'success' && <Check size={28} strokeWidth={2.5} />}
@@ -44,7 +44,7 @@ export function ConfirmDialog({ isOpen, status, itemLabel, onConfirm, onClose }:
           <>
             <h3 className="font-display font-semibold text-display-md text-text text-balance">¡Eliminado con éxito!</h3>
             <p className="text-body-md text-text-secondary mt-2">Este {itemLabel} ha sido borrado de tu archivo.</p>
-            <Button variant="green" className="mt-5" onClick={onClose}>Entendido</Button>
+            <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
           </>
         )}
         {status === 'error' && (
