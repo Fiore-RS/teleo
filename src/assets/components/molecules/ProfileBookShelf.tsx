@@ -2,7 +2,7 @@ import { ChevronRight, ImageOff, type LucideIcon } from 'lucide-react'
 import { HorizontalScroller } from '../atoms/HorizontalScroller'
 import { DogEar } from '../atoms/DogEar'
 import { CoverImage } from '../atoms/CoverImage'
-import { Eyebrow } from '../atoms/Eyebrow'
+import { Eyebrow, type EyebrowTone } from '../atoms/Eyebrow'
 import { CoverSkeleton } from '../atoms/Skeleton'
 import { Card } from './Card'
 import type { Database } from '../../../types/database'
@@ -17,7 +17,7 @@ interface ProfileBookShelfProps {
   isLoading?: boolean
   icon?: LucideIcon
   /** Color de la etiqueta. Por defecto el vino de marca. */
-  color?: string
+  tone?: EyebrowTone
   onBookClick?: (bookId: string) => void
   onSeeAll?: () => void
 }
@@ -25,7 +25,7 @@ interface ProfileBookShelfProps {
 /** Fila de portadas de Tu rincón (Leyendo ahora, Favoritos, etc.). Rediseño 2026: cada
  *  fila es una tarjeta con su etiqueta en mayúsculas y "Ver todos" a la derecha; las
  *  portadas llegan hasta los bordes de la tarjeta al desplazarse. */
-export function ProfileBookShelf({ title, books, isLoading = false, icon, color, onBookClick, onSeeAll }: ProfileBookShelfProps) {
+export function ProfileBookShelf({ title, books, isLoading = false, icon, tone, onBookClick, onSeeAll }: ProfileBookShelfProps) {
   const id = `shelf-${title.toLowerCase().replace(/\s+/g, '-')}`
   const coverClasses =
     'relative w-24 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]'
@@ -33,7 +33,7 @@ export function ProfileBookShelf({ title, books, isLoading = false, icon, color,
   return (
     <Card labelledBy={id}>
       <div className="flex items-center justify-between gap-2 mb-3.5">
-        <Eyebrow id={id} icon={icon} color={color}>{title}</Eyebrow>
+        <Eyebrow id={id} icon={icon} tone={tone}>{title}</Eyebrow>
         {onSeeAll && books.length > 0 && (
           <button
             onClick={onSeeAll}

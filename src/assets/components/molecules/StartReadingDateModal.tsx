@@ -20,7 +20,7 @@ export function StartReadingDateModal({ isOpen, onConfirm, onDismiss }: StartRea
       </p>
       <div className="flex gap-2.5">
         <Button variant="outline" className="flex-1" onClick={onDismiss}>No</Button>
-        <Button variant="green" className="flex-1" onClick={onConfirm}>Sí</Button>
+        <Button variant="primary" className="flex-1" onClick={onConfirm}>Sí</Button>
       </div>
     </Modal>
   )

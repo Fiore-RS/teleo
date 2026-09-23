@@ -27,7 +27,7 @@ export function BookCardPriority({ title, author, coverUrl, position, onStartRea
           </div>
         )}
         {position !== undefined && (
-          <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-surface/90 text-text text-[11px] font-bold flex items-center justify-center">
+          <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-magenta text-on-accent text-[11px] font-bold flex items-center justify-center">
             {position}
           </span>
         )}

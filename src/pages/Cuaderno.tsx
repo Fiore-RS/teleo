@@ -51,7 +51,7 @@ function ReviewCard({ review, onOpen }: ReviewCardProps) {
       <p className="text-body-md font-semibold leading-tight text-text line-clamp-2 mt-2">{review.book.title}</p>
       <p className="text-body-sm text-text-secondary line-clamp-1 mt-0.5">{review.book.author}</p>
 
-      <RatingRow shape="star" color="var(--color-accent-reading)" value={review.general_rating ?? 0} size={12} className="mt-1.5" />
+      <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={12} className="mt-1.5" />
 
       {review.general_comments && (
         <p className="font-display italic text-body-sm leading-snug text-text-secondary line-clamp-3 mt-2 bg-surface border border-border rounded-xl px-2.5 py-2">

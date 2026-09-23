@@ -210,7 +210,7 @@ export function Configuracion() {
 
       <Modal isOpen={confirmAction === 'desactivar'} onClose={() => setConfirmAction(null)}>
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-pending-soft text-state-pending flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-pink-soft text-pink-text flex items-center justify-center mb-4">
             <Pause size={26} />
           </div>
           <h3 className="font-display font-semibold text-display-md text-text">Pausa en tu lectura</h3>

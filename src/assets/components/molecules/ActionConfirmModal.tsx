@@ -21,9 +21,9 @@ interface ActionConfirmModalProps {
 
 const iconBg: Record<NonNullable<ActionConfirmModalProps['iconVariant']>, string> = {
   wishlist: 'bg-primary-soft text-primary-text',
-  reading: 'bg-reading-soft text-accent-reading',
-  finished: 'bg-finished-soft text-accent-finished',
-  pending: 'bg-pending-soft text-state-pending',
+  reading: 'bg-orange-soft text-orange-text',
+  finished: 'bg-magenta-soft text-magenta-text',
+  pending: 'bg-pink-soft text-pink-text',
 }
 
 export function ActionConfirmModal({
@@ -40,8 +40,8 @@ export function ActionConfirmModal({
           status === 'confirm'
             ? iconBg[iconVariant]
             : status === 'success'
-              ? 'bg-finished-soft text-accent-finished'
-              : 'bg-reading-soft text-accent-reading'
+              ? 'bg-magenta-soft text-magenta-text'
+              : 'bg-orange-soft text-orange-text'
         }`}>
           {status === 'confirm' && <Icon size={26} />}
           {status === 'success' && <Check size={28} strokeWidth={2.5} />}
@@ -60,7 +60,7 @@ export function ActionConfirmModal({
           <>
             <h3 className="font-display font-semibold text-display-md text-text text-balance">{successTitle}</h3>
             <p className="text-body-md text-text-secondary mt-2">{successDescription}</p>
-            <Button variant="green" className="mt-5" onClick={onClose}>Entendido</Button>
+            <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
           </>
         )}
         {status === 'error' && (

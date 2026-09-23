@@ -179,7 +179,7 @@ export function ProfileView({
           {/* Meta anual */}
           {annualGoal > 0 && (
             <Card labelledBy="perfil-meta">
-              <Eyebrow id="perfil-meta" icon={Target} className="mb-3.5">Meta anual de lectura</Eyebrow>
+              <Eyebrow id="perfil-meta" icon={Target} tone="pink" className="mb-3.5">Meta anual de lectura</Eyebrow>
               <div className="flex items-baseline justify-between gap-3">
                 <p className="font-display font-semibold text-[28px] leading-none text-text">
                   {annualCompletedCount}{' '}
@@ -187,16 +187,16 @@ export function ProfileView({
                     de {annualGoal} libros del {currentYear}
                   </span>
                 </p>
-                <span className="font-display font-semibold text-primary-text tabular-nums">{Math.round(goalPercent)}%</span>
+                <span className="font-display font-semibold text-pink-text tabular-nums">{Math.round(goalPercent)}%</span>
               </div>
-              <ProgressBar percent={goalPercent} className="mt-3 h-3" />
+              <ProgressBar percent={goalPercent} color="var(--color-pink)" className="mt-3 h-3" />
             </Card>
           )}
 
           <ProfileBookShelf
             title="Leyendo ahora"
             icon={BookOpen}
-            color="var(--color-accent-reading)"
+            tone="orange"
             books={currentlyReading}
             isLoading={areListsLoading}
             onBookClick={onBookClick}
@@ -215,7 +215,7 @@ export function ProfileView({
           <ProfileBookShelf
             title="Recomendados"
             icon={ThumbsUp}
-            color="var(--color-state-pending)"
+            tone="pink"
             books={recommended}
             isLoading={areListsLoading}
             onBookClick={onBookClick}

@@ -32,7 +32,7 @@ export function MissingStartDateModal({ isOpen, onConfirm, onIgnore }: MissingSt
       <DateInput value={startDate} onChange={(e) => setStartDate(e.target.value)} />
       <div className="flex gap-2.5 mt-5">
         <Button variant="outline" className="flex-1" onClick={onIgnore}>Ignorar</Button>
-        <Button variant="green" className="flex-1" onClick={handleConfirm} isLoading={isSaving}>Guardar</Button>
+        <Button variant="primary" className="flex-1" onClick={handleConfirm} isLoading={isSaving}>Guardar</Button>
       </div>
     </Modal>
   )

@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
 
-export type ButtonVariant = 'primary' | 'soft' | 'amber' | 'green' | 'slate' | 'outline' | 'outlineGreen'
+export type ButtonVariant = 'primary' | 'soft' | 'orange' | 'magenta' | 'outline' | 'outlineOrange'
 export type ButtonSize = 'md' | 'sm'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -17,11 +17,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantStyles: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-ink',
   soft: 'bg-primary-soft text-primary-text',
-  amber: 'bg-accent-reading text-surface',
-  green: 'bg-accent-finished text-surface',
-  slate: 'bg-state-pending text-surface',
+  // Acentos de la paleta: naranja (racha, empezar a leer) y magenta (terminar un libro).
+  orange: 'bg-orange-button text-on-accent',
+  magenta: 'bg-magenta text-on-accent',
   outline: 'bg-transparent border-[1.5px] border-border text-primary-text',
-  outlineGreen: 'bg-transparent border-[1.5px] border-accent-finished text-accent-finished',
+  outlineOrange: 'bg-transparent border-[1.5px] border-orange-text text-orange-text',
 }
 
 const sizeStyles: Record<ButtonSize, string> = {

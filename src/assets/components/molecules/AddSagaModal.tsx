@@ -88,9 +88,9 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
   return (
     <Modal variant="sheet" isOpen={isOpen} onClose={handleClose} title="Nueva saga para el estante">
       <div className="relative flex aspect-4/5 w-32 mx-auto my-4 drop-shadow-md">
-        <div className="w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md bg-accent-wishlist" />
-        <div className="w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md bg-accent-reading -ml-1" />
-        <div className="flex-1 h-full rounded-xl bg-accent-finished -ml-2" />
+        <div className="w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md bg-primary" />
+        <div className="w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md bg-orange -ml-1" />
+        <div className="flex-1 h-full rounded-xl bg-magenta -ml-2" />
       </div>
 
       <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Título</label>

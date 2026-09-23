@@ -141,15 +141,15 @@ export function Bitacora() {
       <div className="flex flex-col gap-5 stagger-children">
         {/* 1. Resumen general */}
         <Card labelledBy="bit-resumen">
-          <Eyebrow id="bit-resumen" icon={LayoutGrid} className="mb-3.5">Resumen general</Eyebrow>
+          <Eyebrow id="bit-resumen" icon={LayoutGrid} tone="pink" className="mb-3.5">Resumen general</Eyebrow>
           <div className="grid grid-cols-2 gap-2.5">
-            <StatTile label="Páginas leídas" value={stats.resumen.pagesRead.toLocaleString()} />
-            <StatTile label="Tiempo escuchado" value={formatDuration(stats.resumen.audioSeconds)} />
-            <StatTile label="Libros terminados" value={String(stats.resumen.finishedCount)} />
+            <StatTile tone="pink" label="Páginas leídas" value={stats.resumen.pagesRead.toLocaleString()} />
+            <StatTile tone="orange" label="Tiempo escuchado" value={formatDuration(stats.resumen.audioSeconds)} />
+            <StatTile tone="magenta" label="Libros terminados" value={String(stats.resumen.finishedCount)} />
             <StatTile label="Libros en proceso" value={String(stats.resumen.readingCount)} />
-            <StatTile label="Libros deseados" value={String(stats.resumen.wishlistCount)} />
-            <StatTile label="Libros abandonados" value={String(stats.resumen.abandonedCount)} />
-            <StatTile label="Sagas registradas" value={String(stats.resumen.sagaCount)} />
+            <StatTile tone="pink" label="Libros deseados" value={String(stats.resumen.wishlistCount)} />
+            <StatTile tone="orange" label="Libros abandonados" value={String(stats.resumen.abandonedCount)} />
+            <StatTile tone="magenta" label="Sagas registradas" value={String(stats.resumen.sagaCount)} />
             <StatTile label="Reseñas escritas" value={String(stats.resumen.reviewCount)} />
           </div>
           {memberSinceLabel && <Footnote>Leyendo en Teleo desde {memberSinceLabel}</Footnote>}
@@ -157,12 +157,12 @@ export function Bitacora() {
 
         {/* 2. Ritmo y hábito */}
         <Card labelledBy="bit-ritmo">
-          <Eyebrow id="bit-ritmo" icon={Flame} color="var(--color-accent-finished)" className="mb-3.5">
+          <Eyebrow id="bit-ritmo" icon={Flame} tone="orange" className="mb-3.5">
             Ritmo y hábito
           </Eyebrow>
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="bg-surface-2 border border-border rounded-2xl p-3.5 flex items-center gap-3">
-              <span className="w-10 h-10 shrink-0 rounded-full bg-finished-soft text-accent-finished flex items-center justify-center">
+            <div className="bg-orange-tint border border-border rounded-2xl p-3.5 flex items-center gap-3">
+              <span className="w-10 h-10 shrink-0 rounded-full bg-orange-soft text-orange-text flex items-center justify-center">
                 <Flame size={20} fill="currentColor" />
               </span>
               <div className="min-w-0">
@@ -170,8 +170,8 @@ export function Bitacora() {
                 <p className="text-body-sm text-text-secondary mt-1">Racha actual</p>
               </div>
             </div>
-            <div className="bg-surface-2 border border-border rounded-2xl p-3.5 flex items-center gap-3">
-              <span className="w-10 h-10 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
+            <div className="bg-pink-tint border border-border rounded-2xl p-3.5 flex items-center gap-3">
+              <span className="w-10 h-10 shrink-0 rounded-full bg-pink-soft text-pink-text flex items-center justify-center">
                 <Trophy size={19} />
               </span>
               <div className="min-w-0">
@@ -210,14 +210,14 @@ export function Bitacora() {
           <div className="flex items-center justify-center gap-1.5 mt-4 text-body-sm text-text-secondary">
             <span className="w-2.5 h-2.5 rounded-xs bg-surface-2 border border-border" />
             Sin marcar
-            <span className="w-2.5 h-2.5 rounded-xs ml-3 bg-accent-finished" />
+            <span className="w-2.5 h-2.5 rounded-xs ml-3 bg-orange" />
             Leído
           </div>
         </Card>
 
         {/* 3. Desglose de colección */}
         <Card labelledBy="bit-coleccion">
-          <Eyebrow id="bit-coleccion" icon={Library} className="mb-3.5">Desglose de colección</Eyebrow>
+          <Eyebrow id="bit-coleccion" icon={Library} tone="magenta" className="mb-3.5">Desglose de colección</Eyebrow>
           <div className="space-y-5">
             <BreakdownList title="Por categoría" entries={stats.coleccion.byCategory} />
             <BreakdownList title="Por formato" entries={stats.coleccion.byFormat} />
@@ -237,7 +237,7 @@ export function Bitacora() {
 
         {/* 4. Autores y series */}
         <Card labelledBy="bit-autores">
-          <Eyebrow id="bit-autores" icon={Users} color="var(--color-state-pending)" className="mb-3.5">
+          <Eyebrow id="bit-autores" icon={Users} tone="pink" className="mb-3.5">
             Autores y series
           </Eyebrow>
           <div className="grid grid-cols-2 gap-2.5">
@@ -256,14 +256,14 @@ export function Bitacora() {
 
         {/* 5. Calificaciones */}
         <Card labelledBy="bit-calificaciones">
-          <Eyebrow id="bit-calificaciones" icon={Star} color="var(--color-accent-reading)" className="mb-3.5">
+          <Eyebrow id="bit-calificaciones" icon={Star} tone="orange" className="mb-3.5">
             Calificaciones
           </Eyebrow>
           <div className="flex flex-col items-center gap-2 mb-5">
             <span className="font-display font-semibold text-[40px] leading-none text-text tabular-nums">
               {avgRatingRounded != null ? avgRatingRounded.toFixed(1) : '—'}
             </span>
-            <RatingRow shape="star" color="var(--color-accent-reading)" value={avgRatingRounded ?? 0} size={20} />
+            <RatingRow shape="star" color="var(--color-orange)" value={avgRatingRounded ?? 0} size={20} />
             {avgRatingRounded != null && (
               <p className="text-body-sm text-text-secondary text-center">Promedio entre todos los libros que calificaste</p>
             )}
@@ -282,7 +282,7 @@ export function Bitacora() {
 
         {/* 6. Historial anual */}
         <Card labelledBy="bit-historial">
-          <Eyebrow id="bit-historial" icon={CalendarDays} className="mb-3.5">Historial anual</Eyebrow>
+          <Eyebrow id="bit-historial" icon={CalendarDays} tone="magenta" className="mb-3.5">Historial anual</Eyebrow>
           <div className="grid grid-cols-2 gap-2.5">
             <StatTile label={`Libros en ${currentYear}`} value={String(stats.historialAnual.currentYearCount)} />
             <StatTile label={`Libros en ${currentYear - 1}`} value={String(stats.historialAnual.previousYearCount)} />
@@ -290,7 +290,12 @@ export function Bitacora() {
 
           <div className="mt-5">
             <SubLabel>{`Recap mensual ${currentYear}`}</SubLabel>
-            <BarChart data={stats.historialAnual.monthlyThisYear.map((m) => ({ label: MONTH_ABBR[m.month - 1], value: m.count }))} />
+            <BarChart
+              data={stats.historialAnual.monthlyThisYear.map((m) => ({ label: MONTH_ABBR[m.month - 1], value: m.count }))}
+              color="var(--color-magenta)"
+              highlightIndex={new Date().getMonth()}
+              highlightColor="var(--color-orange)"
+            />
           </div>
 
           {yearsInBooks.length > 0 && (
@@ -311,7 +316,7 @@ export function Bitacora() {
                       className="relative bg-surface-2 border border-border rounded-2xl p-4 text-center active:opacity-80 transition-opacity focus-visible:outline-2 focus-visible:outline-primary-text"
                     >
                       {metGoal && (
-                        <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent-finished flex items-center justify-center" title="Meta cumplida">
+                        <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-pink flex items-center justify-center" title="Meta cumplida">
                           <Check size={13} strokeWidth={2.5} className="text-surface" />
                         </span>
                       )}
@@ -327,7 +332,7 @@ export function Bitacora() {
 
         {/* 7. Valor de tu biblioteca */}
         <Card labelledBy="bit-valor">
-          <Eyebrow id="bit-valor" icon={Coins} color="var(--color-accent-reading)" className="mb-3.5">
+          <Eyebrow id="bit-valor" icon={Coins} className="mb-3.5">
             Valor de tu biblioteca
           </Eyebrow>
           <div className="grid grid-cols-2 gap-2.5">

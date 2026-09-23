@@ -59,7 +59,7 @@ function BookRow({
       )}
 
       {rating != null && rating > 0 && (
-        <RatingRow shape="star" color="var(--color-accent-reading)" value={rating} size={14} className="mt-2" />
+        <RatingRow shape="star" color="var(--color-orange)" value={rating} size={14} className="mt-2" />
       )}
     </div>
   )
@@ -122,7 +122,7 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
 
       <div className="bg-surface border border-border rounded-2xl p-4">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-finished-soft text-accent-finished flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-full bg-orange-soft text-orange-text flex items-center justify-center shrink-0">
             <Flag size={18} />
           </div>
           <p className="font-display font-semibold text-display-md text-text">

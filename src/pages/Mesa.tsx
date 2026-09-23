@@ -111,11 +111,11 @@ export function Mesa() {
           </h1>
         </div>
         <div
-          className="shrink-0 w-[58px] py-2 rounded-2xl bg-surface border border-border shadow-card flex flex-col items-center gap-0.5"
+          className="shrink-0 w-[58px] py-2 rounded-2xl bg-orange-soft border border-border shadow-card flex flex-col items-center gap-0.5"
           title="Racha de lectura"
           aria-label={`Racha de ${streak} días`}
         >
-          <Flame size={18} className="text-primary-text" fill="currentColor" />
+          <Flame size={18} className="text-orange-text" fill="currentColor" />
           {streakLoading ? (
             <Skeleton className="w-6 h-5 rounded-md" />
           ) : (
@@ -168,7 +168,7 @@ export function Mesa() {
         {/* Mi lista de esta temporada */}
         <Card labelledBy="mesa-temporada">
           <div className="flex items-center justify-between gap-2 mb-3.5">
-            <Eyebrow id="mesa-temporada" icon={Star} color="var(--color-state-pending)">
+            <Eyebrow id="mesa-temporada" icon={Star} tone="magenta">
               {priorityListName}
             </Eyebrow>
             <PriorityListMenu
@@ -241,8 +241,8 @@ export function Mesa() {
         </Card>
 
         {/* Racha diaria */}
-        <Card labelledBy="mesa-racha">
-          <Eyebrow id="mesa-racha" icon={Flag} color="var(--color-accent-finished)" className="mb-3.5">
+        <Card labelledBy="mesa-racha" tint="orange">
+          <Eyebrow id="mesa-racha" icon={Flag} tone="orange" className="mb-3.5">
             Racha diaria de lectura
           </Eyebrow>
 
@@ -250,7 +250,7 @@ export function Mesa() {
             <div className="relative w-[74px] h-[74px] shrink-0 flex items-center justify-center">
               <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
               <span className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full bg-rose" />
-              <span className="w-[50px] h-[50px] rounded-full bg-finished-soft text-accent-finished flex items-center justify-center">
+              <span className="w-[50px] h-[50px] rounded-full bg-orange-soft text-orange flex items-center justify-center">
                 <Flame size={24} fill="currentColor" />
               </span>
             </div>
@@ -284,7 +284,7 @@ export function Mesa() {
                   <span
                     className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center ${
                       d.read
-                        ? "bg-accent-finished border-accent-finished text-surface"
+                        ? "bg-orange border-orange text-on-accent"
                         : d.isToday
                           ? "border-dashed border-primary-text bg-surface-2"
                           : "border-border bg-surface-2"
@@ -299,7 +299,7 @@ export function Mesa() {
           )}
 
           <Button
-            variant={markedToday ? "outlineGreen" : "green"}
+            variant={markedToday ? "outlineOrange" : "orange"}
             className={weekDays.length > 0 ? "" : "mt-4"}
             onClick={() => (markedToday ? setIsUnmarkOpen(true) : markToday())}
           >
@@ -309,8 +309,8 @@ export function Mesa() {
         </Card>
 
         {/* Meta anual */}
-        <Card labelledBy="mesa-meta">
-          <Eyebrow id="mesa-meta" icon={Target} className="mb-3.5">Meta anual de lectura</Eyebrow>
+        <Card labelledBy="mesa-meta" tint="pink">
+          <Eyebrow id="mesa-meta" icon={Target} tone="pink" className="mb-3.5">Meta anual de lectura</Eyebrow>
           {goalLoading ? (
             <div aria-label="Cargando">
               <Skeleton className="h-7 w-3/5 rounded-full" />
@@ -326,11 +326,11 @@ export function Mesa() {
                 de {goal} libros del {new Date().getFullYear()}
               </span>
             </p>
-            <span className="font-display font-semibold text-primary-text tabular-nums">
+            <span className="font-display font-semibold text-pink-text tabular-nums">
               {Math.round(goalPercent)}%
             </span>
           </div>
-          <ProgressBar percent={goalPercent} className="mt-3 h-3" />
+          <ProgressBar percent={goalPercent} color="var(--color-pink)" className="mt-3 h-3" />
           <p className="text-body-md text-text-secondary text-center mt-2.5 mb-3.5">
             {getGoalMessage(goalPercent)}
           </p>

@@ -14,9 +14,9 @@ interface SeriesCardProps {
 }
 
 const placeholderBg = [
-  'var(--color-accent-finished)',
-  'var(--color-accent-reading)',
-  'var(--color-accent-wishlist)',
+  'var(--color-magenta)',
+  'var(--color-orange)',
+  'var(--color-primary)',
 ]
 
 function CoverBadges({ status, isFavorite }: { status: ReadingStatus; isFavorite?: boolean }) {
