@@ -1,0 +1,14 @@
+# Finales de línea: el repo guarda todo en LF (igual que el deploy en Linux).
+# Git convierte solo al hacer commit, así que el editor puede usar CRLF o LF sin problema.
+* text=auto eol=lf
+
+# Archivos binarios: nunca convertir
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
