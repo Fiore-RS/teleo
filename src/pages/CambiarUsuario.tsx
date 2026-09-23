@@ -6,7 +6,7 @@ import { useAccountSettings } from '../hooks/useAccountSettings'
 import { Input } from '../assets/components/atoms/Input'
 import { Button } from '../assets/components/atoms/Button'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
-import { getUsernameCooldownInfo } from '../lib/usernameCooldown'
+import { getUsernameCooldownInfo, USERNAME_COOLDOWN_DAYS } from '../lib/usernameCooldown'
 
 export function CambiarUsuario() {
   const navigate = useNavigate()
@@ -43,7 +43,7 @@ export function CambiarUsuario() {
 
       <p className="text-body-sm text-text-secondary mt-2">
         {canChange
-          ? 'Solo puedes cambiar tu nombre de usuario una vez cada 14 días, piénsalo muy bien.'
+          ? `Solo puedes cambiar tu nombre de usuario una vez cada ${USERNAME_COOLDOWN_DAYS} días. Si solo quieres cambiar cómo te llama Teleo, edita tu nickname desde tu perfil.`
           : `Ya cambiaste tu nombre de usuario recientemente. Podrás volver a hacerlo en ${daysRemaining} día${daysRemaining === 1 ? '' : 's'}.`}
       </p>
 

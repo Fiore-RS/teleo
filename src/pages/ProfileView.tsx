@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react'
-import { Camera, PenLine, Target, BookOpen, Heart, ThumbsUp, Bookmark, Quote } from 'lucide-react'
+import { Camera, Target, BookOpen, Heart, ThumbsUp, Bookmark } from 'lucide-react'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
 import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { Eyebrow } from '../assets/components/atoms/Eyebrow'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
-import { Button } from '../assets/components/atoms/Button'
 import { Card } from '../assets/components/molecules/Card'
 import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
 import type { Database } from '../types/database'
@@ -13,6 +12,8 @@ type Book = Database['public']['Tables']['books']['Row']
 
 interface ProfileViewProps {
   username: string | undefined
+  /** Nombre visible. Sin nickname se muestra el @usuario en grande. */
+  nickname?: string | null
   /** Primera carga del perfil / de las listas: se muestran siluetas en vez de vacíos. */
   isProfileLoading?: boolean
   areListsLoading?: boolean
@@ -22,7 +23,6 @@ interface ProfileViewProps {
   headerRight?: ReactNode
   onAvatarClick?: () => void
   isUploadingAvatar?: boolean
-  onEditBioClick?: () => void
 
   annualGoal?: number
   annualCompletedCount?: number
@@ -51,6 +51,7 @@ interface ProfileViewProps {
  *  etiqueta en mayúsculas, igual que La mesa y Bitácora. */
 export function ProfileView({
   username,
+  nickname,
   isProfileLoading = false,
   areListsLoading = false,
   bio,
@@ -58,7 +59,6 @@ export function ProfileView({
   headerRight,
   onAvatarClick,
   isUploadingAvatar,
-  onEditBioClick,
   annualGoal = 0,
   annualCompletedCount = 0,
   currentlyReading = [],
@@ -71,7 +71,8 @@ export function ProfileView({
 }: ProfileViewProps) {
   const currentYear = new Date().getFullYear()
   const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
-  const initial = username?.trim().charAt(0).toUpperCase() ?? ''
+  const displayName = nickname?.trim() || username
+  const initial = displayName?.trim().charAt(0).toUpperCase() ?? ''
 
   const avatarInner = avatarUrl ? (
     <img src={avatarUrl} alt="Tu foto de perfil" className="w-full h-full object-cover" />
@@ -145,37 +146,27 @@ export function ProfileView({
               <Skeleton className="h-3.5 w-1/2 mt-2.5 rounded-full" />
             </div>
           ) : (
-            <div className="min-w-0 pb-1">
-              <p className="font-title text-[28px] leading-tight text-text truncate">{username ?? ' '}</p>
+            <div className="min-w-0 flex-1 pb-1">
+              <p className="font-title text-[28px] leading-tight text-text truncate">{displayName ?? ' '}</p>
               <p className="font-body text-body-md text-text-secondary truncate">@{username}</p>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-5 mt-6 stagger-children">
-          {/* Sobre mí */}
-          <Card labelledBy="perfil-bio">
-            <div className="flex items-center justify-between gap-2 mb-3">
-              <Eyebrow id="perfil-bio" icon={Quote}>Sobre mí</Eyebrow>
-              {onEditBioClick && (
-                <Button variant="soft" size="sm" fullWidth={false} onClick={onEditBioClick} aria-label="Editar descripción">
-                  <PenLine size={14} />
-                  Editar
-                </Button>
-              )}
-            </div>
-            {isProfileLoading ? (
-              <div aria-label="Cargando">
-                <Skeleton className="h-4 w-full rounded-full" />
-                <Skeleton className="h-4 w-2/3 mt-2.5 rounded-full" />
-              </div>
-            ) : (
-              <p className={`font-display italic text-body-lg leading-relaxed ${bio ? 'text-text' : 'text-text-muted'}`}>
-                {bio || 'Agrega una descripción sobre ti...'}
-              </p>
-            )}
-          </Card>
+        {/* Bio: texto suelto debajo de la foto, el nickname y el @, sin tarjeta. Se edita
+            desde el botón de lápiz de la cabecera (Editar perfil). */}
+        {isProfileLoading ? (
+          <div className="px-1 mt-4" aria-label="Cargando">
+            <Skeleton className="h-4 w-full rounded-full" />
+            <Skeleton className="h-4 w-2/3 mt-2.5 rounded-full" />
+          </div>
+        ) : (
+          <p className={`px-1 mt-4 font-display italic text-body-lg leading-relaxed text-pretty ${bio ? 'text-text' : 'text-text-muted'}`}>
+            {bio || 'Agrega una descripción sobre ti con el lápiz de arriba.'}
+          </p>
+        )}
 
+        <div className="flex flex-col gap-5 mt-6 stagger-children">
           {/* Meta anual */}
           {annualGoal > 0 && (
             <Card labelledBy="perfil-meta">

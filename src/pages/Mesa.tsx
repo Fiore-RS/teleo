@@ -104,7 +104,9 @@ export function Mesa() {
     <div className="min-h-screen bg-glow-top px-4 pt-4">
       <header className="flex items-end justify-between gap-3 px-1 pt-4 pb-5">
         <div>
-          <p className="font-body font-semibold text-body-lg text-primary-text">{greeting}</p>
+          <p className="font-body font-semibold text-body-lg text-primary-text">
+            {profile?.nickname ? `${greeting}, ${profile.nickname}` : greeting}
+          </p>
           <h1 className="font-title leading-none whitespace-nowrap text-text mt-0.5">
             <span className="text-[clamp(32px,10vw,44px)]">Teleo,</span>{" "}
             <span className="text-[clamp(18px,5.5vw,26px)] text-text-secondary">a mi manera</span>

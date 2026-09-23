@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { USERNAME_COOLDOWN_DAYS } from '../lib/usernameCooldown'
 import { supabase } from '../lib/supabase'
 
 export function useAccountSettings(userId: string | undefined) {
@@ -11,7 +12,7 @@ export function useAccountSettings(userId: string | undefined) {
   setIsSaving(false)
 
   if (error?.code === 'P0001') {
-    return { error: 'Solo puedes cambiar tu nombre de usuario una vez cada 14 días.' }
+    return { error: `Solo puedes cambiar tu nombre de usuario una vez cada ${USERNAME_COOLDOWN_DAYS} días.` }
   }
   return { error: error?.message ?? null }
 }
