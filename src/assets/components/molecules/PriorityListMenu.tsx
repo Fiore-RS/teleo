@@ -10,7 +10,7 @@ interface PriorityListMenuProps {
   onViewInEstante: () => void
 }
 
-/** Menú de opciones de "Mi lista de esta temporada" en Mesa — mismo patrón que `StatusMenu`
+/** Menú de opciones de "Mi lista de esta temporada" (Tu rincón) — mismo patrón que `StatusMenu`
  *  (botón + panel desplegable que se cierra al tocar afuera), pero como un menú de acciones
  *  en vez de un selector. Reemplaza los tres controles sueltos (lápiz, Organizar, Ver en
  *  Estante) que antes competían por espacio en el header de la sección. */
