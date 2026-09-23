@@ -12,7 +12,7 @@ interface BookCardPriorityProps {
   onStartReading: () => void
 }
 
-/** Libro de "Mi lista de esta temporada" en Mesa: portada arriba, datos del libro y botón de
+/** Libro de "Mi lista de esta temporada" (Tu rincón): portada arriba, datos del libro y botón de
  *  acción abajo. Rediseño 2026: sin tarjeta propia (la tarjeta contenedora la pone Mesa), con
  *  el número de prioridad sobre la portada y el botón siempre alineado abajo. */
 export function BookCardPriority({ title, author, coverUrl, position, onStartReading }: BookCardPriorityProps) {

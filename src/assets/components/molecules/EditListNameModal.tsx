@@ -29,7 +29,7 @@ export function EditListNameModal({ isOpen, onClose, currentName, defaultName, o
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Nombre de tu lista">
       <p className="font-body text-body-md text-text-secondary mb-4">
-        Personaliza cómo se llama tu lista de prioridad en Mesa. Déjalo vacío para volver a
+        Personaliza cómo se llama tu lista de prioridad en tu perfil. Déjalo vacío para volver a
         "{defaultName}".
       </p>
       <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
