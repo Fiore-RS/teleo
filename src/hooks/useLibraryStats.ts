@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
+import { computeLongestStreak } from '../lib/streak'
 
 export interface CountEntry {
   label: string
@@ -73,28 +74,6 @@ const emptyStats: LibraryStats = {
   calificaciones: { avgRating: null, bestRated: null, worstRated: null, hasTie: false, quotesCount: 0 },
   historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0 },
   valorBiblioteca: { totalInvested: 0, booksWithPriceCount: 0, avgPerBook: 0, mostExpensive: null, wishlistCost: 0, wishlistWithPriceCount: 0 },
-}
-
-/** Misma lógica que la racha diaria (useReadingStreak), pero contra un arreglo completo de
- *  fechas en vez de recalcular contra "hoy" — sirve para "racha más extensa" histórica. */
-function computeLongestStreak(dates: string[]): number {
-  const sorted = [...new Set(dates)].sort()
-  let longest = 0
-  let current = 0
-  let prevDate: Date | null = null
-
-  for (const d of sorted) {
-    const date = new Date(d)
-    if (prevDate) {
-      const diffDays = Math.round((date.getTime() - prevDate.getTime()) / 86400000)
-      current = diffDays === 1 ? current + 1 : 1
-    } else {
-      current = 1
-    }
-    longest = Math.max(longest, current)
-    prevDate = date
-  }
-  return longest
 }
 
 function tally(values: (string | null)[]): CountEntry[] {
