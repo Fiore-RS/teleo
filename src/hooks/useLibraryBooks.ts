@@ -3,6 +3,7 @@ import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
 import { recomputeSagaStatus } from '../lib/sagaStatus'
+import { recordBookCompletion } from '../lib/readingHistory'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -54,6 +55,11 @@ export function useLibraryBooks(userId: string | undefined) {
       setBooks((prev) => [...prev, data])
       if (data.saga_id) {
         await recomputeSagaStatus(data.saga_id)
+      }
+      // Libro agregado ya terminado: si trae fecha de fin, se registra su lectura para que
+      // cuente en el reto anual (antes no se registraba y nunca contaba).
+      if (data.status === 'terminado') {
+        await recordBookCompletion({ bookId: data.id, userId, startDate: data.start_date, endDate: data.end_date })
       }
     }
     return { data, error }

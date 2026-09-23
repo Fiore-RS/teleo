@@ -8,13 +8,13 @@ import { useBook } from '../../../hooks/useBook'
 import { getProgressInfo } from '../../../lib/progress'
 import { parseDurationInput, secondsToTimeInput } from '../../../lib/duration'
 import { recordBookCompletion } from '../../../lib/readingHistory'
-import { todayLocalDate } from '../../../lib/date'
 import { ProgressBar } from '../atoms/ProgressBar'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
 import { AbandonarLibroModal } from './AbandonarLibroModal'
 import { MissingStartDateModal } from './MissingStartDateModal'
-import { WriteReviewPromptModal } from './WriteReviewPromptModal'
+import { FinishBookSheet } from './FinishBookSheet'
+import type { ReadingDates } from '../../../lib/readingDates'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { Resena } from '../../../pages/Resena'
 
@@ -30,7 +30,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
-  const [showReviewPrompt, setShowReviewPrompt] = useState(false)
+  const [isFinishOpen, setIsFinishOpen] = useState(false)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // Se descarta (ignora) el aviso de fecha de inicio faltante localmente, sin tocar la base
@@ -73,27 +73,18 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     onUpdated()
   }
 
-  async function handleMarkFinished() {
-    if (!book) return
-    setIsSaving(true)
-    const endDate = todayLocalDate()
-    await updateBook({ status: 'terminado', end_date: endDate })
-    // Se guarda esta lectura en el historial (sea la primera vez o una relectura) para que
-    // "Mis años en libros" y la meta anual cuenten este libro en el año en que se terminó.
-    await recordBookCompletion({ bookId, userId: user?.id, startDate: book.start_date, endDate })
-    setIsSaving(false)
+  // Terminar un libro: se eligen las fechas en FinishBookSheet y la reseña es opcional.
+  async function handleFinishConfirm(dates: ReadingDates, writeReview: boolean) {
+    const startDate = dates.startDate || null
+    const endDate = dates.endDate || null
+    await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
+    // Se guarda esta lectura en el historial (primera vez o relectura) para que el reto anual,
+    // "Mis años en libros" y el Resumen la cuenten en el año de la fecha de fin.
+    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
     onUpdated()
-    setShowReviewPrompt(true)
-  }
-
-  function handleReviewAccept() {
-    setShowReviewPrompt(false)
-    setIsReviewOpen(true)
-  }
-
-  function handleReviewIgnore() {
-    setShowReviewPrompt(false)
-    onClose()
+    setIsFinishOpen(false)
+    if (writeReview) setIsReviewOpen(true)
+    else onClose()
   }
 
   function handleReviewClose() {
@@ -180,7 +171,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
             {error && <p className="text-body-sm text-primary-text mt-2">{error}</p>}
 
             <div className="flex flex-col gap-2.5 mt-6">
-              <Button variant="magenta" onClick={handleMarkFinished} isLoading={isSaving}>
+              <Button variant="magenta" onClick={() => setIsFinishOpen(true)}>
                 <Check size={18} />
                 Marcar como terminado
               </Button>
@@ -209,11 +200,14 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         onIgnore={() => setStartDatePromptIgnored(true)}
       />
 
-      <WriteReviewPromptModal
-        isOpen={showReviewPrompt}
-        onAccept={handleReviewAccept}
-        onIgnore={handleReviewIgnore}
-      />
+      {isFinishOpen && book && (
+        <FinishBookSheet
+          bookTitle={book.title}
+          initialStartDate={book.start_date}
+          onClose={() => setIsFinishOpen(false)}
+          onConfirm={handleFinishConfirm}
+        />
+      )}
 
       {isReviewOpen && <Resena bookId={bookId} onClose={handleReviewClose} />}
     </>
