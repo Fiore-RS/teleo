@@ -9,6 +9,8 @@ import { SegmentedTabs } from '../atoms/SegmentedTabs'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { PriorityToggle } from '../atoms/PriorityToggle'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
+import { ReadingDatesFields } from './ReadingDatesFields'
+import { readingDatesAreValid, type ReadingDates } from '../../../lib/readingDates'
 import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 import type { ReadingStatus } from '../../../lib/status'
 import { categoryOptions, languageOptions, formatOptions, type BookFormat } from '../../../lib/options'
@@ -29,6 +31,7 @@ interface NewBookPayload {
   isbn: string | null; format?: BookFormat | null; status: ReadingStatus; saga_id?: string
   total_duration_seconds?: number | null
   is_priority?: boolean; priority_sort_order?: number
+  start_date?: string | null; end_date?: string | null
 }
 
 interface AddBookModalProps {
@@ -73,6 +76,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const [format, setFormat] = useState<BookFormat>('fisico')
   const [isManual, setIsManual] = useState(false)
   const [manualDraft, setManualDraft] = useState<ManualDraft>(emptyManualDraft(initialStatus))
+  // Fechas para un libro que se agrega ya terminado (por ejemplo, uno leído hace tiempo).
+  // Empiezan vacías: sin fecha de fin el libro se guarda igual, pero no cuenta para el reto.
+  const [finishDates, setFinishDates] = useState<ReadingDates>({ startDate: '', endDate: '' })
   const [isPriority, setIsPriority] = useState(false)
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
   const coverInputRef = useRef<HTMLInputElement>(null)
@@ -99,6 +105,13 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setIsManual(false)
     setManualDraft(emptyManualDraft(initialStatus))
     setIsPriority(false)
+    setFinishDates({ startDate: '', endDate: '' })
+  }
+
+  function datesFor(resolvedStatus: ReadingStatus) {
+    return resolvedStatus === 'terminado'
+      ? { start_date: finishDates.startDate || null, end_date: finishDates.endDate || null }
+      : {}
   }
 
   function selectResult(r: BookSearchResult) {
@@ -132,8 +145,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
   async function handleAdd() {
     if (!result) return
-    setIsSaving(true)
     const resolvedStatus = canPickStatus ? status : initialStatus
+    if (resolvedStatus === 'terminado' && !readingDatesAreValid(finishDates)) return
+    setIsSaving(true)
     const { error } = await onAdd({
       title: result.title,
       author: result.author ?? null,
@@ -148,6 +162,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       ...(resolvedStatus === 'pendiente' && isPriority
         ? { is_priority: true, priority_sort_order: Date.now() }
         : {}),
+      ...datesFor(resolvedStatus),
     })
     setIsSaving(false)
     if (!error) handleClose()
@@ -155,9 +170,10 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
   async function handleManualCreate() {
     if (!manualDraft.title.trim()) return
-    setIsSaving(true)
     const isAudiobook = manualDraft.format === 'audiolibro'
     const resolvedStatus = canPickStatus ? manualDraft.status : initialStatus
+    if (resolvedStatus === 'terminado' && !readingDatesAreValid(finishDates)) return
+    setIsSaving(true)
     const { error } = await onAdd({
       title: manualDraft.title.trim(),
       author: manualDraft.author.trim() || null,
@@ -173,6 +189,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       ...(resolvedStatus === 'pendiente' && isPriority
         ? { is_priority: true, priority_sort_order: Date.now() }
         : {}),
+      ...datesFor(resolvedStatus),
     })
     setIsSaving(false)
     if (!error) handleClose()
@@ -301,6 +318,10 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                   onChange={(e) => setManualDraft({ ...manualDraft, status: e.target.value as ReadingStatus })}
                 />
               </div>
+            )}
+
+            {canPickStatus && manualDraft.status === 'terminado' && (
+              <ReadingDatesFields startDate={finishDates.startDate} endDate={finishDates.endDate} onChange={setFinishDates} />
             )}
 
             {canPickStatus && manualDraft.status === 'pendiente' && (
@@ -469,6 +490,10 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                 <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado de lectura</label>
                 <Select options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as ReadingStatus)} />
               </div>
+            )}
+
+            {canPickStatus && status === 'terminado' && (
+              <ReadingDatesFields className="mt-4" startDate={finishDates.startDate} endDate={finishDates.endDate} onChange={setFinishDates} />
             )}
 
             {canPickStatus && status === 'pendiente' && (

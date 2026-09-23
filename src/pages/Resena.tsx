@@ -17,6 +17,7 @@ import { CustomRatingPicker } from '../assets/components/molecules/CustomRatingP
 import { QuotesEditor } from '../assets/components/molecules/QuotesEditor'
 import { FavoriteCharacterEditor } from '../assets/components/molecules/FavoriteCharacterEditor'
 import { ratingIconColor } from '../lib/ratingIcons'
+import { syncLatestReading } from '../lib/readingHistory'
 import type { RatingShape } from '../assets/components/atoms/RatingIcon'
 import { X } from 'lucide-react'
 
@@ -53,7 +54,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     addCustomRating, updateCustomRating, removeCustomRating,
     addQuote, removeQuote,
   } = useReview(bookId, user?.id)
-  const { history: readingHistory } = useBookHistory(bookId)
+  const { history: readingHistory, refetch: refetchHistory } = useBookHistory(bookId)
   // La primera entrada (más reciente) es el ciclo actual, ya mostrado arriba con
   // book.start_date/end_date — acá solo se listan las lecturas ANTERIORES a esa.
   const pastReads = readingHistory.slice(1)
@@ -84,10 +85,17 @@ export function Resena({ bookId, onClose }: ResenaProps) {
   async function handleSave() {
     if (!draft) return
 
-    await updateBook({
-      start_date: draft.start_date || null,
-      end_date: draft.end_date || null,
-    })
+    const startDate = draft.start_date || null
+    const endDate = draft.end_date || null
+    if (startDate && endDate && startDate > endDate) return
+    await updateBook({ start_date: startDate, end_date: endDate })
+    // Si el libro está terminado, la lectura más reciente del historial (de donde sale el reto
+    // anual) se ajusta a estas fechas. Antes solo cambiaba el libro y el reto seguía contando
+    // la fecha vieja.
+    if (book?.status === 'terminado') {
+      await syncLatestReading({ bookId, userId: user?.id, startDate, endDate })
+      await refetchHistory()
+    }
 
     const reviewPayload = {
       general_rating: draft.general_rating || null,
