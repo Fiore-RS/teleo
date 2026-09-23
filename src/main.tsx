@@ -7,6 +7,8 @@ import { supabase } from './lib/supabase'
 import App from './App.tsx'
 import { ThemeProvider } from './context/ThemeContext.tsx'
 import './index.css'
+// Empieza a escuchar el aviso de instalación desde que carga la app (ver lib/installPrompt.ts).
+import './lib/installPrompt'
 
 // Al cerrar sesión se vacía la caché de datos, para que otra cuenta en el mismo dispositivo
 // nunca vea (ni por un instante) los datos de la anterior.
