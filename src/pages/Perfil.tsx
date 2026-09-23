@@ -17,6 +17,7 @@ import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetalleLibro } from './DetalleLibro'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { ProfileView } from './ProfileView'
+import { hasUnseenChangelog } from '../lib/changelog'
 
 // Botones redondos translúcidos sobre la cabecera de degradado (Configuración y Editar perfil).
 const headerButtonClass =
@@ -34,6 +35,7 @@ export function Perfil() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [hasNews] = useState(hasUnseenChangelog)
   // Hoja de compartir y, al elegir, el modal de esa opción.
   const [shareStep, setShareStep] = useState<'menu' | 'perfil' | 'deseados' | null>(null)
 
@@ -61,10 +63,11 @@ export function Perfil() {
           <div className="flex flex-col gap-1.5">
             <button
               onClick={() => navigate('/configuracion')}
-              aria-label="Configuración"
-              className={headerButtonClass}
+              aria-label={hasNews ? 'Configuración (hay novedades)' : 'Configuración'}
+              className={`${headerButtonClass} relative`}
             >
               <Settings size={19} />
+              {hasNews && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-pink border-2 border-primary" aria-hidden="true" />}
             </button>
             <button
               onClick={() => setIsEditProfileOpen(true)}

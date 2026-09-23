@@ -30,6 +30,20 @@ if (authHash.includes('type=recovery')) {
   // Solo cuando el "#" no trae ruta: así no se confunde con otros enlaces de Supabase, como
   // el de confirmar la cuenta, que vuelve a #/login.
   window.location.hash = '#/recuperar-contrasena?expirado=1'
+} else if (authHash.startsWith('#message=')) {
+  // Cambiar correo, primer enlace: Supabase vuelve con #message=Confirmation+link+accepted...
+  // y el HashRouter lo tomaba como una ruta inexistente (pantalla en blanco).
+  window.location.hash = '#/correo-confirmado?paso=1'
+} else if (authHash.includes('type=email_change')) {
+  // Cambiar correo, segundo enlace: se espera a que Supabase guarde la sesión nueva.
+  supabase.auth.getSession().then(() => {
+    window.location.hash = '#/correo-confirmado'
+  })
+} else if (authHash && !authHash.startsWith('#/') && authHash.includes('access_token=')) {
+  // Cualquier otro enlace de Supabase sin ruta: se abre la sesión y se va al inicio.
+  supabase.auth.getSession().then(() => {
+    window.location.hash = '#/'
+  })
 }
 
 createRoot(document.getElementById('root')!).render(
