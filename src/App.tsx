@@ -15,6 +15,8 @@ import { CambiarUsuario } from "./pages/CambiarUsuario";
 import { CambiarCorreo } from "./pages/CambiarCorreo";
 import { CambiarContrasena } from "./pages/CambiarContrasena";
 import { Instalar } from "./pages/Instalar";
+import { RecuperarContrasena } from "./pages/RecuperarContrasena";
+import { NuevaContrasena } from "./pages/NuevaContrasena";
 
 function App() {
   const location = useLocation();
@@ -42,6 +44,8 @@ function App() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
+          <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+          <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
           <Route path="/configuracion" element={<Configuracion />} />
           <Route path="/configuracion/usuario" element={<CambiarUsuario />} />
           <Route path="/configuracion/correo" element={<CambiarCorreo />} />

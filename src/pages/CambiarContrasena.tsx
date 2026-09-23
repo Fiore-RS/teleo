@@ -2,10 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useAccountSettings } from '../hooks/useAccountSettings'
-import { Input } from '../assets/components/atoms/Input'
+import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { Button } from '../assets/components/atoms/Button'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
-import { Lock } from 'lucide-react'
 
 export function CambiarContrasena() {
   const navigate = useNavigate()
@@ -29,10 +28,10 @@ export function CambiarContrasena() {
       <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
 
       <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Nueva contraseña</label>
-      <Input icon={Lock} type="password" placeholder="Nueva contraseña..." value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+      <PasswordInput autoComplete="new-password" placeholder="Nueva contraseña..." value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
 
       <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Confirmar contraseña</label>
-      <Input icon={Lock} type="password" placeholder="Confirmar contraseña..." value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+      <PasswordInput autoComplete="new-password" placeholder="Confirmar contraseña..." value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
 
       {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
 

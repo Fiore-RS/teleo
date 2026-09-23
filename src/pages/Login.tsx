@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Mail, Lock } from 'lucide-react'
+import { Mail } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Input } from '../assets/components/atoms/Input'
+import { PasswordInput } from '../assets/components/atoms/PasswordInput'
+import { emailInputProps } from '../lib/emailInput'
 import { Button } from '../assets/components/atoms/Button'
 import { AuthHeader } from '../assets/components/molecules/AuthHeader'
 
@@ -18,7 +20,7 @@ export function Login() {
     setError(null)
     setIsLoading(true)
 
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
 
     if (signInError) {
       setIsLoading(false)
@@ -56,20 +58,24 @@ export function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             icon={Mail}
-            type="email"
+            {...emailInputProps}
             placeholder="Correo electrónico..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <Input
-            icon={Lock}
-            type="password"
+          <PasswordInput
             placeholder="Contraseña..."
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <div className="flex justify-end -mt-2">
+            <Link to="/recuperar-contrasena" className="text-body-sm text-primary-text font-semibold">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
 
           {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
 
