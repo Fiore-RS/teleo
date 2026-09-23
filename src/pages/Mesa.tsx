@@ -23,6 +23,7 @@ import { EditListNameModal } from "../assets/components/molecules/EditListNameMo
 import { PriorityListMenu } from "../assets/components/molecules/PriorityListMenu";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
 import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
+import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCalendarSheet";
 import { StartReadingDateModal } from "../assets/components/molecules/StartReadingDateModal";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
 import { getGoalMessage } from "../lib/goalMessage";
@@ -63,6 +64,7 @@ export function Mesa() {
   const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   const priorityListName = getPriorityListName(profile?.priority_list_name)
 
@@ -114,10 +116,12 @@ export function Mesa() {
             <span className="text-[clamp(18px,5.5vw,26px)] text-text-secondary">a mi manera</span>
           </h1>
         </div>
-        <div
-          className="shrink-0 w-[58px] py-2 rounded-2xl bg-orange-soft border border-border shadow-card flex flex-col items-center gap-0.5"
-          title="Racha de lectura"
-          aria-label={`Racha de ${streak} días`}
+        <button
+          type="button"
+          onClick={() => setIsCalendarOpen(true)}
+          className="shrink-0 w-[58px] py-2 rounded-2xl bg-orange-soft border border-border shadow-card flex flex-col items-center gap-0.5 transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-primary-text"
+          title="Ver calendario de lectura"
+          aria-label={`Racha de ${streak} días. Ver calendario de lectura`}
         >
           <Flame size={18} className="text-orange-text" fill="currentColor" />
           {streakLoading ? (
@@ -125,7 +129,7 @@ export function Mesa() {
           ) : (
             <span key={streak} className="font-display font-semibold text-[20px] leading-none text-text animate-fade-in">{streak}</span>
           )}
-        </div>
+        </button>
       </header>
 
       <div className="flex flex-col gap-5 stagger-children">
@@ -252,9 +256,18 @@ export function Mesa() {
 
         {/* Racha diaria */}
         <Card labelledBy="mesa-racha" tint="orange">
-          <Eyebrow id="mesa-racha" icon={Flag} tone="orange" className="mb-3.5">
-            Racha diaria de lectura
-          </Eyebrow>
+          <div className="flex items-center justify-between gap-2 mb-3.5">
+            <Eyebrow id="mesa-racha" icon={Flag} tone="orange">
+              Racha diaria de lectura
+            </Eyebrow>
+            <button
+              type="button"
+              onClick={() => setIsCalendarOpen(true)}
+              className="shrink-0 text-body-sm font-bold text-orange-text focus-visible:outline-2 focus-visible:outline-primary-text rounded-full"
+            >
+              Calendario
+            </button>
+          </div>
 
           <div className="flex items-center gap-4">
             <div className="relative w-[74px] h-[74px] shrink-0 flex items-center justify-center">
@@ -367,6 +380,7 @@ export function Mesa() {
         onSave={updateGoal}
       />
 
+      {isCalendarOpen && <ReadingCalendarSheet userId={user?.id} onClose={() => setIsCalendarOpen(false)} />}
       {isRandomPickOpen && <RandomPickSheet userId={user?.id} onClose={() => setIsRandomPickOpen(false)} />}
 
       <UnmarkStreakModal
