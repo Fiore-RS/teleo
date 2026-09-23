@@ -28,23 +28,23 @@ export function AbandonarLibroModal({ isOpen, onClose, bookTitle, initialStartDa
     <Modal isOpen={isOpen} onClose={onClose} title="Abandonar libro">
       <p className="text-body-md text-text-secondary text-center mb-4">{bookTitle}</p>
 
-      <label className="text-body-sm text-text-secondary block mb-1">Motivo de abandono</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Motivo de abandono</label>
       <Textarea placeholder="Escribe tus pensamientos aquí..." value={reason} onChange={(e) => setReason(e.target.value)} rows={4} />
 
       <div className="grid grid-cols-2 gap-3 mt-4">
         <div>
-          <label className="text-body-sm text-text-secondary block mb-1">Fecha de inicio</label>
+          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Fecha de inicio</label>
           <DateInput value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </div>
         <div>
-          <label className="text-body-sm text-text-secondary block mb-1">Fecha de finalización</label>
+          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Fecha de finalización</label>
           <DateInput value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
       </div>
 
-      <div className="flex gap-3 mt-5">
+      <div className="flex gap-2.5 mt-5">
         <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button variant="slate" onClick={handleConfirm} isLoading={isSaving}>Abandonar</Button>
+        <Button variant="primary" onClick={handleConfirm} isLoading={isSaving}>Abandonar</Button>
       </div>
     </Modal>
   )

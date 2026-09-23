@@ -3,47 +3,112 @@
 /* Modo oscuro activado por clase .dark (para tu ThemeToggle manual, no por preferencia del sistema) */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Rediseño 2026: el vino del ícono es el color de marca en los dos
+   modos. Los nombres de siempre (surface, border, accent-wishlist...) se conservan para que
+   el resto de la app siga funcionando; los tokens nuevos (primary, primary-text, rose,
+   surface-2, ornament) son para los componentes rediseñados. */
+
+/* "Mañana con café" */
 :root {
-  --teleo-surface: #FFF9F0;
-  --teleo-border: #E7DAC7;
-  --teleo-bg: #F8EFE1;
+  --teleo-bg: #F4ECE0;
+  --teleo-bg-glow: #EFD8D4;
+  --teleo-surface: #FCF8F0;
+  --teleo-surface-2: #F5ECDF;
+  --teleo-border: #E8DACB;
   --teleo-text: #2B211B;
   --teleo-text-secondary: #6B5B4E;
+  --teleo-text-muted: #A08F80;
+
+  /* marca */
+  --teleo-primary: #7A2E3A;        /* rellenos: botones, pestaña activa, badges */
+  --teleo-primary-ink: #FFF8EE;    /* texto sobre --primary */
+  --teleo-primary-text: #7A2E3A;   /* texto de acento (etiquetas, títulos, links) */
+  --teleo-primary-soft: #F1DFDC;   /* botones suaves, fondo de pestaña activa */
+  --teleo-rose: #B85C6E;           /* final de los degradados */
+  --teleo-ornament: #D0A0A4;       /* destellos, líneas punteadas */
+
+  /* estados (doblez de página): mismos significados de siempre */
   --teleo-state-abandoned: #9B948C;
   --teleo-state-pending: #5B7A88;
   --teleo-accent-wishlist: #7A2E3A;
   --teleo-accent-reading: #C68A3D;
   --teleo-accent-finished: #3F5B4E;
+  --teleo-finished-soft: #DFE6DD;
+  --teleo-reading-soft: #F5E6CB;
+  --teleo-pending-soft: #DDE7EB;
+
+  --teleo-shadow-card: 0 1px 2px rgba(90, 40, 40, 0.06), 0 8px 24px -12px rgba(90, 40, 40, 0.18);
+  --teleo-shadow-float: 0 10px 30px -10px rgba(90, 40, 40, 0.32);
 }
 
+/* "Noche con lámpara" */
 .dark {
-  --teleo-surface: #2A211A;
-  --teleo-border: #3A2E24;
-  --teleo-bg: #1E1712;
+  --teleo-bg: #1C1513;
+  --teleo-bg-glow: #3B1A21;
+  --teleo-surface: #271D1B;
+  --teleo-surface-2: #302422;
+  --teleo-border: #3D2D2A;
   --teleo-text: #F3E9DA;
   --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: #8E7D70;
+
+  --teleo-primary: #A8465A;
+  --teleo-primary-ink: #FFF4EC;
+  --teleo-primary-text: #D98E9C;   /* #A8465A no alcanza contraste como texto sobre el fondo oscuro */
+  --teleo-primary-soft: #40222A;
+  --teleo-rose: #D98E9C;
+  --teleo-ornament: #7E4550;
+
   --teleo-state-abandoned: #6E6660;
   --teleo-state-pending: #89ADBA;
   --teleo-accent-wishlist: #A8465A;
   --teleo-accent-reading: #E3A857;
   --teleo-accent-finished: #6B8F7C;
+  --teleo-finished-soft: #26302A;
+  --teleo-reading-soft: #3E3020;
+  --teleo-pending-soft: #22313A;
+
+  --teleo-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 26px -14px rgba(0, 0, 0, 0.6);
+  --teleo-shadow-float: 0 12px 30px -8px rgba(0, 0, 0, 0.7);
 }
 
 @theme {
-  --color-surface: var(--teleo-surface);
-  --color-border: var(--teleo-border);
   --color-bg: var(--teleo-bg);
+  --color-bg-glow: var(--teleo-bg-glow);
+  --color-surface: var(--teleo-surface);
+  --color-surface-2: var(--teleo-surface-2);
+  --color-border: var(--teleo-border);
   --color-text: var(--teleo-text);
   --color-text-secondary: var(--teleo-text-secondary);
+  --color-text-muted: var(--teleo-text-muted);
+
+  --color-primary: var(--teleo-primary);
+  --color-primary-ink: var(--teleo-primary-ink);
+  --color-primary-text: var(--teleo-primary-text);
+  --color-primary-soft: var(--teleo-primary-soft);
+  --color-rose: var(--teleo-rose);
+  --color-ornament: var(--teleo-ornament);
+
   --color-state-abandoned: var(--teleo-state-abandoned);
   --color-state-pending: var(--teleo-state-pending);
   --color-accent-wishlist: var(--teleo-accent-wishlist);
   --color-accent-reading: var(--teleo-accent-reading);
   --color-accent-finished: var(--teleo-accent-finished);
+  --color-finished-soft: var(--teleo-finished-soft);
+  --color-reading-soft: var(--teleo-reading-soft);
+  --color-pending-soft: var(--teleo-pending-soft);
 
+  --shadow-card: var(--teleo-shadow-card);
+  --shadow-float: var(--teleo-shadow-float);
+
+  --radius-card: 24px;
+
+  --font-title: "Berkshire Swash", Georgia, serif;
   --font-display: "Fraunces", serif;
   --font-body: "Karla", sans-serif;
-  --font-handwritten: "Caveat", cursive;
+
+  --text-title-xl: 44px;
+  --text-title-xl--line-height: 1;
 
   --text-display-xl: 44px;
   --text-display-xl--line-height: 1.1;
@@ -58,19 +123,90 @@
   --text-body-md--line-height: 1.45;
   --text-body-sm: 12px;
   --text-body-sm--line-height: 1.4;
+}
 
-  --text-hand-lg: 24px;
-  --text-hand-lg--line-height: 1.2;
-  --text-hand-md: 18px;
-  --text-hand-md--line-height: 1.2;
+/* ---------- Animaciones (rediseño 2026) ----------
+   Todas se apagan con "reducir movimiento" del sistema (ver el @media al final del bloque). */
+@keyframes teleo-sheet-down {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+@keyframes teleo-sheet-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+@keyframes teleo-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes teleo-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes teleo-pop-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes teleo-pop-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.96); }
+}
+@keyframes teleo-skeleton {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+@keyframes teleo-rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @layer utilities {
+  .animate-sheet-down { animation: teleo-sheet-down 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
+  .animate-sheet-out { animation: teleo-sheet-out 0.22s ease-in forwards; }
+  .animate-fade-in { animation: teleo-fade-in 0.2s ease-out; }
+  .animate-fade-out { animation: teleo-fade-out 0.22s ease-in forwards; }
+  .animate-pop-in { animation: teleo-pop-in 0.2s ease-out; }
+  .animate-pop-out { animation: teleo-pop-out 0.18s ease-in forwards; }
+
+  /* Silueta de carga: pulso suave. */
+  .animate-skeleton { animation: teleo-skeleton 1.4s ease-in-out infinite; }
+
+  /* Cambio de pantalla: solo opacidad (sin transform) para no romper los elementos
+     "fixed" que viven dentro de la página. */
+  .animate-page-in { animation: teleo-fade-in 0.28s ease-out; }
+
+  /* Aparición escalonada de tarjetas, portadas y filas. Se usa "backwards" (y no "both")
+     para que al terminar la animación no quede un transform fijo encima: dnd-kit mueve los
+     elementos con transform al arrastrar y una animación con "both" lo pisaría. */
+  .stagger-children > * { animation: teleo-rise-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+  .stagger-children > *:nth-child(2) { animation-delay: 45ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 90ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 135ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 180ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 225ms; }
+  .stagger-children > *:nth-child(7) { animation-delay: 270ms; }
+  .stagger-children > *:nth-child(8) { animation-delay: 315ms; }
+  .stagger-children > *:nth-child(n + 9) { animation-delay: 360ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-sheet-down, .animate-sheet-out, .animate-fade-in, .animate-fade-out,
+    .animate-pop-in, .animate-pop-out, .animate-page-in, .stagger-children > *, .animate-skeleton {
+      animation: none;
+    }
+  }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Brillo difuso arriba de la pantalla, como una niebla suave */
+  .bg-glow-top {
+    background:
+      radial-gradient(120% 360px at 15% -80px, var(--color-bg-glow) 0%, transparent 70%),
+      var(--color-bg);
   }
 }

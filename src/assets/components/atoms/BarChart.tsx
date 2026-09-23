@@ -6,9 +6,11 @@ interface BarChartProps {
 }
 
 /** Barras simples dibujadas a mano (sin librería de gráficas), mismo lenguaje visual que
- *  ProgressBar: track en bg-border, relleno en un color de acento. Usado para el recap
+ *  ProgressBar: track suave, relleno con el degradado de marca. Usado para el recap
  *  mensual/anual de Bitácora. */
-export function BarChart({ data, color = 'var(--color-accent-reading)', height = 6, className = '' }: BarChartProps) {
+export function BarChart({ data, color, height = 6, className = '' }: BarChartProps) {
+  // Sin color explícito, las barras usan el degradado de marca (vino → rosa), como ProgressBar.
+  const fill = color ?? 'linear-gradient(180deg, var(--color-rose), var(--color-primary))'
   const max = Math.max(1, ...data.map((d) => d.value))
 
   return (
@@ -18,14 +20,14 @@ export function BarChart({ data, color = 'var(--color-accent-reading)', height =
         return (
           <div key={i} className="flex-1 flex flex-col items-center gap-1.5 min-w-0">
             <div
-              className="w-full rounded-t-md bg-border overflow-hidden flex flex-col justify-end"
+              className="w-full rounded-t-lg bg-surface-2 overflow-hidden flex flex-col justify-end"
               style={{ height: `${height}rem` }}
             >
               {d.value > 0 && (
-                <div className="w-full rounded-t-md" style={{ height: `${percent}%`, backgroundColor: color }} />
+                <div className="w-full rounded-t-lg" style={{ height: `${percent}%`, background: fill }} />
               )}
             </div>
-            <span className="text-body-sm text-text-secondary truncate w-full text-center">{d.label}</span>
+            <span className="text-[11px] font-semibold text-text-muted truncate w-full text-center">{d.label}</span>
           </div>
         )
       })}

@@ -30,7 +30,7 @@ export function FavoriteCharacterEditor({
   }
 
   return (
-    <div className="bg-bg rounded-2xl p-4">
+    <div className="bg-surface-2 border border-border rounded-2xl p-4">
       <Avatar
         variant="character"
         size="lg"

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ImageOff, Heart, Pencil } from 'lucide-react'
+import { ImageOff, Heart, Camera, PenLine, Trash2, RotateCcw, Play, NotebookPen } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
@@ -9,7 +9,8 @@ import { useBookReadCount } from '../hooks/useBookReadCount'
 import { recordBookCompletion } from '../lib/readingHistory'
 import { DogEar } from '../assets/components/atoms/DogEar'
 import { Tag } from '../assets/components/atoms/Tag'
-import { HorizontalScroller } from '../assets/components/atoms/HorizontalScroller'
+import { Sheet } from '../assets/components/atoms/Sheet'
+import { DetailSkeleton } from '../assets/components/atoms/Skeleton'
 import { TagInput } from '../assets/components/molecules/TagInput'
 import { Input } from '../assets/components/atoms/Input'
 import { Select } from '../assets/components/atoms/Select'
@@ -47,7 +48,7 @@ const statusOptions = (Object.keys(statusLabel) as ReadingStatus[]).map((value) 
 const formatOptions: { value: 'fisico' | 'digital' | 'audiolibro'; label: string }[] = [
   { value: 'fisico', label: 'Físico' },
   { value: 'digital', label: 'Digital' },
-  { value: 'audiolibro', label: 'Audio Libro' },
+  { value: 'audiolibro', label: 'Audiolibro' },
 ]
 
 interface DetalleLibroProps {
@@ -195,22 +196,28 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     setIsAbandonOpen(false)
   }
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={onClose}>
-      <div
-        className="w-full max-w-sm bg-surface rounded-3xl p-6 max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {isLoading || !book ? null : (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display italic text-display-md text-accent-wishlist">
-                {isEditing ? 'Editar detalles del Libro' : 'Detalles del Libro'}
-              </h2>
-              <button onClick={onClose} aria-label="Cerrar" className="text-text-secondary">✕</button>
-            </div>
+  const labelClass = 'font-body font-semibold text-body-sm text-text-secondary block mb-1.5'
+  const infoRows: { label: string; value: string }[] = book
+    ? [
+        ...(book.total_pages ? [{ label: 'Páginas', value: String(book.total_pages) }] : []),
+        ...(book.language ? [{ label: 'Idioma', value: book.language }] : []),
+        ...(book.format ? [{ label: 'Formato', value: formatOptions.find((f) => f.value === book.format)?.label ?? book.format }] : []),
+        ...(book.category ? [{ label: 'Categoría', value: book.category }] : []),
+        ...(readCount > 1 ? [{ label: 'Lecturas', value: `${readCount} veces` }] : []),
+      ]
+    : []
 
-            <div className="relative aspect-2/3 w-36 mx-auto rounded-xl overflow-hidden bg-border mb-4">
+  return (
+    <>
+      <Sheet onClose={onClose} title={isEditing ? 'Editar libro' : 'Detalles del libro'}>
+        {isLoading || !book ? <DetailSkeleton /> : (
+          <>
+            <div className={isEditing ? '' : 'flex gap-4 items-start mb-5'}>
+            <div
+              className={`relative aspect-2/3 rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)] ${
+                isEditing ? 'w-32 mx-auto mb-4' : 'w-28 shrink-0'
+              }`}
+            >
               {book.cover_url ? (
                 <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (
@@ -218,10 +225,10 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   <ImageOff size={24} className="text-text-secondary" />
                 </div>
               )}
-              {!isEditing && <DogEar status={book.status as ReadingStatus} size={36} className="absolute top-0 right-0" />}
+              {!isEditing && <DogEar status={book.status as ReadingStatus} size={34} className="absolute top-0 right-0" />}
               {!isEditing && book.is_favorite && (
-                <span className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm">
-                  <Heart size={14} fill="var(--color-accent-wishlist)" color="var(--color-accent-wishlist)" />
+                <span className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface/95 flex items-center justify-center shadow-sm">
+                  <Heart size={14} fill="var(--color-primary)" color="var(--color-primary)" />
                 </span>
               )}
               {isEditing && (
@@ -229,11 +236,21 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   onClick={() => coverInputRef.current?.click()}
                   disabled={isUploading}
                   aria-label="Cambiar portada"
-                  className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm"
+                  className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-surface/95 text-primary-text flex items-center justify-center shadow-sm"
                 >
-                  <Pencil size={14} className="text-accent-reading" />
+                  <Camera size={15} />
                 </button>
               )}
+            </div>
+            {!isEditing && (
+              <div className="flex-1 min-w-0 pt-1">
+                <h3 className="font-display font-semibold text-[21px] leading-tight text-text text-balance">{book.title}</h3>
+                {book.author && <p className="text-body-md text-text-secondary mt-1">{book.author}</p>}
+                <div className="mt-3">
+                  <StatusMenu status={book.status as ReadingStatus} onChange={handleStatusChange} />
+                </div>
+              </div>
+            )}
             </div>
             {isEditing && (
               <input
@@ -250,146 +267,162 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
             {!isEditing ? (
               <>
-                <h3 className="font-display italic text-display-md text-accent-wishlist text-center">{book.title}</h3>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-body-md text-text-secondary">{book.author}</p>
-                  <StatusMenu status={book.status as ReadingStatus} onChange={handleStatusChange} />
-                </div>
-
                 {tags.length > 0 && (
-                  <HorizontalScroller className="mt-3">
+                  <div className="flex flex-wrap gap-1.5">
                     {tags.map((tag) => <Tag key={tag} label={tag} />)}
-                  </HorizontalScroller>
-                )}
-
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  {book.total_pages && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">{book.total_pages} páginas</div>}
-                  {book.language && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">{book.language}</div>}
-                  {book.format && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">{formatOptions.find((f) => f.value === book.format)?.label}</div>}
-                  {book.category && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">{book.category}</div>}
-                  {readCount > 1 && <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">Leído {readCount} veces</div>}
-                </div>
-
-                {book.status === 'abandonado' && book.abandon_reason && (
-                  <div className="mt-4">
-                    <p className="text-body-sm text-text-secondary mb-1">Motivo de abandono</p>
-                    <div className="bg-bg rounded-xl p-3 text-body-md text-text">{book.abandon_reason}</div>
                   </div>
                 )}
 
-                {book.status === 'terminado' && (
-                  <Button variant={hasReview ? 'primary' : 'green'} className="mt-5" onClick={() => setIsResenaOpen(true)}>
-                    {hasReview ? 'Ver Reseña de Lectura' : 'Crear Reseña de Lectura'}
-                  </Button>
-                )}
-                {book.status === 'terminado' && (
-                  <Button variant="slate" className="mt-3" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
-                    Leer de nuevo
-                  </Button>
-                )}
-                {book.status === 'abandonado' && (
-                  <Button variant="green" className="mt-5" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
-                    Retomar Lectura
-                  </Button>
+                {infoRows.length > 0 && (
+                  <dl className="mt-5 bg-surface-2 border border-border rounded-2xl divide-y divide-border">
+                    {infoRows.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                        <dt className="text-body-md text-text-secondary">{row.label}</dt>
+                        <dd className="text-body-md font-semibold text-text text-right">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 )}
 
-                <div className="flex gap-3 mt-3">
-                  <Button variant="outline" onClick={() => setDeleteState('confirm')}>Eliminar Libro</Button>
-                  <Button variant="amber" onClick={startEditing}>Editar Libro</Button>
+                {book.status === 'abandonado' && book.abandon_reason && (
+                  <div className="mt-5">
+                    <p className={labelClass}>Motivo de abandono</p>
+                    <p className="bg-surface-2 border border-border rounded-2xl px-4 py-3 font-display italic text-body-md text-text">
+                      {book.abandon_reason}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-2.5 mt-6">
+                  {book.status === 'terminado' && (
+                    <Button variant={hasReview ? 'primary' : 'green'} onClick={() => setIsResenaOpen(true)}>
+                      <NotebookPen size={18} />
+                      {hasReview ? 'Ver reseña de lectura' : 'Crear reseña de lectura'}
+                    </Button>
+                  )}
+                  {book.status === 'terminado' && (
+                    <Button variant="soft" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
+                      <RotateCcw size={17} />
+                      Leer de nuevo
+                    </Button>
+                  )}
+                  {book.status === 'abandonado' && (
+                    <Button variant="green" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
+                      <Play size={17} />
+                      Retomar lectura
+                    </Button>
+                  )}
+
+                  <div className="flex gap-2.5">
+                    <Button variant="outline" onClick={() => setDeleteState('confirm')}>
+                      <Trash2 size={17} />
+                      Eliminar
+                    </Button>
+                    <Button variant="soft" onClick={startEditing}>
+                      <PenLine size={17} />
+                      Editar
+                    </Button>
+                  </div>
                 </div>
               </>
             ) : draft ? (
-              <>
-                <label className="text-body-sm text-text-secondary block mb-1 mt-2">Título</label>
-                <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+              <div className="flex flex-col gap-4">
+                <div>
+                  <label className={labelClass}>Título</label>
+                  <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+                </div>
 
-                <label className="text-body-sm text-text-secondary block mb-1 mt-4">Autor</label>
-                <Input value={draft.author} onChange={(e) => setDraft({ ...draft, author: e.target.value })} />
+                <div>
+                  <label className={labelClass}>Autor</label>
+                  <Input value={draft.author} onChange={(e) => setDraft({ ...draft, author: e.target.value })} />
+                </div>
 
-                <label className="text-body-sm text-text-secondary block mb-1 mt-4">Formato</label>
-<SegmentedTabs options={formatOptions} active={draft.format} onChange={(format) => setDraft({ ...draft, format })} />
+                <div>
+                  <label className={labelClass}>Formato</label>
+                  <SegmentedTabs options={formatOptions} active={draft.format} onChange={(format) => setDraft({ ...draft, format })} />
+                </div>
 
-{draft.format !== 'digital' ? (
-  <div className="grid grid-cols-2 gap-3 mt-4">
-    <div>
-      {draft.format === 'audiolibro' ? (
-        <>
-          <label className="text-body-sm text-text-secondary block mb-1">Duración</label>
-          <DurationMaskInput value={draft.totalDuration} onChange={(v) => setDraft({ ...draft, totalDuration: v })} />
-        </>
-      ) : (
-        <>
-          <label className="text-body-sm text-text-secondary block mb-1">Páginas</label>
-          <Input type="number" placeholder="000" value={draft.totalPages} onChange={(e) => setDraft({ ...draft, totalPages: e.target.value })} />
-        </>
-      )}
-    </div>
-    <div>
-      <label className="text-body-sm text-text-secondary block mb-1">Idioma</label>
-      <Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
-    </div>
-  </div>
-) : (
-  <>
-    <label className="text-body-sm text-text-secondary block mb-1 mt-4">Idioma</label>
-    <Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
-  </>
-)}
-
-<div className="grid grid-cols-2 gap-3 mt-4">
+                {draft.format !== 'digital' ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      {draft.format === 'audiolibro' ? (
+                        <>
+                          <label className={labelClass}>Duración</label>
+                          <DurationMaskInput value={draft.totalDuration} onChange={(v) => setDraft({ ...draft, totalDuration: v })} />
+                        </>
+                      ) : (
+                        <>
+                          <label className={labelClass}>Páginas</label>
+                          <Input type="number" placeholder="000" value={draft.totalPages} onChange={(e) => setDraft({ ...draft, totalPages: e.target.value })} />
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      <label className={labelClass}>Idioma</label>
+                      <Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
+                    </div>
+                  </div>
+                ) : (
                   <div>
-                    <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
+                    <label className={labelClass}>Idioma</label>
+                    <Input placeholder="Español" value={draft.language} onChange={(e) => setDraft({ ...draft, language: e.target.value })} />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelClass}>Categoría</label>
                     <Select options={categoryOptions} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-body-sm text-text-secondary block mb-1">Estado</label>
+                    <label className={labelClass}>Estado</label>
                     <Select options={statusOptions} value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as ReadingStatus })} />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-body-sm text-text-secondary block mb-1">Precio</label>
+                    <label className={labelClass}>Precio</label>
                     <PriceInput value={draft.price} onChange={(price) => setDraft({ ...draft, price })} />
                   </div>
                   <div>
-                    <label className="text-body-sm text-text-secondary block mb-1">Fecha de compra</label>
+                    <label className={labelClass}>Fecha de compra</label>
                     <DateInput value={draft.purchaseDate} onChange={(e) => setDraft({ ...draft, purchaseDate: e.target.value })} />
                   </div>
                 </div>
 
-                <label className="text-body-sm text-text-secondary block mb-1 mt-4">Etiquetas</label>
-                <div className="bg-border rounded-2xl p-3">
-                  <HorizontalScroller>
-                    {tags.map((tag) => <Tag key={tag} label={tag} onRemove={() => removeTag(tag)} />)}
-                  </HorizontalScroller>
+                <div>
+                  <label className={labelClass}>Etiquetas</label>
+                  {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {tags.map((tag) => <Tag key={tag} label={tag} onRemove={() => removeTag(tag)} />)}
+                    </div>
+                  )}
+                  <TagInput onAdd={addTag} />
                 </div>
-                <div className="mt-2"><TagInput onAdd={addTag} /></div>
 
-                <div className={`grid gap-3 mt-4 ${draft.status === 'pendiente' ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <div className={`grid gap-3 ${draft.status === 'pendiente' ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <div>
-                    <label className="text-body-sm text-text-secondary block mb-1 text-center">Favorito</label>
+                    <label className={`${labelClass} text-center`}>Favorito</label>
                     <FavoriteToggle isFavorite={book.is_favorite ?? false} onToggle={() => updateBook({ is_favorite: !book.is_favorite })} />
                   </div>
                   {draft.status === 'pendiente' && (
                     <div>
-                      <label className="text-body-sm text-text-secondary block mb-1 text-center">
-                        Esta temporada
-                      </label>
+                      <label className={`${labelClass} text-center`}>Esta temporada</label>
                       <PriorityToggle isPriority={book.is_priority ?? false} onToggle={handleTogglePriority} />
                     </div>
                   )}
                 </div>
 
-                <div className="flex gap-3 mt-5">
+                <div className="flex gap-2.5 mt-2">
                   <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
-                  <Button variant="green" onClick={handleSave}>Guardar Cambios</Button>
+                  <Button variant="primary" onClick={handleSave}>Guardar cambios</Button>
                 </div>
-              </>
+              </div>
             ) : null}
           </>
         )}
-      </div>
+      </Sheet>
 
       <ConfirmDialog
         isOpen={deleteState !== 'closed'}
@@ -428,6 +461,6 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           }}
         />
       )}
-    </div>
+    </>
   )
 }

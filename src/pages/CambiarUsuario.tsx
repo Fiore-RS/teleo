@@ -5,6 +5,7 @@ import { useProfile } from '../hooks/useProfile'
 import { useAccountSettings } from '../hooks/useAccountSettings'
 import { Input } from '../assets/components/atoms/Input'
 import { Button } from '../assets/components/atoms/Button'
+import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { getUsernameCooldownInfo } from '../lib/usernameCooldown'
 
 export function CambiarUsuario() {
@@ -25,15 +26,14 @@ export function CambiarUsuario() {
   }
 
   return (
-    <div className="min-h-screen bg-bg p-6">
-      <button onClick={() => navigate('/configuracion')} className="text-body-sm text-text-secondary mb-6">← Regresar</button>
-      <h1 className="font-display text-display-lg text-text text-center">Cambiar nombre de usuario</h1>
-      <p className="text-body-md text-text-secondary text-center mt-2">Actualiza bajo qué nombre estará tu librería virtual.</p>
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
+      <PageHeader title="Cambiar nombre de usuario" subtitle="Actualiza bajo qué nombre estará tu librería virtual." onBack={() => navigate('/configuracion')} backLabel="Regresar a Configuración" />
+      <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-6">Nombre de usuario actual</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Nombre de usuario actual</label>
       <Input value={`@${profile?.username ?? ''}`} disabled />
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-4">Nuevo nombre de usuario</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Nuevo nombre de usuario</label>
       <Input
         placeholder="Nuevo usuario..."
         value={newUsername}
@@ -47,7 +47,7 @@ export function CambiarUsuario() {
           : `Ya cambiaste tu nombre de usuario recientemente. Podrás volver a hacerlo en ${daysRemaining} día${daysRemaining === 1 ? '' : 's'}.`}
       </p>
 
-      {error && <p className="text-body-sm text-accent-wishlist text-center mt-3">{error}</p>}
+      {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
 
       <Button
         variant="primary"
@@ -56,8 +56,9 @@ export function CambiarUsuario() {
         isLoading={isSaving}
         disabled={!newUsername.trim() || !canChange}
       >
-        Guardar Cambios
+        Guardar cambios
       </Button>
+      </div>
     </div>
   )
 }

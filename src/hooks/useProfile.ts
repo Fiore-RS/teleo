@@ -1,22 +1,19 @@
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
+import { useCachedQuery } from './useCachedQuery'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
 export function useProfile(userId: string | undefined) {
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const refetch = useCallback(async () => {
-    if (!userId) return
-    setIsLoading(true)
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
-    setProfile(data ?? null)
-    setIsLoading(false)
-  }, [userId])
-
-  useEffect(() => { refetch() }, [refetch])
+  const { data: profile, setData: setProfile, isLoading, refetch } = useCachedQuery<Profile | null>(
+    ['profile', userId],
+    async () => {
+      const { data } = await supabase.from('profiles').select('*').eq('id', userId!).single()
+      return data ?? null
+    },
+    null,
+    { enabled: !!userId }
+  )
 
   async function updateProfile(updates: Partial<Profile>) {
     if (!userId) return

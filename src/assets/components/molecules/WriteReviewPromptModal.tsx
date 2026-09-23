@@ -16,7 +16,7 @@ export function WriteReviewPromptModal({ isOpen, onAccept, onIgnore }: WriteRevi
       <p className="text-body-md text-text-secondary mb-5">
         ¿Quieres escribir la reseña de este libro ahora?
       </p>
-      <div className="flex gap-3">
+      <div className="flex gap-2.5">
         <Button variant="outline" className="flex-1" onClick={onIgnore}>Ignorar</Button>
         <Button variant="green" className="flex-1" onClick={onAccept}>Aceptar</Button>
       </div>

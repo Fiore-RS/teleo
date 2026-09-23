@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
-  Upload, Download, Pause, Trash2, ChevronRight, ChevronLeft, Trash2 as ClearIcon, LogOut,
+  Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -12,46 +12,14 @@ import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
 import { Button } from '../assets/components/atoms/Button'
+import { Modal } from '../assets/components/atoms/Modal'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
 import { ThemeToggle } from '../assets/components/atoms/ThemeToggle'
 import { Select } from '../assets/components/atoms/Select'
 import { currencyOptions } from '../lib/currencies'
+import { SettingsGroup, SettingsRow, SettingsField } from '../assets/components/molecules/SettingsList'
+import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { supabase } from '../lib/supabase'
-
-function SectionHeading({ title, danger = false }: { title: string; danger?: boolean }) {
-  return (
-    <div className="mt-8 mb-3">
-      <h2
-        className={
-          danger
-            ? 'font-display italic text-display-md text-accent-wishlist'
-            : 'font-body text-body-lg font-semibold text-accent-wishlist'
-        }
-      >
-        {title}
-      </h2>
-      <div className="h-1.5 rounded-full bg-border mt-2" />
-    </div>
-  )
-}
-
-function ListItem({
-  icon: Icon, label, onClick, disabled = false,
-}: { icon: typeof User; label: string; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      className={`w-full flex items-center gap-3 bg-surface border border-border rounded-xl px-4 py-3.5 ${
-        disabled ? 'opacity-50 cursor-not-allowed' : ''
-      }`}
-    >
-      <Icon size={18} className="text-text-secondary shrink-0" />
-      <span className="text-body-md text-text flex-1 text-left">{label}</span>
-      <ChevronRight size={18} className="text-text-secondary shrink-0" />
-    </button>
-  )
-}
 
 export function Configuracion() {
   const navigate = useNavigate()
@@ -91,74 +59,74 @@ export function Configuracion() {
     }
   }
 
+  function handleImportClick() {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'application/json'
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (!file) return
+      const ok = await importData(file)
+      setConfirmAction('importar')
+      setDialogState(ok ? 'success' : 'error')
+    }
+    input.click()
+  }
+
   return (
-    <div className="min-h-screen bg-bg p-6 pb-10">
-      <button onClick={() => navigate('/perfil')} className="flex items-center gap-1 text-body-md font-medium text-accent-wishlist mb-4 -ml-1">
-        <ChevronLeft size={20} strokeWidth={2} />
-        Regresar a Perfil
-      </button>
-
-      <h1 className="font-display italic text-display-lg text-accent-wishlist">Configuración</h1>
-      <div className="h-1.5 rounded-full bg-border mt-3" />
-      <p className="text-body-md text-text-secondary mt-3">Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto.</p>
-
-      <SectionHeading title="Tema de la aplicación" />
-      <ThemeToggle />
-
-      <SectionHeading title="Moneda" />
-      <Select
-        options={currencyOptions}
-        value={profile?.currency ?? undefined}
-        onChange={(e) => updateProfile({ currency: e.target.value })}
-        placeholder="Elige la moneda de tu cuenta"
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
+      <PageHeader
+        title="Configuración"
+        subtitle="Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto."
+        onBack={() => navigate('/perfil')}
+        backLabel="Regresar a Tu rincón"
       />
-      <p className="text-body-sm text-text-secondary mt-2">
-        Se usa para mostrar el valor de tu biblioteca en Bitácora.
-      </p>
 
-      <SectionHeading title="Ajustes de cuenta" />
-      <div className="space-y-2">
-        <ListItem icon={User} label="Cambiar nombre de usuario" onClick={() => navigate('/configuracion/usuario')} />
-        <ListItem icon={Mail} label="Cambiar correo" onClick={() => navigate('/configuracion/correo')} />
-        <ListItem icon={Lock} label="Cambiar contraseña" onClick={() => navigate('/configuracion/contrasena')} />
-      </div>
+      <div className="flex flex-col gap-7 stagger-children">
+        <SettingsGroup title="Apariencia">
+          <SettingsField icon={Palette} label="Tema de la aplicación" description="Mañana con café o noche con lámpara">
+            <ThemeToggle />
+          </SettingsField>
+          <SettingsField icon={Coins} label="Moneda" description="Se usa para mostrar el valor de tu biblioteca en Bitácora">
+            <Select
+              options={currencyOptions}
+              value={profile?.currency ?? undefined}
+              onChange={(e) => updateProfile({ currency: e.target.value })}
+              placeholder="Elige la moneda de tu cuenta"
+            />
+          </SettingsField>
+        </SettingsGroup>
 
-      <SectionHeading title="Compartir" />
-      <div className="space-y-2">
-        <ListItem icon={Share2} label="Compartir perfil" onClick={() => setIsShareModalOpen(true)} />
-        <ListItem icon={LinkIcon} label="Compartir lista de deseados" onClick={() => setIsShareWishlistModalOpen(true)} />
-      </div>
+        <SettingsGroup title="Cuenta">
+          <SettingsRow icon={User} label="Cambiar nombre de usuario" description="Tu @usuario en Teleo" onClick={() => navigate('/configuracion/usuario')} />
+          <SettingsRow icon={Mail} label="Cambiar correo" description="El correo con el que inicias sesión" onClick={() => navigate('/configuracion/correo')} />
+          <SettingsRow icon={Lock} label="Cambiar contraseña" description="Actualiza tu clave de acceso" onClick={() => navigate('/configuracion/contrasena')} />
+        </SettingsGroup>
 
-      <SectionHeading title="Información" />
-      <div className="space-y-2">
-        <ListItem icon={Info} label="Tutorial para navegar por Teleo" onClick={() => navigate('/tutorial')} />
-      </div>
+        <SettingsGroup title="Compartir">
+          <SettingsRow icon={Share2} label="Compartir perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setIsShareModalOpen(true)} />
+          <SettingsRow icon={LinkIcon} label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
+        </SettingsGroup>
 
+        <SettingsGroup title="Información">
+          <SettingsRow icon={Info} label="Tutorial de Teleo" description="Un recorrido por cada sección" onClick={() => navigate('/tutorial')} />
+        </SettingsGroup>
 
-      <SectionHeading title="Zona de peligro" danger />
-      <div className="space-y-2">
-        <ListItem icon={LogOut} label="Cerrar sesión" onClick={() => setConfirmAction('cerrarSesion')} />
-        <ListItem icon={Upload} label="Exportar datos" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
-        <ListItem
-          icon={Download}
-          label="Importar datos"
-          onClick={() => {
-            const input = document.createElement('input')
-            input.type = 'file'
-            input.accept = 'application/json'
-            input.onchange = async () => {
-              const file = input.files?.[0]
-              if (!file) return
-              const ok = await importData(file)
-              setConfirmAction('importar')
-              setDialogState(ok ? 'success' : 'error')
-            }
-            input.click()
-          }}
-        />
-        <ListItem icon={ClearIcon} label="Vaciar datos" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
-        <ListItem icon={Pause} label="Desactivar cuenta" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
-        <ListItem icon={Trash2} label="Eliminar cuenta" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
+        <SettingsGroup title="Tus datos">
+          <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
+          <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
+        </SettingsGroup>
+
+        <SettingsGroup title="Zona de peligro">
+          <SettingsRow danger icon={ClearIcon} label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
+          <SettingsRow danger icon={Pause} label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
+          <SettingsRow danger icon={Trash2} label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
+        </SettingsGroup>
+
+        <Button variant="outline" onClick={() => setConfirmAction('cerrarSesion')}>
+          <LogOut size={18} />
+          Cerrar sesión
+        </Button>
       </div>
 
       {isShareModalOpen && (
@@ -175,21 +143,19 @@ export function Configuracion() {
         <ShareWishlistModal onClose={() => setIsShareWishlistModalOpen(false)} userId={user?.id} />
       )}
 
-      {confirmAction === 'cerrarSesion' && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>
-          <div className="w-full max-w-sm bg-surface rounded-3xl p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-14 h-14 rounded-full bg-state-pending flex items-center justify-center mx-auto mb-4">
-              <LogOut size={24} className="text-surface" />
-            </div>
-            <h3 className="font-display text-display-md text-text">¿Cerrar sesión?</h3>
-            <p className="text-body-md text-text-secondary mt-2">
-              Tendrás que iniciar sesión de nuevo para volver a tu rincón de lectura.
-            </p>
-            <Button variant="slate" className="mt-5" onClick={handleSignOut}>Cerrar Sesión</Button>
-            <Button variant="outline" className="mt-3" onClick={() => setConfirmAction(null)}>Cancelar</Button>
+      <Modal isOpen={confirmAction === 'cerrarSesion'} onClose={() => setConfirmAction(null)}>
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-full bg-primary-soft text-primary-text flex items-center justify-center mb-4">
+            <LogOut size={26} />
           </div>
+          <h3 className="font-display font-semibold text-display-md text-text">¿Cerrar sesión?</h3>
+          <p className="text-body-md text-text-secondary mt-2">
+            Tendrás que iniciar sesión de nuevo para volver a tu rincón de lectura.
+          </p>
+          <Button variant="primary" className="mt-5" onClick={handleSignOut}>Cerrar sesión</Button>
+          <Button variant="outline" className="mt-2.5" onClick={() => setConfirmAction(null)}>Cancelar</Button>
         </div>
-      )}
+      </Modal>
 
       {confirmAction === 'exportar' && (
         <ActionConfirmModal
@@ -200,7 +166,7 @@ export function Configuracion() {
           confirmTitle="¿Exportar datos?"
           confirmDescription="Exportarás todos los datos de tu librería virtual: libros, reseñas, estadísticas..."
           confirmLabel="Exportar"
-          confirmVariant="amber"
+          confirmVariant="primary"
           successTitle="¡Exportado con éxito!"
           successDescription="Tu archivo se descargó correctamente."
           onConfirm={handleConfirmAction}
@@ -217,7 +183,7 @@ export function Configuracion() {
           confirmTitle="¿Importar datos?"
           confirmDescription="Importarás datos a tu librería virtual."
           confirmLabel="Importar"
-          confirmVariant="slate"
+          confirmVariant="primary"
           successTitle="¡Importado con éxito!"
           successDescription="Tus datos se agregaron correctamente a tu librería."
           onConfirm={() => setConfirmAction(null)}
@@ -233,8 +199,8 @@ export function Configuracion() {
           iconVariant="reading"
           confirmTitle="Limpieza de estantes"
           confirmDescription="Estás a punto de vaciar tu diario de lectura. Todas tus reseñas, notas marginales y estadísticas acumuladas desaparecerán como tinta bajo la lluvia. Esta acción es permanente e irreversible."
-          confirmLabel="Vaciar Mi Librería"
-          confirmVariant="amber"
+          confirmLabel="Vaciar mi librería"
+          confirmVariant="primary"
           successTitle="¡Librería vaciada!"
           successDescription="Todos tus libros y sagas fueron eliminados correctamente."
           onConfirm={handleConfirmAction}
@@ -242,45 +208,46 @@ export function Configuracion() {
         />
       )}
 
-      {confirmAction === 'desactivar' && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>
-          <div className="w-full max-w-sm bg-surface rounded-3xl p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-14 h-14 rounded-full bg-state-pending flex items-center justify-center mx-auto mb-4">
-              <Pause size={24} className="text-surface" />
-            </div>
-            <h3 className="font-display text-display-md text-text">Pausa en tu lectura</h3>
-            <p className="text-body-md text-text-secondary mt-2">
-              ¿Sientes que es momento de un respiro? Al desactivar tu cuenta, tu perfil y lecturas descansarán con nosotros.
-              Guardaremos tu progreso como un marcapáginas eterno, esperando el momento en que decidas abrir de nuevo tus historias favoritas. ¡Te extrañaremos!
-            </p>
-            <Button variant="slate" className="mt-5" onClick={handleConfirmAction} isLoading={isProcessing}>Desactivar Temporalmente</Button>
-            <Button variant="outline" className="mt-3" onClick={() => setConfirmAction(null)}>Seguir Leyendo</Button>
+      <Modal isOpen={confirmAction === 'desactivar'} onClose={() => setConfirmAction(null)}>
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-full bg-pending-soft text-state-pending flex items-center justify-center mb-4">
+            <Pause size={26} />
           </div>
+          <h3 className="font-display font-semibold text-display-md text-text">Pausa en tu lectura</h3>
+          <p className="text-body-md text-text-secondary mt-2">
+            ¿Sientes que es momento de un respiro? Al desactivar tu cuenta, tu perfil y lecturas descansarán con nosotros.
+            Guardaremos tu progreso como un marcapáginas eterno, esperando el momento en que decidas abrir de nuevo tus historias favoritas. ¡Te extrañaremos!
+          </p>
+          <Button variant="primary" className="mt-5" onClick={handleConfirmAction} isLoading={isProcessing}>Desactivar temporalmente</Button>
+          <Button variant="outline" className="mt-2.5" onClick={() => setConfirmAction(null)}>Seguir leyendo</Button>
         </div>
-      )}
+      </Modal>
 
-      {confirmAction === 'eliminar' && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={() => setConfirmAction(null)}>
-          <div className="w-full max-w-sm bg-surface rounded-3xl p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <div className="w-14 h-14 rounded-full bg-accent-wishlist flex items-center justify-center mx-auto mb-4">
-              <Trash2 size={24} className="text-surface" />
-            </div>
-            <h3 className="font-display text-display-md text-text">Cerrar el libro para siempre</h3>
-            <p className="text-body-md text-text-secondary mt-2">
-              Estás a punto de borrar definitivamente toda tu biblioteca, reseñas y notas.
-            </p>
-            <p className="font-body font-semibold text-body-md text-text mt-2">Esta acción es permanente e irreversible.</p>
-            <label className="flex items-center gap-2 mt-4 text-body-sm text-text-secondary text-left">
-              <input type="checkbox" checked={deleteChecked} onChange={(e) => setDeleteChecked(e.target.checked)} />
-              Entiendo que perderé toda mi librería de manera irreversible.
-            </label>
-            <Button variant="primary" className="mt-5" onClick={handleConfirmAction} isLoading={isProcessing} disabled={!deleteChecked}>
-              Eliminar Mi Cuenta
-            </Button>
-            <Button variant="outline" className="mt-3" onClick={() => setConfirmAction(null)}>Cancelar</Button>
+      <Modal isOpen={confirmAction === 'eliminar'} onClose={() => setConfirmAction(null)}>
+        <div className="flex flex-col items-center text-center">
+          <div className="w-16 h-16 rounded-full bg-primary-soft text-primary-text flex items-center justify-center mb-4">
+            <Trash2 size={26} />
           </div>
+          <h3 className="font-display font-semibold text-display-md text-text">Cerrar el libro para siempre</h3>
+          <p className="text-body-md text-text-secondary mt-2">
+            Estás a punto de borrar definitivamente toda tu biblioteca, reseñas y notas.
+          </p>
+          <p className="font-body font-semibold text-body-md text-text mt-2">Esta acción es permanente e irreversible.</p>
+          <label className="flex items-start gap-2.5 mt-4 text-body-sm text-text-secondary text-left bg-surface-2 border border-border rounded-2xl px-3.5 py-3">
+            <input
+              type="checkbox"
+              checked={deleteChecked}
+              onChange={(e) => setDeleteChecked(e.target.checked)}
+              className="mt-0.5 w-4 h-4 shrink-0 accent-primary"
+            />
+            Entiendo que perderé toda mi librería de manera irreversible.
+          </label>
+          <Button variant="primary" className="mt-5" onClick={handleConfirmAction} isLoading={isProcessing} disabled={!deleteChecked}>
+            Eliminar mi cuenta
+          </Button>
+          <Button variant="outline" className="mt-2.5" onClick={() => setConfirmAction(null)}>Cancelar</Button>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

@@ -14,9 +14,11 @@ export function PriorityToggle({ isPriority, onToggle }: PriorityToggleProps) {
       type="button"
       onClick={onToggle}
       aria-label={isPriority ? 'Quitar de mi lista de esta temporada' : 'Agregar a mi lista de esta temporada'}
-      className="w-full flex items-center justify-center py-3 rounded-xl border border-border bg-surface"
+      className={`w-full flex items-center justify-center py-3 rounded-2xl border transition-colors ${
+        isPriority ? 'bg-primary-soft border-primary-text/30' : 'bg-surface-2 border-border'
+      }`}
     >
-      <Bookmark size={22} fill={isPriority ? 'var(--color-accent-wishlist)' : 'none'} color="var(--color-accent-wishlist)" />
+      <Bookmark size={22} fill={isPriority ? 'var(--color-primary-text)' : 'none'} color="var(--color-primary-text)" />
     </button>
   )
 }

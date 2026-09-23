@@ -39,7 +39,7 @@ export function SelectBookModal({ isOpen, onClose, userId, onSelect }: SelectBoo
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Agregar libro a la saga">
+    <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Agregar libro a la saga">
       <Input placeholder="Buscar en tu librería..." value={search} onChange={(e) => setSearch(e.target.value)} />
 
       <div className="space-y-2 mt-4 max-h-96 overflow-y-auto">
@@ -55,9 +55,9 @@ export function SelectBookModal({ isOpen, onClose, userId, onSelect }: SelectBoo
             key={book.id}
             onClick={() => handleSelect(book)}
             disabled={savingId === book.id}
-            className="w-full flex gap-3 items-center bg-bg rounded-xl p-2 text-left disabled:opacity-50"
+            className="w-full flex gap-3 items-center bg-surface-2 border border-border rounded-2xl p-2 text-left disabled:opacity-50"
           >
-            <div className="w-10 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-border">
+            <div className="w-10 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-surface-2">
               {book.cover_url ? (
                 <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (

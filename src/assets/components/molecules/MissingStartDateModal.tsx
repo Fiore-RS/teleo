@@ -28,9 +28,9 @@ export function MissingStartDateModal({ isOpen, onConfirm, onIgnore }: MissingSt
       <p className="text-body-md text-text-secondary mb-4">
         Este libro no tiene una fecha de inicio de lectura seleccionada. ¿Quieres elegir una ahora?
       </p>
-      <label className="text-body-sm text-text-secondary block mb-1">Fecha de inicio</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Fecha de inicio</label>
       <DateInput value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-      <div className="flex gap-3 mt-5">
+      <div className="flex gap-2.5 mt-5">
         <Button variant="outline" className="flex-1" onClick={onIgnore}>Ignorar</Button>
         <Button variant="green" className="flex-1" onClick={handleConfirm} isLoading={isSaving}>Guardar</Button>
       </div>

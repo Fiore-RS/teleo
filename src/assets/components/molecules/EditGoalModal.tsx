@@ -28,7 +28,7 @@ export function EditGoalModal({ isOpen, onClose, currentGoal, onSave }: EditGoal
       <p className="font-body text-body-md text-text-secondary mb-4">
         Establece un número de libros que te gustaría llegar a leer durante este año.
       </p>
-      <label className="text-body-sm font-body text-text-secondary mb-1 block">
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
         Establece una meta anual
       </label>
       <Input
@@ -38,8 +38,8 @@ export function EditGoalModal({ isOpen, onClose, currentGoal, onSave }: EditGoal
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />
-      <Button variant="amber" className="mt-4" onClick={handleSave} isLoading={isSaving}>
-        Guardar Cambios
+      <Button variant="primary" className="mt-4" onClick={handleSave} isLoading={isSaving}>
+        Guardar cambios
       </Button>
     </Modal>
   )

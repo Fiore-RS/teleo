@@ -23,7 +23,7 @@ export function SelectReviewBookModal({ isOpen, onClose, userId, onSelect }: Sel
   }, [books, search])
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Elige un libro para reseñar">
+    <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Elige un libro para reseñar">
       <Input placeholder="Buscar en tus libros terminados..." value={search} onChange={(e) => setSearch(e.target.value)} />
       <div className="space-y-2 mt-4 max-h-96 overflow-y-auto">
         {!isLoading && filtered.length === 0 && (
@@ -32,8 +32,8 @@ export function SelectReviewBookModal({ isOpen, onClose, userId, onSelect }: Sel
           </p>
         )}
         {filtered.map((book) => (
-          <button key={book.id} onClick={() => onSelect(book.id)} className="w-full flex gap-3 items-center bg-bg rounded-xl p-2 text-left">
-            <div className="w-10 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-border">
+          <button key={book.id} onClick={() => onSelect(book.id)} className="w-full flex gap-3 items-center bg-surface-2 border border-border rounded-2xl p-2 text-left">
+            <div className="w-10 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-surface-2">
               {book.cover_url ? (
                 <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
               ) : (

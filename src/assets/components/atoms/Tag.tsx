@@ -11,8 +11,8 @@ export function Tag({ label, onRemove, className = '' }: TagProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-body-md font-body text-text whitespace-nowrap shrink-0 ${
-        isEditable ? 'bg-surface' : 'bg-border'
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-body-sm font-body font-semibold whitespace-nowrap shrink-0 ${
+        isEditable ? 'bg-surface border border-border text-text' : 'bg-primary-soft text-primary-text'
       } ${className}`}
     >
       {label}
@@ -22,7 +22,7 @@ export function Tag({ label, onRemove, className = '' }: TagProps) {
           aria-label={`Quitar etiqueta ${label}`}
           className="text-text-secondary"
         >
-          <X size={16} strokeWidth={2} />
+          <X size={14} strokeWidth={2.2} />
         </button>
       )}
     </span>

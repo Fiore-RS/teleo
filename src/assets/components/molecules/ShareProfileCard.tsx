@@ -98,7 +98,7 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
   return (
     <div
       ref={ref}
-      className="w-full bg-bg rounded-3xl border border-border overflow-hidden p-6 flex flex-col gap-5"
+      className="w-full bg-bg rounded-[28px] border border-border overflow-hidden p-6 flex flex-col gap-5"
     >
       <div className="flex items-center justify-center">
         <Logo variant="full" className="h-10" />
@@ -106,14 +106,14 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
 
       <div className="text-center">
         <Avatar size="lg" src={avatarUrl ?? undefined} className="mx-auto" />
-        <p className="font-display italic text-display-md text-text mt-3">@{username}</p>
+        <p className="font-title text-[30px] leading-tight text-text mt-3">@{username}</p>
         {bio && <p className="text-body-sm text-text-secondary mt-1 line-clamp-2">{bio}</p>}
       </div>
 
       {annualGoal > 0 && (
         <div className="bg-surface border border-border rounded-2xl p-4 text-center">
-          <p className="text-body-sm text-text-secondary">Meta anual {currentYear}</p>
-          <p className="font-display text-display-md text-text mt-1">
+          <p className="font-body font-bold text-body-sm uppercase tracking-[0.14em] text-primary-text">Meta anual {currentYear}</p>
+          <p className="font-display font-semibold text-display-md text-text mt-1">
             {annualCompletedCount} de {annualGoal} libros
           </p>
           <ProgressBar percent={goalPercent} className="mt-3" />
@@ -122,10 +122,10 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
 
       <div className="bg-surface border border-border rounded-2xl p-4">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-accent-reading flex items-center justify-center shrink-0">
-            <Flag size={18} className="text-surface" />
+          <div className="w-10 h-10 rounded-full bg-finished-soft text-accent-finished flex items-center justify-center shrink-0">
+            <Flag size={18} />
           </div>
-          <p className="font-display text-display-md text-text">
+          <p className="font-display font-semibold text-display-md text-text">
             {streak} día{streak === 1 ? '' : 's'} seguidos
           </p>
         </div>

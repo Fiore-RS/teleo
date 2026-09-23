@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom'
+import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { Sparkle } from '../assets/components/atoms/Sparkle'
 import {
   Coffee, BookOpen, NotebookPen, ScrollText, User, Settings,
-  ChevronLeft, type LucideIcon,
+  type LucideIcon,
 } from 'lucide-react'
 
 interface TutorialSection {
@@ -24,17 +26,17 @@ const sections: TutorialSection[] = [
     icon: BookOpen,
     title: 'Estante',
     points: [
-      'Agrega libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
+      'Toca el botón + del encabezado para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
       'Agrupa libros en sagas y anota cuántos libros tendrá en total para ver tu progreso, por ejemplo "2 de 5".',
-      'Usa los filtros rápidos de estado o el botón "Filtros" para buscar por estado, idioma, categoría o formato.',
-      'Activa "Organizar" para reordenar tu librería arrastrando tus libros o sagas.',
+      'Toca la lupa para buscar en tu estante por título o autor, y el botón de filtros para ver solo los libros de un estado, idioma, categoría o formato.',
+      'Usa el botón de organizar para ordenar por título, autor o fecha, o elige "Libre" para reordenar tu estante arrastrando tus libros o sagas.',
     ],
   },
   {
     icon: NotebookPen,
     title: 'Cuaderno',
     points: [
-      'Escribe una reseña para cada libro que termines: califica tu experiencia y guarda tus citas favoritas.',
+      'Toca el botón + para escribir una reseña de cada libro que termines: califica tu experiencia y guarda tus citas favoritas.',
       'Consulta todas tus reseñas pasadas cuando quieras revivirlas.',
     ],
   },
@@ -53,7 +55,7 @@ const sections: TutorialSection[] = [
     points: [
       'Sigue tu meta anual de lectura y consulta lo que estás leyendo ahora, tus favoritos, recomendados y lista de deseados.',
       'Toca "Ver todos" en cualquier lista para saltar directo a tu Estante con ese filtro ya activado.',
-      'Comparte tu perfil como una tarjeta con tu meta, racha y lecturas actuales, desde Configuración.',
+      'Cambia tu foto tocando tu avatar y edita tu descripción desde "Sobre mí". El engranaje de arriba te lleva a Configuración.',
     ],
   },
   {
@@ -72,41 +74,31 @@ export function Tutorial() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-bg p-6 pb-10">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1 text-body-md font-medium text-accent-wishlist mb-4 -ml-1"
-      >
-        <ChevronLeft size={20} strokeWidth={2} />
-        Regresar
-      </button>
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
+      <PageHeader
+        title="Tutorial de Teleo"
+        subtitle="Un repaso punto por punto de todo lo que puedes hacer en cada sección de la app."
+        onBack={() => navigate(-1)}
+      />
 
-      <h1 className="font-display italic text-display-lg text-accent-wishlist">
-        Tutorial para navegar por Teleo
-      </h1>
-      <div className="h-1.5 rounded-full bg-border mt-3" />
-      <p className="text-body-md text-text-secondary mt-3">
-        Un repaso punto por punto de todo lo que puedes hacer en cada sección de la app.
-      </p>
-
-      <div className="space-y-6 mt-6">
+      <div className="flex flex-col gap-4 stagger-children">
         {sections.map(({ icon: Icon, title, points }) => (
-          <div key={title} className="bg-surface border border-border rounded-2xl p-4">
+          <section key={title} className="bg-surface border border-border rounded-card shadow-card p-[18px]">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 shrink-0 rounded-full bg-accent-wishlist flex items-center justify-center">
-                <Icon size={20} className="text-surface" />
-              </div>
-              <h2 className="font-display italic text-display-md text-accent-wishlist">{title}</h2>
+              <span className="w-10 h-10 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
+                <Icon size={19} />
+              </span>
+              <h2 className="font-display font-semibold text-display-md text-text">{title}</h2>
             </div>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3.5 space-y-2.5">
               {points.map((point) => (
-                <li key={point} className="flex gap-2 text-body-sm text-text-secondary">
-                  <span className="text-accent-wishlist shrink-0">•</span>
+                <li key={point} className="flex gap-2.5 text-body-md text-text-secondary">
+                  <Sparkle size={9} className="text-ornament shrink-0 mt-1.5" />
                   <span>{point}</span>
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         ))}
       </div>
     </div>

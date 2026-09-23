@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
 import { Inicio } from "./pages/Inicio";
 import { Bienvenida } from "./pages/Bienvenida";
@@ -16,6 +16,8 @@ import { CambiarCorreo } from "./pages/CambiarCorreo";
 import { CambiarContrasena } from "./pages/CambiarContrasena";
 
 function App() {
+  const location = useLocation();
+
   return (
     // Teleo está pensada para móvil. En pantallas anchas (PC), en vez de
     // estirar el contenido borde a borde, lo centramos en una columna con
@@ -23,7 +25,10 @@ function App() {
     // su vista móvil.
     <div className="min-h-screen bg-border">
       <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl">
-        <Routes>
+        {/* key = ruta: al cambiar de pantalla (por la barra de pestañas o navegando) el
+            contenedor se vuelve a montar y reproduce el fundido de entrada. */}
+        <div key={location.pathname} className="animate-page-in">
+        <Routes location={location}>
           <Route path="/" element={<LoadingScreen />} />
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/bienvenida" element={<Bienvenida />} />
@@ -40,6 +45,7 @@ function App() {
           <Route path="/configuracion/correo" element={<CambiarCorreo />} />
           <Route path="/configuracion/contrasena" element={<CambiarContrasena />} />
         </Routes>
+        </div>
       </div>
     </div>
   );

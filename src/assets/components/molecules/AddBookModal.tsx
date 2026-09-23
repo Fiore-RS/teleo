@@ -182,10 +182,10 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={handleClose} title={isManual ? 'Crear libro desde cero' : 'Nuevo libro para el estante'}>
+      <Modal variant="sheet" isOpen={isOpen} onClose={handleClose} title={isManual ? 'Crear libro desde cero' : 'Nuevo libro para el estante'}>
         {isManual ? (
           <div className="space-y-4">
-            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border">
+            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)]">
               {manualDraft.coverUrl ? (
                 <CoverImage src={manualDraft.coverUrl} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -200,7 +200,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                 aria-label="Agregar portada desde el dispositivo"
                 className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm disabled:opacity-50"
               >
-                <Pencil size={14} className="text-accent-reading" />
+                <Pencil size={14} className="text-primary-text" />
               </button>
             </div>
             <input
@@ -215,7 +215,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             )}
 
             <div>
-              <label className="text-body-sm text-text-secondary block mb-1">Título</label>
+              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Título</label>
               <Input
                 placeholder="Título del libro"
                 value={manualDraft.title}
@@ -224,7 +224,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             </div>
 
             <div>
-              <label className="text-body-sm text-text-secondary block mb-1">Autor</label>
+              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Autor</label>
               <Input
                 placeholder="Autor del libro"
                 value={manualDraft.author}
@@ -233,7 +233,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             </div>
 
             <div>
-              <label className="text-body-sm text-text-secondary block mb-1">Formato</label>
+              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Formato</label>
               <SegmentedTabs
                 options={formatOptions}
                 active={manualDraft.format}
@@ -243,7 +243,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
+                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Categoría</label>
                 <Select
                   options={categoryOptions}
                   value={manualDraft.category}
@@ -251,7 +251,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                 />
               </div>
               <div>
-                <label className="text-body-sm text-text-secondary block mb-1">Idioma</label>
+                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Idioma</label>
                 <Select
                   options={languageOptions}
                   value={manualDraft.language}
@@ -264,7 +264,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
               <div>
                 {manualDraft.format === 'audiolibro' ? (
                   <>
-                    <label className="text-body-sm text-text-secondary block mb-1">Duración</label>
+                    <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Duración</label>
                     <DurationMaskInput
                       value={manualDraft.totalDuration}
                       onChange={(v) => setManualDraft({ ...manualDraft, totalDuration: v })}
@@ -272,7 +272,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                   </>
                 ) : (
                   <>
-                    <label className="text-body-sm text-text-secondary block mb-1">Páginas</label>
+                    <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Páginas</label>
                     <Input
                       type="number"
                       placeholder="000"
@@ -283,7 +283,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                 )}
               </div>
               <div>
-                <label className="text-body-sm text-text-secondary block mb-1">ISBN (opcional)</label>
+                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">ISBN (opcional)</label>
                 <Input
                   placeholder="ISBN"
                   value={manualDraft.isbn}
@@ -294,7 +294,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
             {canPickStatus && (
               <div>
-                <label className="text-body-sm text-text-secondary block mb-1">Estado de lectura</label>
+                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado de lectura</label>
                 <Select
                   options={statusOptions}
                   value={manualDraft.status}
@@ -305,7 +305,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
             {canPickStatus && manualDraft.status === 'pendiente' && (
               <div>
-                <label className="text-body-sm text-text-secondary block mb-1">
+                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
                   Agregar a mi lista de esta temporada
                 </label>
                 <PriorityToggle isPriority={isPriority} onToggle={() => setIsPriority((prev) => !prev)} />
@@ -331,7 +331,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             </p>
 
             <div>
-              <label className="text-body-sm text-text-secondary block mb-1">Buscar manualmente</label>
+              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Buscar manualmente</label>
               <Input
                 icon={Search}
                 iconPosition="right"
@@ -355,9 +355,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             <p className="text-center text-body-sm text-text-secondary">ó</p>
 
             <div>
-              <label className="text-body-sm text-text-secondary block mb-1">Escaneo rápido</label>
+              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Escaneo rápido</label>
               <Button
-                variant="slate"
+                variant="soft"
                 disabled
                 className="flex items-center justify-center gap-2"
               >
@@ -371,7 +371,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
             {isSearching && <p className="text-center text-body-sm text-text-secondary">Buscando...</p>}
             {notFound && (
-              <p className="text-center text-body-sm text-accent-wishlist">
+              <p className="text-center text-body-sm text-primary-text">
                 No encontramos ese libro. Intenta con otro título o el ISBN exacto.
               </p>
             )}
@@ -395,9 +395,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                 <button
                   key={i}
                   onClick={() => selectResult(r)}
-                  className="w-full flex gap-3 items-center bg-bg rounded-xl p-2 text-left"
+                  className="w-full flex gap-3 items-center bg-surface-2 border border-border rounded-2xl p-2 text-left"
                 >
-                  <div className="w-12 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-border">
+                  <div className="w-12 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-surface-2">
                     {r.coverUrl ? (
                       <CoverImage src={r.coverUrl} alt={r.title} className="w-full h-full object-cover" />
                     ) : (
@@ -417,7 +417,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
           </div>
         ) : result ? (
           <div>
-            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border mb-4">
+            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)] mb-4">
               {result.coverUrl ? (
                 <CoverImage src={result.coverUrl} alt={result.title} className="w-full h-full object-cover" />
               ) : (
@@ -427,7 +427,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
               )}
             </div>
 
-            <h3 className="font-display italic text-display-md text-accent-wishlist text-center">
+            <h3 className="font-display font-semibold text-[22px] leading-tight text-text text-center">
               {result.title}
             </h3>
             {result.author && (
@@ -443,37 +443,37 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
             <div className="grid grid-cols-2 gap-2 mt-4">
               {result.totalPages && (
-                <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">
+                <div className="bg-surface-2 border border-border rounded-2xl py-2 text-center text-body-sm text-text">
                   {result.totalPages} páginas
                 </div>
               )}
               {result.language && (
-                <div className="bg-bg rounded-xl py-2 text-center text-body-sm text-text">
+                <div className="bg-surface-2 border border-border rounded-2xl py-2 text-center text-body-sm text-text">
                   {result.language.toUpperCase()}
                 </div>
               )}
             </div>
 
             <div className="mt-4">
-              <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
+              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Categoría</label>
               <Select options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
             </div>
 
             <div className="mt-4">
-              <label className="text-body-sm text-text-secondary block mb-1">Formato</label>
+              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Formato</label>
               <Select options={formatOptions} value={format} onChange={(e) => setFormat(e.target.value as BookFormat)} />
             </div>
 
             {canPickStatus && (
               <div className="mt-4">
-                <label className="text-body-sm text-text-secondary block mb-1">Estado de lectura</label>
+                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado de lectura</label>
                 <Select options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as ReadingStatus)} />
               </div>
             )}
 
             {canPickStatus && status === 'pendiente' && (
               <div className="mt-4">
-                <label className="text-body-sm text-text-secondary block mb-1">
+                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
                   Agregar a mi lista de esta temporada
                 </label>
                 <PriorityToggle isPriority={isPriority} onToggle={() => setIsPriority((prev) => !prev)} />

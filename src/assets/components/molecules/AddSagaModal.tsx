@@ -86,26 +86,26 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Nueva saga para el estante">
+    <Modal variant="sheet" isOpen={isOpen} onClose={handleClose} title="Nueva saga para el estante">
       <div className="relative flex aspect-4/5 w-32 mx-auto my-4 drop-shadow-md">
         <div className="w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md bg-accent-wishlist" />
         <div className="w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md bg-accent-reading -ml-1" />
         <div className="flex-1 h-full rounded-xl bg-accent-finished -ml-2" />
       </div>
 
-      <label className="text-body-sm text-text-secondary block mb-1">Título</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Título</label>
       <Input placeholder="Título de la saga" value={title} onChange={(e) => setTitle(e.target.value)} />
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-4">Autor</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Autor</label>
       <Input placeholder="Autor de la saga" value={author} onChange={(e) => setAuthor(e.target.value)} />
 
       <div className="grid grid-cols-2 gap-3 mt-4">
         <div>
-          <label className="text-body-sm text-text-secondary block mb-1">Categoría</label>
+          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Categoría</label>
           <Select options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
         </div>
         <div>
-          <label className="text-body-sm text-text-secondary block mb-1">Estado</label>
+          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado</label>
           <Select
             options={statusOptions}
             value={status}
@@ -114,7 +114,7 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
         </div>
       </div>
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-4">
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">
         Cantidad total de libros de la saga
       </label>
       <Input
@@ -128,7 +128,7 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
         Déjalo vacío si todavía no sabes cuántos libros tendrá.
       </p>
 
-      <label className="text-body-sm text-text-secondary block mb-1 mt-4">Marcar como favorito</label>
+      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Marcar como favorito</label>
       <FavoriteToggle isFavorite={isFavorite} onToggle={() => setIsFavorite((prev) => !prev)} />
 
       <Button

@@ -40,10 +40,10 @@ export function Registro() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-        <div className="w-full max-w-sm bg-surface rounded-3xl p-6 border border-border text-center">
-          <div className="mx-auto w-14 h-14 rounded-full bg-accent-reading flex items-center justify-center mb-4">
-            <MailCheck size={26} strokeWidth={1.75} className="text-surface" />
+      <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
+        <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6 text-center">
+          <div className="mx-auto w-16 h-16 rounded-full bg-primary-soft flex items-center justify-center mb-4">
+            <MailCheck size={28} strokeWidth={1.75} className="text-primary-text" />
           </div>
           <h1 className="font-display text-display-md text-text font-semibold">
             Revisa tu bandeja de entrada
@@ -53,7 +53,7 @@ export function Registro() {
           </p>
           <Link to="/login">
             <Button variant="primary" className="mt-6">
-              Volver a Inicio de Sesión
+              Volver a iniciar sesión
             </Button>
           </Link>
         </div>
@@ -62,8 +62,8 @@ export function Registro() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-      <div className="w-full max-w-sm bg-surface rounded-3xl p-6 border border-border">
+    <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
+      <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6">
         <AuthHeader
           title="Crea tu rincón de lectura"
           subtitle="Tu espacio personal para registrar, valorar y recordar cada libro en tu vida."
@@ -96,16 +96,16 @@ export function Registro() {
             minLength={6}
           />
 
-          {error && <p className="text-body-sm text-accent-wishlist text-center">{error}</p>}
+          {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
 
           <Button type="submit" variant="primary" isLoading={isLoading}>
-            Crear Cuenta
+            Crear cuenta
           </Button>
         </form>
 
         <p className="text-center text-body-sm text-text-secondary mt-4">
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-accent-wishlist font-medium">
+          <Link to="/login" className="text-primary-text font-bold">
             Inicia sesión aquí.
           </Link>
         </p>

@@ -8,7 +8,7 @@ interface BadgeProps {
 export function Badge({ status, className = '' }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-body ${className}`}
+      className={`inline-flex items-center px-3 py-1 rounded-full text-body-sm font-body font-bold ${className}`}
       style={{
         backgroundColor: statusColorVar[status],
         color: 'var(--color-surface)',

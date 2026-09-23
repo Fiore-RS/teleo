@@ -20,10 +20,10 @@ interface ActionConfirmModalProps {
 }
 
 const iconBg: Record<NonNullable<ActionConfirmModalProps['iconVariant']>, string> = {
-  wishlist: 'bg-accent-wishlist',
-  reading: 'bg-accent-reading',
-  finished: 'bg-accent-finished',
-  pending: 'bg-state-pending',
+  wishlist: 'bg-primary-soft text-primary-text',
+  reading: 'bg-reading-soft text-accent-reading',
+  finished: 'bg-finished-soft text-accent-finished',
+  pending: 'bg-pending-soft text-state-pending',
 }
 
 export function ActionConfirmModal({
@@ -36,34 +36,38 @@ export function ActionConfirmModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col items-center text-center">
-        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 ${
-          status === 'confirm' ? iconBg[iconVariant] : status === 'success' ? 'bg-accent-finished' : 'bg-accent-reading'
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+          status === 'confirm'
+            ? iconBg[iconVariant]
+            : status === 'success'
+              ? 'bg-finished-soft text-accent-finished'
+              : 'bg-reading-soft text-accent-reading'
         }`}>
-          {status === 'confirm' && <Icon size={24} className="text-surface" />}
-          {status === 'success' && <Check size={24} className="text-surface" />}
-          {status === 'error' && <AlertTriangle size={24} className="text-surface" />}
+          {status === 'confirm' && <Icon size={26} />}
+          {status === 'success' && <Check size={28} strokeWidth={2.5} />}
+          {status === 'error' && <AlertTriangle size={26} />}
         </div>
 
         {status === 'confirm' && (
           <>
-            <h3 className="font-body text-body-lg font-semibold text-text">{confirmTitle}</h3>
+            <h3 className="font-display font-semibold text-display-md text-text text-balance">{confirmTitle}</h3>
             <p className="text-body-md text-text-secondary mt-2">{confirmDescription}</p>
             <Button variant={confirmVariant} className="mt-5" onClick={onConfirm}>{confirmLabel}</Button>
-            <Button variant="outline" className="mt-3" onClick={onClose}>Cancelar</Button>
+            <Button variant="outline" className="mt-2.5" onClick={onClose}>Cancelar</Button>
           </>
         )}
         {status === 'success' && (
           <>
-            <h3 className="font-body text-body-lg font-semibold text-text">{successTitle}</h3>
+            <h3 className="font-display font-semibold text-display-md text-text text-balance">{successTitle}</h3>
             <p className="text-body-md text-text-secondary mt-2">{successDescription}</p>
             <Button variant="green" className="mt-5" onClick={onClose}>Entendido</Button>
           </>
         )}
         {status === 'error' && (
           <>
-            <h3 className="font-body text-body-lg font-semibold text-text">Algo salió mal</h3>
+            <h3 className="font-display font-semibold text-display-md text-text text-balance">Algo salió mal</h3>
             <p className="text-body-md text-text-secondary mt-2">No se pudo procesar la solicitud, por favor inténtalo de nuevo.</p>
-            <Button variant="amber" className="mt-5" onClick={onClose}>Entendido</Button>
+            <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
           </>
         )}
       </div>

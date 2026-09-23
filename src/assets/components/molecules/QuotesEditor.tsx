@@ -33,7 +33,7 @@ export function QuotesEditor({ quotes, onAdd, onRemove }: QuotesEditorProps) {
       />
       <div className="space-y-2 mt-3">
         {quotes.map((q) => (
-          <div key={q.id} className="bg-bg rounded-xl p-3 flex items-start gap-2">
+          <div key={q.id} className="bg-surface-2 border border-border rounded-2xl p-3 flex items-start gap-2">
             <p className="flex-1 font-display italic text-body-md text-text">"{q.quote_text}"</p>
             <button onClick={() => onRemove(q.id)} aria-label="Eliminar cita" className="text-text-secondary shrink-0">
               <X size={16} />

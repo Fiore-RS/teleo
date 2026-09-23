@@ -1,4 +1,4 @@
-import { Flag, Check } from "lucide-react";
+import { Flag, Check, Flame, BookOpen, Star, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
@@ -8,7 +8,10 @@ import { usePriorityBooks } from "../hooks/usePriorityBooks";
 import { useProfile } from "../hooks/useProfile";
 import { getProgressInfo } from "../lib/progress";
 import { DEFAULT_PRIORITY_LIST_NAME, getPriorityListName } from "../lib/priorityList";
-import { SectionHeader } from "../assets/components/atoms/SectionHeader";
+import { Eyebrow } from "../assets/components/atoms/Eyebrow";
+import { Sparkle } from "../assets/components/atoms/Sparkle";
+import { Skeleton, BookTileSkeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
+import { Card } from "../assets/components/molecules/Card";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
 import { BookCardPriority } from "../assets/components/molecules/BookCardPriority";
 import { ProgressBar } from "../assets/components/atoms/ProgressBar";
@@ -43,7 +46,7 @@ export function Mesa() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
-  const { streak, markedToday, markToday, unmarkToday } = useReadingStreak(user?.id);
+  const { streak, markedToday, markToday, unmarkToday, weekDays, isLoading: streakLoading } = useReadingStreak(user?.id);
   const {
     books: priorityBooks,
     isLoading: priorityLoading,
@@ -56,7 +59,7 @@ export function Mesa() {
   const [isPriorityReordering, setIsPriorityReordering] = useState(false)
   const [pendingStartId, setPendingStartId] = useState<string | null>(null)
   const [isEditListNameOpen, setIsEditListNameOpen] = useState(false)
-  const { goal, completedCount, updateGoal } = useAnnualGoal(user?.id);
+  const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
 
   const priorityListName = getPriorityListName(profile?.priority_list_name)
@@ -93,39 +96,81 @@ export function Mesa() {
     refetchBooks()
   }
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";
+  const dayLetters = ["L", "M", "X", "J", "V", "S", "D"];
+
   return (
-    <div className="min-h-screen bg-bg p-4 space-y-10">
-      <section className="mt-4">
-        <SectionHeader title="Leyendo ahora" variant="title" />
-        <div className="space-y-3 mt-3">
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <header className="flex items-end justify-between gap-3 px-1 pt-4 pb-5">
+        <div>
+          <p className="font-body font-semibold text-body-lg text-primary-text">{greeting}</p>
+          <h1 className="font-title leading-none whitespace-nowrap text-text mt-0.5">
+            <span className="text-[clamp(32px,10vw,44px)]">Teleo,</span>{" "}
+            <span className="text-[clamp(18px,5.5vw,26px)] text-text-secondary">a mi manera</span>
+          </h1>
+        </div>
+        <div
+          className="shrink-0 w-[58px] py-2 rounded-2xl bg-surface border border-border shadow-card flex flex-col items-center gap-0.5"
+          title="Racha de lectura"
+          aria-label={`Racha de ${streak} días`}
+        >
+          <Flame size={18} className="text-primary-text" fill="currentColor" />
+          {streakLoading ? (
+            <Skeleton className="w-6 h-5 rounded-md" />
+          ) : (
+            <span key={streak} className="font-display font-semibold text-[20px] leading-none text-text animate-fade-in">{streak}</span>
+          )}
+        </div>
+      </header>
+
+      <div className="flex flex-col gap-5 stagger-children">
+        {/* Leyendo ahora */}
+        <Card labelledBy="mesa-leyendo">
+          <Eyebrow id="mesa-leyendo" icon={BookOpen} className="mb-3.5">Leyendo ahora</Eyebrow>
+
+          {booksLoading && (
+            <div className="flex gap-3.5" aria-label="Cargando">
+              <CoverSkeleton className="w-26 shrink-0" />
+              <div className="flex-1 pt-1">
+                <Skeleton className="h-5 w-4/5 rounded-full" />
+                <Skeleton className="h-3.5 w-1/2 mt-2 rounded-full" />
+                <Skeleton className="h-2.5 w-full mt-8 rounded-full" />
+                <Skeleton className="h-8 w-full mt-3 rounded-full" />
+              </div>
+            </div>
+          )}
           {!booksLoading && books.length === 0 && (
             <p className="text-body-md text-text-secondary">
               No tienes libros en progreso todavía.
             </p>
           )}
-          {books.map((book) => {
-            const { percent, label } = getProgressInfo(book);
-            return (
-              <BookCardReading
-                key={book.id}
-                title={book.title}
-                author={book.author ?? undefined}
-                coverUrl={book.cover_url ?? undefined}
-                progressPercent={percent}
-                progressLabel={label}
-                missingStartDate={!book.start_date}
-                onUpdateClick={() => setUpdatingBookId(book.id)}
-              />
-            );
-          })}
-        </div>
-      </section>
+          <div className="divide-y divide-dashed divide-border stagger-children">
+            {books.map((book) => {
+              const { percent, label } = getProgressInfo(book);
+              return (
+                <div key={book.id} className="py-3.5 first:pt-0 last:pb-0">
+                  <BookCardReading
+                    title={book.title}
+                    author={book.author ?? undefined}
+                    coverUrl={book.cover_url ?? undefined}
+                    progressPercent={percent}
+                    progressLabel={label}
+                    missingStartDate={!book.start_date}
+                    onUpdateClick={() => setUpdatingBookId(book.id)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </Card>
 
-      <section>
-        <SectionHeader
-          title={priorityListName}
-          variant="title"
-          rightContent={
+        {/* Mi lista de esta temporada */}
+        <Card labelledBy="mesa-temporada">
+          <div className="flex items-center justify-between gap-2 mb-3.5">
+            <Eyebrow id="mesa-temporada" icon={Star} color="var(--color-state-pending)">
+              {priorityListName}
+            </Eyebrow>
             <PriorityListMenu
               isReordering={isPriorityReordering}
               canReorder={priorityBooks.length > 1}
@@ -134,102 +179,175 @@ export function Mesa() {
               onToggleReorder={() => setIsPriorityReordering((v) => !v)}
               onViewInEstante={() => navigate("/estante?filtro=temporada")}
             />
-          }
-        />
-
-        {!priorityLoading && priorityBooks.length === 0 ? (
-          <p className="text-body-md text-text-secondary mt-3">
-            Aún no has agregado libros a {priorityListName}. Márcalos desde Detalle del Libro.
-          </p>
-        ) : (
-          <>
-            {isPriorityReordering && (
-              <p className="text-body-sm text-text-secondary text-center mt-3">
-                Mantén presionado unos instantes para arrastrar y organizar tu lista.
-              </p>
-            )}
-
-            {isPriorityReordering ? (
-              <DndContext sensors={prioritySensors} collisionDetection={closestCenter} onDragEnd={handlePriorityDragEnd}>
-                <SortableContext items={priorityBooks.map((b) => b.id)} strategy={horizontalListSortingStrategy}>
-                  <HorizontalScroller className="mt-3">
-                    {priorityBooks.map((book) => (
-                      <div key={book.id} className="w-32 shrink-0">
-                        <SortableItem id={book.id} axis="x">
-                          <BookCardPriority
-                            title={book.title}
-                            author={book.author ?? undefined}
-                            coverUrl={book.cover_url ?? undefined}
-                            onStartReading={() => setPendingStartId(book.id)}
-                          />
-                        </SortableItem>
-                      </div>
-                    ))}
-                  </HorizontalScroller>
-                </SortableContext>
-              </DndContext>
-            ) : (
-              <HorizontalScroller className="mt-3">
-                {priorityBooks.map((book) => (
-                  <div key={book.id} className="w-32 shrink-0">
-                    <BookCardPriority
-                      title={book.title}
-                      author={book.author ?? undefined}
-                      coverUrl={book.cover_url ?? undefined}
-                      onStartReading={() => setPendingStartId(book.id)}
-                    />
-                  </div>
-                ))}
-              </HorizontalScroller>
-            )}
-          </>
-        )}
-      </section>
-
-      <section>
-        <SectionHeader title="Racha diaria de lectura" variant="title" />
-        <div className="bg-surface border border-border rounded-2xl p-6 mt-3 flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-full bg-accent-finished flex items-center justify-center mb-3">
-            <Flag size={22} className="text-surface" />
           </div>
-          <p className="font-body text-body-lg text-text font-semibold">
-            {streak} días seguidos
-          </p>
+
+          {priorityLoading ? (
+            <div className="flex gap-4 overflow-hidden" aria-label="Cargando">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="w-26 shrink-0">
+                  <BookTileSkeleton />
+                </div>
+              ))}
+            </div>
+          ) : priorityBooks.length === 0 ? (
+            <p className="text-body-md text-text-secondary">
+              Aún no has agregado libros a {priorityListName}. Márcalos desde Detalle del Libro.
+            </p>
+          ) : (
+            <>
+              {isPriorityReordering && (
+                <p className="text-body-sm text-text-secondary text-center mb-3">
+                  Mantén presionado unos instantes para arrastrar y organizar tu lista.
+                </p>
+              )}
+
+              {isPriorityReordering ? (
+                <DndContext sensors={prioritySensors} collisionDetection={closestCenter} onDragEnd={handlePriorityDragEnd}>
+                  <SortableContext items={priorityBooks.map((b) => b.id)} strategy={horizontalListSortingStrategy}>
+                    <HorizontalScroller className="-mx-[18px] px-[18px] gap-4!">
+                      {priorityBooks.map((book, i) => (
+                        <div key={book.id} className="w-26 shrink-0">
+                          <SortableItem id={book.id} axis="x">
+                            <BookCardPriority
+                              title={book.title}
+                              author={book.author ?? undefined}
+                              coverUrl={book.cover_url ?? undefined}
+                              position={i + 1}
+                              onStartReading={() => setPendingStartId(book.id)}
+                            />
+                          </SortableItem>
+                        </div>
+                      ))}
+                    </HorizontalScroller>
+                  </SortableContext>
+                </DndContext>
+              ) : (
+                <HorizontalScroller className="-mx-[18px] px-[18px] gap-4!">
+                  {priorityBooks.map((book, i) => (
+                    <div key={book.id} className="w-26 shrink-0">
+                      <BookCardPriority
+                        title={book.title}
+                        author={book.author ?? undefined}
+                        coverUrl={book.cover_url ?? undefined}
+                        position={i + 1}
+                        onStartReading={() => setPendingStartId(book.id)}
+                      />
+                    </div>
+                  ))}
+                </HorizontalScroller>
+              )}
+            </>
+          )}
+        </Card>
+
+        {/* Racha diaria */}
+        <Card labelledBy="mesa-racha">
+          <Eyebrow id="mesa-racha" icon={Flag} color="var(--color-accent-finished)" className="mb-3.5">
+            Racha diaria de lectura
+          </Eyebrow>
+
+          <div className="flex items-center gap-4">
+            <div className="relative w-[74px] h-[74px] shrink-0 flex items-center justify-center">
+              <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
+              <span className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full bg-rose" />
+              <span className="w-[50px] h-[50px] rounded-full bg-finished-soft text-accent-finished flex items-center justify-center">
+                <Flame size={24} fill="currentColor" />
+              </span>
+            </div>
+            {streakLoading ? (
+              <div className="flex-1">
+                <Skeleton className="h-7 w-2/3 rounded-full" />
+                <Skeleton className="h-3.5 w-11/12 mt-2.5 rounded-full" />
+              </div>
+            ) : (
+            <div>
+              <p className="font-display font-semibold text-[28px] leading-none text-text">
+                <span key={streak} className="inline-block animate-fade-in">{streak}</span>{" "}
+                <span className="font-body font-medium text-body-md text-text-secondary">días seguidos</span>
+              </p>
+              <p className="text-body-md text-text-secondary mt-1">
+                {markedToday ? "Sesión de hoy marcada." : "Todavía no marcas la sesión de hoy."}
+              </p>
+            </div>
+            )}
+          </div>
+
+          {weekDays.length > 0 && (
+            <ol className={`grid grid-cols-7 gap-1.5 my-4 ${streakLoading ? "animate-skeleton" : ""}`} aria-label="Esta semana">
+              {weekDays.map((d, i) => (
+                <li
+                  key={d.date}
+                  className={`flex flex-col items-center gap-1 text-[11px] font-semibold ${
+                    d.isToday ? "text-primary-text" : "text-text-muted"
+                  } ${d.isFuture ? "opacity-50" : ""}`}
+                >
+                  <span
+                    className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center ${
+                      d.read
+                        ? "bg-accent-finished border-accent-finished text-surface"
+                        : d.isToday
+                          ? "border-dashed border-primary-text bg-surface-2"
+                          : "border-border bg-surface-2"
+                    }`}
+                  >
+                    {d.read && <Check size={12} strokeWidth={3.5} />}
+                  </span>
+                  {dayLetters[i]}
+                </li>
+              ))}
+            </ol>
+          )}
+
           <Button
-            variant={markedToday ? "outline" : "green"}
-            className="mt-4"
+            variant={markedToday ? "outlineGreen" : "green"}
+            className={weekDays.length > 0 ? "" : "mt-4"}
             onClick={() => (markedToday ? setIsUnmarkOpen(true) : markToday())}
           >
             {markedToday && <Check size={18} strokeWidth={2.5} />}
             {markedToday ? "Sesión de hoy marcada" : "Marcar sesión de hoy"}
           </Button>
-        </div>
-      </section>
+        </Card>
 
-      <section>
-        <SectionHeader title="Meta anual de lectura" variant="title" />
-        <div className="bg-surface border border-border rounded-2xl p-6 mt-3 text-center">
-          <p className="font-display text-display-lg text-text">
-            {completedCount} de {goal}
-          </p>
-          <p className="text-body-md text-text-secondary">
-            libros del {new Date().getFullYear()}
-          </p>
-          <ProgressBar percent={goalPercent} className="mt-4" />
-          <p className="text-body-sm text-text-secondary mt-2">
+        {/* Meta anual */}
+        <Card labelledBy="mesa-meta">
+          <Eyebrow id="mesa-meta" icon={Target} className="mb-3.5">Meta anual de lectura</Eyebrow>
+          {goalLoading ? (
+            <div aria-label="Cargando">
+              <Skeleton className="h-7 w-3/5 rounded-full" />
+              <Skeleton className="h-3 w-full mt-4 rounded-full" />
+              <Skeleton className="h-3.5 w-1/2 mx-auto mt-3.5 mb-3.5 rounded-full" />
+            </div>
+          ) : (
+          <>
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="font-display font-semibold text-[28px] leading-none text-text">
+              <span key={completedCount} className="inline-block animate-fade-in">{completedCount}</span>{" "}
+              <span className="font-body font-medium text-body-md text-text-secondary">
+                de {goal} libros del {new Date().getFullYear()}
+              </span>
+            </p>
+            <span className="font-display font-semibold text-primary-text tabular-nums">
+              {Math.round(goalPercent)}%
+            </span>
+          </div>
+          <ProgressBar percent={goalPercent} className="mt-3 h-3" />
+          <p className="text-body-md text-text-secondary text-center mt-2.5 mb-3.5">
             {getGoalMessage(goalPercent)}
           </p>
-          <Button
-            variant="amber"
-            className="mt-4"
-            onClick={() => setIsGoalModalOpen(true)}
-          >
-            Editar Meta
+          </>
+          )}
+          <div className="flex items-center gap-2.5 text-ornament mb-3.5" aria-hidden="true">
+            <span className="flex-1 h-px bg-border" />
+            <Sparkle size={10} />
+            <span className="flex-1 h-px bg-border" />
+          </div>
+          <Button variant="soft" onClick={() => setIsGoalModalOpen(true)}>
+            Editar meta
           </Button>
-        </div>
-      </section>
+        </Card>
+      </div>
 
-      <div className="pb-10" />
+      <div className="pb-28" />
       <TabBar active="mesa" onChange={handleTabChange} />
 
       <EditGoalModal

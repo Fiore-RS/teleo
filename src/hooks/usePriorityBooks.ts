@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
 
@@ -9,28 +9,25 @@ type Book = Database['public']['Tables']['books']['Row']
  *  Mesa) — un subconjunto de la lista general de pendientes, ordenable por separado. Se
  *  limpia solo (vía trigger en la base de datos) en cuanto un libro deja de estar
  *  "pendiente", así que este hook solo necesita filtrar por `is_priority`. */
+const EMPTY: Book[] = []
+
 export function usePriorityBooks(userId: string | undefined) {
-  const [books, setBooks] = useState<Book[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  const refetch = useCallback(async () => {
-    if (!userId) return
-    setIsLoading(true)
-    const { data } = await supabase
-      .from('books')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('status', 'pendiente')
-      .eq('is_priority', true)
-      .order('priority_sort_order', { ascending: true })
-      .order('created_at', { ascending: true })
-    setBooks(data ?? [])
-    setIsLoading(false)
-  }, [userId])
-
-  useEffect(() => {
-    refetch()
-  }, [refetch])
+  const { data: books, setData: setBooks, isLoading, refetch } = useCachedQuery<Book[]>(
+    ['priorityBooks', userId],
+    async () => {
+      const { data } = await supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', userId!)
+        .eq('status', 'pendiente')
+        .eq('is_priority', true)
+        .order('priority_sort_order', { ascending: true })
+        .order('created_at', { ascending: true })
+      return data ?? []
+    },
+    EMPTY,
+    { enabled: !!userId }
+  )
 
   // beforeId/afterId son los vecinos INMEDIATOS visibles en la lista actual, igual que en
   // useLibraryBooks.reorderBook.

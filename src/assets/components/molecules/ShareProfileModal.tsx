@@ -138,7 +138,7 @@ export function ShareProfileModal({ onClose, userId, username, bio, avatarUrl }:
   }
 
   return (
-    <Modal isOpen onClose={onClose} title="Compartir mi perfil">
+    <Modal variant="sheet" isOpen onClose={onClose} title="Compartir mi perfil">
       <SegmentedTabs
         active={mode}
         onChange={setMode}
@@ -172,7 +172,7 @@ export function ShareProfileModal({ onClose, userId, username, bio, avatarUrl }:
             <Button variant="outline" onClick={handleDownload} isLoading={isGenerating}>
               <Download size={18} /> Descargar imagen
             </Button>
-            {error && <p className="text-body-sm text-accent-wishlist text-center mt-1">{error}</p>}
+            {error && <p className="text-body-sm text-primary-text text-center mt-1">{error}</p>}
             {downloaded && !error && (
               <p className="text-body-sm text-text-secondary text-center mt-1">
                 Imagen descargada. Revisa tu carpeta de descargas.
@@ -181,7 +181,7 @@ export function ShareProfileModal({ onClose, userId, username, bio, avatarUrl }:
           </div>
         </>
       ) : (
-        <div className="bg-bg rounded-2xl p-6 mt-4 flex flex-col items-center">
+        <div className="bg-surface-2 border border-border rounded-2xl p-6 mt-4 flex flex-col items-center">
           <QRCodeSVG value={appUrl} size={160} fgColor={qrColor} bgColor="transparent" />
           <p className="text-body-sm text-text-secondary mt-3 text-center">Escanea para descubrir Teleo.</p>
         </div>

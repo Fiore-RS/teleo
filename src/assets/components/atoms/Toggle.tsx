@@ -22,7 +22,7 @@ export function Toggle({ checked, onChange, label, disabled = false, className =
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${
-          checked ? 'bg-accent-wishlist' : 'bg-border'
+          checked ? 'bg-primary' : 'bg-border'
         }`}
       >
         <span

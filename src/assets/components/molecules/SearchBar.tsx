@@ -1,31 +1,22 @@
-import { Search, Camera } from 'lucide-react'
-import type { InputHTMLAttributes } from 'react'
+import { Search } from 'lucide-react'
+import type { ComponentPropsWithRef } from 'react'
 
-interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
-  onCameraClick?: () => void
+interface SearchBarProps extends Omit<ComponentPropsWithRef<'input'>, 'type'> {
   className?: string
 }
 
-export function SearchBar({ onCameraClick, className = '', ...props }: SearchBarProps) {
+export function SearchBar({ className = '', ...props }: SearchBarProps) {
   return (
     <div className={`relative w-full ${className}`}>
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary-text pointer-events-none">
         <Search size={18} strokeWidth={1.75} />
       </span>
       <input
         {...props}
         type="text"
         placeholder={props.placeholder ?? 'Buscar por título, autor, género, etc...'}
-        className="w-full bg-surface border border-border rounded-xl py-3 pl-11 pr-11 text-body-lg font-body text-text placeholder:text-text-secondary focus:outline-none focus:border-accent-wishlist transition-colors"
+        className="w-full bg-surface border border-border rounded-full py-3 pl-11 pr-4 text-body-lg font-body text-text placeholder:text-text-muted focus:outline-none focus:border-primary-text transition-colors"
       />
-      <button
-        type="button"
-        onClick={onCameraClick}
-        aria-label="Escanear código de barras"
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary"
-      >
-        <Camera size={18} strokeWidth={1.75} />
-      </button>
     </div>
   )
 }

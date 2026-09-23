@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { ImageOff } from 'lucide-react'
+import { ImageOff, Check, Flag } from 'lucide-react'
+import { Sheet } from '../atoms/Sheet'
+import { DetailSkeleton } from '../atoms/Skeleton'
 import { CoverImage } from '../atoms/CoverImage'
 import { useAuth } from '../../../hooks/useAuth'
 import { useBook } from '../../../hooks/useBook'
@@ -112,55 +114,57 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6" onClick={onClose}>
-      <div className="w-full max-w-sm bg-surface rounded-3xl p-6 max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        {!book ? null : (
+    <>
+      <Sheet onClose={onClose} title="Actualizar progreso">
+        {!book ? <DetailSkeleton /> : (
           <>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display italic text-display-md text-accent-wishlist">Actualizar progreso</h2>
-              <button onClick={onClose} aria-label="Cerrar" className="text-text-secondary">✕</button>
+            <div className="flex gap-4 items-start">
+              <div className="relative aspect-2/3 w-24 shrink-0 rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)]">
+                {book.cover_url ? (
+                  <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center"><ImageOff size={22} className="text-text-secondary" /></div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 pt-1">
+                <h3 className="font-display font-semibold text-[20px] leading-tight text-text text-balance">{book.title}</h3>
+                {book.author && <p className="text-body-md text-text-secondary mt-1">{book.author}</p>}
+
+                {(() => {
+                  const { percent } = getProgressInfo(book)
+
+                  let comparisonLabel: string | null = null
+                  if (isAudio && book.total_duration_seconds) {
+                    comparisonLabel = `Hora ${secondsToTimeInput(book.current_duration_seconds ?? 0)} de ${secondsToTimeInput(book.total_duration_seconds)}`
+                  } else if (isDigital) {
+                    comparisonLabel = null
+                  } else if (book.total_pages) {
+                    comparisonLabel = `Pág. ${book.current_page ?? 0} de ${book.total_pages}`
+                  }
+
+                  return (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-body-sm text-text-secondary mb-1.5 tabular-nums">
+                        {comparisonLabel && <span>{comparisonLabel}</span>}
+                        <span className="ml-auto font-semibold text-primary-text">{Math.round(percent)}%</span>
+                      </div>
+                      <ProgressBar percent={percent} />
+                    </div>
+                  )
+                })()}
+              </div>
             </div>
 
-            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-border mb-4">
-              {book.cover_url ? (
-                <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center"><ImageOff size={24} className="text-text-secondary" /></div>
-              )}
-            </div>
-
-            <h3 className="font-display italic text-display-md text-accent-wishlist text-center">{book.title}</h3>
-            <p className="text-body-md text-text-secondary text-center mt-1">{book.author}</p>
-
-            {(() => {
-              const { percent } = getProgressInfo(book)
-
-              let comparisonLabel: string | null = null
-              if (isAudio && book.total_duration_seconds) {
-                comparisonLabel = `Hora ${secondsToTimeInput(book.current_duration_seconds ?? 0)} de ${secondsToTimeInput(book.total_duration_seconds)}`
-              } else if (isDigital) {
-                comparisonLabel = null
-              } else if (book.total_pages) {
-                comparisonLabel = `Pág. ${book.current_page ?? 0} de ${book.total_pages}`
-              }
-
-              return (
-                <div className="mt-4">
-                  <div className="flex justify-between text-body-sm text-text-secondary mb-1">
-                    {comparisonLabel && <span>{comparisonLabel}</span>}
-                    <span className="ml-auto">{Math.round(percent)}%</span>
-                  </div>
-                  <ProgressBar percent={percent} />
-                </div>
-              )
-            })()}
-
-            <div className="flex gap-2 mt-4">
+            <label className="font-body font-semibold text-body-sm text-text-secondary block mt-5 mb-1.5">
+              {isAudio ? 'Tiempo escuchado' : isDigital ? 'Porcentaje leído' : 'Página actual'}
+            </label>
+            <div className="flex gap-2">
               {isAudio ? (
                 <DurationMaskInput value={value} onChange={setValue} className="flex-1" />
               ) : (
                 <Input
                   type="number"
+                  inputMode="numeric"
                   min={isDigital ? 0 : undefined}
                   max={isDigital ? 100 : undefined}
                   value={value}
@@ -169,20 +173,25 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
                   className="flex-1"
                 />
               )}
-              <Button variant="primary" className="w-auto! px-6!" onClick={handleUpdate} isLoading={isSaving}>
-                Actualizar
+              <Button variant="primary" fullWidth={false} className="px-6!" onClick={handleUpdate} isLoading={isSaving}>
+                Guardar
               </Button>
             </div>
-            {error && <p className="text-body-sm text-accent-wishlist mt-2">{error}</p>}
+            {error && <p className="text-body-sm text-primary-text mt-2">{error}</p>}
 
-            <Button variant="slate" className="mt-4" onClick={() => setIsAbandonOpen(true)}>Abandonar</Button>
-
-            <Button variant="green" className="mt-3" onClick={handleMarkFinished} isLoading={isSaving}>
-              Marcar como Terminado
-            </Button>
+            <div className="flex flex-col gap-2.5 mt-6">
+              <Button variant="green" onClick={handleMarkFinished} isLoading={isSaving}>
+                <Check size={18} />
+                Marcar como terminado
+              </Button>
+              <Button variant="outline" onClick={() => setIsAbandonOpen(true)}>
+                <Flag size={17} />
+                Abandonar
+              </Button>
+            </div>
           </>
         )}
-      </div>
+      </Sheet>
 
       {book && (
         <AbandonarLibroModal
@@ -207,6 +216,6 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
       />
 
       {isReviewOpen && <Resena bookId={bookId} onClose={handleReviewClose} />}
-    </div>
+    </>
   )
 }

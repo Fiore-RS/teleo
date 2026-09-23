@@ -37,8 +37,8 @@ export function Select({ options, value, onChange, className = '', disabled, pla
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((o) => !o)}
-        className={`w-full flex items-center justify-between gap-2 bg-surface border rounded-xl py-3 pl-4 pr-4 text-body-lg font-body text-text text-left transition-colors ${
-          isOpen ? 'border-accent-wishlist' : 'border-border'
+        className={`w-full flex items-center justify-between gap-2 bg-surface-2 border rounded-2xl py-3 pl-4 pr-4 text-body-lg font-body text-text text-left transition-colors ${
+          isOpen ? 'border-primary-text' : 'border-border'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       >
         <span className={`truncate ${!selected ? 'text-text-secondary' : ''}`}>
@@ -53,7 +53,7 @@ export function Select({ options, value, onChange, className = '', disabled, pla
       {isOpen && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-xl shadow-lg py-1.5 max-h-64 overflow-y-auto"
+          className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 max-h-64 overflow-y-auto"
         >
           {options.map((opt) => {
             const isSelected = opt.value === value
@@ -65,7 +65,7 @@ export function Select({ options, value, onChange, className = '', disabled, pla
                 aria-selected={isSelected}
                 onClick={() => handleSelect(opt.value)}
                 className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-body-lg font-body text-left transition-colors ${
-                  isSelected ? 'text-accent-wishlist bg-bg' : 'text-text hover:bg-bg'
+                  isSelected ? 'text-primary-text bg-bg' : 'text-text hover:bg-bg'
                 }`}
               >
                 <span className="truncate">{opt.label}</span>

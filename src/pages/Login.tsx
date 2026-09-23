@@ -46,8 +46,8 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-6">
-      <div className="w-full max-w-sm bg-surface rounded-3xl p-6 border border-border">
+    <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
+      <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6">
         <AuthHeader
           title="¡Qué gusto verte de nuevo!"
           subtitle="Inicia sesión nuevamente para volver a tu rincón de lectura."
@@ -71,16 +71,16 @@ export function Login() {
             required
           />
 
-          {error && <p className="text-body-sm text-accent-wishlist text-center">{error}</p>}
+          {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
 
           <Button type="submit" variant="primary" isLoading={isLoading}>
-            Iniciar Sesión
+            Iniciar sesión
           </Button>
         </form>
 
         <p className="text-center text-body-sm text-text-secondary mt-4">
           ¿Primera vez en Teleo?{' '}
-          <Link to="/registro" className="text-accent-wishlist font-medium">
+          <Link to="/registro" className="text-primary-text font-bold">
             Regístrate aquí.
           </Link>
         </p>

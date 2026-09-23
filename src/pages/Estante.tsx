@@ -1,26 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X } from "lucide-react";
+import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Plus, Search } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { useProfile } from "../hooks/useProfile";
 import { getPriorityListName } from "../lib/priorityList";
-import { SearchBar } from "../assets/components/molecules/SearchBar";
+import { SearchHeader } from "../assets/components/molecules/SearchHeader";
+import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { SegmentedTabs } from "../assets/components/atoms/SegmentedTabs";
 import {
   FilterModal,
   defaultAdvancedFilters,
   type AdvancedFilters,
 } from "../assets/components/molecules/FilterModal";
-import { Button } from "../assets/components/atoms/Button";
 import { BookCard } from "../assets/components/molecules/BookCard";
 import { SeriesCard } from "../assets/components/molecules/SeriesCard";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { ScrollToTopButton } from "../assets/components/atoms/ScrollToTopButton";
 import type { ReadingStatus } from "../lib/status";
-import { SectionHeader } from "../assets/components/atoms/SectionHeader";
 import { DetalleLibro } from "../pages/DetalleLibro";
 import { DetalleSaga } from "../pages/DetalleSaga";
 import { AddSagaModal } from "../assets/components/molecules/AddSagaModal";
@@ -68,6 +67,7 @@ export function Estante() {
   const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | "temporada" | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [selectedSagaId, setSelectedSagaId] = useState<string | null>(null);
@@ -273,20 +273,74 @@ export function Estante() {
   const isLoading = tab === "libros" ? booksLoading : sagasLoading;
   const count = tab === "libros" ? filteredBooks.length : filteredSagas.length;
 
+  const countLabel =
+    tab === "libros"
+      ? `${count} ${count === 1 ? "libro" : "libros"}`
+      : `${count} ${count === 1 ? "saga" : "sagas"}`;
+  const headerIconBtn =
+    "relative w-9 h-9 min-[400px]:w-10 min-[400px]:h-10 shrink-0 rounded-full bg-surface border border-border shadow-card text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text";
+
   return (
-    <div className="min-h-screen bg-bg p-4">
-      <div className="mt-4 space-y-6">
-        <SectionHeader
-          title="Tu librería privada"
-          rightContent={`${String(count).padStart(3, "0")} ${tab}`}
-        />
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <SearchHeader
+        isSearching={isSearching}
+        onCancel={() => {
+          setSearch("");
+          setIsSearching(false);
+        }}
+        value={search}
+        onChange={setSearch}
+        placeholder="Buscar por título o autor"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="h-9 min-[400px]:h-10 flex items-center font-title text-[clamp(30px,8.5vw,44px)] leading-none text-text whitespace-nowrap">
+              Estante
+            </h1>
+            <div className="flex items-start gap-1.5 min-[400px]:gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsSearching(true)}
+                aria-label="Buscar"
+                className={headerIconBtn}
+              >
+                <Search size={17} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsFilterModalOpen(true)}
+                aria-label="Filtros"
+                className={headerIconBtn}
+              >
+                <SlidersHorizontal size={17} />
+                {hasActiveAdvFilters && (
+                  <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-surface" />
+                )}
+              </button>
 
-        <SearchBar
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onCameraClick={() => setIsAddBookOpen(true)}
-        />
+              {tab === "libros" ? (
+                <SortMenu variant="icon" options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} />
+              ) : (
+                <SortMenu variant="icon" options={sagaSortOptions} activeKey={sagaSortMode} onSelect={handleSagaSortSelect} />
+              )}
 
+              <button
+                type="button"
+                onClick={() => (tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true))}
+                aria-label={tab === "libros" ? "Agregar libro" : "Agregar saga"}
+                className="w-11 h-11 min-[400px]:w-12 min-[400px]:h-12 -mb-2 shrink-0 rounded-full bg-primary text-primary-ink shadow-card flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+              >
+                <Plus size={24} strokeWidth={2.4} />
+              </button>
+            </div>
+          </div>
+          <p className="font-body text-body-md text-text-secondary mt-1.5 tabular-nums">
+            {isLoading ? " " : countLabel}
+          </p>
+        </div>
+      </SearchHeader>
+
+      <div className="space-y-5">
         <SegmentedTabs
           active={tab}
           onChange={handleTabSwitch}
@@ -297,50 +351,24 @@ export function Estante() {
         />
 
         {quickFlag && (
-          <div className="flex items-center justify-between bg-bg border border-border rounded-xl px-4 py-2">
-            <span className="text-body-sm text-text">
+          <div className="flex">
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft text-primary-text pl-3.5 pr-2 py-1.5 text-body-sm font-body font-semibold">
               Mostrando:{" "}
               {quickFlag === "favoritos"
                 ? "Favoritos"
                 : quickFlag === "recomendados"
                   ? "Recomendados"
                   : priorityListName}
+              <button
+                onClick={() => setQuickFlag(null)}
+                aria-label="Quitar filtro"
+                className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-surface/60"
+              >
+                <X size={14} />
+              </button>
             </span>
-            <button onClick={() => setQuickFlag(null)} aria-label="Quitar filtro" className="text-text-secondary">
-              <X size={16} />
-            </button>
           </div>
         )}
-
-        <Button
-          variant="primary"
-          onClick={() =>
-            tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true)
-          }
-        >
-          {tab === "libros" ? "Agregar Libro Nuevo" : "Agregar Saga Nueva"}
-        </Button>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsFilterModalOpen(true)}
-            aria-label="Filtros"
-            className="relative flex-1 inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body text-surface"
-            style={{ backgroundColor: "var(--color-state-pending)" }}
-          >
-            <SlidersHorizontal size={15} />
-            Filtros
-            {hasActiveAdvFilters && (
-              <span className="absolute top-1.5 right-3 w-2.5 h-2.5 rounded-full bg-accent-reading border-2 border-bg" />
-            )}
-          </button>
-
-          {tab === "libros" ? (
-            <SortMenu options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} className="flex-1" />
-          ) : (
-            <SortMenu options={sagaSortOptions} activeKey={sagaSortMode} onSelect={handleSagaSortSelect} className="flex-1" />
-          )}
-        </div>
 
         {((tab === "libros" && isReorderingBooks) || (tab === "sagas" && isReorderingSagas)) && (
           <p className="text-body-sm text-text-secondary text-center">
@@ -359,6 +387,13 @@ export function Estante() {
           </p>
         )}
 
+        {isLoading && (
+          <div className="grid grid-cols-3 gap-x-3 gap-y-4" aria-label="Cargando">
+            {Array.from({ length: 9 }, (_, i) => (
+              <BookTileSkeleton key={i} />
+            ))}
+          </div>
+        )}
         {tab === "libros" && (
           isReorderingBooks ? (
             <DndContext
@@ -370,7 +405,7 @@ export function Estante() {
                 items={sortedBooks.map((b) => b.id)}
                 strategy={rectSortingStrategy}
               >
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
                   {sortedBooks.map((book) => (
                     <SortableItem key={book.id} id={book.id}>
                       <BookCard
@@ -387,7 +422,7 @@ export function Estante() {
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
               {sortedBooks.map((book) => (
                 <BookCard
                   key={book.id}
@@ -414,7 +449,7 @@ export function Estante() {
                 items={sortedSagas.map((s) => s.id)}
                 strategy={rectSortingStrategy}
               >
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
                   {sortedSagas.map((saga) => (
                     <SortableItem key={saga.id} id={saga.id}>
                       <SeriesCard
@@ -432,7 +467,7 @@ export function Estante() {
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
               {sortedSagas.map((saga) => (
                 <SeriesCard
                   key={saga.id}
