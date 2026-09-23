@@ -1,4 +1,4 @@
-import { Flag, Check, Flame, BookOpen, Star, Target } from "lucide-react";
+import { Flag, Check, Flame, BookOpen, Star, Target, Shuffle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
@@ -22,6 +22,7 @@ import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
 import { EditListNameModal } from "../assets/components/molecules/EditListNameModal";
 import { PriorityListMenu } from "../assets/components/molecules/PriorityListMenu";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
+import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
 import { StartReadingDateModal } from "../assets/components/molecules/StartReadingDateModal";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
 import { getGoalMessage } from "../lib/goalMessage";
@@ -61,6 +62,7 @@ export function Mesa() {
   const [isEditListNameOpen, setIsEditListNameOpen] = useState(false)
   const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
+  const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
 
   const priorityListName = getPriorityListName(profile?.priority_list_name)
 
@@ -143,9 +145,15 @@ export function Mesa() {
             </div>
           )}
           {!booksLoading && books.length === 0 && (
-            <p className="text-body-md text-text-secondary">
-              No tienes libros en progreso todavía.
-            </p>
+            <>
+              <p className="text-body-md text-text-secondary">
+                No tienes libros en progreso todavía.
+              </p>
+              <Button variant="soft" className="mt-3.5" onClick={() => setIsRandomPickOpen(true)}>
+                <Shuffle size={16} />
+                Elegir un pendiente al azar
+              </Button>
+            </>
           )}
           <div className="divide-y divide-dashed divide-border stagger-children">
             {books.map((book) => {
@@ -358,6 +366,8 @@ export function Mesa() {
         currentGoal={goal}
         onSave={updateGoal}
       />
+
+      {isRandomPickOpen && <RandomPickSheet userId={user?.id} onClose={() => setIsRandomPickOpen(false)} />}
 
       <UnmarkStreakModal
         isOpen={isUnmarkOpen}
