@@ -14,6 +14,7 @@ import { Configuracion } from "./pages/Configuracion";
 import { CambiarUsuario } from "./pages/CambiarUsuario";
 import { CambiarCorreo } from "./pages/CambiarCorreo";
 import { CambiarContrasena } from "./pages/CambiarContrasena";
+import { Instalar } from "./pages/Instalar";
 
 function App() {
   const location = useLocation();
@@ -31,6 +32,7 @@ function App() {
         <Routes location={location}>
           <Route path="/" element={<LoadingScreen />} />
           <Route path="/inicio" element={<Inicio />} />
+          <Route path="/instalar" element={<Instalar />} />
           <Route path="/bienvenida" element={<Bienvenida />} />
           <Route path="/tutorial" element={<Tutorial />} />
           <Route path="/mesa" element={<Mesa />} />
