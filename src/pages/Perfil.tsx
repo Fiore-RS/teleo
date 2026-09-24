@@ -137,9 +137,6 @@ export function Perfil() {
         <ShareProfileModal
           onClose={() => setShareStep(null)}
           userId={user?.id}
-          username={profile?.username}
-          bio={profile?.bio}
-          avatarUrl={profile?.avatar_url}
         />
       )}
 

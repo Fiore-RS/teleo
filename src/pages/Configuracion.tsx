@@ -157,9 +157,6 @@ export function Configuracion() {
         <ShareProfileModal
           onClose={() => setIsShareModalOpen(false)}
           userId={user?.id}
-          username={profile?.username}
-          bio={profile?.bio}
-          avatarUrl={profile?.avatar_url}
         />
       )}
 
