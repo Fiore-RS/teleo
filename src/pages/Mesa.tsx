@@ -19,6 +19,7 @@ import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
 import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
 import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCalendarSheet";
+import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard";
 import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 export function Mesa() {
@@ -119,6 +120,9 @@ export function Mesa() {
             })}
           </div>
         </Card>
+
+        {/* Próximo lanzamiento: ocupa el lugar que dejó la lista de temporada */}
+        <NextReleaseCard userId={user?.id} />
 
         {/* Racha diaria */}
         <Card labelledBy="mesa-racha" tint="orange">
