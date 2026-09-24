@@ -18,7 +18,7 @@ export function PeriodNav({ label, onPrev, onNext, canGoNext, prevLabel, nextLab
       <button type="button" onClick={onPrev} aria-label={prevLabel} className={arrowClass}>
         <ChevronLeft size={18} strokeWidth={2} />
       </button>
-      <p className="font-display font-semibold text-display-md text-text text-center" aria-live="polite">{label}</p>
+      <p key={label} className="font-display font-semibold text-display-md text-text text-center animate-fade-in" aria-live="polite">{label}</p>
       <button type="button" onClick={onNext} disabled={!canGoNext} aria-label={nextLabel} className={arrowClass}>
         <ChevronRight size={18} strokeWidth={2} />
       </button>

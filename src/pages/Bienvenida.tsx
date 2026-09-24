@@ -27,7 +27,7 @@ const steps: Step[] = [
   {
     icon: NotebookPen,
     title: 'Cuaderno',
-    description: 'Tu diario de lectura: escribe reseñas, califica tus lecturas y guarda tus citas favoritas.',
+    description: 'Tu diario de lectura: escribe reseñas, califica tus lecturas a tu manera y guarda tus citas favoritas.',
   },
   {
     icon: ScrollText,

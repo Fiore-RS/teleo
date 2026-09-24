@@ -1,4 +1,5 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect, useLayoutEffect } from "react";
+import { Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
 import { Inicio } from "./pages/Inicio";
 import { Bienvenida } from "./pages/Bienvenida";
@@ -26,6 +27,53 @@ import { Privacidad, Terminos } from "./pages/LegalPage";
 
 function App() {
   const location = useLocation();
+  const navigationType = useNavigationType();
+
+  // Altura de desplazamiento de cada pantalla visitada (por su entrada en el historial), para
+  // devolverla al regresar con el botón de atrás o el gesto del teléfono.
+  useEffect(() => {
+    let frame = 0;
+    function handleScroll() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        try {
+          sessionStorage.setItem(`teleo-scroll:${location.key}`, String(window.scrollY));
+        } catch {
+          // Sin almacenamiento: al regresar simplemente se vuelve arriba.
+        }
+      });
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [location.key]);
+
+  // Pantalla nueva: arranca arriba. Al regresar (POP): vuelve a donde estaba. Se reintenta
+  // un par de cuadros por si la pantalla todavía está armando su contenido. Los cambios que
+  // solo reemplazan la dirección (REPLACE, ej. pestañas de Bitácora o el año del Resumen) no
+  // mueven la página.
+  useLayoutEffect(() => {
+    if (navigationType === "REPLACE") return;
+    let saved: string | null = null;
+    if (navigationType === "POP") {
+      try {
+        saved = sessionStorage.getItem(`teleo-scroll:${location.key}`);
+      } catch {
+        saved = null;
+      }
+    }
+    const y = saved === null ? 0 : Number(saved);
+    window.scrollTo(0, y);
+    if (y === 0) return;
+    let tries = 0;
+    let frame = requestAnimationFrame(function retry() {
+      window.scrollTo(0, y);
+      if (++tries < 10 && Math.abs(window.scrollY - y) > 2) frame = requestAnimationFrame(retry);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [location.key, navigationType]);
 
   return (
     // Teleo está pensada para móvil. En pantallas anchas (PC), en vez de

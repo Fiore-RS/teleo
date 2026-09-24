@@ -39,7 +39,7 @@ const sections: TutorialSection[] = [
     icon: NotebookPen,
     title: 'Cuaderno',
     points: [
-      'Toca el botón + para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia y guarda tus citas favoritas.',
+      'Toca el botón + para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia, agrega calificaciones personalizadas (por ejemplo, romance o giros de trama) y guarda tus citas favoritas.',
       'Consulta todas tus reseñas pasadas cuando quieras revivirlas.',
     ],
   },
@@ -67,8 +67,8 @@ const sections: TutorialSection[] = [
     points: [
       'Toca el lápiz de arriba para cambiar tu foto, tu nickname y tu descripción.',
       'Toca cualquiera de tus números (leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
-      'Mira tu actividad del mes y organiza tu lista de temporada: cámbiale el nombre, ordénala y empieza a leer desde ahí.',
-      'Toca "Ver todos" en cualquier estante para saltar a tu Estante con ese filtro.',
+      'Mira tu actividad del mes y organiza tu lista de temporada desde sus tres puntos: cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
+      'En Favoritos, Recomendados, Deseados y Abandonados verás cuatro libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
       'El botón de compartir te deja enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
     ],
   },

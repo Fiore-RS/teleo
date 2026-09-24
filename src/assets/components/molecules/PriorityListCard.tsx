@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Star } from 'lucide-react'
+import { Check, Star } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -83,14 +83,27 @@ export function PriorityListCard({ userId }: PriorityListCardProps) {
           <Eyebrow id="lista-temporada" icon={Star} tone="magenta">
             {listName}
           </Eyebrow>
-          <PriorityListMenu
-            isReordering={isReordering}
-            canReorder={books.length > 1}
-            canViewInEstante={books.length > 0}
-            onEditName={() => setIsEditNameOpen(true)}
-            onToggleReorder={() => setIsReordering((v) => !v)}
-            onViewInEstante={() => navigate('/estante?filtro=temporada')}
-          />
+          {isReordering ? (
+            // Mientras se organiza, el menú se cambia por un botón para terminar. El orden ya
+            // se guarda al soltar cada libro; este botón solo sale del modo organizar.
+            <button
+              type="button"
+              onClick={() => setIsReordering(false)}
+              className="inline-flex items-center gap-1.5 shrink-0 rounded-full bg-magenta text-on-accent px-3.5 py-1.5 text-body-sm font-bold animate-fade-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+            >
+              <Check size={15} strokeWidth={2.5} />
+              Listo
+            </button>
+          ) : (
+            <PriorityListMenu
+              isReordering={isReordering}
+              canReorder={books.length > 1}
+              canViewInEstante={books.length > 0}
+              onEditName={() => setIsEditNameOpen(true)}
+              onToggleReorder={() => setIsReordering(true)}
+              onViewInEstante={() => navigate('/estante?filtro=temporada')}
+            />
+          )}
         </div>
 
         {isLoading ? (

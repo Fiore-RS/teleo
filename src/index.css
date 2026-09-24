@@ -205,6 +205,16 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
 }
+/* Cambio de mes o año con las flechas: el contenido entra deslizándose un poco desde el
+   lado hacia el que se avanza, con fundido. */
+@keyframes teleo-slide-next {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes teleo-slide-prev {
+  from { opacity: 0; transform: translateX(-18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 @keyframes teleo-rise-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -217,6 +227,8 @@
   .animate-fade-out { animation: teleo-fade-out 0.22s ease-in forwards; }
   .animate-pop-in { animation: teleo-pop-in 0.2s ease-out; }
   .animate-pop-out { animation: teleo-pop-out 0.18s ease-in forwards; }
+  .animate-slide-next { animation: teleo-slide-next 0.75s cubic-bezier(0.33, 1, 0.68, 1); }
+  .animate-slide-prev { animation: teleo-slide-prev 0.75s cubic-bezier(0.33, 1, 0.68, 1); }
 
   /* Silueta de carga: pulso suave. */
   .animate-skeleton { animation: teleo-skeleton 1.4s ease-in-out infinite; }
@@ -240,7 +252,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .animate-sheet-down, .animate-sheet-out, .animate-fade-in, .animate-fade-out,
-    .animate-pop-in, .animate-pop-out, .animate-page-in, .stagger-children > *, .animate-skeleton {
+    .animate-pop-in, .animate-pop-out, .animate-page-in, .stagger-children > *, .animate-skeleton,
+    .animate-slide-next, .animate-slide-prev {
       animation: none;
     }
   }

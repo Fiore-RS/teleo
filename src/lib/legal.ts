@@ -18,9 +18,9 @@ export const privacySections: LegalSection[] = [
     title: 'Qué datos guarda Teleo',
     bullets: [
       'Tu cuenta: correo, nombre de usuario, nickname, bio y foto de perfil. La contraseña la protege Supabase y nunca se guarda ni se ve en texto.',
-      'Tu biblioteca: los libros que agregas, sus estados, fechas, progreso, precios, etiquetas, sagas y portadas que subas.',
+      'Tu biblioteca: los libros que agregas, sus estados, fechas, progreso, precios, etiquetas, sagas y portadas que subas, además de los lanzamientos que anotas.',
       'Lo que escribes: reseñas, citas, personajes favoritos y sus fotos.',
-      'Tu hábito: los días que marcas como leídos y tus metas anuales.',
+      'Tu hábito: los días que marcas como leídos, tus metas anuales y los favoritos que eliges de cada mes y año.',
     ],
   },
   {

@@ -9,7 +9,7 @@ import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShel
 import type { Database } from '../types/database'
 import type { ProfileCounts } from '../hooks/useProfileLists'
 
-type Book = Database['public']['Tables']['books']['Row']
+type Book = Pick<Database['public']['Tables']['books']['Row'], 'id' | 'title' | 'cover_url' | 'status'>
 
 /** Filtro de Estante al que lleva cada número o "Ver todos". */
 export type ProfileFilter = 'leyendo' | 'favoritos' | 'recomendados' | 'deseado' | 'terminado' | 'pendiente' | 'abandonado'

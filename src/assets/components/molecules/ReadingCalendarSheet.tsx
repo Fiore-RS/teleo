@@ -4,6 +4,7 @@ import { useReadingStreak } from '../../../hooks/useReadingStreak'
 import { useMonthReading } from '../../../hooks/useMonthReading'
 import { Sheet } from '../atoms/Sheet'
 import { MonthCalendar } from '../atoms/MonthCalendar'
+import { PeriodTransition } from '../atoms/PeriodTransition'
 import { StatTile } from '../atoms/StatTile'
 import { Skeleton } from '../atoms/Skeleton'
 import { StreakTiles } from './StreakTiles'
@@ -59,7 +60,7 @@ export function ReadingCalendarSheet({ userId, onClose }: ReadingCalendarSheetPr
         >
           <ChevronLeft size={18} strokeWidth={2} />
         </button>
-        <p className="font-display font-semibold text-display-md text-text" aria-live="polite">
+        <p key={`${year}-${month}`} className="font-display font-semibold text-display-md text-text animate-fade-in" aria-live="polite">
           {MONTH_NAMES[month - 1]} <span className="text-text-secondary font-normal">{year}</span>
         </p>
         <button
@@ -73,7 +74,9 @@ export function ReadingCalendarSheet({ userId, onClose }: ReadingCalendarSheetPr
         </button>
       </div>
 
-      <MonthCalendar year={year} month={month} markedDates={markedDates} size="lg" showTitle={false} />
+      <PeriodTransition order={-monthsBack}>
+        <MonthCalendar year={year} month={month} markedDates={markedDates} size="lg" showTitle={false} />
+      </PeriodTransition>
 
       <div className="flex items-center justify-center gap-1.5 mt-4 text-body-sm text-text-secondary">
         <span className="w-2.5 h-2.5 rounded-xs bg-surface-2 border border-border" />
@@ -82,7 +85,7 @@ export function ReadingCalendarSheet({ userId, onClose }: ReadingCalendarSheetPr
         Leído
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mt-5">
+      <div key={`${year}-${month}`} className="grid grid-cols-3 gap-2 mt-5 animate-fade-in">
         <StatTile tone="orange" label="Días leídos" value={streakLoading ? '·' : String(daysRead)} />
         <StatTile tone="magenta" label="Libros terminados" value={monthLoading ? '·' : String(finishedCount)} />
         <StatTile tone="pink" label="Páginas" value={monthLoading ? '·' : pages.toLocaleString()} />

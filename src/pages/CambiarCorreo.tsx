@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGoBack } from '../hooks/useGoBack'
 import { useNavigate } from 'react-router-dom'
 import { MailCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
@@ -10,6 +11,7 @@ import { PageHeader } from '../assets/components/molecules/PageHeader'
 
 export function CambiarCorreo() {
   const navigate = useNavigate()
+  const goBack = useGoBack('/configuracion')
   const { user } = useAuth()
   const { updateEmail, isSaving } = useAccountSettings(user?.id)
   const [newEmail, setNewEmail] = useState('')
@@ -43,7 +45,7 @@ export function CambiarCorreo() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader title="Cambiar correo" subtitle="Actualiza tu dirección de correo electrónico." onBack={() => navigate('/configuracion')} backLabel="Regresar a Configuración" />
+      <PageHeader title="Cambiar correo" subtitle="Actualiza tu dirección de correo electrónico." onBack={goBack} backLabel="Regresar a Configuración" />
       <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
 
       <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Correo electrónico actual</label>

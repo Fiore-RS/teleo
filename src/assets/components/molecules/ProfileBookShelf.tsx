@@ -8,7 +8,7 @@ import { Card } from './Card'
 import type { Database } from '../../../types/database'
 import type { ReadingStatus } from '../../../lib/status'
 
-type Book = Database['public']['Tables']['books']['Row']
+type Book = Pick<Database['public']['Tables']['books']['Row'], 'id' | 'title' | 'cover_url' | 'status'>
 
 interface ProfileBookShelfProps {
   title: string

@@ -10,6 +10,7 @@ import { MONTH_NAMES } from '../lib/months'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
 import { MonthCalendar } from '../assets/components/atoms/MonthCalendar'
+import { PeriodTransition } from '../assets/components/atoms/PeriodTransition'
 import { Button } from '../assets/components/atoms/Button'
 import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { Card } from '../assets/components/molecules/Card'
@@ -83,17 +84,18 @@ export function Lanzamientos() {
                 prevLabel="Mes anterior"
                 nextLabel="Mes siguiente"
               />
-              <MonthCalendar
-                year={year}
-                month={month}
-                markedDates={markedDates}
-                size="lg"
-                showTitle={false}
-                variant="events"
-                selectedDate={selectedDate}
-                onDayClick={setSelectedDate}
-                className="mt-4"
-              />
+              <PeriodTransition order={monthOffset} className="mt-4">
+                <MonthCalendar
+                  year={year}
+                  month={month}
+                  markedDates={markedDates}
+                  size="lg"
+                  showTitle={false}
+                  variant="events"
+                  selectedDate={selectedDate}
+                  onDayClick={setSelectedDate}
+                />
+              </PeriodTransition>
               <div className="flex items-center justify-center gap-1.5 mt-4 text-body-sm text-text-secondary">
                 <span className="w-2.5 h-2.5 rounded-xs bg-magenta" />
                 Con lanzamiento
