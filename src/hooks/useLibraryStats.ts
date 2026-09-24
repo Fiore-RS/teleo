@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
 import { computeLongestStreak } from '../lib/streak'
+import { formatOptions } from '../lib/options'
 
 export interface CountEntry {
   label: string
@@ -144,7 +145,9 @@ export function useLibraryStats(userId: string | undefined) {
 
     // Desglose de colección
     const byCategory = tally(books.map((b) => b.category))
-    const byFormat = tally(books.map((b) => b.format))
+    // El formato se guarda como clave (fisico, audiolibro); se muestra con su nombre.
+    const formatLabel = new Map<string, string>(formatOptions.map((o) => [o.value, o.label]))
+    const byFormat = tally(books.map((b) => (b.format ? formatLabel.get(b.format) ?? b.format : null)))
     const byLanguage = tally(books.map((b) => b.language))
     const booksWithPages = books.filter((b) => typeof b.total_pages === 'number' && b.total_pages! > 0)
     const longestBook = booksWithPages.length > 0

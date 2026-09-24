@@ -25,6 +25,9 @@ export const changelog: ChangelogEntry[] = [
       'Lanzamientos: anota los libros que esperas, míralos en un calendario y en una cuenta atrás, y el próximo aparece en La mesa.',
       'Nueva tarjeta para compartir en formato historia, con tu foto, tu meta, tu racha y las portadas de tu última lectura, la actual y la próxima.',
       'Bitácora ahora tiene Resumen, con tus libros de cada mes y año y tus favoritos, y Compras, con lo que invertiste libro por libro.',
+      'Desde la primera vez que escribes una reseña ya puedes agregar calificaciones personalizadas y citas favoritas.',
+      'En tu perfil, Favoritos, Recomendados, Deseados y Abandonados muestran cuatro libros distintos en cada visita.',
+      'Todas las ventanas se abren desde arriba, los calendarios se deslizan al cambiar de mes y, al regresar, vuelves a la misma altura de la pantalla.',
     ],
   },
   {

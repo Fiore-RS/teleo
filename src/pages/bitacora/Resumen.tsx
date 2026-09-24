@@ -13,6 +13,7 @@ import { Button } from '../../assets/components/atoms/Button'
 import { CoverSkeleton, Skeleton } from '../../assets/components/atoms/Skeleton'
 import { Card } from '../../assets/components/molecules/Card'
 import { PeriodNav } from '../../assets/components/molecules/PeriodNav'
+import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
 import { DetalleLibro } from '../DetalleLibro'
 
 export type ResumenView = 'mes' | 'anio' | 'favoritos'
@@ -168,33 +169,35 @@ function MonthView({ year, month, reads, isLoading, canGoNext, onPrev, onNext, o
         nextLabel="Mes siguiente"
       />
 
-      {isLoading ? (
-        <div className="grid grid-cols-3 gap-3 mt-5" aria-label="Cargando">
-          {[0, 1, 2].map((i) => <CoverSkeleton key={i} className="w-full" />)}
-        </div>
-      ) : reads.length === 0 ? (
-        <p className="text-body-md text-text-secondary text-center mt-5">No terminaste libros este mes.</p>
-      ) : (
-        <>
-          <p className="text-body-md text-text-secondary text-center mt-1.5">
-            {reads.length} {reads.length === 1 ? 'libro terminado' : 'libros terminados'}
-          </p>
-          <ul className="grid grid-cols-3 gap-x-3 gap-y-4 mt-5 stagger-children">
-            {reads.map((read) => (
-              <li key={read.id}>
-                <button
-                  type="button"
-                  onClick={() => onBookClick(read.bookId)}
-                  className="w-full text-left rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
-                >
-                  <MiniCover src={read.coverUrl} title={read.title} className="w-full rounded-[10px]! shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]" />
-                  <span className="block font-display font-semibold text-body-sm text-text leading-snug mt-2 line-clamp-2">{read.title}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+      <PeriodTransition order={year * 12 + month}>
+        {isLoading ? (
+          <div className="grid grid-cols-3 gap-3 mt-5" aria-label="Cargando">
+            {[0, 1, 2].map((i) => <CoverSkeleton key={i} className="w-full" />)}
+          </div>
+        ) : reads.length === 0 ? (
+          <p className="text-body-md text-text-secondary text-center mt-5">No terminaste libros este mes.</p>
+        ) : (
+          <>
+            <p className="text-body-md text-text-secondary text-center mt-1.5">
+              {reads.length} {reads.length === 1 ? 'libro terminado' : 'libros terminados'}
+            </p>
+            <ul className="grid grid-cols-3 gap-x-3 gap-y-4 mt-5 stagger-children">
+              {reads.map((read) => (
+                <li key={read.id}>
+                  <button
+                    type="button"
+                    onClick={() => onBookClick(read.bookId)}
+                    className="w-full text-left rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+                  >
+                    <MiniCover src={read.coverUrl} title={read.title} className="w-full rounded-[10px]! shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]" />
+                    <span className="block font-display font-semibold text-body-sm text-text leading-snug mt-2 line-clamp-2">{read.title}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </PeriodTransition>
     </Card>
   )
 }
@@ -234,53 +237,55 @@ function YearView({ year, reads, totalPages, totalAudioSeconds, isLoading, canGo
           nextLabel="Año siguiente"
         />
 
-        <div className={`grid ${totalAudioSeconds > 0 ? 'grid-cols-3' : 'grid-cols-2'} gap-2 mt-5`}>
-          <StatTile tone="magenta" label="Libros" value={isLoading ? '·' : String(reads.length)} />
-          <StatTile tone="pink" label="Páginas" value={isLoading ? '·' : totalPages.toLocaleString()} />
-          {totalAudioSeconds > 0 && <StatTile tone="orange" label="Escuchado" value={formatDuration(totalAudioSeconds)} />}
-        </div>
+        <PeriodTransition order={year}>
+          <div className={`grid ${totalAudioSeconds > 0 ? 'grid-cols-3' : 'grid-cols-2'} gap-2 mt-5`}>
+            <StatTile tone="magenta" label="Libros" value={isLoading ? '·' : String(reads.length)} />
+            <StatTile tone="pink" label="Páginas" value={isLoading ? '·' : totalPages.toLocaleString()} />
+            {totalAudioSeconds > 0 && <StatTile tone="orange" label="Escuchado" value={formatDuration(totalAudioSeconds)} />}
+          </div>
 
-        <div className="grid grid-cols-3 gap-2 mt-5">
-          {byMonth.map((monthReads, i) => {
-            const month = i + 1
-            const isFuture = year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1)
-            const shown = monthReads.slice(0, 3)
-            const extra = monthReads.length - shown.length
-            return (
-              <button
-                key={month}
-                type="button"
-                onClick={() => onMonthClick(month)}
-                disabled={isFuture}
-                className="bg-surface-2 border border-border rounded-2xl p-2.5 text-left flex flex-col gap-2 min-h-[104px] disabled:opacity-45 focus-visible:outline-2 focus-visible:outline-primary-text"
-              >
-                <span className="flex items-baseline justify-between gap-1">
-                  <span className="font-body font-bold text-body-sm text-text capitalize">{MONTH_ABBR[i]}</span>
-                  {monthReads.length > 0 && (
-                    <span className="text-[11px] font-bold text-magenta-text tabular-nums">{monthReads.length}</span>
-                  )}
-                </span>
-                {isLoading ? (
-                  <Skeleton className="w-8 h-12 rounded-md" />
-                ) : monthReads.length === 0 ? (
-                  <span className="text-[11px] text-text-muted">{isFuture ? ' ' : 'Sin libros'}</span>
-                ) : (
-                  <span className="flex items-end">
-                    {shown.map((r, j) => (
-                      <MiniCover
-                        key={r.id}
-                        src={r.coverUrl}
-                        title={r.title}
-                        className={`w-8 shadow-sm ${j > 0 ? '-ml-3' : ''}`}
-                      />
-                    ))}
-                    {extra > 0 && <span className="text-[11px] font-bold text-text-secondary ml-1">+{extra}</span>}
+          <div className="grid grid-cols-3 gap-2 mt-5">
+            {byMonth.map((monthReads, i) => {
+              const month = i + 1
+              const isFuture = year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1)
+              const shown = monthReads.slice(0, 3)
+              const extra = monthReads.length - shown.length
+              return (
+                <button
+                  key={month}
+                  type="button"
+                  onClick={() => onMonthClick(month)}
+                  disabled={isFuture}
+                  className="bg-surface-2 border border-border rounded-2xl p-2.5 text-left flex flex-col gap-2 min-h-[104px] disabled:opacity-45 focus-visible:outline-2 focus-visible:outline-primary-text"
+                >
+                  <span className="flex items-baseline justify-between gap-1">
+                    <span className="font-body font-bold text-body-sm text-text capitalize">{MONTH_ABBR[i]}</span>
+                    {monthReads.length > 0 && (
+                      <span className="text-[11px] font-bold text-magenta-text tabular-nums">{monthReads.length}</span>
+                    )}
                   </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
+                  {isLoading ? (
+                    <Skeleton className="w-8 h-12 rounded-md" />
+                  ) : monthReads.length === 0 ? (
+                    <span className="text-[11px] text-text-muted">{isFuture ? ' ' : 'Sin libros'}</span>
+                  ) : (
+                    <span className="flex items-end">
+                      {shown.map((r, j) => (
+                        <MiniCover
+                          key={r.id}
+                          src={r.coverUrl}
+                          title={r.title}
+                          className={`w-8 shadow-sm ${j > 0 ? '-ml-3' : ''}`}
+                        />
+                      ))}
+                      {extra > 0 && <span className="text-[11px] font-bold text-text-secondary ml-1">+{extra}</span>}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </PeriodTransition>
         <p className="text-body-sm text-text-muted text-center mt-4">Toca un mes para ver todos sus libros.</p>
       </Card>
     </div>
@@ -337,54 +342,56 @@ function FavoritesView({ userId, year, reads, isLoading, canGoNext, onPrev, onNe
           nextLabel="Año siguiente"
         />
 
-        {isLoading ? (
-          <div className="mt-5 space-y-3" aria-label="Cargando">
-            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-2 mt-5">
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
-              const isFuture = month > lastMonth
-              const monthReads = reads.filter((r) => r.month === month)
-              const fav = favoriteFor(month)
-              const book = fav?.bookId ? bookById.get(fav.bookId) : undefined
-              const canPick = !isFuture && monthReads.length > 0
-              return (
-                <button
-                  key={month}
-                  type="button"
-                  onClick={() => setPicking(month)}
-                  disabled={!canPick}
-                  aria-label={`${MONTH_NAMES[month - 1]}: ${book ? book.title : !canPick ? 'sin libros terminados' : fav ? 'vacío' : 'elegir favorito'}`}
-                  className={`rounded-2xl p-2.5 flex flex-col gap-2 text-left border focus-visible:outline-2 focus-visible:outline-primary-text ${
-                    book ? 'bg-magenta-soft border-magenta/40' : 'bg-surface-2 border-border'
-                  } ${isFuture ? 'opacity-45' : ''}`}
-                >
-                  <span className="font-body font-bold text-body-sm text-text capitalize">{MONTH_ABBR[month - 1]}</span>
-                  {book ? (
-                    <>
-                      <MiniCover src={book.coverUrl} title={book.title} className="w-full rounded-lg! shadow-sm" />
-                      <span className="font-display font-semibold text-[12px] leading-tight text-text line-clamp-2">{book.title}</span>
-                    </>
-                  ) : (
-                    <span
-                      className={`w-full aspect-2/3 rounded-lg border border-dashed flex items-center justify-center text-center px-1 text-[11px] leading-tight ${
-                        canPick && !fav ? 'border-primary-text/50 text-primary-text font-bold' : 'border-border text-text-muted'
-                      }`}
-                    >
-                      {isFuture ? '' : !canPick ? 'Sin libros' : fav ? 'Vacío' : (
-                        <span className="flex flex-col items-center gap-1">
-                          <Heart size={16} />
-                          Elegir
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        )}
+        <PeriodTransition order={year}>
+          {isLoading ? (
+            <div className="mt-5 space-y-3" aria-label="Cargando">
+              {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2 mt-5">
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
+                const isFuture = month > lastMonth
+                const monthReads = reads.filter((r) => r.month === month)
+                const fav = favoriteFor(month)
+                const book = fav?.bookId ? bookById.get(fav.bookId) : undefined
+                const canPick = !isFuture && monthReads.length > 0
+                return (
+                  <button
+                    key={month}
+                    type="button"
+                    onClick={() => setPicking(month)}
+                    disabled={!canPick}
+                    aria-label={`${MONTH_NAMES[month - 1]}: ${book ? book.title : !canPick ? 'sin libros terminados' : fav ? 'vacío' : 'elegir favorito'}`}
+                    className={`rounded-2xl p-2.5 flex flex-col gap-2 text-left border focus-visible:outline-2 focus-visible:outline-primary-text ${
+                      book ? 'bg-magenta-soft border-magenta/40' : 'bg-surface-2 border-border'
+                    } ${isFuture ? 'opacity-45' : ''}`}
+                  >
+                    <span className="font-body font-bold text-body-sm text-text capitalize">{MONTH_ABBR[month - 1]}</span>
+                    {book ? (
+                      <>
+                        <MiniCover src={book.coverUrl} title={book.title} className="w-full rounded-lg! shadow-sm" />
+                        <span className="font-display font-semibold text-[12px] leading-tight text-text line-clamp-2">{book.title}</span>
+                      </>
+                    ) : (
+                      <span
+                        className={`w-full aspect-2/3 rounded-lg border border-dashed flex items-center justify-center text-center px-1 text-[11px] leading-tight ${
+                          canPick && !fav ? 'border-primary-text/50 text-primary-text font-bold' : 'border-border text-text-muted'
+                        }`}
+                      >
+                        {isFuture ? '' : !canPick ? 'Sin libros' : fav ? 'Vacío' : (
+                          <span className="flex flex-col items-center gap-1">
+                            <Heart size={16} />
+                            Elegir
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </PeriodTransition>
       </Card>
 
       {/* Favorito del año */}

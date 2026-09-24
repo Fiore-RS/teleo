@@ -52,7 +52,9 @@ export function Sheet({ onClose, title, children, headerRight }: SheetProps) {
         className={`relative w-full max-w-120 max-h-[92vh] flex flex-col bg-surface rounded-b-[28px] shadow-float ${
           isClosing ? 'animate-sheet-out' : 'animate-sheet-down'
         }`}
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+        // Aire arriba: la zona segura del teléfono (muesca, barra de estado) más 16px, para que
+        // el título no quede pegado al borde de la pantalla.
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}
       >
         <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3 shrink-0">
           <h2 className="font-display font-semibold text-display-md text-text truncate">{title}</h2>

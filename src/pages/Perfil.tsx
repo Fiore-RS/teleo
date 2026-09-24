@@ -18,6 +18,10 @@ import { DetalleLibro } from './DetalleLibro'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { ProfileView } from './ProfileView'
 import { hasUnseenChangelog } from '../lib/changelog'
+import { sampleWithSeed } from '../lib/random'
+
+// Cuántas portadas se muestran en Favoritos, Recomendados, Deseados y Abandonados.
+const SHELF_SIZE = 4
 
 // Botones redondos translúcidos sobre la cabecera de degradado (Configuración y Editar perfil).
 const headerButtonClass =
@@ -36,6 +40,8 @@ export function Perfil() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [hasNews] = useState(hasUnseenChangelog)
+  // Nueva semilla en cada visita: si una lista tiene más de 4 libros, se eligen otros 4.
+  const [shelfSeed] = useState(() => Math.floor(Math.random() * 1e9))
   // Hoja de compartir y, al elegir, el modal de esa opción.
   const [shareStep, setShareStep] = useState<'menu' | 'perfil' | 'deseados' | null>(null)
 
@@ -90,10 +96,10 @@ export function Perfil() {
         annualGoal={annualGoal}
         annualCompletedCount={annualCompletedCount}
         currentlyReading={currentlyReading}
-        favorites={favorites}
-        recommended={recommended}
-        wishlist={wishlist}
-        abandoned={abandoned}
+        favorites={sampleWithSeed(favorites, SHELF_SIZE, shelfSeed)}
+        recommended={sampleWithSeed(recommended, SHELF_SIZE, shelfSeed)}
+        wishlist={sampleWithSeed(wishlist, SHELF_SIZE, shelfSeed)}
+        abandoned={sampleWithSeed(abandoned, SHELF_SIZE, shelfSeed)}
         counts={counts}
         activity={<ActivityCard userId={user?.id} onOpenCalendar={() => setIsCalendarOpen(true)} />}
         priorityList={<PriorityListCard userId={user?.id} />}

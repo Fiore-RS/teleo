@@ -10,6 +10,7 @@ import { Card } from '../../assets/components/molecules/Card'
 import { ProgressBar } from '../../assets/components/atoms/ProgressBar'
 import { BarChart } from '../../assets/components/atoms/BarChart'
 import { MonthCalendar } from '../../assets/components/atoms/MonthCalendar'
+import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
 import { StreakTiles } from '../../assets/components/molecules/StreakTiles'
 import { RatingRow } from '../../assets/components/molecules/RatingRow'
 import { formatDuration } from '../../lib/progress'
@@ -165,10 +166,12 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <MonthCalendar year={olderMonth.year} month={olderMonth.month} markedDates={markedDates} />
-            <MonthCalendar year={newerMonth.year} month={newerMonth.month} markedDates={markedDates} />
-          </div>
+          <PeriodTransition order={-monthsBack}>
+            <div className="grid grid-cols-2 gap-4">
+              <MonthCalendar year={olderMonth.year} month={olderMonth.month} markedDates={markedDates} />
+              <MonthCalendar year={newerMonth.year} month={newerMonth.month} markedDates={markedDates} />
+            </div>
+          </PeriodTransition>
 
           <div className="flex items-center justify-center gap-1.5 mt-4 text-body-sm text-text-secondary">
             <span className="w-2.5 h-2.5 rounded-xs bg-surface-2 border border-border" />

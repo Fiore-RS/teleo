@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGoBack } from '../hooks/useGoBack'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useAccountSettings } from '../hooks/useAccountSettings'
@@ -8,6 +9,7 @@ import { PageHeader } from '../assets/components/molecules/PageHeader'
 
 export function CambiarContrasena() {
   const navigate = useNavigate()
+  const goBack = useGoBack('/configuracion')
   const { user } = useAuth()
   const { updatePassword, isSaving } = useAccountSettings(user?.id)
   const [newPassword, setNewPassword] = useState('')
@@ -24,7 +26,7 @@ export function CambiarContrasena() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader title="Cambiar contraseña" subtitle="Elige una nueva contraseña segura." onBack={() => navigate('/configuracion')} backLabel="Regresar a Configuración" />
+      <PageHeader title="Cambiar contraseña" subtitle="Elige una nueva contraseña segura." onBack={goBack} backLabel="Regresar a Configuración" />
       <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
 
       <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Nueva contraseña</label>

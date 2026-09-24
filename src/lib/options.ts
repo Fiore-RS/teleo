@@ -22,5 +22,5 @@ export type BookFormat = 'fisico' | 'digital' | 'audiolibro'
 export const formatOptions: { value: BookFormat; label: string }[] = [
   { value: 'fisico', label: 'Físico' },
   { value: 'digital', label: 'Digital' },
-  { value: 'audiolibro', label: 'Audio Libro' },
+  { value: 'audiolibro', label: 'Audiolibro' },
 ]

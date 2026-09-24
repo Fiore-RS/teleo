@@ -22,7 +22,7 @@ export function DetrasDeTeleo() {
         <img
           src={`${import.meta.env.BASE_URL}pwa-icons/pwa-192x192.png`}
           alt=""
-          className="w-16 h-16 rounded-2xl shadow-card mb-5"
+          className="w-16 h-16 rounded-2xl shadow-card mb-5 mx-auto block"
         />
         <p className="font-display font-semibold text-display-md text-text leading-snug">
           Hola, soy Fiorella. También me conocen como Fiito.

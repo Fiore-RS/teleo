@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useGoBack } from '../hooks/useGoBack'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -12,6 +13,7 @@ const NICKNAME_MAX = 30
  *  sin espera entre cambios (a diferencia del @usuario). Vacío = sin nickname. */
 export function CambiarNickname() {
   const navigate = useNavigate()
+  const goBack = useGoBack('/configuracion')
   const { user } = useAuth()
   const { profile, updateProfile } = useProfile(user?.id)
   // null = todavía no se escribió nada: se muestra el nickname actual.
@@ -28,7 +30,7 @@ export function CambiarNickname() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader title="Cambiar nickname" subtitle="El nombre con el que Teleo te saluda." onBack={() => navigate('/configuracion')} backLabel="Regresar a Configuración" />
+      <PageHeader title="Cambiar nickname" subtitle="El nombre con el que Teleo te saluda." onBack={goBack} backLabel="Regresar a Configuración" />
       <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
         <label htmlFor="nickname" className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Nickname</label>
         <Input

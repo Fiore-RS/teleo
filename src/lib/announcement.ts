@@ -1,5 +1,5 @@
 import {
-  BookHeart, CalendarClock, CalendarDays, Coins, Image, LibraryBig, Settings, Shuffle, UserRound,
+  BookHeart, CalendarClock, CalendarDays, Coins, Image, LibraryBig, NotebookPen, Settings, Shuffle, UserRound,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -22,6 +22,7 @@ export const announcementItems: AnnouncementItem[] = [
   { icon: Image, title: 'Tarjeta para historias', text: 'Comparte tu perfil con las portadas de tu última lectura, la actual y la próxima.' },
   { icon: Shuffle, title: '¿Qué leo ahora?', text: 'Teleo elige al azar uno de tus pendientes cuando no sabes con cuál seguir.' },
   { icon: BookHeart, title: 'Fechas sin reseña', text: 'Guarda cuándo empezaste y terminaste un libro sin tener que escribir la reseña.' },
+  { icon: NotebookPen, title: 'Reseñas completas', text: 'Agrega calificaciones personalizadas y citas desde la primera vez que escribes una reseña.' },
   { icon: Settings, title: 'Configuración ordenada', text: 'Novedades, Detrás de Teleo, privacidad y términos, todo en su lugar.' },
 ]
 
