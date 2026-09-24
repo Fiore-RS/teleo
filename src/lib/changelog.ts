@@ -23,6 +23,7 @@ export const changelog: ChangelogEntry[] = [
       'Perfil renovado: tus números, tu actividad del mes, tu lista de temporada, el estante de abandonados y un botón para compartir.',
       'Configuración reorganizada, con Novedades, Detrás de Teleo, política de privacidad y términos de uso.',
       'Lanzamientos: anota los libros que esperas, míralos en un calendario y en una cuenta atrás, y el próximo aparece en La mesa.',
+      'Nueva tarjeta para compartir en formato historia, con tu foto, tu meta, tu racha y las portadas de tu última lectura, la actual y la próxima.',
       'Bitácora ahora tiene Resumen, con tus libros de cada mes y año y tus favoritos, y Compras, con lo que invertiste libro por libro.',
     ],
   },

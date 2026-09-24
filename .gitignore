@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Archivos que deja la app de Claude (maquetas, borradores)
+Claude outputs/
