@@ -1,4 +1,3 @@
-import { jsPDF } from 'jspdf'
 import type { Database } from '../types/database'
 
 type Book = Database['public']['Tables']['books']['Row']
@@ -57,7 +56,10 @@ function groupByAuthor(books: Pick<Book, 'title' | 'author'>[]): AuthorGroup[] {
  *  Por qué PDF y no imagen: con 300+ libros, una sola imagen se volvería enorme — html-to-image
  *  reescala cualquier canvas de más de 16384px, así que el texto saldría borroso o habría que
  *  partirlo en varias imágenes. Un PDF pagina solo, con texto nítido a cualquier zoom. */
-export function buildWishlistPdf(books: Pick<Book, 'title' | 'author'>[]): Blob {
+/** jsPDF se carga recién aquí (import dinámico): es pesado y solo se usa al compartir la
+ *  lista de deseados, así que no tiene por qué descargarse al abrir la app. */
+export async function buildWishlistPdf(books: Pick<Book, 'title' | 'author'>[]): Promise<Blob> {
+  const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ unit: 'pt' })
   const pageWidth = doc.internal.pageSize.getWidth()
   const pageHeight = doc.internal.pageSize.getHeight()

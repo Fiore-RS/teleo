@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Html5Qrcode } from 'html5-qrcode'
+import type { Html5Qrcode } from 'html5-qrcode'
 import { Modal } from '../atoms/Modal'
 
 interface BarcodeScannerModalProps {
@@ -16,23 +16,31 @@ export function BarcodeScannerModal({ isOpen, onClose, onDetected }: BarcodeScan
   useEffect(() => {
     if (!isOpen) return
 
-    const scanner = new Html5Qrcode(SCANNER_ID)
-    scannerRef.current = scanner
+    // La librería del escáner es pesada: se carga recién al abrir la cámara.
+    let cancelled = false
+    let scanner: Html5Qrcode | null = null
 
-    scanner
-      .start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 120 } },
-        (decodedText) => {
-          onDetected(decodedText)
-          scanner.stop().catch(() => {})
-        },
-        () => {}
-      )
+    import('html5-qrcode')
+      .then(({ Html5Qrcode }) => {
+        if (cancelled) return
+        const instance = new Html5Qrcode(SCANNER_ID)
+        scanner = instance
+        scannerRef.current = instance
+        return instance.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 120 } },
+          (decodedText) => {
+            onDetected(decodedText)
+            instance.stop().catch(() => {})
+          },
+          () => {}
+        )
+      })
       .catch((err) => console.error('No se pudo iniciar la cámara:', err))
 
     return () => {
-      scanner.stop().catch(() => {})
+      cancelled = true
+      scanner?.stop().catch(() => {})
     }
   }, [isOpen, onDetected])
 

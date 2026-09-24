@@ -35,7 +35,7 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
   const [downloaded, setDownloaded] = useState(false)
   const { books, isLoading } = useWishlistExport(userId)
 
-  function generateBlob(): Blob {
+  function generateBlob(): Promise<Blob> {
     return buildWishlistPdf(books)
   }
 
@@ -43,7 +43,7 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
     setIsGenerating(true)
     setError(null)
     try {
-      const blob = generateBlob()
+      const blob = await generateBlob()
       const file = new File([blob], 'teleo-lista-de-deseados.pdf', { type: 'application/pdf' })
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({
@@ -63,12 +63,12 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
     }
   }
 
-  function handleDownload() {
+  async function handleDownload() {
     setIsGenerating(true)
     setError(null)
     setDownloaded(false)
     try {
-      downloadBlob(generateBlob())
+      downloadBlob(await generateBlob())
       setDownloaded(true)
     } catch (err) {
       console.error('[ShareWishlistModal] Error al descargar:', err)

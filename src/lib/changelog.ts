@@ -12,6 +12,18 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '2.0.1',
+    date: '25 de septiembre de 2026',
+    title: 'Pequeños ajustes',
+    items: [
+      'En Compras de Bitácora, todos los montos se ven del mismo tamaño en el teléfono.',
+      'El precio que le pones a un lanzamiento ahora queda como precio del libro en tu lista de deseados.',
+      'Tu respaldo de datos ahora guarda todo: metas, racha, historial de lecturas, favoritos del mes y del año, y lanzamientos.',
+      'Si abres un enlace que ya no existe, Teleo te lleva a tu mesa en vez de mostrar una pantalla en blanco.',
+      'Teleo abre más rápido y ocupa menos espacio en tu celular.',
+    ],
+  },
+  {
     version: '2.0.0',
     date: '24 de septiembre de 2026',
     title: 'Teleo crece',
