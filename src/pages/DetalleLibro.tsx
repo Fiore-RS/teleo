@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ImageOff, Heart, Camera, PenLine, Trash2, RotateCcw, Play, NotebookPen } from 'lucide-react'
+import { ImageOff, Heart, Camera, PenLine, Trash2, RotateCcw, Play, NotebookPen, CalendarPlus } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
@@ -32,6 +32,10 @@ import { DurationMaskInput } from '../assets/components/atoms/DurationMaskInput'
 import { DateInput } from '../assets/components/atoms/DateInput'
 import { PriceInput } from '../assets/components/atoms/PriceInput'
 import { todayLocalDate } from '../lib/date'
+import { useProfile } from '../hooks/useProfile'
+import { useReleases, type Release } from '../hooks/useReleases'
+import { ReleaseRow } from '../assets/components/molecules/ReleaseRow'
+import { ReleaseFormSheet } from '../assets/components/molecules/ReleaseFormSheet'
 
 const categoryOptions = [
   { value: 'Libro', label: 'Libro' },
@@ -67,6 +71,11 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const { count: readCount, refetch: refetchReadCount } = useBookReadCount(bookId)
   const { uploadCover, isUploading } = useCoverUpload(user?.id)
   const coverInputRef = useRef<HTMLInputElement>(null)
+  const { profile } = useProfile(user?.id)
+  // Lanzamientos enlazados a este libro (fase 7). null = formulario cerrado.
+  const { releases } = useReleases(user?.id)
+  const bookReleases = releases.filter((r) => r.book_id === bookId)
+  const [releaseForm, setReleaseForm] = useState<{ release?: Release } | null>(null)
 
   async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -324,7 +333,24 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   </div>
                 )}
 
+                {bookReleases.length > 0 && (
+                  <div className="mt-5">
+                    <p className={labelClass}>{bookReleases.length === 1 ? 'Lanzamiento' : 'Lanzamientos'}</p>
+                    <div className="flex flex-col gap-2">
+                      {bookReleases.map((r) => (
+                        <ReleaseRow key={r.id} release={r} currency={profile?.currency} onClick={() => setReleaseForm({ release: r })} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-2.5 mt-6">
+                  {book.status === 'deseado' && bookReleases.length === 0 && (
+                    <Button variant="soft" onClick={() => setReleaseForm({})}>
+                      <CalendarPlus size={17} />
+                      Agregar lanzamiento
+                    </Button>
+                  )}
                   {book.status === 'terminado' && (
                     <Button variant={hasReview ? 'soft' : 'primary'} onClick={() => setIsResenaOpen(true)}>
                       <NotebookPen size={18} />
@@ -506,6 +532,15 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           initialStartDate={book.start_date}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}
+        />
+      )}
+
+      {releaseForm && (
+        <ReleaseFormSheet
+          userId={user?.id}
+          release={releaseForm.release}
+          initialBookId={bookId}
+          onClose={() => setReleaseForm(null)}
         />
       )}
 

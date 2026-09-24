@@ -21,6 +21,7 @@ import { CambiarNickname } from "./pages/CambiarNickname";
 import { CorreoConfirmado } from "./pages/CorreoConfirmado";
 import { DetrasDeTeleo } from "./pages/DetrasDeTeleo";
 import { Novedades } from "./pages/Novedades";
+import { Lanzamientos } from "./pages/Lanzamientos";
 import { Privacidad, Terminos } from "./pages/LegalPage";
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
           <Route path="/estante" element={<Estante />} />
           <Route path="/cuaderno" element={<Cuaderno />} />
           <Route path="/bitacora" element={<Bitacora />} />
+          <Route path="/lanzamientos" element={<Lanzamientos />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
