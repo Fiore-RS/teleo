@@ -290,6 +290,44 @@ export type Database = {
         }
         Relationships: []
       }
+      period_favorites: {
+        Row: {
+          book_id: string | null
+          created_at: string | null
+          id: string
+          month: number | null
+          updated_at: string | null
+          user_id: string
+          year: number
+        }
+        Insert: {
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          month?: number | null
+          updated_at?: string | null
+          user_id?: string
+          year: number
+        }
+        Update: {
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          month?: number | null
+          updated_at?: string | null
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "period_favorites_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       reading_history: {
         Row: {
           book_id: string
