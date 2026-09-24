@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from "react";
-import { Routes, Route, useLocation, useNavigationType } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
 import { Inicio } from "./pages/Inicio";
 import { Bienvenida } from "./pages/Bienvenida";
@@ -24,6 +24,19 @@ import { DetrasDeTeleo } from "./pages/DetrasDeTeleo";
 import { Novedades } from "./pages/Novedades";
 import { Lanzamientos } from "./pages/Lanzamientos";
 import { Privacidad, Terminos } from "./pages/LegalPage";
+
+/** Cualquier dirección que no existe (un enlace viejo a /@usuario, una dirección mal escrita)
+ *  vuelve a la pantalla de carga, que lleva a La mesa, a Bienvenida o al inicio según la
+ *  sesión. Antes quedaba la pantalla en blanco.
+ *  Excepción: los enlaces de Supabase llegan con sus datos en el "#" sin ruta
+ *  (#access_token=..., #message=...). Esos los resuelve main.tsx; si acá se redirigiera de
+ *  inmediato, se borraría el "#" antes de que Supabase termine de leerlo. */
+function RutaDesconocida() {
+  const hash = window.location.hash;
+  const isAuthLink = hash.length > 1 && !hash.startsWith("#/");
+  if (isAuthLink) return null;
+  return <Navigate to="/" replace />;
+}
 
 function App() {
   const location = useLocation();
@@ -111,6 +124,7 @@ function App() {
           <Route path="/privacidad" element={<Privacidad />} />
           <Route path="/terminos" element={<Terminos />} />
           <Route path="/correo-confirmado" element={<CorreoConfirmado />} />
+          <Route path="*" element={<RutaDesconocida />} />
         </Routes>
         </div>
       </div>
