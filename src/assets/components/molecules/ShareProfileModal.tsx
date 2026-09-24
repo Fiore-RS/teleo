@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { toBlob } from 'html-to-image'
 import { QRCodeSVG } from 'qrcode.react'
 import { Share2, Download } from 'lucide-react'
 import { Modal } from '../atoms/Modal'
@@ -80,6 +79,8 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
     if (!cardRef.current) return null
     // La tarjeta mide 360 × 640; a 3x queda en 1080 × 1920, el tamaño de una historia.
     try {
+      // Se carga recién al crear la imagen, no al abrir la app.
+      const { toBlob } = await import('html-to-image')
       return await toBlob(cardRef.current, {
         pixelRatio: 3,
         imagePlaceholder: TRANSPARENT_PIXEL,
