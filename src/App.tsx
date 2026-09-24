@@ -1,29 +1,46 @@
-import { useEffect, useLayoutEffect } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, type ComponentType } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
-import { Inicio } from "./pages/Inicio";
-import { Bienvenida } from "./pages/Bienvenida";
-import { Tutorial } from "./pages/Tutorial";
-import { Mesa } from "./pages/Mesa";
-import { Estante } from "./pages/Estante";
-import { Cuaderno } from "./pages/Cuaderno";
-import { Bitacora } from "./pages/Bitacora";
-import { Login } from "./pages/Login";
-import { Registro } from "./pages/Registro";
-import { Perfil } from "./pages/Perfil";
-import { Configuracion } from "./pages/Configuracion";
-import { CambiarUsuario } from "./pages/CambiarUsuario";
-import { CambiarCorreo } from "./pages/CambiarCorreo";
-import { CambiarContrasena } from "./pages/CambiarContrasena";
-import { Instalar } from "./pages/Instalar";
-import { RecuperarContrasena } from "./pages/RecuperarContrasena";
-import { NuevaContrasena } from "./pages/NuevaContrasena";
-import { CambiarNickname } from "./pages/CambiarNickname";
-import { CorreoConfirmado } from "./pages/CorreoConfirmado";
-import { DetrasDeTeleo } from "./pages/DetrasDeTeleo";
-import { Novedades } from "./pages/Novedades";
-import { Lanzamientos } from "./pages/Lanzamientos";
-import { Privacidad, Terminos } from "./pages/LegalPage";
+
+/* Cada pantalla se descarga recién cuando se abre (lazy), en vez de venir toda en un solo
+ * archivo al abrir la app. La pantalla de carga sí va incluida, porque es la primera que se ve. */
+const page = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) =>
+  lazy(() => load().then((module) => ({ default: module[name] })));
+
+const Inicio = page(() => import("./pages/Inicio"), "Inicio");
+const Bienvenida = page(() => import("./pages/Bienvenida"), "Bienvenida");
+const Tutorial = page(() => import("./pages/Tutorial"), "Tutorial");
+const Mesa = page(() => import("./pages/Mesa"), "Mesa");
+const Estante = page(() => import("./pages/Estante"), "Estante");
+const Cuaderno = page(() => import("./pages/Cuaderno"), "Cuaderno");
+const Bitacora = page(() => import("./pages/Bitacora"), "Bitacora");
+const Login = page(() => import("./pages/Login"), "Login");
+const Registro = page(() => import("./pages/Registro"), "Registro");
+const Perfil = page(() => import("./pages/Perfil"), "Perfil");
+const Configuracion = page(() => import("./pages/Configuracion"), "Configuracion");
+const CambiarUsuario = page(() => import("./pages/CambiarUsuario"), "CambiarUsuario");
+const CambiarCorreo = page(() => import("./pages/CambiarCorreo"), "CambiarCorreo");
+const CambiarContrasena = page(() => import("./pages/CambiarContrasena"), "CambiarContrasena");
+const Instalar = page(() => import("./pages/Instalar"), "Instalar");
+const RecuperarContrasena = page(() => import("./pages/RecuperarContrasena"), "RecuperarContrasena");
+const NuevaContrasena = page(() => import("./pages/NuevaContrasena"), "NuevaContrasena");
+const CambiarNickname = page(() => import("./pages/CambiarNickname"), "CambiarNickname");
+const CorreoConfirmado = page(() => import("./pages/CorreoConfirmado"), "CorreoConfirmado");
+const DetrasDeTeleo = page(() => import("./pages/DetrasDeTeleo"), "DetrasDeTeleo");
+const Novedades = page(() => import("./pages/Novedades"), "Novedades");
+const Lanzamientos = page(() => import("./pages/Lanzamientos"), "Lanzamientos");
+const Privacidad = page(() => import("./pages/LegalPage"), "Privacidad");
+const Terminos = page(() => import("./pages/LegalPage"), "Terminos");
+
+/** Las pestañas principales se descargan en segundo plano apenas carga la app, para que al
+ *  tocarlas en la barra aparezcan al instante, sin esperar la descarga. */
+function preloadMainTabs() {
+  void import("./pages/Mesa");
+  void import("./pages/Estante");
+  void import("./pages/Cuaderno");
+  void import("./pages/Bitacora");
+  void import("./pages/Perfil");
+}
 
 /** Cualquier dirección que no existe (un enlace viejo a /@usuario, una dirección mal escrita)
  *  vuelve a la pantalla de carga, que lleva a La mesa, a Bienvenida o al inicio según la
@@ -41,6 +58,12 @@ function RutaDesconocida() {
 function App() {
   const location = useLocation();
   const navigationType = useNavigationType();
+
+  // Después de la pantalla de carga (unos segundos), sin competir con lo que se ve primero.
+  useEffect(() => {
+    const timer = window.setTimeout(preloadMainTabs, 1500);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // Altura de desplazamiento de cada pantalla visitada (por su entrada en el historial), para
   // devolverla al regresar con el botón de atrás o el gesto del teléfono.
@@ -98,6 +121,9 @@ function App() {
         {/* key = ruta: al cambiar de pantalla (por la barra de pestañas o navegando) el
             contenedor se vuelve a montar y reproduce el fundido de entrada. */}
         <div key={location.pathname} className="animate-page-in">
+        {/* Mientras llega el archivo de una pantalla que todavía no se abrió, no se muestra
+            nada (suele ser un instante); cada pantalla ya trae sus siluetas de carga. */}
+        <Suspense fallback={null}>
         <Routes location={location}>
           <Route path="/" element={<LoadingScreen />} />
           <Route path="/inicio" element={<Inicio />} />
@@ -126,6 +152,7 @@ function App() {
           <Route path="/correo-confirmado" element={<CorreoConfirmado />} />
           <Route path="*" element={<RutaDesconocida />} />
         </Routes>
+        </Suspense>
         </div>
       </div>
     </div>
