@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useGoBack } from '../hooks/useGoBack'
 import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
+  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -20,9 +22,13 @@ import { currencyOptions } from '../lib/currencies'
 import { SettingsGroup, SettingsRow, SettingsField } from '../assets/components/molecules/SettingsList'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { supabase } from '../lib/supabase'
+import { LATEST_VERSION, hasUnseenChangelog } from '../lib/changelog'
+
+const SCROLL_KEY = 'teleo-config-scroll'
 
 export function Configuracion() {
   const navigate = useNavigate()
+  const goBack = useGoBack('/perfil')
   const { user } = useAuth()
   const { profile, updateProfile } = useProfile(user?.id)
   const { exportData } = useDataExport(user?.id)
@@ -36,7 +42,36 @@ export function Configuracion() {
   >(null)
   const [dialogState, setDialogState] = useState<'confirm' | 'success' | 'error'>('confirm')
   const [deleteChecked, setDeleteChecked] = useState(false)
+  // Se lee al entrar; al volver desde Novedades la pantalla se monta de nuevo y ya no aparece.
+  const [hasNews] = useState(hasUnseenChangelog)
 
+
+  // Al volver de una opción (Novedades, Correo, Tutorial...) se regresa a la misma altura de
+  // la lista en vez de al inicio. La posición se guarda solo al abrir una opción, así que al
+  // entrar desde Perfil la pantalla arranca arriba como siempre.
+  function openSubpage(path: string) {
+    try {
+      sessionStorage.setItem(SCROLL_KEY, String(window.scrollY))
+    } catch {
+      // Sin almacenamiento: simplemente vuelve arriba.
+    }
+    navigate(path)
+  }
+
+  useEffect(() => {
+    let saved: string | null
+    try {
+      saved = sessionStorage.getItem(SCROLL_KEY)
+      sessionStorage.removeItem(SCROLL_KEY)
+    } catch {
+      return
+    }
+    if (saved === null) return
+    const y = Number(saved)
+    // Después del cambio de pantalla, que lleva la página arriba (App.tsx).
+    const frame = requestAnimationFrame(() => window.scrollTo(0, y))
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   async function handleSignOut() {
     await supabase.auth.signOut()
@@ -78,14 +113,31 @@ export function Configuracion() {
       <PageHeader
         title="Configuración"
         subtitle="Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto."
-        onBack={() => navigate('/perfil')}
+        onBack={goBack}
         backLabel="Regresar a Tu rincón"
       />
 
       <div className="flex flex-col gap-7 stagger-children">
+        <SettingsGroup title="Teleo">
+          <SettingsRow icon={Heart} label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
+          <SettingsRow icon={Megaphone} label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
+        </SettingsGroup>
+
         <SettingsGroup title="Apariencia">
-          <SettingsField icon={Palette} label="Tema de la aplicación" description="Mañana con café o noche con lámpara">
+          <SettingsField icon={Palette} label="Modo de color" description="Mañana con café o noche con lámpara">
             <ThemeToggle />
+          </SettingsField>
+          <SettingsField icon={Paintbrush} label="Tema" description="Pronto podrás elegir otros colores para Teleo">
+            <div className="flex items-center gap-2">
+              <span className="px-4 py-2 rounded-full bg-primary text-primary-ink text-body-md font-bold">Atardecer</span>
+              <span className="px-3 py-1.5 rounded-full bg-surface-2 border border-border text-body-sm text-text-muted">Próximamente</span>
+            </div>
+          </SettingsField>
+        </SettingsGroup>
+
+        <SettingsGroup title="Sistema">
+          <SettingsField icon={Languages} label="Idioma" description="Por ahora Teleo está solo en español">
+            <Select options={[{ value: 'es', label: 'Español' }]} value="es" disabled />
           </SettingsField>
           <SettingsField icon={Coins} label="Moneda" description="Se usa para mostrar el valor de tu biblioteca en Bitácora">
             <Select
@@ -98,9 +150,10 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Cuenta">
-          <SettingsRow icon={User} label="Cambiar nombre de usuario" description="Tu @usuario en Teleo" onClick={() => navigate('/configuracion/usuario')} />
-          <SettingsRow icon={Mail} label="Cambiar correo" description="El correo con el que inicias sesión" onClick={() => navigate('/configuracion/correo')} />
-          <SettingsRow icon={Lock} label="Cambiar contraseña" description="Actualiza tu clave de acceso" onClick={() => navigate('/configuracion/contrasena')} />
+          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => openSubpage('/configuracion/usuario')} />
+          <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => openSubpage('/configuracion/nickname')} />
+          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => openSubpage('/configuracion/correo')} />
+          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => openSubpage('/configuracion/contrasena')} />
         </SettingsGroup>
 
         <SettingsGroup title="Compartir">
@@ -109,7 +162,9 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Información">
-          <SettingsRow icon={Info} label="Tutorial de Teleo" description="Un recorrido por cada sección" onClick={() => navigate('/tutorial')} />
+          <SettingsRow icon={Info} label="Tutorial de Teleo" description="Un recorrido por cada sección" onClick={() => openSubpage('/tutorial')} />
+          <SettingsRow icon={ShieldCheck} label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
+          <SettingsRow icon={FileText} label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
         </SettingsGroup>
 
         <SettingsGroup title="Tus datos">
@@ -133,9 +188,6 @@ export function Configuracion() {
         <ShareProfileModal
           onClose={() => setIsShareModalOpen(false)}
           userId={user?.id}
-          username={profile?.username}
-          bio={profile?.bio}
-          avatarUrl={profile?.avatar_url}
         />
       )}
 

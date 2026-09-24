@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { formatLocalDate, todayLocalDate } from '../lib/date'
 import { useCachedQuery } from './useCachedQuery'
+import { computeLongestStreak } from '../lib/streak'
 
 const EMPTY: string[] = []
 
@@ -95,5 +96,9 @@ export function useReadingStreak(userId: string | undefined) {
     }
   }
 
-  return { streak, markedToday, markToday, unmarkToday, isLoading, weekDays }
+  // Para el calendario de lectura: todas las fechas marcadas y la racha más larga.
+  const markedDates = useMemo(() => new Set(sessionDates), [sessionDates])
+  const longestStreak = useMemo(() => computeLongestStreak(sessionDates), [sessionDates])
+
+  return { streak, markedToday, markToday, unmarkToday, isLoading, weekDays, markedDates, longestStreak }
 }

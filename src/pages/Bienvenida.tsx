@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import logoIconDark from '../assets/images/logo/logo-icon-dark.svg'
 import { Button } from '../assets/components/atoms/Button'
+import { LATEST_VERSION, markChangelogSeen } from '../lib/changelog'
 
 interface Step {
   icon: LucideIcon
@@ -16,27 +17,27 @@ const steps: Step[] = [
   {
     icon: Coffee,
     title: 'Mesa',
-    description: 'Tu punto de partida diario: lo que estás leyendo ahora, tu racha de lectura y tu meta anual.',
+    description: 'Tu punto de partida diario: lo que estás leyendo, tu racha, tu meta del año y el próximo libro que esperas.',
   },
   {
     icon: BookOpen,
     title: 'Estante',
-    description: 'Tu librería privada. Agrega libros y sagas, organízalos y filtra por estado, idioma, categoría o formato.',
+    description: 'Tu librería privada. Agrega libros y sagas, organízalos y, si no sabes qué leer, deja que Teleo elija un pendiente.',
   },
   {
     icon: NotebookPen,
     title: 'Cuaderno',
-    description: 'Tu diario de lectura: escribe reseñas, califica tus lecturas y guarda tus citas favoritas.',
+    description: 'Tu diario de lectura: escribe reseñas, califica tus lecturas a tu manera y guarda tus citas favoritas.',
   },
   {
     icon: ScrollText,
     title: 'Bitácora',
-    description: 'Tu historia con la lectura en números: racha, calendario, colección, calificaciones y el valor de tu biblioteca.',
+    description: 'Tu historia con la lectura: tus estadísticas, un resumen de cada mes y año con tus favoritos, y tus compras.',
   },
   {
     icon: User,
     title: 'Perfil',
-    description: 'Tu rincón personal: tu meta anual, lo que estás leyendo, tus favoritos y recomendados, y compártelo como una tarjeta con quien quieras.',
+    description: 'Tu rincón personal: tus números, tu actividad, tu lista de temporada y tus estantes, y una tarjeta para compartirlo.',
   },
 ]
 
@@ -48,7 +49,9 @@ export function Bienvenida() {
 
   async function handleStart() {
     setIsSaving(true)
-    await updateProfile({ has_seen_intro: true })
+    // Las cuentas nuevas no ven el anuncio de novedades: todo es nuevo para ellas.
+    await updateProfile({ has_seen_intro: true, last_seen_version: LATEST_VERSION })
+    markChangelogSeen()
     setIsSaving(false)
     navigate('/mesa', { replace: true })
   }

@@ -2,7 +2,9 @@ import type { Database } from '../types/database'
 
 type Book = Database['public']['Tables']['books']['Row']
 
-export function getProgressInfo(book: Book): { percent: number; label?: string } {
+type ProgressFields = Pick<Book, 'format' | 'total_duration_seconds' | 'current_duration_seconds' | 'progress_percent' | 'total_pages' | 'current_page'>
+
+export function getProgressInfo(book: ProgressFields): { percent: number; label?: string } {
   if (book.format === 'audiolibro' && book.total_duration_seconds) {
     const percent = ((book.current_duration_seconds ?? 0) / book.total_duration_seconds) * 100
     return { percent, label: formatDuration(book.current_duration_seconds ?? 0) }

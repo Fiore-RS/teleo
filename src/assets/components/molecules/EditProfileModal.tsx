@@ -44,7 +44,7 @@ export function EditProfileModal({
   const labelClass = 'font-body font-semibold text-body-sm text-text-secondary block mb-1.5'
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Editar perfil">
+    <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Editar perfil">
       <Button variant="soft" onClick={onChangePhoto}>
         <Camera size={16} />
         Cambiar foto de perfil

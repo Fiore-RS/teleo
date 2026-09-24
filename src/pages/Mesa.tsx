@@ -1,99 +1,59 @@
-import { Flag, Check, Flame, BookOpen, Star, Target } from "lucide-react";
+import { Flag, Check, Flame, BookOpen, Target, Shuffle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
 import { useReadingStreak } from "../hooks/useReadingStreak";
 import { useAnnualGoal } from "../hooks/useAnnualGoal";
-import { usePriorityBooks } from "../hooks/usePriorityBooks";
 import { useProfile } from "../hooks/useProfile";
 import { getProgressInfo } from "../lib/progress";
-import { DEFAULT_PRIORITY_LIST_NAME, getPriorityListName } from "../lib/priorityList";
 import { Eyebrow } from "../assets/components/atoms/Eyebrow";
 import { Sparkle } from "../assets/components/atoms/Sparkle";
-import { Skeleton, BookTileSkeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
+import { Skeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
 import { Card } from "../assets/components/molecules/Card";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
-import { BookCardPriority } from "../assets/components/molecules/BookCardPriority";
 import { ProgressBar } from "../assets/components/atoms/ProgressBar";
 import { Button } from "../assets/components/atoms/Button";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
-import { EditListNameModal } from "../assets/components/molecules/EditListNameModal";
-import { PriorityListMenu } from "../assets/components/molecules/PriorityListMenu";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
-import { StartReadingDateModal } from "../assets/components/molecules/StartReadingDateModal";
-import { SortableItem } from "../assets/components/atoms/SortableItem";
+import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
+import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCalendarSheet";
+import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard";
+import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
+import { ANNOUNCEMENT_VERSION, isVersionBefore } from "../lib/announcement";
+import { markChangelogSeen } from "../lib/changelog";
 import { getGoalMessage } from "../lib/goalMessage";
-import { todayLocalDate } from "../lib/date";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  horizontalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import { HorizontalScroller } from "../assets/components/atoms/HorizontalScroller";
-
 export function Mesa() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
   const { streak, markedToday, markToday, unmarkToday, weekDays, isLoading: streakLoading } = useReadingStreak(user?.id);
-  const {
-    books: priorityBooks,
-    isLoading: priorityLoading,
-    reorderBook: reorderPriorityBook,
-    startReading,
-  } = usePriorityBooks(user?.id)
   const { profile, updateProfile } = useProfile(user?.id)
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isUnmarkOpen, setIsUnmarkOpen] = useState(false);
-  const [isPriorityReordering, setIsPriorityReordering] = useState(false)
-  const [pendingStartId, setPendingStartId] = useState<string | null>(null)
-  const [isEditListNameOpen, setIsEditListNameOpen] = useState(false)
   const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
+  const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  // Anuncio de la V.2.0.0: una sola vez por cuenta (se guarda en el perfil). Las cuentas
+  // nuevas lo marcan como visto al terminar la Bienvenida.
+  const [announcementDismissed, setAnnouncementDismissed] = useState(false)
+  const showAnnouncement =
+    !announcementDismissed && !!profile && !!profile.has_seen_intro && isVersionBefore(profile.last_seen_version, ANNOUNCEMENT_VERSION)
 
-  const priorityListName = getPriorityListName(profile?.priority_list_name)
+  function handleAnnouncementDone() {
+    setAnnouncementDismissed(true)
+    markChangelogSeen()
+    updateProfile({ last_seen_version: ANNOUNCEMENT_VERSION })
+  }
 
   const goalPercent =
     goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
 
-  // Mismo mecanismo de activación por "mantener presionado" que ya se usa en Estante, para
-  // no disparar el drag con un gesto normal de scroll.
-  const prioritySensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
-  );
-
   function handleTabChange(tab: TabKey) {
     navigate(`/${tab}`);
-  }
-
-  function handlePriorityDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    const oldIndex = priorityBooks.findIndex((b) => b.id === active.id)
-    const newIndex = priorityBooks.findIndex((b) => b.id === over.id)
-    const reordered = arrayMove(priorityBooks, oldIndex, newIndex)
-    const droppedIndex = reordered.findIndex((b) => b.id === active.id)
-    const beforeId = reordered[droppedIndex - 1]?.id ?? null
-    const afterId = reordered[droppedIndex + 1]?.id ?? null
-    reorderPriorityBook(active.id as string, beforeId, afterId)
-  }
-
-  async function confirmStartReading(withStartDate: boolean) {
-    if (!pendingStartId) return
-    await startReading(pendingStartId, withStartDate ? todayLocalDate() : null)
-    setPendingStartId(null)
-    refetchBooks()
   }
 
   const hour = new Date().getHours();
@@ -112,10 +72,12 @@ export function Mesa() {
             <span className="text-[clamp(18px,5.5vw,26px)] text-text-secondary">a mi manera</span>
           </h1>
         </div>
-        <div
-          className="shrink-0 w-[58px] py-2 rounded-2xl bg-orange-soft border border-border shadow-card flex flex-col items-center gap-0.5"
-          title="Racha de lectura"
-          aria-label={`Racha de ${streak} días`}
+        <button
+          type="button"
+          onClick={() => setIsCalendarOpen(true)}
+          className="shrink-0 w-[58px] py-2 rounded-2xl bg-orange-soft border border-border shadow-card flex flex-col items-center gap-0.5 transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-primary-text"
+          title="Ver calendario de lectura"
+          aria-label={`Racha de ${streak} días. Ver calendario de lectura`}
         >
           <Flame size={18} className="text-orange-text" fill="currentColor" />
           {streakLoading ? (
@@ -123,7 +85,7 @@ export function Mesa() {
           ) : (
             <span key={streak} className="font-display font-semibold text-[20px] leading-none text-text animate-fade-in">{streak}</span>
           )}
-        </div>
+        </button>
       </header>
 
       <div className="flex flex-col gap-5 stagger-children">
@@ -143,9 +105,15 @@ export function Mesa() {
             </div>
           )}
           {!booksLoading && books.length === 0 && (
-            <p className="text-body-md text-text-secondary">
-              No tienes libros en progreso todavía.
-            </p>
+            <>
+              <p className="text-body-md text-text-secondary">
+                No tienes libros en progreso todavía.
+              </p>
+              <Button variant="soft" className="mt-3.5" onClick={() => setIsRandomPickOpen(true)}>
+                <Shuffle size={16} />
+                Elegir un pendiente al azar
+              </Button>
+            </>
           )}
           <div className="divide-y divide-dashed divide-border stagger-children">
             {books.map((book) => {
@@ -167,86 +135,23 @@ export function Mesa() {
           </div>
         </Card>
 
-        {/* Mi lista de esta temporada */}
-        <Card labelledBy="mesa-temporada">
-          <div className="flex items-center justify-between gap-2 mb-3.5">
-            <Eyebrow id="mesa-temporada" icon={Star} tone="magenta">
-              {priorityListName}
-            </Eyebrow>
-            <PriorityListMenu
-              isReordering={isPriorityReordering}
-              canReorder={priorityBooks.length > 1}
-              canViewInEstante={priorityBooks.length > 0}
-              onEditName={() => setIsEditListNameOpen(true)}
-              onToggleReorder={() => setIsPriorityReordering((v) => !v)}
-              onViewInEstante={() => navigate("/estante?filtro=temporada")}
-            />
-          </div>
-
-          {priorityLoading ? (
-            <div className="flex gap-4 overflow-hidden" aria-label="Cargando">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="w-26 shrink-0">
-                  <BookTileSkeleton />
-                </div>
-              ))}
-            </div>
-          ) : priorityBooks.length === 0 ? (
-            <p className="text-body-md text-text-secondary">
-              Aún no has agregado libros a {priorityListName}. Márcalos desde Detalle del Libro.
-            </p>
-          ) : (
-            <>
-              {isPriorityReordering && (
-                <p className="text-body-sm text-text-secondary text-center mb-3">
-                  Mantén presionado unos instantes para arrastrar y organizar tu lista.
-                </p>
-              )}
-
-              {isPriorityReordering ? (
-                <DndContext sensors={prioritySensors} collisionDetection={closestCenter} onDragEnd={handlePriorityDragEnd}>
-                  <SortableContext items={priorityBooks.map((b) => b.id)} strategy={horizontalListSortingStrategy}>
-                    <HorizontalScroller className="-mx-[18px] px-[18px] gap-4!">
-                      {priorityBooks.map((book, i) => (
-                        <div key={book.id} className="w-26 shrink-0">
-                          <SortableItem id={book.id} axis="x">
-                            <BookCardPriority
-                              title={book.title}
-                              author={book.author ?? undefined}
-                              coverUrl={book.cover_url ?? undefined}
-                              position={i + 1}
-                              onStartReading={() => setPendingStartId(book.id)}
-                            />
-                          </SortableItem>
-                        </div>
-                      ))}
-                    </HorizontalScroller>
-                  </SortableContext>
-                </DndContext>
-              ) : (
-                <HorizontalScroller className="-mx-[18px] px-[18px] gap-4!">
-                  {priorityBooks.map((book, i) => (
-                    <div key={book.id} className="w-26 shrink-0">
-                      <BookCardPriority
-                        title={book.title}
-                        author={book.author ?? undefined}
-                        coverUrl={book.cover_url ?? undefined}
-                        position={i + 1}
-                        onStartReading={() => setPendingStartId(book.id)}
-                      />
-                    </div>
-                  ))}
-                </HorizontalScroller>
-              )}
-            </>
-          )}
-        </Card>
+        {/* Próximo lanzamiento: ocupa el lugar que dejó la lista de temporada */}
+        <NextReleaseCard userId={user?.id} />
 
         {/* Racha diaria */}
         <Card labelledBy="mesa-racha" tint="orange">
-          <Eyebrow id="mesa-racha" icon={Flag} tone="orange" className="mb-3.5">
-            Racha diaria de lectura
-          </Eyebrow>
+          <div className="flex items-center justify-between gap-2 mb-3.5">
+            <Eyebrow id="mesa-racha" icon={Flag} tone="orange">
+              Racha diaria de lectura
+            </Eyebrow>
+            <button
+              type="button"
+              onClick={() => setIsCalendarOpen(true)}
+              className="shrink-0 text-body-sm font-bold text-orange-text focus-visible:outline-2 focus-visible:outline-primary-text rounded-full"
+            >
+              Calendario
+            </button>
+          </div>
 
           <div className="flex items-center gap-4">
             <div className="relative w-[74px] h-[74px] shrink-0 flex items-center justify-center">
@@ -359,6 +264,10 @@ export function Mesa() {
         onSave={updateGoal}
       />
 
+      {showAnnouncement && <AnnouncementSheet onDone={handleAnnouncementDone} />}
+      {isCalendarOpen && <ReadingCalendarSheet userId={user?.id} onClose={() => setIsCalendarOpen(false)} />}
+      {isRandomPickOpen && <RandomPickSheet userId={user?.id} onClose={() => setIsRandomPickOpen(false)} />}
+
       <UnmarkStreakModal
         isOpen={isUnmarkOpen}
         onConfirm={async () => {
@@ -366,22 +275,6 @@ export function Mesa() {
           await unmarkToday()
         }}
         onDismiss={() => setIsUnmarkOpen(false)}
-      />
-
-      <EditListNameModal
-        isOpen={isEditListNameOpen}
-        onClose={() => setIsEditListNameOpen(false)}
-        currentName={profile?.priority_list_name ?? ""}
-        defaultName={DEFAULT_PRIORITY_LIST_NAME}
-        onSave={async (name) => {
-          await updateProfile({ priority_list_name: name })
-        }}
-      />
-
-      <StartReadingDateModal
-        isOpen={pendingStartId !== null}
-        onConfirm={() => confirmStartReading(true)}
-        onDismiss={() => confirmStartReading(false)}
       />
 
       {updatingBookId && (

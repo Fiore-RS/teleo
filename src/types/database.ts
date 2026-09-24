@@ -233,6 +233,7 @@ export type Database = {
           has_seen_intro: boolean
           id: string
           is_deactivated: boolean
+          last_seen_version: string | null
           nickname: string | null
           priority_list_name: string | null
           username: string
@@ -246,6 +247,7 @@ export type Database = {
           has_seen_intro?: boolean
           id: string
           is_deactivated?: boolean
+          last_seen_version?: string | null
           nickname?: string | null
           priority_list_name?: string | null
           username: string
@@ -259,6 +261,7 @@ export type Database = {
           has_seen_intro?: boolean
           id?: string
           is_deactivated?: boolean
+          last_seen_version?: string | null
           nickname?: string | null
           priority_list_name?: string | null
           username?: string
@@ -289,6 +292,88 @@ export type Database = {
           year?: number
         }
         Relationships: []
+      }
+      period_favorites: {
+        Row: {
+          book_id: string | null
+          created_at: string | null
+          id: string
+          month: number | null
+          updated_at: string | null
+          user_id: string
+          year: number
+        }
+        Insert: {
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          month?: number | null
+          updated_at?: string | null
+          user_id?: string
+          year: number
+        }
+        Update: {
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          month?: number | null
+          updated_at?: string | null
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "period_favorites_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      releases: {
+        Row: {
+          author: string | null
+          book_id: string | null
+          created_at: string | null
+          id: string
+          place: string | null
+          price: number | null
+          release_date: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          author?: string | null
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          place?: string | null
+          price?: number | null
+          release_date: string
+          title: string
+          user_id?: string
+        }
+        Update: {
+          author?: string | null
+          book_id?: string | null
+          created_at?: string | null
+          id?: string
+          place?: string | null
+          price?: number | null
+          release_date?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "releases_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       reading_history: {
         Row: {

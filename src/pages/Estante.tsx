@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Plus, Search } from "lucide-react";
+import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Plus, Search, Shuffle } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
@@ -23,6 +23,7 @@ import type { ReadingStatus } from "../lib/status";
 import { DetalleLibro } from "../pages/DetalleLibro";
 import { DetalleSaga } from "../pages/DetalleSaga";
 import { AddSagaModal } from "../assets/components/molecules/AddSagaModal";
+import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
 import {
   DndContext,
   closestCenter,
@@ -69,6 +70,7 @@ export function Estante() {
   const [search, setSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
+  const [isRandomPickOpen, setIsRandomPickOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [selectedSagaId, setSelectedSagaId] = useState<string | null>(null);
   const [isAddSagaOpen, setIsAddSagaOpen] = useState(false);
@@ -334,9 +336,23 @@ export function Estante() {
               </button>
             </div>
           </div>
-          <p className="font-body text-body-md text-text-secondary mt-1.5 tabular-nums">
-            {isLoading ? " " : countLabel}
-          </p>
+          {/* mt-4: el botón de agregar baja un poco por debajo de la fila del título, así que
+              esta fila deja espacio para que "¿Qué leo ahora?" no quede pegado a él. */}
+          <div className="flex items-center justify-between gap-3 mt-4">
+            <p className="font-body text-body-md text-text-secondary tabular-nums">
+              {isLoading ? " " : countLabel}
+            </p>
+            {tab === "libros" && (
+              <button
+                type="button"
+                onClick={() => setIsRandomPickOpen(true)}
+                className="inline-flex items-center gap-1.5 py-1 text-body-sm font-bold text-primary-text focus-visible:outline-2 focus-visible:outline-primary-text rounded-full"
+              >
+                <Shuffle size={14} />
+                ¿Qué leo ahora?
+              </button>
+            )}
+          </div>
         </div>
       </SearchHeader>
 
@@ -533,6 +549,8 @@ export function Estante() {
           }}
         />
       )}
+
+      {isRandomPickOpen && <RandomPickSheet userId={user?.id} onClose={() => setIsRandomPickOpen(false)} />}
 
       <AddSagaModal
         isOpen={isAddSagaOpen}

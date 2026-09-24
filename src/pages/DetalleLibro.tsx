@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react'
-import { ImageOff, Heart, Camera, PenLine, Trash2, RotateCcw, Play, NotebookPen } from 'lucide-react'
+import { ImageOff, Heart, Camera, PenLine, Trash2, RotateCcw, Play, NotebookPen, CalendarPlus } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
 import { useCoverUpload } from '../hooks/useCoverUpload'
 import { useReviewExists } from '../hooks/useReviewExists'
 import { useBookReadCount } from '../hooks/useBookReadCount'
-import { recordBookCompletion } from '../lib/readingHistory'
+import { recordBookCompletion, syncLatestReading } from '../lib/readingHistory'
 import { DogEar } from '../assets/components/atoms/DogEar'
 import { Tag } from '../assets/components/atoms/Tag'
 import { Sheet } from '../assets/components/atoms/Sheet'
@@ -22,6 +22,9 @@ import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { StartReadingDateModal } from '../assets/components/molecules/StartReadingDateModal'
 import { StatusMenu } from '../assets/components/molecules/StatusMenu'
 import { AbandonarLibroModal } from '../assets/components/molecules/AbandonarLibroModal'
+import { FinishBookSheet } from '../assets/components/molecules/FinishBookSheet'
+import { ReadingDatesFields } from '../assets/components/molecules/ReadingDatesFields'
+import { readingDatesAreValid, type ReadingDates } from '../lib/readingDates'
 import { statusLabel, type ReadingStatus } from '../lib/status'
 import { Resena } from './Resena'
 import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
@@ -29,6 +32,10 @@ import { DurationMaskInput } from '../assets/components/atoms/DurationMaskInput'
 import { DateInput } from '../assets/components/atoms/DateInput'
 import { PriceInput } from '../assets/components/atoms/PriceInput'
 import { todayLocalDate } from '../lib/date'
+import { useProfile } from '../hooks/useProfile'
+import { useReleases, type Release } from '../hooks/useReleases'
+import { ReleaseRow } from '../assets/components/molecules/ReleaseRow'
+import { ReleaseFormSheet } from '../assets/components/molecules/ReleaseFormSheet'
 
 const categoryOptions = [
   { value: 'Libro', label: 'Libro' },
@@ -64,6 +71,11 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const { count: readCount, refetch: refetchReadCount } = useBookReadCount(bookId)
   const { uploadCover, isUploading } = useCoverUpload(user?.id)
   const coverInputRef = useRef<HTMLInputElement>(null)
+  const { profile } = useProfile(user?.id)
+  // Lanzamientos enlazados a este libro (fase 7). null = formulario cerrado.
+  const { releases } = useReleases(user?.id)
+  const bookReleases = releases.filter((r) => r.book_id === bookId)
+  const [releaseForm, setReleaseForm] = useState<{ release?: Release } | null>(null)
 
   async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -76,6 +88,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const [isEditing, setIsEditing] = useState(false)
   const [isResenaOpen, setIsResenaOpen] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
+  const [isFinishOpen, setIsFinishOpen] = useState(false)
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
   // Actualización de estado pendiente de confirmar: cuando se marca un libro como "leyendo"
   // (desde "Retomar Lectura" o desde el selector de Estado al editar), se guarda acá la
@@ -87,6 +100,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   category: string; status: ReadingStatus
   language: string; totalPages: string; totalDuration: string
   price: string; purchaseDate: string
+  // Fechas de la lectura: solo se muestran y se guardan cuando el estado es Terminado.
+  startDate: string; endDate: string
 } | null>(null)
 
   function startEditing() {
@@ -102,6 +117,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     totalDuration: book.total_duration_seconds ? secondsToTimeInput(book.total_duration_seconds) : '',
     price: book.price != null ? String(book.price) : '',
     purchaseDate: book.purchase_date ?? '',
+    startDate: book.start_date ?? '',
+    endDate: book.end_date ?? '',
   })
   setIsEditing(true)
 }
@@ -142,6 +159,23 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     return
   }
 
+  if (draft.status === 'terminado') {
+    // Terminado: las fechas se guardan desde acá, sin pasar por la reseña, y el historial
+    // de lecturas (fuente del reto anual) queda igual a ellas.
+    if (!readingDatesAreValid(draft)) return
+    const startDate = draft.startDate || null
+    const endDate = draft.endDate || null
+    await updateBook({ ...updates, start_date: startDate, end_date: endDate })
+    if (book?.status === 'terminado') {
+      await syncLatestReading({ bookId, userId: user?.id, startDate, endDate })
+    } else {
+      await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
+    }
+    refetchReadCount()
+    setIsEditing(false)
+    return
+  }
+
   await updateBook(updates)
   setIsEditing(false)
 }
@@ -178,12 +212,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     if (newStatus === 'leyendo') {
       setPendingLeyendoUpdate({ status: 'leyendo' })
     } else if (newStatus === 'terminado') {
-      const endDate = todayLocalDate()
-      await updateBook({ status: 'terminado', end_date: endDate })
-      // Se guarda esta lectura en el historial (primera vez o relectura) para que "Mis años
-      // en libros" y la meta anual cuenten este libro en el año en que se terminó.
-      await recordBookCompletion({ bookId, userId: user?.id, startDate: book?.start_date ?? null, endDate })
-      refetchReadCount()
+      setIsFinishOpen(true)
     } else if (newStatus === 'abandonado') {
       setIsAbandonOpen(true)
     } else {
@@ -194,6 +223,17 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   async function handleAbandonConfirm(data: { abandon_reason: string; start_date: string; end_date: string }) {
     await updateBook({ status: 'abandonado', ...data })
     setIsAbandonOpen(false)
+  }
+
+  // Terminar desde el menú de estado: fechas en FinishBookSheet, reseña opcional.
+  async function handleFinishConfirm(dates: ReadingDates, writeReview: boolean) {
+    const startDate = dates.startDate || null
+    const endDate = dates.endDate || null
+    await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
+    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
+    refetchReadCount()
+    setIsFinishOpen(false)
+    if (writeReview) setIsResenaOpen(true)
   }
 
   const labelClass = 'font-body font-semibold text-body-sm text-text-secondary block mb-1.5'
@@ -293,7 +333,24 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   </div>
                 )}
 
+                {bookReleases.length > 0 && (
+                  <div className="mt-5">
+                    <p className={labelClass}>{bookReleases.length === 1 ? 'Lanzamiento' : 'Lanzamientos'}</p>
+                    <div className="flex flex-col gap-2">
+                      {bookReleases.map((r) => (
+                        <ReleaseRow key={r.id} release={r} currency={profile?.currency} onClick={() => setReleaseForm({ release: r })} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-2.5 mt-6">
+                  {book.status === 'deseado' && bookReleases.length === 0 && (
+                    <Button variant="soft" onClick={() => setReleaseForm({})}>
+                      <CalendarPlus size={17} />
+                      Agregar lanzamiento
+                    </Button>
+                  )}
                   {book.status === 'terminado' && (
                     <Button variant={hasReview ? 'soft' : 'primary'} onClick={() => setIsResenaOpen(true)}>
                       <NotebookPen size={18} />
@@ -376,9 +433,26 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   </div>
                   <div>
                     <label className={labelClass}>Estado</label>
-                    <Select options={statusOptions} value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as ReadingStatus })} />
+                    <Select
+                      options={statusOptions}
+                      value={draft.status}
+                      onChange={(e) => {
+                        const status = e.target.value as ReadingStatus
+                        // Al pasar a Terminado sin fecha de fin, se propone hoy.
+                        const endDate = status === 'terminado' && book?.status !== 'terminado' && !draft.endDate ? todayLocalDate() : draft.endDate
+                        setDraft({ ...draft, status, endDate })
+                      }}
+                    />
                   </div>
                 </div>
+
+                {draft.status === 'terminado' && (
+                  <ReadingDatesFields
+                    startDate={draft.startDate}
+                    endDate={draft.endDate}
+                    onChange={(dates) => setDraft({ ...draft, ...dates })}
+                  />
+                )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -416,7 +490,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
                 <div className="flex gap-2.5 mt-2">
                   <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
-                  <Button variant="primary" onClick={handleSave}>Guardar cambios</Button>
+                  <Button variant="primary" onClick={handleSave} disabled={draft.status === 'terminado' && !readingDatesAreValid(draft)}>Guardar cambios</Button>
                 </div>
               </div>
             ) : null}
@@ -449,6 +523,24 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           bookTitle={book.title}
           initialStartDate={book.start_date ?? ''}
           onConfirm={handleAbandonConfirm}
+        />
+      )}
+
+      {isFinishOpen && book && (
+        <FinishBookSheet
+          bookTitle={book.title}
+          initialStartDate={book.start_date}
+          onClose={() => setIsFinishOpen(false)}
+          onConfirm={handleFinishConfirm}
+        />
+      )}
+
+      {releaseForm && (
+        <ReleaseFormSheet
+          userId={user?.id}
+          release={releaseForm.release}
+          initialBookId={bookId}
+          onClose={() => setReleaseForm(null)}
         />
       )}
 

@@ -17,6 +17,8 @@ import { CustomRatingPicker } from '../assets/components/molecules/CustomRatingP
 import { QuotesEditor } from '../assets/components/molecules/QuotesEditor'
 import { FavoriteCharacterEditor } from '../assets/components/molecules/FavoriteCharacterEditor'
 import { ratingIconColor } from '../lib/ratingIcons'
+import { syncLatestReading } from '../lib/readingHistory'
+import { supabase } from '../lib/supabase'
 import type { RatingShape } from '../assets/components/atoms/RatingIcon'
 import { X } from 'lucide-react'
 
@@ -51,15 +53,42 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     review, customRatings, quotes, isLoading,
     createReview, updateReview, deleteReview,
     addCustomRating, updateCustomRating, removeCustomRating,
-    addQuote, removeQuote,
+    addQuote, removeQuote, refetch: refetchReview,
   } = useReview(bookId, user?.id)
-  const { history: readingHistory } = useBookHistory(bookId)
+  const { history: readingHistory, refetch: refetchHistory } = useBookHistory(bookId)
   // La primera entrada (más reciente) es el ciclo actual, ya mostrado arriba con
   // book.start_date/end_date — acá solo se listan las lecturas ANTERIORES a esa.
   const pastReads = readingHistory.slice(1)
 
   const [isEditing, setIsEditing] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+  // Reseña nueva: las calificaciones personalizadas y las citas se guardan aquí hasta que se
+  // crea la reseña, y se suben junto con ella al tocar "Guardar cambios".
+  const [pendingRatings, setPendingRatings] = useState<{ id: string; label: string; icon: string; value: number }[]>([])
+  const [pendingQuotes, setPendingQuotes] = useState<{ id: string; quote_text: string }[]>([])
+  const shownRatings = review ? customRatings : pendingRatings
+  const shownQuotes = review ? quotes : pendingQuotes
+
+  function handleAddRating(rating: { label: string; icon: string }) {
+    if (review) addCustomRating({ ...rating, value: 0 })
+    else setPendingRatings((prev) => [...prev, { ...rating, value: 0, id: crypto.randomUUID() }])
+  }
+  function handleRateCustom(id: string, value: number) {
+    if (review) updateCustomRating(id, value)
+    else setPendingRatings((prev) => prev.map((r) => (r.id === id ? { ...r, value } : r)))
+  }
+  function handleRemoveRating(id: string) {
+    if (review) removeCustomRating(id)
+    else setPendingRatings((prev) => prev.filter((r) => r.id !== id))
+  }
+  function handleAddQuote(text: string) {
+    if (review) addQuote(text)
+    else setPendingQuotes((prev) => [...prev, { id: crypto.randomUUID(), quote_text: text }])
+  }
+  function handleRemoveQuote(id: string) {
+    if (review) removeQuote(id)
+    else setPendingQuotes((prev) => prev.filter((q) => q.id !== id))
+  }
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
   const [draft, setDraft] = useState<{
     start_date: string; end_date: string; general_rating: number
@@ -84,10 +113,17 @@ export function Resena({ bookId, onClose }: ResenaProps) {
   async function handleSave() {
     if (!draft) return
 
-    await updateBook({
-      start_date: draft.start_date || null,
-      end_date: draft.end_date || null,
-    })
+    const startDate = draft.start_date || null
+    const endDate = draft.end_date || null
+    if (startDate && endDate && startDate > endDate) return
+    await updateBook({ start_date: startDate, end_date: endDate })
+    // Si el libro está terminado, la lectura más reciente del historial (de donde sale el reto
+    // anual) se ajusta a estas fechas. Antes solo cambiaba el libro y el reto seguía contando
+    // la fecha vieja.
+    if (book?.status === 'terminado') {
+      await syncLatestReading({ bookId, userId: user?.id, startDate, endDate })
+      await refetchHistory()
+    }
 
     const reviewPayload = {
       general_rating: draft.general_rating || null,
@@ -99,7 +135,22 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     }
 
     if (!review) {
-      await createReview(reviewPayload)
+      const created = await createReview(reviewPayload)
+      if (created && (pendingRatings.length > 0 || pendingQuotes.length > 0)) {
+        await Promise.all([
+          pendingRatings.length > 0 &&
+            supabase.from('custom_ratings').insert(
+              pendingRatings.map(({ label, icon, value }) => ({ review_id: created.id, label, icon, value }))
+            ),
+          pendingQuotes.length > 0 &&
+            supabase.from('favorite_quotes').insert(
+              pendingQuotes.map((q, i) => ({ review_id: created.id, quote_text: q.quote_text, sort_order: i }))
+            ),
+        ])
+        setPendingRatings([])
+        setPendingQuotes([])
+        await refetchReview()
+      }
     } else {
       await updateReview(reviewPayload)
     }
@@ -263,17 +314,17 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       label="General" shape="star" color="var(--color-orange)"
                       value={draft.general_rating} onRate={(v) => setDraft({ ...draft, general_rating: v })}
                     />
-                    {customRatings.map((cr) => (
+                    {shownRatings.map((cr) => (
                       <div key={cr.id} className="flex items-center gap-2">
                         <div className="flex-1">
                           <RatingRow
                             label={cr.label} shape={cr.icon as RatingShape}
                             color={ratingIconColor[cr.icon as RatingShape]} value={cr.value ?? 0}
-                            onRate={(v) => updateCustomRating(cr.id, v)}
+                            onRate={(v) => handleRateCustom(cr.id, v)}
                           />
                         </div>
                         <button
-                          onClick={() => removeCustomRating(cr.id)}
+                          onClick={() => handleRemoveRating(cr.id)}
                           aria-label="Eliminar calificación"
                           className="w-7 h-7 rounded-full bg-primary-soft text-primary-text flex items-center justify-center shrink-0"
                         >
@@ -282,12 +333,10 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       </div>
                     ))}
                   </div>
-                  {review && (
-                    <Button variant="soft" size="sm" className="mt-2.5" onClick={() => setIsPickerOpen(true)}>
-                      <Plus size={16} />
-                      Agregar calificación personalizada
-                    </Button>
-                  )}
+                  <Button variant="soft" size="sm" className="mt-2.5" onClick={() => setIsPickerOpen(true)}>
+                    <Plus size={16} />
+                    Agregar calificación personalizada
+                  </Button>
                 </div>
 
                 <div>
@@ -301,12 +350,10 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                   />
                 </div>
 
-                {review && (
-                  <div>
-                    <label className={labelClass}>Citas favoritas</label>
-                    <QuotesEditor quotes={quotes} onAdd={addQuote} onRemove={removeQuote} />
-                  </div>
-                )}
+                <div>
+                  <label className={labelClass}>Citas favoritas</label>
+                  <QuotesEditor quotes={shownQuotes} onAdd={handleAddQuote} onRemove={handleRemoveQuote} />
+                </div>
 
                 <div>
                   <label className={labelClass}>Comentarios</label>
@@ -320,12 +367,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                   <span className="text-body-md font-semibold text-text">¿Recomiendas este libro?</span>
                   <Toggle checked={draft.recommends} onChange={(v) => setDraft({ ...draft, recommends: v })} />
                 </div>
-
-                {!review && (
-                  <p className="text-body-sm text-text-secondary -mt-2">
-                    Guarda la reseña primero para poder agregar calificaciones personalizadas y citas favoritas.
-                  </p>
-                )}
 
                 <div className="flex gap-2.5">
                   <Button variant="outline" onClick={() => (review ? setIsEditing(false) : onClose())}>Cancelar</Button>
@@ -352,7 +393,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
       <CustomRatingPicker
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}
-        onAdd={(rating) => addCustomRating({ ...rating, value: 0 })}
+        onAdd={handleAddRating}
       />
     </>
   )
