@@ -2,7 +2,7 @@
  *  Describen cómo funciona Teleo hoy: revisarlos cada vez que algo nuevo guarde datos.
  *  Al publicar un cambio, actualizar LEGAL_LAST_UPDATED y avisarlo en Novedades. */
 
-export const LEGAL_LAST_UPDATED = 'septiembre de 2026'
+export const LEGAL_LAST_UPDATED = '24 de septiembre de 2026'
 
 export const INSTAGRAM_HANDLE = 'only.fiito'
 export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`

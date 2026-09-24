@@ -13,7 +13,7 @@ export interface ChangelogEntry {
 export const changelog: ChangelogEntry[] = [
   {
     version: '2.0.0',
-    date: 'Próximamente',
+    date: '24 de septiembre de 2026',
     title: 'Teleo crece',
     items: [
       '¿Qué leo ahora? elige al azar uno de tus pendientes cuando no sabes con cuál seguir.',
