@@ -56,14 +56,6 @@ export interface LibraryStats {
     currentYearCount: number
     previousYearCount: number
   }
-  valorBiblioteca: {
-    totalInvested: number
-    booksWithPriceCount: number
-    avgPerBook: number
-    mostExpensive: BookRef | null
-    wishlistCost: number
-    wishlistWithPriceCount: number
-  }
 }
 
 const emptyStats: LibraryStats = {
@@ -73,7 +65,6 @@ const emptyStats: LibraryStats = {
   autoresYSeries: { topAuthor: null, sagasCompleted: 0, sagasInProgress: 0, mostRereadBook: null },
   calificaciones: { avgRating: null, bestRated: null, worstRated: null, hasTie: false, quotesCount: 0 },
   historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0 },
-  valorBiblioteca: { totalInvested: 0, booksWithPriceCount: 0, avgPerBook: 0, mostExpensive: null, wishlistCost: 0, wishlistWithPriceCount: 0 },
 }
 
 function tally(values: (string | null)[]): CountEntry[] {
@@ -89,9 +80,7 @@ function tally(values: (string | null)[]): CountEntry[] {
 
 /** Trae y calcula todas las estadísticas de Bitácora en un solo lugar, a partir de datos
  *  que ya se guardan hoy (books, sagas, reviews, reading_history, reading_sessions,
- *  favorite_quotes) más los campos nuevos `books.price`/`books.purchase_date` de la
- *  sección "Valor de tu biblioteca". Reemplaza a `useProfileStats` (que se queda sin uso
- *  una vez que Perfil deja de mostrar Estadísticas/Racha/Años en libros). */
+ *  favorite_quotes). El valor de la biblioteca se mudó a Compras (usePurchases, fase 6). */
 export function useLibraryStats(userId: string | undefined) {
   async function fetchStats(): Promise<LibraryStats> {
     if (!userId) return emptyStats
@@ -104,7 +93,7 @@ export function useLibraryStats(userId: string | undefined) {
       { data: sessionsData },
     ] = await Promise.all([
       supabase.from('books')
-        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, price, purchase_date, created_at')
+        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, created_at')
         .eq('user_id', userId),
       supabase.from('sagas').select('id, status').eq('user_id', userId),
       supabase.from('reviews').select('id, book_id, general_rating').eq('user_id', userId),
@@ -228,18 +217,6 @@ export function useLibraryStats(userId: string | undefined) {
       .sort((a, b) => b.year - a.year)
     const monthlyThisYear = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, count: monthCounts.get(i + 1) ?? 0 }))
 
-    // Valor de la biblioteca — dato sensible que nunca se expuso al perfil público (ver
-    // 0020_library_value.sql); ahora que esa página se retiró (ver 0021_retire_public_profile.sql)
-    // esto vive únicamente en la vista privada de Bitácora, como siempre fue la intención.
-    const booksWithPrice = books.filter((b) => typeof b.price === 'number')
-    const totalInvested = booksWithPrice.reduce((sum, b) => sum + (b.price ?? 0), 0)
-    const avgPerBook = booksWithPrice.length > 0 ? totalInvested / booksWithPrice.length : 0
-    const mostExpensive = booksWithPrice.length > 0
-      ? booksWithPrice.reduce((max, b) => ((b.price ?? 0) > (max.price ?? 0) ? b : max))
-      : null
-    const wishlistWithPrice = wishlist.filter((b) => typeof b.price === 'number')
-    const wishlistCost = wishlistWithPrice.reduce((sum, b) => sum + (b.price ?? 0), 0)
-
     return {
       resumen: {
         pagesRead,
@@ -275,14 +252,6 @@ export function useLibraryStats(userId: string | undefined) {
         monthlyThisYear,
         currentYearCount: yearCounts.get(currentYear) ?? 0,
         previousYearCount: yearCounts.get(currentYear - 1) ?? 0,
-      },
-      valorBiblioteca: {
-        totalInvested,
-        booksWithPriceCount: booksWithPrice.length,
-        avgPerBook,
-        mostExpensive: mostExpensive ? { title: mostExpensive.title, value: mostExpensive.price ?? 0 } : null,
-        wishlistCost,
-        wishlistWithPriceCount: wishlistWithPrice.length,
       },
     }
   }

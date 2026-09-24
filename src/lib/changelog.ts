@@ -22,6 +22,7 @@ export const changelog: ChangelogEntry[] = [
       'Calendario de lectura con tu racha actual, tu racha más larga y los números de cada mes.',
       'Perfil renovado: tus números, tu actividad del mes, tu lista de temporada, el estante de abandonados y un botón para compartir.',
       'Configuración reorganizada, con Novedades, Detrás de Teleo, política de privacidad y términos de uso.',
+      'Bitácora ahora tiene Resumen, con tus libros de cada mes y año y tus favoritos, y Compras, con lo que invertiste libro por libro.',
     ],
   },
   {
