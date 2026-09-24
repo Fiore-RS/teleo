@@ -20,6 +20,9 @@ import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakMo
 import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
 import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCalendarSheet";
 import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard";
+import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
+import { ANNOUNCEMENT_VERSION, isVersionBefore } from "../lib/announcement";
+import { markChangelogSeen } from "../lib/changelog";
 import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 export function Mesa() {
@@ -27,13 +30,24 @@ export function Mesa() {
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
   const { streak, markedToday, markToday, unmarkToday, weekDays, isLoading: streakLoading } = useReadingStreak(user?.id);
-  const { profile } = useProfile(user?.id)
+  const { profile, updateProfile } = useProfile(user?.id)
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isUnmarkOpen, setIsUnmarkOpen] = useState(false);
   const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  // Anuncio de la V.2.0.0: una sola vez por cuenta (se guarda en el perfil). Las cuentas
+  // nuevas lo marcan como visto al terminar la Bienvenida.
+  const [announcementDismissed, setAnnouncementDismissed] = useState(false)
+  const showAnnouncement =
+    !announcementDismissed && !!profile && !!profile.has_seen_intro && isVersionBefore(profile.last_seen_version, ANNOUNCEMENT_VERSION)
+
+  function handleAnnouncementDone() {
+    setAnnouncementDismissed(true)
+    markChangelogSeen()
+    updateProfile({ last_seen_version: ANNOUNCEMENT_VERSION })
+  }
 
   const goalPercent =
     goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
@@ -250,6 +264,7 @@ export function Mesa() {
         onSave={updateGoal}
       />
 
+      {showAnnouncement && <AnnouncementSheet onDone={handleAnnouncementDone} />}
       {isCalendarOpen && <ReadingCalendarSheet userId={user?.id} onClose={() => setIsCalendarOpen(false)} />}
       {isRandomPickOpen && <RandomPickSheet userId={user?.id} onClose={() => setIsRandomPickOpen(false)} />}
 
