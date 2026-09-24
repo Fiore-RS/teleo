@@ -13,14 +13,18 @@ interface StatTileProps {
   value: string
   className?: string
   tone?: StatTileTone
+  /** Fuerza el tamaño de texto aunque el valor sea corto. Para grupos de montos (Compras),
+   *  donde el tamaño no puede depender de cuántos dígitos tenga cada cifra: si no, un monto
+   *  corto sale grande y uno largo sale chico, y los recuadros no se ven parejos. */
+  compact?: boolean
 }
 
 /** Dato de Bitácora en el rediseño 2026: el valor arriba y la etiqueta abajo, dentro de un
  *  recuadro suave. Las cifras cortas (números, montos) se muestran grandes en Fraunces; los
  *  valores largos (títulos de libros, autores) bajan a un tamaño de texto para que entren
  *  sin romper la cuadrícula. */
-export function StatTile({ label, value, className = '', tone = 'neutral' }: StatTileProps) {
-  const isShort = value.length <= 12
+export function StatTile({ label, value, className = '', tone = 'neutral', compact = false }: StatTileProps) {
+  const isShort = !compact && value.length <= 12
   const style = toneStyles[tone]
 
   return (

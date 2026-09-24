@@ -134,10 +134,11 @@ export function Compras({ userId, currency }: ComprasProps) {
           </p>
 
           <div className="grid grid-cols-2 gap-2.5 mt-5">
-            <StatTile tone="orange" label="Promedio por libro" value={summary.withPrice.length > 0 ? money(summary.avg) : '—'} />
-            <StatTile tone="magenta" label="En pendientes" value={money(summary.pending)} />
-            <StatTile label="En abandonados" value={money(summary.abandoned)} />
+            <StatTile compact tone="orange" label="Promedio por libro" value={summary.withPrice.length > 0 ? money(summary.avg) : '—'} />
+            <StatTile compact tone="magenta" label="En pendientes" value={money(summary.pending)} />
+            <StatTile compact label="En abandonados" value={money(summary.abandoned)} />
             <StatTile
+              compact
               tone="pink"
               label="Completar deseados"
               value={summary.wishlistWithPrice > 0 ? money(summary.wishlist) : '—'}
