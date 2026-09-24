@@ -233,6 +233,7 @@ export type Database = {
           has_seen_intro: boolean
           id: string
           is_deactivated: boolean
+          last_seen_version: string | null
           nickname: string | null
           priority_list_name: string | null
           username: string
@@ -246,6 +247,7 @@ export type Database = {
           has_seen_intro?: boolean
           id: string
           is_deactivated?: boolean
+          last_seen_version?: string | null
           nickname?: string | null
           priority_list_name?: string | null
           username: string
@@ -259,6 +261,7 @@ export type Database = {
           has_seen_intro?: boolean
           id?: string
           is_deactivated?: boolean
+          last_seen_version?: string | null
           nickname?: string | null
           priority_list_name?: string | null
           username?: string
