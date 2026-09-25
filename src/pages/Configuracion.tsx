@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
-  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText,
+  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -13,6 +13,7 @@ import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
+import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
 import { Button } from '../assets/components/atoms/Button'
 import { Modal } from '../assets/components/atoms/Modal'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
@@ -37,6 +38,7 @@ export function Configuracion() {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
+  const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<
     'cerrarSesion' | 'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
   >(null)
@@ -170,6 +172,7 @@ export function Configuracion() {
         <SettingsGroup title="Tus datos">
           <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
           <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
+          <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />
         </SettingsGroup>
 
         <SettingsGroup title="Zona de peligro">
@@ -189,6 +192,10 @@ export function Configuracion() {
           onClose={() => setIsShareModalOpen(false)}
           userId={user?.id}
         />
+      )}
+
+      {isGoodreadsOpen && (
+        <GoodreadsImportModal onClose={() => setIsGoodreadsOpen(false)} userId={user?.id} />
       )}
 
       {isShareWishlistModalOpen && (
