@@ -10,6 +10,8 @@ export interface PurchaseBook {
   status: ReadingStatus
   price: number | null
   purchaseDate: string | null
+  isGift: boolean
+  giftFrom: string | null
 }
 
 const EMPTY: PurchaseBook[] = []
@@ -21,7 +23,7 @@ export function usePurchases(userId: string | undefined) {
     async () => {
       const { data } = await supabase
         .from('books')
-        .select('id, title, author, cover_url, status, price, purchase_date')
+        .select('id, title, author, cover_url, status, price, purchase_date, is_gift, gift_from')
         .eq('user_id', userId!)
       return (data ?? []).map((b) => ({
         id: b.id,
@@ -31,6 +33,8 @@ export function usePurchases(userId: string | undefined) {
         status: b.status as ReadingStatus,
         price: b.price,
         purchaseDate: b.purchase_date,
+        isGift: b.is_gift ?? false,
+        giftFrom: b.gift_from,
       }))
     },
     EMPTY,
