@@ -76,6 +76,8 @@ export type Database = {
           format: string | null
           id: string
           is_favorite: boolean | null
+          is_gift: boolean
+          gift_from: string | null
           is_priority: boolean
           is_recommended: boolean
           isbn: string | null
@@ -106,6 +108,8 @@ export type Database = {
           format?: string | null
           id?: string
           is_favorite?: boolean | null
+          is_gift?: boolean
+          gift_from?: string | null
           is_priority?: boolean
           is_recommended?: boolean
           isbn?: string | null
@@ -136,6 +140,8 @@ export type Database = {
           format?: string | null
           id?: string
           is_favorite?: boolean | null
+          is_gift?: boolean
+          gift_from?: string | null
           is_priority?: boolean
           is_recommended?: boolean
           isbn?: string | null

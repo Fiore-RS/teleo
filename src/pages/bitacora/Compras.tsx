@@ -11,7 +11,7 @@ import { Card } from '../../assets/components/molecules/Card'
 import { SortMenu, type SortMenuOption } from '../../assets/components/molecules/SortMenu'
 import { DetalleLibro } from '../DetalleLibro'
 
-type Filter = 'todos' | 'sin-precio' | 'gratis'
+type Filter = 'todos' | 'sin-precio' | 'gratis' | 'regalos'
 type Sort = 'precio' | 'fecha' | 'titulo' | 'autor'
 
 const sortOptions: SortMenuOption<Sort>[] = [
@@ -90,12 +90,19 @@ export function Compras({ userId, currency }: ComprasProps) {
   const counts = {
     todos: summary.owned.length,
     'sin-precio': summary.owned.filter((b) => b.price == null).length,
-    gratis: summary.owned.filter((b) => b.price === 0).length,
+    gratis: summary.owned.filter((b) => b.price === 0 && !b.isGift).length,
+    regalos: summary.owned.filter((b) => b.isGift).length,
   }
 
   const visibleBooks = useMemo(() => {
     const filtered = summary.owned.filter((b) =>
-      filter === 'sin-precio' ? b.price == null : filter === 'gratis' ? b.price === 0 : true
+      filter === 'sin-precio'
+        ? b.price == null
+        : filter === 'gratis'
+          ? b.price === 0 && !b.isGift
+          : filter === 'regalos'
+            ? b.isGift
+            : true
     )
     return sortBooks(filtered, sort)
   }, [summary.owned, filter, sort])
@@ -120,6 +127,7 @@ export function Compras({ userId, currency }: ComprasProps) {
     { key: 'todos', label: 'Todos' },
     { key: 'sin-precio', label: 'Sin precio' },
     { key: 'gratis', label: 'Gratis' },
+    { key: 'regalos', label: 'Regalos' },
   ]
 
   return (
@@ -196,7 +204,9 @@ export function Compras({ userId, currency }: ComprasProps) {
                 ? 'Todos tus libros tienen precio.'
                 : filter === 'gratis'
                   ? 'No tienes libros marcados como gratis. Pon el precio en 0 para marcarlo.'
-                  : 'Todavía no tienes libros.'}
+                  : filter === 'regalos'
+                    ? 'No tienes libros marcados como regalo. Márcalo al editar el libro.'
+                    : 'Todavía no tienes libros.'}
             </p>
           ) : (
             <ul className="divide-y divide-border -mx-1">
@@ -213,7 +223,7 @@ export function Compras({ userId, currency }: ComprasProps) {
                       <span className="flex-1 min-w-0">
                         <span className="block font-display font-semibold text-body-md text-text truncate">{book.title}</span>
                         <span className="block text-body-sm text-text-secondary truncate">
-                          {[book.author, date].filter(Boolean).join(' · ') || ' '}
+                          {[book.author, book.isGift && book.giftFrom ? `Regalo de ${book.giftFrom}` : null, date].filter(Boolean).join(' · ') || ' '}
                         </span>
                       </span>
                       <span
@@ -221,7 +231,7 @@ export function Compras({ userId, currency }: ComprasProps) {
                           book.price == null ? 'text-text-muted text-body-sm' : 'font-semibold text-text'
                         }`}
                       >
-                        {book.price == null ? 'Sin precio' : book.price === 0 ? 'Gratis' : money(book.price)}
+                        {book.isGift ? 'Regalo' : book.price == null ? 'Sin precio' : book.price === 0 ? 'Gratis' : money(book.price)}
                       </span>
                     </button>
                   </li>

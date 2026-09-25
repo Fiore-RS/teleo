@@ -136,6 +136,8 @@ export function useDataImport(userId: string | undefined) {
           abandon_reason: b.abandon_reason ?? null,
           price: b.price ?? null,
           purchase_date: b.purchase_date ?? null,
+          is_gift: b.is_gift ?? false,
+          gift_from: b.gift_from ?? null,
           is_priority: b.is_priority ?? false,
           priority_sort_order: b.priority_sort_order ?? null,
           saga_sort_order: b.saga_sort_order ?? null,

@@ -17,6 +17,7 @@ import { Select } from '../assets/components/atoms/Select'
 import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
 import { FavoriteToggle } from '../assets/components/atoms/FavoriteToggle'
 import { PriorityToggle } from '../assets/components/atoms/PriorityToggle'
+import { Toggle } from '../assets/components/atoms/Toggle'
 import { Button } from '../assets/components/atoms/Button'
 import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { StartReadingDateModal } from '../assets/components/molecules/StartReadingDateModal'
@@ -100,6 +101,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   category: string; status: ReadingStatus
   language: string; totalPages: string; totalDuration: string
   price: string; purchaseDate: string
+  isGift: boolean; giftFrom: string
   // Fechas de la lectura: solo se muestran y se guardan cuando el estado es Terminado.
   startDate: string; endDate: string
 } | null>(null)
@@ -117,6 +119,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     totalDuration: book.total_duration_seconds ? secondsToTimeInput(book.total_duration_seconds) : '',
     price: book.price != null ? String(book.price) : '',
     purchaseDate: book.purchase_date ?? '',
+    isGift: book.is_gift ?? false,
+    giftFrom: book.gift_from ?? '',
     startDate: book.start_date ?? '',
     endDate: book.end_date ?? '',
   })
@@ -148,8 +152,11 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     language: draft.language || null,
     total_pages: draft.format !== 'audiolibro' && draft.totalPages ? parseInt(draft.totalPages, 10) : null,
     total_duration_seconds: totalDurationSeconds,
-    price: draft.price ? parseFloat(draft.price) : null,
+    // Un regalo cuenta como ₡0: no suma al total invertido de Compras.
+    price: draft.isGift ? 0 : draft.price ? parseFloat(draft.price) : null,
     purchase_date: draft.purchaseDate || null,
+    is_gift: draft.isGift,
+    gift_from: draft.isGift ? draft.giftFrom.trim().slice(0, 60) || null : null,
   }
 
   // Si se está marcando el libro como "leyendo" (y no lo estaba ya), se pregunta primero
@@ -244,6 +251,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
         ...(book.format ? [{ label: 'Formato', value: formatOptions.find((f) => f.value === book.format)?.label ?? book.format }] : []),
         ...(book.category ? [{ label: 'Categoría', value: book.category }] : []),
         ...(readCount > 1 ? [{ label: 'Lecturas', value: `${readCount} veces` }] : []),
+        ...(book.is_gift ? [{ label: 'Regalo', value: book.gift_from ? `De ${book.gift_from}` : 'Sí' }] : []),
       ]
     : []
 
@@ -454,10 +462,37 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   />
                 )}
 
+                <div className="bg-surface-2 border border-border rounded-2xl px-4 py-3">
+                  <Toggle
+                    label="Fue un regalo"
+                    checked={draft.isGift}
+                    onChange={(isGift) => setDraft({ ...draft, isGift })}
+                    className="w-full justify-between"
+                  />
+                  {draft.isGift && (
+                    <div className="mt-3">
+                      <label className={labelClass}>¿Quién te lo regaló?</label>
+                      <Input
+                        value={draft.giftFrom}
+                        maxLength={60}
+                        placeholder="Un nombre, Santa secreto..."
+                        onChange={(e) => setDraft({ ...draft, giftFrom: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className={labelClass}>Precio</label>
-                    <PriceInput value={draft.price} onChange={(price) => setDraft({ ...draft, price })} />
+                    {draft.isGift ? (
+                      // Un regalo cuenta como precio 0, así que no se edita mientras esté marcado.
+                      <p className="px-4 py-3 rounded-2xl bg-surface-2 border border-border text-body-lg text-text-secondary">
+                        Sin costo
+                      </p>
+                    ) : (
+                      <PriceInput value={draft.price} onChange={(price) => setDraft({ ...draft, price })} />
+                    )}
                   </div>
                   <div>
                     <label className={labelClass}>Fecha de compra</label>
