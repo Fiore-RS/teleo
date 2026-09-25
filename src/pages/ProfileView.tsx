@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Camera, Target, BookOpen, Heart, ThumbsUp, Bookmark, BookX } from 'lucide-react'
+import { UserRound, Target, BookOpen, Heart, ThumbsUp, Bookmark, BookX } from 'lucide-react'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
 import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { Eyebrow } from '../assets/components/atoms/Eyebrow'
@@ -32,8 +32,6 @@ interface ProfileViewProps {
   avatarUrl: string | null | undefined
 
   headerRight?: ReactNode
-  onAvatarClick?: () => void
-  isUploadingAvatar?: boolean
 
   annualGoal?: number
   annualCompletedCount?: number
@@ -74,8 +72,6 @@ export function ProfileView({
   bio,
   avatarUrl,
   headerRight,
-  onAvatarClick,
-  isUploadingAvatar,
   annualGoal = 0,
   annualCompletedCount = 0,
   currentlyReading = [],
@@ -100,7 +96,7 @@ export function ProfileView({
   ) : initial ? (
     <span className="font-title text-[60px] leading-none text-primary-ink">{initial}</span>
   ) : (
-    <Camera size={40} strokeWidth={1.5} className="text-primary-ink" />
+    <UserRound size={44} strokeWidth={1.5} className="text-primary-ink" />
   )
 
   const avatarClasses =
@@ -145,21 +141,8 @@ export function ProfileView({
       <div className="px-4">
         {/* Avatar + nombre */}
         <div className="flex items-end gap-4 px-1 -mt-12">
-          {onAvatarClick ? (
-            <button
-              onClick={onAvatarClick}
-              disabled={isUploadingAvatar}
-              aria-label="Cambiar foto de perfil"
-              className={`${avatarClasses} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text`}
-            >
-              {avatarInner}
-              <span className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-surface/95 text-primary-text flex items-center justify-center shadow-sm">
-                <Camera size={14} />
-              </span>
-            </button>
-          ) : (
-            <div className={avatarClasses}>{avatarInner}</div>
-          )}
+          {/* La foto se cambia solo desde el lápiz (Editar perfil), junto con nickname y bio. */}
+          <div className={avatarClasses}>{avatarInner}</div>
 
           {isProfileLoading ? (
             <div className="flex-1 min-w-0 pb-2">

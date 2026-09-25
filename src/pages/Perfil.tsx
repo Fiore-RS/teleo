@@ -19,6 +19,7 @@ import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { ProfileView } from './ProfileView'
 import { hasUnseenChangelog } from '../lib/changelog'
 import { sampleWithSeed } from '../lib/random'
+import { queryClient } from '../lib/queryClient'
 
 // Cuántas portadas se muestran en Favoritos, Recomendados, Deseados y Abandonados.
 const SHELF_SIZE = 4
@@ -48,8 +49,11 @@ export function Perfil() {
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    await uploadAvatar(file)
-    window.location.reload() // forma simple de refrescar profile.avatar_url en toda la app
+    const url = await uploadAvatar(file)
+    e.target.value = ''
+    // Se refresca el perfil en caché (sin recargar la página), así la hoja de Editar perfil
+    // sigue abierta con lo que se estaba escribiendo y la foto nueva aparece en toda la app.
+    if (url) await queryClient.invalidateQueries({ queryKey: ['profile'] })
   }
 
   function handleTabBarChange(t: TabKey) {
@@ -91,8 +95,6 @@ export function Perfil() {
             </button>
           </div>
         }
-        onAvatarClick={() => fileInputRef.current?.click()}
-        isUploadingAvatar={isUploading}
         annualGoal={annualGoal}
         annualCompletedCount={annualCompletedCount}
         currentlyReading={currentlyReading}
@@ -123,6 +125,8 @@ export function Perfil() {
           username={profile?.username ?? ''}
           currentNickname={profile?.nickname ?? ''}
           currentBio={profile?.bio ?? ''}
+          avatarUrl={profile?.avatar_url}
+          isUploadingPhoto={isUploading}
           onChangePhoto={() => fileInputRef.current?.click()}
           onSave={async (changes) => updateProfile(changes)}
         />
