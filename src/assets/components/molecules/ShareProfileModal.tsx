@@ -1,8 +1,6 @@
 import { useRef, useState } from 'react'
-import { QRCodeSVG } from 'qrcode.react'
 import { Share2, Download } from 'lucide-react'
 import { Modal } from '../atoms/Modal'
-import { SegmentedTabs } from '../atoms/SegmentedTabs'
 import { Button } from '../atoms/Button'
 import { ShareProfileCard, SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from './ShareProfileCard'
 import { ShareBookPickerSheet } from './ShareBookPickerSheet'
@@ -11,15 +9,9 @@ import { useReadingStreak } from '../../../hooks/useReadingStreak'
 import { useProfile } from '../../../hooks/useProfile'
 import { useShareCardExtras } from '../../../hooks/useShareCardExtras'
 import { getProgressInfo } from '../../../lib/progress'
-import { useTheme } from '../../../hooks/useTheme'
 
 // La vista previa se muestra al 80% para que entre en la hoja junto con los botones.
 const PREVIEW_SCALE = 0.8
-
-// Mismos valores que --teleo-text en index.css, para que el QR siempre contraste con
-// el fondo (bg-bg) del tema activo — igual criterio que ShareModal.
-const QR_COLOR_LIGHT = '#2B211B'
-const QR_COLOR_DARK = '#F3E9DA'
 
 // Las portadas y la foto pasan por shareSafeImageUrl (lib/shareImage.ts) para poder
 // incrustarlas. Si igual alguna falla al capturar, html-to-image usa este PNG transparente
@@ -33,15 +25,15 @@ interface ShareProfileModalProps {
 }
 
 /** Modal de "Compartir mi perfil": arma la tarjeta en formato historia (fase 8) y permite
- *  compartirla como imagen (Web Share API, con descarga como respaldo) o mostrar un QR que
- *  lleva al sitio de Teleo. "Actual" arranca con el libro que empezaste más recientemente y
+ *  compartirla como imagen (Web Share API, con descarga como respaldo). El código QR que
+ *  había antes se quitó en la V.2.1.0: Teleo no es una red social y la tarjeta ya cumple esa
+ *  función. "Actual" arranca con el libro que empezaste más recientemente y
  *  "Próxima" con el primero de la lista de temporada (o el último pendiente que agregaste);
  *  tocando cualquiera de los dos en la vista previa se elige otro o se deja vacío. La
  *  elección vale solo para esta tarjeta.
  *
  *  Solo se monta mientras el modal está abierto, así que los datos se piden al abrirlo. */
 export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
-  const [mode, setMode] = useState<'tarjeta' | 'qr'>('tarjeta')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [downloaded, setDownloaded] = useState(false)
@@ -50,7 +42,6 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
   const [nextChoice, setNextChoice] = useState<string | null | undefined>(undefined)
   const [picking, setPicking] = useState<'actual' | 'proxima' | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
-  const { resolvedTheme } = useTheme()
 
   const { profile } = useProfile(userId)
   const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(userId)
@@ -62,9 +53,6 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
   const nextBook =
     nextChoice === undefined ? nextOptions[0] ?? null : nextChoice === null ? null : pending.find((b) => b.id === nextChoice) ?? null
   const username = profile?.username
-
-  const appUrl = `${window.location.origin}${import.meta.env.BASE_URL}`
-  const qrColor = resolvedTheme === 'dark' ? QR_COLOR_DARK : QR_COLOR_LIGHT
 
   function downloadBlob(blob: Blob) {
     const url = URL.createObjectURL(blob)
@@ -149,19 +137,9 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
   return (
     <>
       <Modal variant="sheet" isOpen onClose={onClose} title="Compartir mi perfil">
-        <SegmentedTabs
-          active={mode}
-          onChange={setMode}
-          options={[
-            { value: 'tarjeta', label: 'Tarjeta' },
-            { value: 'qr', label: 'Código QR' },
-          ]}
-        />
-
-        {mode === 'tarjeta' ? (
-          <>
+        <>
             {/* Vista previa achicada; la captura usa la tarjeta a su tamaño real. */}
-            <div className="mt-4 mx-auto" style={{ width: SHARE_CARD_WIDTH * PREVIEW_SCALE, height: SHARE_CARD_HEIGHT * PREVIEW_SCALE }}>
+            <div className="mx-auto" style={{ width: SHARE_CARD_WIDTH * PREVIEW_SCALE, height: SHARE_CARD_HEIGHT * PREVIEW_SCALE }}>
               <div style={{ transform: `scale(${PREVIEW_SCALE})`, transformOrigin: 'top left' }} className="shadow-float rounded-[22px]">
                 <ShareProfileCard
                   ref={cardRef}
@@ -199,13 +177,7 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
                 </p>
               )}
             </div>
-          </>
-        ) : (
-          <div className="bg-surface-2 border border-border rounded-2xl p-6 mt-4 flex flex-col items-center">
-            <QRCodeSVG value={appUrl} size={160} fgColor={qrColor} bgColor="transparent" />
-            <p className="text-body-sm text-text-secondary mt-3 text-center">Escanea para descubrir Teleo.</p>
-          </div>
-        )}
+        </>
       </Modal>
 
       {picking === 'actual' && (
