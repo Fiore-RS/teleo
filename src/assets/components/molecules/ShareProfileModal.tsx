@@ -9,6 +9,7 @@ import { useReadingStreak } from '../../../hooks/useReadingStreak'
 import { useProfile } from '../../../hooks/useProfile'
 import { useShareCardExtras } from '../../../hooks/useShareCardExtras'
 import { getProgressInfo } from '../../../lib/progress'
+import { isBannerId } from '../../../lib/banners'
 
 // La vista previa se muestra al 80% para que entre en la hoja junto con los botones.
 const PREVIEW_SCALE = 0.8
@@ -157,6 +158,7 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
                   nextBook={nextBook}
                   onPickCurrent={() => setPicking('actual')}
                   onPickNext={() => setPicking('proxima')}
+                  banner={isBannerId(profile?.banner) ? profile.banner : undefined}
                 />
               </div>
             </div>

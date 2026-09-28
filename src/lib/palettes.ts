@@ -1,19 +1,15 @@
 /** Temas de color de Teleo (V.2.1.0). Los colores completos de cada tema viven en
  *  index.css (bloques [data-palette]); aquí solo está lo que necesita la app para mostrar
  *  la lista: nombre, descripción y una muestra de colores para la vista previa.
- *  Los ids también están en la restricción de la columna profiles.palette (0028). */
+ *  Los ids también están en la restricción de la columna profiles.palette (0030). */
 
 export type PaletteId =
   | 'atardecer'
-  | 'oceano'
-  | 'bosque'
-  | 'tinta'
   | 'aurora'
-  | 'dracula'
   | 'biblioteca'
   | 'algodon'
-  | 'lavanda'
-  | 'girasol'
+  | 'bosque'
+  | 'margarita'
 
 export interface PaletteSwatch {
   bg: string
@@ -69,102 +65,9 @@ export const palettes: Palette[] = [
     }
   },
   {
-    id: 'oceano',
-    name: 'Océano',
-    description: 'Agua turquesa, arena al sol y verde de costa.',
-    light: {
-      bg: '#F7F1E7',
-      surface: '#FFFCF7',
-      border: '#E7DCCB',
-      text: '#2B211B',
-      primary: '#1E6E6F',
-      primaryInk: '#F7FDFC',
-      accents: [
-        '#4EC6D4',
-        '#F2D9B7',
-        '#7AC7BD'
-      ]
-    },
-    dark: {
-      bg: '#0E1A1B',
-      surface: '#152425',
-      border: '#274041',
-      text: '#F3E9DA',
-      primary: '#237F80',
-      primaryInk: '#F4FFFE',
-      accents: [
-        '#4EC6D4',
-        '#E2C08F',
-        '#7AC7BD'
-      ]
-    }
-  },
-  {
-    id: 'bosque',
-    name: 'Bosque',
-    description: 'Musgo, hojas al sol, lino y corteza.',
-    light: {
-      bg: '#F6F3E6',
-      surface: '#FFFDF5',
-      border: '#E4DECA',
-      text: '#2B211B',
-      primary: '#365004',
-      primaryInk: '#FAFCEF',
-      accents: [
-        '#925E06',
-        '#8DA432',
-        '#EDE383'
-      ]
-    },
-    dark: {
-      bg: '#16130A',
-      surface: '#211C10',
-      border: '#3A331F',
-      text: '#F3E9DA',
-      primary: '#5A7A12',
-      primaryInk: '#FBFDF0',
-      accents: [
-        '#B77A12',
-        '#8DA432',
-        '#D9CF6A'
-      ]
-    }
-  },
-  {
-    id: 'tinta',
-    name: 'Tinta',
-    description: 'Tinta negra sobre papel blanco.',
-    light: {
-      bg: '#F5F5F3',
-      surface: '#FFFFFF',
-      border: '#DEDED9',
-      text: '#1A1A1A',
-      primary: '#1C1C1C',
-      primaryInk: '#FFFFFF',
-      accents: [
-        '#3A3A3A',
-        '#8A8A8A',
-        '#4A4A4A'
-      ]
-    },
-    dark: {
-      bg: '#0E0E0E',
-      surface: '#181818',
-      border: '#2F2F2F',
-      text: '#F2F2F2',
-      primary: '#F2F2F2',
-      primaryInk: '#111111',
-      accents: [
-        '#E6E6E6',
-        '#8A8A8A',
-        '#BDBDBD'
-      ]
-    }
-  },
-  {
     id: 'aurora',
     name: 'Aurora boreal',
-    description: 'Verde menta y turquesa sobre un cielo violeta.',
+    description: 'Cielo de noche con luces menta, azul y rosa.',
     light: {
       bg: '#F1F4F6',
       surface: '#FBFDFE',
@@ -173,9 +76,9 @@ export const palettes: Palette[] = [
       primary: '#524094',
       primaryInk: '#FBF9FF',
       accents: [
-        '#01EFAC',
+        '#00B784',
         '#2082A6',
-        '#6B4AAE'
+        '#C2419A'
       ]
     },
     dark: {
@@ -186,47 +89,16 @@ export const palettes: Palette[] = [
       primary: '#6A56B8',
       primaryInk: '#FAF8FF',
       accents: [
-        '#01EFAC',
-        '#2082A6',
-        '#7A5AB8'
-      ]
-    }
-  },
-  {
-    id: 'dracula',
-    name: 'Drácula',
-    description: 'Rojo sangre, borgoña y negro de noche.',
-    light: {
-      bg: '#F4EFE8',
-      surface: '#FBF8F3',
-      border: '#E0D4C8',
-      text: '#1E0E0E',
-      primary: '#72090F',
-      primaryInk: '#FFF6F2',
-      accents: [
-        '#B21F29',
-        '#930510',
-        '#53080E'
-      ]
-    },
-    dark: {
-      bg: '#050202',
-      surface: '#140809',
-      border: '#2E1416',
-      text: '#F3E9DA',
-      primary: '#9E1B24',
-      primaryInk: '#FFF3F0',
-      accents: [
-        '#C8283A',
-        '#930510',
-        '#53080E'
+        '#1FE0A8',
+        '#4FB0D4',
+        '#E06CBD'
       ]
     }
   },
   {
     id: 'biblioteca',
     name: 'Biblioteca',
-    description: 'Ceniza, carbón y cuero antiguo.',
+    description: 'Cuero oxblood, tinta azul, lacre y ciruela.',
     light: {
       bg: '#EDEBE7',
       surface: '#F8F7F4',
@@ -235,9 +107,9 @@ export const palettes: Palette[] = [
       primary: '#371E1E',
       primaryInk: '#F5F1EC',
       accents: [
-        '#6E3A36',
-        '#726E68',
-        '#B7B4AE'
+        '#3D5A86',
+        '#A8434A',
+        '#76507A'
       ]
     },
     dark: {
@@ -248,102 +120,102 @@ export const palettes: Palette[] = [
       primary: '#5A3431',
       primaryInk: '#F5EEEA',
       accents: [
-        '#7A4540',
-        '#726E68',
-        '#B7B4AE'
+        '#7E9CCB',
+        '#D9767C',
+        '#B48CB8'
       ]
     }
   },
   {
     id: 'algodon',
     name: 'Algodón de azúcar',
-    description: 'Rosa, lila y celeste pastel.',
+    description: 'Rosa chicle y celeste, con un toque de lila.',
     light: {
-      bg: '#FFF6FB',
+      bg: '#FFF4FA',
       surface: '#FFFFFF',
-      border: '#F1DDEA',
-      text: '#2B211B',
-      primary: '#B8327F',
+      border: '#F2D6E6',
+      text: '#2A1F33',
+      primary: '#C2317F',
       primaryInk: '#FFFFFF',
       accents: [
-        '#FE98D6',
-        '#B8BAFD',
-        '#AEDDFA'
+        '#3FA7E6',
+        '#EE5FAE',
+        '#8E7FE6'
       ]
     },
     dark: {
-      bg: '#141A2B',
-      surface: '#1B2236',
-      border: '#313A56',
-      text: '#F3E9DA',
-      primary: '#F8A8E8',
-      primaryInk: '#2A1430',
+      bg: '#151A2E',
+      surface: '#1D2239',
+      border: '#353C5E',
+      text: '#F4ECF7',
+      primary: '#FF94D4',
+      primaryInk: '#2A1030',
       accents: [
-        '#FE98D6',
-        '#B8BAFD',
-        '#AEDDFA'
+        '#6CC6F6',
+        '#FF8CC8',
+        '#B3A6F7'
       ]
     }
   },
   {
-    id: 'lavanda',
-    name: 'Lavanda',
-    description: 'Lavanda, lila y malva sobre crema.',
+    id: 'bosque',
+    name: 'Bosque',
+    description: 'Hojas verdes, ámbar y frutos rojos.',
     light: {
-      bg: '#F3EFE6',
-      surface: '#FBF9F4',
-      border: '#E0DBD4',
+      bg: '#F6F3E6',
+      surface: '#FFFDF5',
+      border: '#E4DECA',
       text: '#2B211B',
-      primary: '#5A4D7A',
-      primaryInk: '#FBF8FF',
+      primary: '#365004',
+      primaryInk: '#FAFCEF',
       accents: [
-        '#B8A4D4',
-        '#C8B3C8',
-        '#9A93AC'
+        '#C27A0E',
+        '#B0415A',
+        '#6F9A24'
       ]
     },
     dark: {
-      bg: '#16131C',
-      surface: '#201C28',
-      border: '#383143',
+      bg: '#16130A',
+      surface: '#211C10',
+      border: '#3A331F',
       text: '#F3E9DA',
-      primary: '#7A6B9E',
-      primaryInk: '#FBF8FF',
+      primary: '#5A7A12',
+      primaryInk: '#FBFDF0',
       accents: [
-        '#B8A4D4',
-        '#C8B3C8',
-        '#DCD9E1'
+        '#DB9A2E',
+        '#D0647C',
+        '#94BE45'
       ]
     }
   },
   {
-    id: 'girasol',
-    name: 'Girasol',
-    description: 'Amarillo, mango y caléndula con centro café.',
+    id: 'margarita',
+    name: 'Margarita',
+    description: 'Margaritas sobre cielo celeste: amarillo, blanco y azul claro.',
     light: {
-      bg: '#FBF6E0',
-      surface: '#FFFDF4',
-      border: '#EDE1B8',
-      text: '#2B211B',
-      primary: '#7F2F01',
-      primaryInk: '#FFF9E8',
+      bg: '#EAF4F7',
+      surface: '#FBFBFA',
+      border: '#D3E3E9',
+      text: '#1B2E36',
+      primary: '#F4B600',
+      primaryInk: '#2A2104',
       accents: [
-        '#FEDC01',
-        '#FDB500',
-        '#ED8001'
+        '#94CFDC',
+        '#EE8E1A',
+        '#6FA84A'
       ]
     },
     dark: {
-      bg: '#170F06',
-      surface: '#22170A',
-      border: '#3C2A14',
-      text: '#F3E9DA',
-      primary: '#A8480A',
-      primaryInk: '#FFF8EC',
+      bg: '#0F1A1F',
+      surface: '#16242B',
+      border: '#2A3F48',
+      text: '#EEF3F4',
+      primary: '#F4B600',
+      primaryInk: '#1C1600',
       accents: [
-        '#FEDC01',
-        '#FDB500',
-        '#ED8001'
+        '#94CFDC',
+        '#F5A445',
+        '#8DC468'
       ]
     }
   }
