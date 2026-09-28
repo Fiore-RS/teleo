@@ -46,7 +46,7 @@ export function NextReleaseCard({ userId }: NextReleaseCardProps) {
           onClick={() => navigate('/lanzamientos?vista=cuenta-atras')}
           className="w-full flex items-center gap-4 text-left rounded-xl focus-visible:outline-2 focus-visible:outline-primary-text"
         >
-          <span className="w-[74px] h-[74px] shrink-0 rounded-2xl bg-magenta text-on-accent flex flex-col items-center justify-center">
+          <span className="w-[74px] h-[74px] shrink-0 rounded-2xl bg-magenta text-on-magenta flex flex-col items-center justify-center">
             {days === 0 ? (
               <span className="font-display font-semibold text-body-lg leading-none">Hoy</span>
             ) : (

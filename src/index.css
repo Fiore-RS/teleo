@@ -56,6 +56,12 @@
   --teleo-magenta-soft: #F2D9E6;
   --teleo-magenta-tint: #FAEFF5;
   --teleo-on-accent: #FFF8EE;      /* texto sobre un relleno de acento */
+  /* Texto sobre cada acento por separado (V.2.1.0): en otros temas un acento puede ser claro
+     (menta, amarillo) y otro oscuro, así que cada uno lleva su propio color de texto. */
+  --teleo-on-orange: #FFF8EE;
+  --teleo-on-orange-button: #FFF8EE;
+  --teleo-on-pink: #FFF8EE;
+  --teleo-on-magenta: #FFF8EE;
 
   --teleo-shadow-card: 0 1px 2px rgba(90, 40, 40, 0.06), 0 8px 24px -12px rgba(90, 40, 40, 0.18);
   --teleo-shadow-float: 0 10px 30px -10px rgba(90, 40, 40, 0.32);
@@ -102,6 +108,10 @@
   --teleo-magenta-soft: #3F1B2F;
   --teleo-magenta-tint: #2A1822;
   --teleo-on-accent: #1C1513;
+  --teleo-on-orange: #1C1513;
+  --teleo-on-orange-button: #1C1513;
+  --teleo-on-pink: #1C1513;
+  --teleo-on-magenta: #1C1513;
 
   --teleo-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 26px -14px rgba(0, 0, 0, 0.6);
   --teleo-shadow-float: 0 12px 30px -8px rgba(0, 0, 0, 0.7);
@@ -147,6 +157,10 @@
   --color-magenta-soft: var(--teleo-magenta-soft);
   --color-magenta-tint: var(--teleo-magenta-tint);
   --color-on-accent: var(--teleo-on-accent);
+  --color-on-orange: var(--teleo-on-orange);
+  --color-on-orange-button: var(--teleo-on-orange-button);
+  --color-on-pink: var(--teleo-on-pink);
+  --color-on-magenta: var(--teleo-on-magenta);
 
   --shadow-card: var(--teleo-shadow-card);
   --shadow-float: var(--teleo-shadow-float);
@@ -272,4 +286,658 @@
       radial-gradient(120% 360px at 15% -80px, var(--color-bg-glow) 0%, transparent 70%),
       var(--color-bg);
   }
+}
+
+/* ---------- Temas de color (V.2.1.0) ----------
+ * Atardecer es el tema de siempre (bloques :root y .dark de arriba). Cada tema nuevo redefine
+ * las mismas variables para claro (:not(.dark)) y oscuro (.dark), así los componentes no
+ * cambian. orange / pink / magenta son los tres acentos de cada tema (en Atardecer: naranja,
+ * rosa y magenta). El doblez de página (state-*, accent-*) conserva sus colores en todos. */
+
+/* Océano · claro */
+:root[data-palette="oceano"]:not(.dark) {
+  --teleo-bg: #F7F1E7;
+  --teleo-bg-glow: #CFEFF0;
+  --teleo-surface: #FFFCF7;
+  --teleo-surface-2: #F4ECDF;
+  --teleo-border: #E7DCCB;
+  --teleo-text: #2B211B;
+  --teleo-text-secondary: #6B5B4E;
+  --teleo-text-muted: color-mix(in srgb, #6B5B4E 62%, #F7F1E7);
+  --teleo-primary: #1E6E6F;
+  --teleo-primary-ink: #F7FDFC;
+  --teleo-primary-text: #1E6E6F;
+  --teleo-primary-soft: #DDF2F3;
+  --teleo-rose: #4EC6D4;
+  --teleo-ornament: color-mix(in srgb, #4EC6D4 55%, #F7F1E7);
+  --teleo-orange-text: #16707C;
+  --teleo-orange: #4EC6D4;
+  --teleo-orange-soft: #D9F3F6;
+  --teleo-orange-tint: color-mix(in srgb, #D9F3F6 50%, #FFFCF7);
+  --teleo-orange-button: #16707C;
+  --teleo-on-orange: #2B211B;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #8A5A22;
+  --teleo-pink: #F2D9B7;
+  --teleo-pink-soft: #FBF0E1;
+  --teleo-pink-tint: color-mix(in srgb, #FBF0E1 50%, #FFFCF7);
+  --teleo-on-pink: #2B211B;
+  --teleo-magenta-text: #2B6E66;
+  --teleo-magenta: #7AC7BD;
+  --teleo-magenta-soft: #E0F2EF;
+  --teleo-magenta-tint: color-mix(in srgb, #E0F2EF 50%, #FFFCF7);
+  --teleo-on-magenta: #2B211B;
+  --teleo-on-accent: #2B211B;
+}
+
+/* Océano · oscuro */
+:root.dark[data-palette="oceano"] {
+  --teleo-bg: #0E1A1B;
+  --teleo-bg-glow: #103234;
+  --teleo-surface: #152425;
+  --teleo-surface-2: #1B2E2F;
+  --teleo-border: #274041;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: color-mix(in srgb, #C9B9A6 62%, #0E1A1B);
+  --teleo-primary: #237F80;
+  --teleo-primary-ink: #F4FFFE;
+  --teleo-primary-text: #7FD3D6;
+  --teleo-primary-soft: #173536;
+  --teleo-rose: #4EC6D4;
+  --teleo-ornament: color-mix(in srgb, #4EC6D4 55%, #0E1A1B);
+  --teleo-orange-text: #8EDDE6;
+  --teleo-orange: #4EC6D4;
+  --teleo-orange-soft: #12363B;
+  --teleo-orange-tint: color-mix(in srgb, #12363B 50%, #152425);
+  --teleo-orange-button: #4EC6D4;
+  --teleo-on-orange: #0E1A1B;
+  --teleo-on-orange-button: #0E1A1B;
+  --teleo-pink-text: #F2D9B7;
+  --teleo-pink: #E2C08F;
+  --teleo-pink-soft: #3A2F20;
+  --teleo-pink-tint: color-mix(in srgb, #3A2F20 50%, #152425);
+  --teleo-on-pink: #0E1A1B;
+  --teleo-magenta-text: #A7DDD5;
+  --teleo-magenta: #7AC7BD;
+  --teleo-magenta-soft: #173430;
+  --teleo-magenta-tint: color-mix(in srgb, #173430 50%, #152425);
+  --teleo-on-magenta: #0E1A1B;
+  --teleo-on-accent: #0E1A1B;
+}
+
+/* Bosque · claro */
+:root[data-palette="bosque"]:not(.dark) {
+  --teleo-bg: #F6F3E6;
+  --teleo-bg-glow: #F2EDB8;
+  --teleo-surface: #FFFDF5;
+  --teleo-surface-2: #F2EEDD;
+  --teleo-border: #E4DECA;
+  --teleo-text: #2B211B;
+  --teleo-text-secondary: #6B5B4E;
+  --teleo-text-muted: color-mix(in srgb, #6B5B4E 62%, #F6F3E6);
+  --teleo-primary: #365004;
+  --teleo-primary-ink: #FAFCEF;
+  --teleo-primary-text: #365004;
+  --teleo-primary-soft: #E7EDD2;
+  --teleo-rose: #8DA432;
+  --teleo-ornament: color-mix(in srgb, #8DA432 55%, #F6F3E6);
+  --teleo-orange-text: #7A4E05;
+  --teleo-orange: #925E06;
+  --teleo-orange-soft: #F4E6CC;
+  --teleo-orange-tint: color-mix(in srgb, #F4E6CC 50%, #FFFDF5);
+  --teleo-orange-button: #7A4E05;
+  --teleo-on-orange: #FFFFFF;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #56661A;
+  --teleo-pink: #8DA432;
+  --teleo-pink-soft: #E9EFD2;
+  --teleo-pink-tint: color-mix(in srgb, #E9EFD2 50%, #FFFDF5);
+  --teleo-on-pink: #2B211B;
+  --teleo-magenta-text: #6B5F10;
+  --teleo-magenta: #EDE383;
+  --teleo-magenta-soft: #FAF6D6;
+  --teleo-magenta-tint: color-mix(in srgb, #FAF6D6 50%, #FFFDF5);
+  --teleo-on-magenta: #2B211B;
+  --teleo-on-accent: #2B211B;
+}
+
+/* Bosque · oscuro */
+:root.dark[data-palette="bosque"] {
+  --teleo-bg: #16130A;
+  --teleo-bg-glow: #2C2A10;
+  --teleo-surface: #211C10;
+  --teleo-surface-2: #2A2415;
+  --teleo-border: #3A331F;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: color-mix(in srgb, #C9B9A6 62%, #16130A);
+  --teleo-primary: #5A7A12;
+  --teleo-primary-ink: #FBFDF0;
+  --teleo-primary-text: #BCD36A;
+  --teleo-primary-soft: #2A3212;
+  --teleo-rose: #8DA432;
+  --teleo-ornament: color-mix(in srgb, #8DA432 55%, #16130A);
+  --teleo-orange-text: #E0B055;
+  --teleo-orange: #B77A12;
+  --teleo-orange-soft: #3A2A0C;
+  --teleo-orange-tint: color-mix(in srgb, #3A2A0C 50%, #211C10);
+  --teleo-orange-button: #B77A12;
+  --teleo-on-orange: #16130A;
+  --teleo-on-orange-button: #16130A;
+  --teleo-pink-text: #BCD36A;
+  --teleo-pink: #8DA432;
+  --teleo-pink-soft: #263011;
+  --teleo-pink-tint: color-mix(in srgb, #263011 50%, #211C10);
+  --teleo-on-pink: #16130A;
+  --teleo-magenta-text: #EDE383;
+  --teleo-magenta: #D9CF6A;
+  --teleo-magenta-soft: #35321A;
+  --teleo-magenta-tint: color-mix(in srgb, #35321A 50%, #211C10);
+  --teleo-on-magenta: #16130A;
+  --teleo-on-accent: #16130A;
+}
+
+/* Tinta · claro */
+:root[data-palette="tinta"]:not(.dark) {
+  --teleo-bg: #F5F5F3;
+  --teleo-bg-glow: #E6E6E3;
+  --teleo-surface: #FFFFFF;
+  --teleo-surface-2: #EFEFEC;
+  --teleo-border: #DEDED9;
+  --teleo-text: #1A1A1A;
+  --teleo-text-secondary: #5C5C5C;
+  --teleo-text-muted: color-mix(in srgb, #5C5C5C 62%, #F5F5F3);
+  --teleo-primary: #1C1C1C;
+  --teleo-primary-ink: #FFFFFF;
+  --teleo-primary-text: #1C1C1C;
+  --teleo-primary-soft: #E8E8E5;
+  --teleo-rose: #5A5A5A;
+  --teleo-ornament: color-mix(in srgb, #5A5A5A 55%, #F5F5F3);
+  --teleo-orange-text: #1C1C1C;
+  --teleo-orange: #3A3A3A;
+  --teleo-orange-soft: #E4E4E1;
+  --teleo-orange-tint: color-mix(in srgb, #E4E4E1 50%, #FFFFFF);
+  --teleo-orange-button: #1C1C1C;
+  --teleo-on-orange: #FFFFFF;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #4A4A4A;
+  --teleo-pink: #8A8A8A;
+  --teleo-pink-soft: #EDEDEA;
+  --teleo-pink-tint: color-mix(in srgb, #EDEDEA 50%, #FFFFFF);
+  --teleo-on-pink: #1A1A1A;
+  --teleo-magenta-text: #2A2A2A;
+  --teleo-magenta: #4A4A4A;
+  --teleo-magenta-soft: #FFFFFF;
+  --teleo-magenta-tint: color-mix(in srgb, #FFFFFF 50%, #FFFFFF);
+  --teleo-on-magenta: #FFFFFF;
+  --teleo-on-accent: #FFFFFF;
+}
+
+/* Tinta · oscuro */
+:root.dark[data-palette="tinta"] {
+  --teleo-bg: #0E0E0E;
+  --teleo-bg-glow: #1C1C1C;
+  --teleo-surface: #181818;
+  --teleo-surface-2: #212121;
+  --teleo-border: #2F2F2F;
+  --teleo-text: #F2F2F2;
+  --teleo-text-secondary: #B5B5B5;
+  --teleo-text-muted: color-mix(in srgb, #B5B5B5 62%, #0E0E0E);
+  --teleo-primary: #F2F2F2;
+  --teleo-primary-ink: #111111;
+  --teleo-primary-text: #F2F2F2;
+  --teleo-primary-soft: #262626;
+  --teleo-rose: #9A9A9A;
+  --teleo-ornament: color-mix(in srgb, #9A9A9A 55%, #0E0E0E);
+  --teleo-orange-text: #F2F2F2;
+  --teleo-orange: #E6E6E6;
+  --teleo-orange-soft: #2A2A2A;
+  --teleo-orange-tint: color-mix(in srgb, #2A2A2A 50%, #181818);
+  --teleo-orange-button: #E6E6E6;
+  --teleo-on-orange: #0E0E0E;
+  --teleo-on-orange-button: #0E0E0E;
+  --teleo-pink-text: #BDBDBD;
+  --teleo-pink: #8A8A8A;
+  --teleo-pink-soft: #222222;
+  --teleo-pink-tint: color-mix(in srgb, #222222 50%, #181818);
+  --teleo-on-pink: #0E0E0E;
+  --teleo-magenta-text: #F2F2F2;
+  --teleo-magenta: #BDBDBD;
+  --teleo-magenta-soft: #111111;
+  --teleo-magenta-tint: color-mix(in srgb, #111111 50%, #181818);
+  --teleo-on-magenta: #0E0E0E;
+  --teleo-on-accent: #0E0E0E;
+}
+
+/* Aurora boreal · claro */
+:root[data-palette="aurora"]:not(.dark) {
+  --teleo-bg: #F1F4F6;
+  --teleo-bg-glow: #D6F5EC;
+  --teleo-surface: #FBFDFE;
+  --teleo-surface-2: #EAF0F3;
+  --teleo-border: #D8E1E8;
+  --teleo-text: #2B211B;
+  --teleo-text-secondary: #6B5B4E;
+  --teleo-text-muted: color-mix(in srgb, #6B5B4E 62%, #F1F4F6);
+  --teleo-primary: #524094;
+  --teleo-primary-ink: #FBF9FF;
+  --teleo-primary-text: #524094;
+  --teleo-primary-soft: #E7E3F5;
+  --teleo-rose: #01CBAE;
+  --teleo-ornament: color-mix(in srgb, #01CBAE 55%, #F1F4F6);
+  --teleo-orange-text: #007A58;
+  --teleo-orange: #01EFAC;
+  --teleo-orange-soft: #D5FBEE;
+  --teleo-orange-tint: color-mix(in srgb, #D5FBEE 50%, #FBFDFE);
+  --teleo-orange-button: #01EFAC;
+  --teleo-on-orange: #2B211B;
+  --teleo-on-orange-button: #0B2E27;
+  --teleo-pink-text: #1A6A88;
+  --teleo-pink: #2082A6;
+  --teleo-pink-soft: #DCEDF4;
+  --teleo-pink-tint: color-mix(in srgb, #DCEDF4 50%, #FBFDFE);
+  --teleo-on-pink: #FFFFFF;
+  --teleo-magenta-text: #562A83;
+  --teleo-magenta: #6B4AAE;
+  --teleo-magenta-soft: #ECE4F6;
+  --teleo-magenta-tint: color-mix(in srgb, #ECE4F6 50%, #FBFDFE);
+  --teleo-on-magenta: #FFFFFF;
+  --teleo-on-accent: #FFFFFF;
+}
+
+/* Aurora boreal · oscuro */
+:root.dark[data-palette="aurora"] {
+  --teleo-bg: #0A1220;
+  --teleo-bg-glow: #0E2E36;
+  --teleo-surface: #111B2C;
+  --teleo-surface-2: #172336;
+  --teleo-border: #243349;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: color-mix(in srgb, #C9B9A6 62%, #0A1220);
+  --teleo-primary: #6A56B8;
+  --teleo-primary-ink: #FAF8FF;
+  --teleo-primary-text: #B7A8F0;
+  --teleo-primary-soft: #221E40;
+  --teleo-rose: #01EFAC;
+  --teleo-ornament: color-mix(in srgb, #01EFAC 55%, #0A1220);
+  --teleo-orange-text: #6DF7CC;
+  --teleo-orange: #01EFAC;
+  --teleo-orange-soft: #0C3228;
+  --teleo-orange-tint: color-mix(in srgb, #0C3228 50%, #111B2C);
+  --teleo-orange-button: #01EFAC;
+  --teleo-on-orange: #0A1220;
+  --teleo-on-orange-button: #0A1220;
+  --teleo-pink-text: #8FD0EA;
+  --teleo-pink: #2082A6;
+  --teleo-pink-soft: #12283A;
+  --teleo-pink-tint: color-mix(in srgb, #12283A 50%, #111B2C);
+  --teleo-on-pink: #FFFFFF;
+  --teleo-magenta-text: #C8B6F0;
+  --teleo-magenta: #7A5AB8;
+  --teleo-magenta-soft: #231A3A;
+  --teleo-magenta-tint: color-mix(in srgb, #231A3A 50%, #111B2C);
+  --teleo-on-magenta: #FFFFFF;
+  --teleo-on-accent: #FFFFFF;
+}
+
+/* Drácula · claro */
+:root[data-palette="dracula"]:not(.dark) {
+  --teleo-bg: #F4EFE8;
+  --teleo-bg-glow: #EED3D1;
+  --teleo-surface: #FBF8F3;
+  --teleo-surface-2: #EFE7DE;
+  --teleo-border: #E0D4C8;
+  --teleo-text: #1E0E0E;
+  --teleo-text-secondary: #5E4744;
+  --teleo-text-muted: color-mix(in srgb, #5E4744 62%, #F4EFE8);
+  --teleo-primary: #72090F;
+  --teleo-primary-ink: #FFF6F2;
+  --teleo-primary-text: #72090F;
+  --teleo-primary-soft: #F2DADB;
+  --teleo-rose: #B21F29;
+  --teleo-ornament: color-mix(in srgb, #B21F29 55%, #F4EFE8);
+  --teleo-orange-text: #9A1520;
+  --teleo-orange: #B21F29;
+  --teleo-orange-soft: #F7DADB;
+  --teleo-orange-tint: color-mix(in srgb, #F7DADB 50%, #FBF8F3);
+  --teleo-orange-button: #9A1520;
+  --teleo-on-orange: #FFFFFF;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #7A0610;
+  --teleo-pink: #930510;
+  --teleo-pink-soft: #F2D6D6;
+  --teleo-pink-tint: color-mix(in srgb, #F2D6D6 50%, #FBF8F3);
+  --teleo-on-pink: #FFFFFF;
+  --teleo-magenta-text: #3D0B0D;
+  --teleo-magenta: #53080E;
+  --teleo-magenta-soft: #EADBD9;
+  --teleo-magenta-tint: color-mix(in srgb, #EADBD9 50%, #FBF8F3);
+  --teleo-on-magenta: #FFFFFF;
+  --teleo-on-accent: #FFFFFF;
+}
+
+/* Drácula · oscuro */
+:root.dark[data-palette="dracula"] {
+  --teleo-bg: #050202;
+  --teleo-bg-glow: #3D0B0D;
+  --teleo-surface: #140809;
+  --teleo-surface-2: #1D0C0E;
+  --teleo-border: #2E1416;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: color-mix(in srgb, #C9B9A6 62%, #050202);
+  --teleo-primary: #9E1B24;
+  --teleo-primary-ink: #FFF3F0;
+  --teleo-primary-text: #E8727A;
+  --teleo-primary-soft: #2E0C10;
+  --teleo-rose: #D0343F;
+  --teleo-ornament: color-mix(in srgb, #D0343F 55%, #050202);
+  --teleo-orange-text: #F0858C;
+  --teleo-orange: #C8283A;
+  --teleo-orange-soft: #3A0E12;
+  --teleo-orange-tint: color-mix(in srgb, #3A0E12 50%, #140809);
+  --teleo-orange-button: #B21F29;
+  --teleo-on-orange: #FFFFFF;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #E26870;
+  --teleo-pink: #930510;
+  --teleo-pink-soft: #2A080B;
+  --teleo-pink-tint: color-mix(in srgb, #2A080B 50%, #140809);
+  --teleo-on-pink: #FFFFFF;
+  --teleo-magenta-text: #D9A5A2;
+  --teleo-magenta: #53080E;
+  --teleo-magenta-soft: #1F0A0B;
+  --teleo-magenta-tint: color-mix(in srgb, #1F0A0B 50%, #140809);
+  --teleo-on-magenta: #FFFFFF;
+  --teleo-on-accent: #FFFFFF;
+}
+
+/* Biblioteca · claro */
+:root[data-palette="biblioteca"]:not(.dark) {
+  --teleo-bg: #EDEBE7;
+  --teleo-bg-glow: #DEDAD3;
+  --teleo-surface: #F8F7F4;
+  --teleo-surface-2: #E8E5E0;
+  --teleo-border: #D6D2CB;
+  --teleo-text: #1C1A18;
+  --teleo-text-secondary: #5F5B55;
+  --teleo-text-muted: color-mix(in srgb, #5F5B55 62%, #EDEBE7);
+  --teleo-primary: #371E1E;
+  --teleo-primary-ink: #F5F1EC;
+  --teleo-primary-text: #371E1E;
+  --teleo-primary-soft: #E6DEDA;
+  --teleo-rose: #726E68;
+  --teleo-ornament: color-mix(in srgb, #726E68 55%, #EDEBE7);
+  --teleo-orange-text: #4A2626;
+  --teleo-orange: #6E3A36;
+  --teleo-orange-soft: #EADFDC;
+  --teleo-orange-tint: color-mix(in srgb, #EADFDC 50%, #F8F7F4);
+  --teleo-orange-button: #4A2626;
+  --teleo-on-orange: #FFFFFF;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #33312F;
+  --teleo-pink: #726E68;
+  --teleo-pink-soft: #E4E2DE;
+  --teleo-pink-tint: color-mix(in srgb, #E4E2DE 50%, #F8F7F4);
+  --teleo-on-pink: #FFFFFF;
+  --teleo-magenta-text: #4D4A45;
+  --teleo-magenta: #B7B4AE;
+  --teleo-magenta-soft: #EFEEEB;
+  --teleo-magenta-tint: color-mix(in srgb, #EFEEEB 50%, #F8F7F4);
+  --teleo-on-magenta: #1C1A18;
+  --teleo-on-accent: #1C1A18;
+}
+
+/* Biblioteca · oscuro */
+:root.dark[data-palette="biblioteca"] {
+  --teleo-bg: #0A0A0A;
+  --teleo-bg-glow: #1E1616;
+  --teleo-surface: #151414;
+  --teleo-surface-2: #1E1C1B;
+  --teleo-border: #2E2B29;
+  --teleo-text: #E8E4DE;
+  --teleo-text-secondary: #ADA8A0;
+  --teleo-text-muted: color-mix(in srgb, #ADA8A0 62%, #0A0A0A);
+  --teleo-primary: #5A3431;
+  --teleo-primary-ink: #F5EEEA;
+  --teleo-primary-text: #C9A6A0;
+  --teleo-primary-soft: #2A1B1A;
+  --teleo-rose: #726E68;
+  --teleo-ornament: color-mix(in srgb, #726E68 55%, #0A0A0A);
+  --teleo-orange-text: #D6B0AA;
+  --teleo-orange: #7A4540;
+  --teleo-orange-soft: #2C1C1B;
+  --teleo-orange-tint: color-mix(in srgb, #2C1C1B 50%, #151414);
+  --teleo-orange-button: #6E3A36;
+  --teleo-on-orange: #FFFFFF;
+  --teleo-on-orange-button: #F5EEEA;
+  --teleo-pink-text: #C4C0B9;
+  --teleo-pink: #726E68;
+  --teleo-pink-soft: #232120;
+  --teleo-pink-tint: color-mix(in srgb, #232120 50%, #151414);
+  --teleo-on-pink: #FFFFFF;
+  --teleo-magenta-text: #D8D5CF;
+  --teleo-magenta: #B7B4AE;
+  --teleo-magenta-soft: #262422;
+  --teleo-magenta-tint: color-mix(in srgb, #262422 50%, #151414);
+  --teleo-on-magenta: #0A0A0A;
+  --teleo-on-accent: #0A0A0A;
+}
+
+/* Algodón de azúcar · claro */
+:root[data-palette="algodon"]:not(.dark) {
+  --teleo-bg: #FFF6FB;
+  --teleo-bg-glow: #FBD9EE;
+  --teleo-surface: #FFFFFF;
+  --teleo-surface-2: #FBEFF7;
+  --teleo-border: #F1DDEA;
+  --teleo-text: #2B211B;
+  --teleo-text-secondary: #6B5B4E;
+  --teleo-text-muted: color-mix(in srgb, #6B5B4E 62%, #FFF6FB);
+  --teleo-primary: #B8327F;
+  --teleo-primary-ink: #FFFFFF;
+  --teleo-primary-text: #B8327F;
+  --teleo-primary-soft: #FDE3F4;
+  --teleo-rose: #8E92F0;
+  --teleo-ornament: color-mix(in srgb, #8E92F0 55%, #FFF6FB);
+  --teleo-orange-text: #B8327F;
+  --teleo-orange: #FE98D6;
+  --teleo-orange-soft: #FFE3F3;
+  --teleo-orange-tint: color-mix(in srgb, #FFE3F3 50%, #FFFFFF);
+  --teleo-orange-button: #FE98D6;
+  --teleo-on-orange: #2B211B;
+  --teleo-on-orange-button: #5A1340;
+  --teleo-pink-text: #4A4FB8;
+  --teleo-pink: #B8BAFD;
+  --teleo-pink-soft: #E9EAFF;
+  --teleo-pink-tint: color-mix(in srgb, #E9EAFF 50%, #FFFFFF);
+  --teleo-on-pink: #2B211B;
+  --teleo-magenta-text: #256A92;
+  --teleo-magenta: #AEDDFA;
+  --teleo-magenta-soft: #E4F4FE;
+  --teleo-magenta-tint: color-mix(in srgb, #E4F4FE 50%, #FFFFFF);
+  --teleo-on-magenta: #2B211B;
+  --teleo-on-accent: #2B211B;
+}
+
+/* Algodón de azúcar · oscuro */
+:root.dark[data-palette="algodon"] {
+  --teleo-bg: #141A2B;
+  --teleo-bg-glow: #26304F;
+  --teleo-surface: #1B2236;
+  --teleo-surface-2: #232B42;
+  --teleo-border: #313A56;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: color-mix(in srgb, #C9B9A6 62%, #141A2B);
+  --teleo-primary: #F8A8E8;
+  --teleo-primary-ink: #2A1430;
+  --teleo-primary-text: #F8A8E8;
+  --teleo-primary-soft: #2A2F4A;
+  --teleo-rose: #AEDDFA;
+  --teleo-ornament: color-mix(in srgb, #AEDDFA 55%, #141A2B);
+  --teleo-orange-text: #FE98D6;
+  --teleo-orange: #FE98D6;
+  --teleo-orange-soft: #3A2440;
+  --teleo-orange-tint: color-mix(in srgb, #3A2440 50%, #1B2236);
+  --teleo-orange-button: #FE98D6;
+  --teleo-on-orange: #141A2B;
+  --teleo-on-orange-button: #141A2B;
+  --teleo-pink-text: #C9CBFF;
+  --teleo-pink: #B8BAFD;
+  --teleo-pink-soft: #262B4A;
+  --teleo-pink-tint: color-mix(in srgb, #262B4A 50%, #1B2236);
+  --teleo-on-pink: #141A2B;
+  --teleo-magenta-text: #AEDDFA;
+  --teleo-magenta: #AEDDFA;
+  --teleo-magenta-soft: #1C2E44;
+  --teleo-magenta-tint: color-mix(in srgb, #1C2E44 50%, #1B2236);
+  --teleo-on-magenta: #141A2B;
+  --teleo-on-accent: #141A2B;
+}
+
+/* Lavanda · claro */
+:root[data-palette="lavanda"]:not(.dark) {
+  --teleo-bg: #F3EFE6;
+  --teleo-bg-glow: #E9E0F0;
+  --teleo-surface: #FBF9F4;
+  --teleo-surface-2: #EFEAE2;
+  --teleo-border: #E0DBD4;
+  --teleo-text: #2B211B;
+  --teleo-text-secondary: #6B5B4E;
+  --teleo-text-muted: color-mix(in srgb, #6B5B4E 62%, #F3EFE6);
+  --teleo-primary: #5A4D7A;
+  --teleo-primary-ink: #FBF8FF;
+  --teleo-primary-text: #5A4D7A;
+  --teleo-primary-soft: #ECE5F4;
+  --teleo-rose: #B8A4D4;
+  --teleo-ornament: color-mix(in srgb, #B8A4D4 55%, #F3EFE6);
+  --teleo-orange-text: #6A5596;
+  --teleo-orange: #B8A4D4;
+  --teleo-orange-soft: #EEE7F6;
+  --teleo-orange-tint: color-mix(in srgb, #EEE7F6 50%, #FBF9F4);
+  --teleo-orange-button: #6A5596;
+  --teleo-on-orange: #2B211B;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #7A5A7A;
+  --teleo-pink: #C8B3C8;
+  --teleo-pink-soft: #F2EAF2;
+  --teleo-pink-tint: color-mix(in srgb, #F2EAF2 50%, #FBF9F4);
+  --teleo-on-pink: #2B211B;
+  --teleo-magenta-text: #55525E;
+  --teleo-magenta: #9A93AC;
+  --teleo-magenta-soft: #F1F0F3;
+  --teleo-magenta-tint: color-mix(in srgb, #F1F0F3 50%, #FBF9F4);
+  --teleo-on-magenta: #2B211B;
+  --teleo-on-accent: #2B211B;
+}
+
+/* Lavanda · oscuro */
+:root.dark[data-palette="lavanda"] {
+  --teleo-bg: #16131C;
+  --teleo-bg-glow: #2A2234;
+  --teleo-surface: #201C28;
+  --teleo-surface-2: #292432;
+  --teleo-border: #383143;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: color-mix(in srgb, #C9B9A6 62%, #16131C);
+  --teleo-primary: #7A6B9E;
+  --teleo-primary-ink: #FBF8FF;
+  --teleo-primary-text: #CBBCE4;
+  --teleo-primary-soft: #2E2740;
+  --teleo-rose: #B8A4D4;
+  --teleo-ornament: color-mix(in srgb, #B8A4D4 55%, #16131C);
+  --teleo-orange-text: #D2C3EA;
+  --teleo-orange: #B8A4D4;
+  --teleo-orange-soft: #2E2640;
+  --teleo-orange-tint: color-mix(in srgb, #2E2640 50%, #201C28);
+  --teleo-orange-button: #B8A4D4;
+  --teleo-on-orange: #16131C;
+  --teleo-on-orange-button: #16131C;
+  --teleo-pink-text: #DCC8DC;
+  --teleo-pink: #C8B3C8;
+  --teleo-pink-soft: #2F2530;
+  --teleo-pink-tint: color-mix(in srgb, #2F2530 50%, #201C28);
+  --teleo-on-pink: #16131C;
+  --teleo-magenta-text: #E4E1EA;
+  --teleo-magenta: #DCD9E1;
+  --teleo-magenta-soft: #26242C;
+  --teleo-magenta-tint: color-mix(in srgb, #26242C 50%, #201C28);
+  --teleo-on-magenta: #16131C;
+  --teleo-on-accent: #16131C;
+}
+
+/* Girasol · claro */
+:root[data-palette="girasol"]:not(.dark) {
+  --teleo-bg: #FBF6E0;
+  --teleo-bg-glow: #FBF0A8;
+  --teleo-surface: #FFFDF4;
+  --teleo-surface-2: #F8F0D4;
+  --teleo-border: #EDE1B8;
+  --teleo-text: #2B211B;
+  --teleo-text-secondary: #6B5B4E;
+  --teleo-text-muted: color-mix(in srgb, #6B5B4E 62%, #FBF6E0);
+  --teleo-primary: #7F2F01;
+  --teleo-primary-ink: #FFF9E8;
+  --teleo-primary-text: #7F2F01;
+  --teleo-primary-soft: #FBEBC2;
+  --teleo-rose: #ED8001;
+  --teleo-ornament: color-mix(in srgb, #ED8001 55%, #FBF6E0);
+  --teleo-orange-text: #7A5A00;
+  --teleo-orange: #FEDC01;
+  --teleo-orange-soft: #FFF6C2;
+  --teleo-orange-tint: color-mix(in srgb, #FFF6C2 50%, #FFFDF4);
+  --teleo-orange-button: #FEDC01;
+  --teleo-on-orange: #2B211B;
+  --teleo-on-orange-button: #3F1A00;
+  --teleo-pink-text: #8A5200;
+  --teleo-pink: #FDB500;
+  --teleo-pink-soft: #FEEDC2;
+  --teleo-pink-tint: color-mix(in srgb, #FEEDC2 50%, #FFFDF4);
+  --teleo-on-pink: #2B211B;
+  --teleo-magenta-text: #A04F00;
+  --teleo-magenta: #ED8001;
+  --teleo-magenta-soft: #FDE3C6;
+  --teleo-magenta-tint: color-mix(in srgb, #FDE3C6 50%, #FFFDF4);
+  --teleo-on-magenta: #2B211B;
+  --teleo-on-accent: #2B211B;
+}
+
+/* Girasol · oscuro */
+:root.dark[data-palette="girasol"] {
+  --teleo-bg: #170F06;
+  --teleo-bg-glow: #3A2A08;
+  --teleo-surface: #22170A;
+  --teleo-surface-2: #2B1E0E;
+  --teleo-border: #3C2A14;
+  --teleo-text: #F3E9DA;
+  --teleo-text-secondary: #C9B9A6;
+  --teleo-text-muted: color-mix(in srgb, #C9B9A6 62%, #170F06);
+  --teleo-primary: #A8480A;
+  --teleo-primary-ink: #FFF8EC;
+  --teleo-primary-text: #FDB500;
+  --teleo-primary-soft: #3A220C;
+  --teleo-rose: #FDB500;
+  --teleo-ornament: color-mix(in srgb, #FDB500 55%, #170F06);
+  --teleo-orange-text: #FEDC01;
+  --teleo-orange: #FEDC01;
+  --teleo-orange-soft: #3A3206;
+  --teleo-orange-tint: color-mix(in srgb, #3A3206 50%, #22170A);
+  --teleo-orange-button: #FEDC01;
+  --teleo-on-orange: #170F06;
+  --teleo-on-orange-button: #170F06;
+  --teleo-pink-text: #FDC94A;
+  --teleo-pink: #FDB500;
+  --teleo-pink-soft: #3A2A08;
+  --teleo-pink-tint: color-mix(in srgb, #3A2A08 50%, #22170A);
+  --teleo-on-pink: #170F06;
+  --teleo-magenta-text: #F5A04A;
+  --teleo-magenta: #ED8001;
+  --teleo-magenta-soft: #3A1F08;
+  --teleo-magenta-tint: color-mix(in srgb, #3A1F08 50%, #22170A);
+  --teleo-on-magenta: #170F06;
+  --teleo-on-accent: #170F06;
 }

@@ -66,8 +66,8 @@ export function MonthCalendar({ year, month, markedDates, className = '', size =
             ? 'bg-primary text-primary-ink'
             : isMarked
               ? isEvents
-                ? 'bg-magenta text-on-accent'
-                : 'bg-orange text-on-accent'
+                ? 'bg-magenta text-on-magenta'
+                : 'bg-orange text-on-orange'
               : isFuture && !isEvents
                 ? 'text-text-muted/60'
                 : 'bg-surface-2 text-text-secondary'

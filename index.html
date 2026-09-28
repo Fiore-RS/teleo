@@ -7,6 +7,21 @@
     <title>teleo</title>
 
     <meta name="theme-color" content="#7A2E3A" />
+    <!-- Aplica el modo y el tema de color guardados antes de pintar la página, para que no se
+         vea un instante el tema por defecto. La misma lógica está en src/context/ThemeContext.tsx. -->
+    <script>
+      (function () {
+        try {
+          var root = document.documentElement
+          var mode = localStorage.getItem('teleo-theme')
+          if (localStorage.getItem('teleo-mode-reset-2.1') !== 'hecho') mode = 'system'
+          var dark = mode === 'dark' || (mode !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) root.classList.add('dark')
+          var palette = localStorage.getItem('teleo-palette')
+          if (palette) root.dataset.palette = palette
+        } catch (e) {}
+      })()
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
