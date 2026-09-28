@@ -18,8 +18,8 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-ink',
   soft: 'bg-primary-soft text-primary-text',
   // Acentos de la paleta: naranja (racha, empezar a leer) y magenta (terminar un libro).
-  orange: 'bg-orange-button text-on-accent',
-  magenta: 'bg-magenta text-on-accent',
+  orange: 'bg-orange-button text-on-orange-button',
+  magenta: 'bg-magenta text-on-magenta',
   outline: 'bg-transparent border-[1.5px] border-border text-primary-text',
   outlineOrange: 'bg-transparent border-[1.5px] border-orange-text text-orange-text',
 }

@@ -28,7 +28,7 @@ export function ReleaseRow({ release, currency, onClick }: ReleaseRowProps) {
         </span>
         <span
           className={`shrink-0 px-2.5 py-1 rounded-full text-[12px] font-bold whitespace-nowrap ${
-            isPast ? 'bg-surface text-text-muted border border-border' : isSoon ? 'bg-magenta text-on-accent' : 'bg-magenta-soft text-magenta-text'
+            isPast ? 'bg-surface text-text-muted border border-border' : isSoon ? 'bg-magenta text-on-magenta' : 'bg-magenta-soft text-magenta-text'
           }`}
         >
           {countdownLabel(release.release_date)}

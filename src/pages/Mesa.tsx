@@ -191,7 +191,7 @@ export function Mesa() {
                   <span
                     className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center ${
                       d.read
-                        ? "bg-orange border-orange text-on-accent"
+                        ? "bg-orange border-orange text-on-orange"
                         : d.isToday
                           ? "border-dashed border-primary-text bg-surface-2"
                           : "border-border bg-surface-2"

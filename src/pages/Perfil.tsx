@@ -7,6 +7,8 @@ import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useAnnualGoal } from '../hooks/useAnnualGoal'
 import { useProfileLists } from '../hooks/useProfileLists'
 import { EditProfileModal } from '../assets/components/molecules/EditProfileModal'
+import { BannerSheet } from '../assets/components/molecules/BannerSheet'
+import { DEFAULT_BANNER, isBannerId, type BannerId } from '../lib/banners'
 import { ActivityCard } from '../assets/components/molecules/ActivityCard'
 import { PriorityListCard } from '../assets/components/molecules/PriorityListCard'
 import { ReadingCalendarSheet } from '../assets/components/molecules/ReadingCalendarSheet'
@@ -32,12 +34,14 @@ export function Perfil() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { profile, updateProfile, isLoading: profileLoading } = useProfile(user?.id)
+  const banner: BannerId = isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER
   const { uploadAvatar, isUploading } = useAvatarUpload(user?.id)
   const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(user?.id)
   const { currentlyReading, favorites, recommended, wishlist, abandoned, counts, refetch: refetchLists, isLoading: listsLoading } = useProfileLists(user?.id)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+  const [isBannerOpen, setIsBannerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [hasNews] = useState(hasUnseenChangelog)
@@ -69,6 +73,7 @@ export function Perfil() {
         areListsLoading={listsLoading}
         bio={profile?.bio}
         avatarUrl={profile?.avatar_url}
+        banner={banner}
         headerRight={
           <div className="flex flex-col gap-1.5">
             <button
@@ -128,7 +133,18 @@ export function Perfil() {
           avatarUrl={profile?.avatar_url}
           isUploadingPhoto={isUploading}
           onChangePhoto={() => fileInputRef.current?.click()}
+          banner={banner}
+          onChangeBanner={() => setIsBannerOpen(true)}
           onSave={async (changes) => updateProfile(changes)}
+        />
+      )}
+
+      {/* Catálogo de banners, encima de Editar perfil. El banner se guarda al tocarlo. */}
+      {isBannerOpen && (
+        <BannerSheet
+          active={banner}
+          onClose={() => setIsBannerOpen(false)}
+          onSelect={(id) => updateProfile({ banner: id })}
         />
       )}
 

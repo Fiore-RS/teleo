@@ -241,6 +241,8 @@ export type Database = {
           is_deactivated: boolean
           last_seen_version: string | null
           nickname: string | null
+          palette: string
+          banner: string
           priority_list_name: string | null
           username: string
           username_changed_at: string | null
@@ -255,6 +257,8 @@ export type Database = {
           is_deactivated?: boolean
           last_seen_version?: string | null
           nickname?: string | null
+          palette?: string
+          banner?: string
           priority_list_name?: string | null
           username: string
           username_changed_at?: string | null
@@ -269,6 +273,8 @@ export type Database = {
           is_deactivated?: boolean
           last_seen_version?: string | null
           nickname?: string | null
+          palette?: string
+          banner?: string
           priority_list_name?: string | null
           username?: string
           username_changed_at?: string | null

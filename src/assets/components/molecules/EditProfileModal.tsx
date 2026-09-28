@@ -4,7 +4,8 @@ import { Modal } from '../atoms/Modal'
 import { Input } from '../atoms/Input'
 import { Textarea } from '../atoms/Textarea'
 import { Button } from '../atoms/Button'
-import { Sparkle } from '../atoms/Sparkle'
+import { BannerArt } from '../atoms/BannerArt'
+import type { BannerId } from '../../../lib/banners'
 
 const NICKNAME_MAX = 30
 const BIO_MAX = 150
@@ -18,6 +19,9 @@ interface EditProfileModalProps {
   avatarUrl?: string | null
   isUploadingPhoto?: boolean
   onChangePhoto: () => void
+  banner: BannerId
+  /** Abre el catálogo de banners. */
+  onChangeBanner: () => void
   onSave: (changes: { nickname: string | null; bio: string | null }) => Promise<void>
 }
 
@@ -34,6 +38,8 @@ export function EditProfileModal({
   avatarUrl,
   isUploadingPhoto = false,
   onChangePhoto,
+  banner,
+  onChangeBanner,
   onSave,
 }: EditProfileModalProps) {
   const [nickname, setNickname] = useState(currentNickname)
@@ -52,18 +58,16 @@ export function EditProfileModal({
 
   return (
     <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Editar perfil">
-      {/* Mini cabecera: la misma de Tu rincón en chico, con la foto encima. Es una vista previa
-          de cómo se ve el perfil; tocar la foto la cambia. Aquí mismo irá la elección de banner. */}
-      <div className="relative h-24 rounded-2xl bg-linear-to-br from-primary to-rose overflow-hidden" aria-hidden="true">
-        <span className="absolute -top-12 -left-8 w-32 h-32 rounded-full bg-primary-ink/10 blur-2xl" />
-        <span className="absolute -bottom-16 right-2 w-40 h-40 rounded-full border border-dashed border-primary-ink/25" />
-        <Sparkle size={14} className="absolute left-[46%] top-5 text-primary-ink/45" />
-        <Sparkle size={9} className="absolute right-[22%] top-9 text-primary-ink/35" />
-        <Sparkle size={8} className="absolute right-8 bottom-5 text-primary-ink/40" />
-        <Sparkle size={7} className="absolute left-[30%] top-12 text-primary-ink/30" />
-        <span className="absolute left-[60%] top-4 w-1 h-1 rounded-full bg-primary-ink/50" />
-        <span className="absolute right-[34%] bottom-6 w-1.5 h-1.5 rounded-full bg-primary-ink/30" />
-      </div>
+      {/* Mini cabecera: la misma de Tu rincón en chico, con el banner y la foto encima. Es una
+          vista previa del perfil: tocar el banner abre el catálogo y tocar la foto la cambia. */}
+      <button
+        type="button"
+        onClick={onChangeBanner}
+        aria-label="Cambiar banner"
+        className="relative block w-full h-24 rounded-2xl bg-linear-to-br from-primary to-rose overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+      >
+        <BannerArt banner={banner} />
+      </button>
 
       <div className="flex items-end gap-3.5 px-2 -mt-10">
         <button
@@ -86,11 +90,10 @@ export function EditProfileModal({
         <div className="min-w-0 pb-1">
           {/* Se actualiza mientras se escribe el nickname, como vista previa. */}
           <p className="font-display font-semibold text-body-lg text-text truncate">{nickname.trim() || username}</p>
-          {/* Pista en vez de botón: la foto se cambia tocándola. Cuando llegue el catálogo de
-              banners (V.2.1.0), el texto pasa a "Toca tu foto o el banner para cambiarlos". */}
+          {/* Pista en vez de botones: la foto y el banner se cambian tocándolos. */}
           <p className="flex items-center gap-1.5 mt-0.5 text-body-sm text-text-secondary">
             <Camera size={14} className="shrink-0" aria-hidden="true" />
-            {isUploadingPhoto ? 'Subiendo foto...' : avatarUrl ? 'Toca tu foto para cambiarla' : 'Toca la imagen para agregar tu foto'}
+            {isUploadingPhoto ? 'Subiendo foto...' : 'Toca tu foto o el banner para cambiarlos'}
           </p>
         </div>
       </div>

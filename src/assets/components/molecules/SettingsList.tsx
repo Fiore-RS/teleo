@@ -35,9 +35,11 @@ interface SettingsRowProps {
   danger?: boolean
   /** Puntito junto al título, ej. cuando hay una versión nueva en Novedades. */
   dot?: boolean
+  /** Algo a la derecha, antes de la flecha (ej. la muestra de colores del tema activo). */
+  trailing?: ReactNode
 }
 
-export function SettingsRow({ icon: Icon, label, description, onClick, disabled = false, danger = false, dot = false }: SettingsRowProps) {
+export function SettingsRow({ icon: Icon, label, description, onClick, disabled = false, danger = false, dot = false, trailing }: SettingsRowProps) {
   return (
     <button
       type="button"
@@ -57,6 +59,7 @@ export function SettingsRow({ icon: Icon, label, description, onClick, disabled 
         </span>
         {description && <span className="block text-body-sm text-text-secondary mt-0.5">{description}</span>}
       </span>
+      {trailing}
       <ChevronRight size={18} className="text-text-muted shrink-0" />
     </button>
   )
