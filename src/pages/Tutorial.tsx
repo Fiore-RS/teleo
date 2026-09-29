@@ -68,7 +68,7 @@ const sections: TutorialSection[] = [
       'Toca el lápiz de arriba para cambiar tu foto, tu nickname y tu descripción.',
       'Toca cualquiera de tus números (leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
       'Mira tu actividad del mes y organiza tu lista de temporada desde sus tres puntos: cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
-      'En Favoritos, Recomendados, Deseados y Abandonados verás cuatro libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
+      'En Favoritos, Recomendados, Deseados y Abandonados verás cinco libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
       'El botón de compartir te deja enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
     ],
   },

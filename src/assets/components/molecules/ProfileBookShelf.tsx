@@ -47,7 +47,7 @@ export function ProfileBookShelf({ title, books, isLoading = false, icon, tone, 
 
       {isLoading ? (
         <div className="flex gap-3 -mx-[18px] px-[18px] overflow-hidden pb-1" aria-label="Cargando">
-          {[0, 1, 2, 3].map((i) => (
+          {[0, 1, 2, 3, 4].map((i) => (
             <CoverSkeleton key={i} className="w-24 shrink-0" />
           ))}
         </div>
