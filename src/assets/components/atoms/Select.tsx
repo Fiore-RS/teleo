@@ -8,9 +8,12 @@ interface SelectProps {
   className?: string
   disabled?: boolean
   placeholder?: string
+  /** Sin caja, alineado a la derecha y con el menú del ancho de sus opciones: para filas
+   *  compactas de formulario (nombre a la izquierda, valor a la derecha). */
+  bare?: boolean
 }
 
-export function Select({ options, value, onChange, className = '', disabled, placeholder }: SelectProps) {
+export function Select({ options, value, onChange, className = '', disabled, placeholder, bare = false }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -37,8 +40,10 @@ export function Select({ options, value, onChange, className = '', disabled, pla
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen((o) => !o)}
-        className={`w-full flex items-center justify-between gap-2 bg-surface-2 border rounded-2xl py-3 pl-4 pr-4 text-body-lg font-body text-text text-left transition-colors ${
-          isOpen ? 'border-primary-text' : 'border-border'
+        className={`w-full flex items-center gap-2 text-body-lg font-body text-text transition-colors ${
+          bare
+            ? 'justify-end text-right'
+            : `justify-between text-left bg-surface-2 border rounded-2xl py-3 pl-4 pr-4 ${isOpen ? 'border-primary-text' : 'border-border'}`
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       >
         <span className={`truncate ${!selected ? 'text-text-secondary' : ''}`}>
@@ -46,14 +51,16 @@ export function Select({ options, value, onChange, className = '', disabled, pla
         </span>
         <ChevronDown
           size={18}
-          className={`text-text-secondary shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`shrink-0 transition-transform duration-200 ${bare ? 'text-primary-text' : 'text-text-secondary'} ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {isOpen && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 max-h-64 overflow-y-auto"
+          className={`absolute top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 max-h-64 overflow-y-auto ${
+            bare ? 'right-0 min-w-48 animate-pop-in' : 'left-0 right-0'
+          }`}
         >
           {options.map((opt) => {
             const isSelected = opt.value === value

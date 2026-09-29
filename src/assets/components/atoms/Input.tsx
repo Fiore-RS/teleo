@@ -5,6 +5,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: LucideIcon
   iconPosition?: 'left' | 'right'
   onIconClick?: () => void
+  /** Sin caja (fondo, borde ni relleno): para filas compactas de formulario y campos en
+   *  línea, donde el contenedor ya da el marco. El estilo que falte va en `className`. */
+  bare?: boolean
   className?: string
 }
 
@@ -12,10 +15,20 @@ export function Input({
   icon: Icon,
   iconPosition = 'left',
   onIconClick,
+  bare = false,
   className = '',
   ...props
 }: InputProps) {
   const hasIcon = Boolean(Icon)
+
+  if (bare) {
+    return (
+      <input
+        {...props}
+        className={`w-full min-w-0 bg-transparent font-body text-text placeholder:text-text-muted focus:outline-none transition-colors ${className}`}
+      />
+    )
+  }
 
   return (
     <div className="relative w-full">
