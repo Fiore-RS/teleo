@@ -75,14 +75,14 @@ export function Perfil() {
         avatarUrl={profile?.avatar_url}
         banner={banner}
         headerRight={
-          <div className="flex flex-col gap-1.5">
+          // En fila: en columna no cabían en el alto del banner y se salían por abajo.
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate('/configuracion')}
-              aria-label={hasNews ? 'Configuración (hay novedades)' : 'Configuración'}
-              className={`${headerButtonClass} relative`}
+              onClick={() => setShareStep('menu')}
+              aria-label="Compartir"
+              className={headerButtonClass}
             >
-              <Settings size={19} />
-              {hasNews && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-pink border-2 border-primary" aria-hidden="true" />}
+              <Share2 size={18} />
             </button>
             <button
               onClick={() => setIsEditProfileOpen(true)}
@@ -92,11 +92,12 @@ export function Perfil() {
               <PenLine size={18} />
             </button>
             <button
-              onClick={() => setShareStep('menu')}
-              aria-label="Compartir"
-              className={headerButtonClass}
+              onClick={() => navigate('/configuracion')}
+              aria-label={hasNews ? 'Configuración (hay novedades)' : 'Configuración'}
+              className={`${headerButtonClass} relative`}
             >
-              <Share2 size={18} />
+              <Settings size={19} />
+              {hasNews && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-pink border-2 border-primary" aria-hidden="true" />}
             </button>
           </div>
         }
