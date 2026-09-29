@@ -15,6 +15,14 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '2.1.2',
+    date: '29 de septiembre de 2026',
+    title: 'Para ponerte al día',
+    items: [
+      'Si pasas un tiempo sin entrar, Teleo te cuenta al volver qué actualizaciones importantes te perdiste y te lleva directo a verlas en Novedades.',
+    ],
+  },
+  {
     version: '2.1.1',
     announced: true,
     date: '29 de septiembre de 2026',
