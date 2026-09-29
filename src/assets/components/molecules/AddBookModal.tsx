@@ -131,7 +131,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setResults([])
     const found = await searchBooksByQueryMultiple(query.trim(), 3)
     setIsSearching(false)
-    found.length > 0 ? setResults(found) : setNotFound(true)
+    if (found.length > 0) setResults(found)
+    else setNotFound(true)
   }
 
   async function handleIsbnDetected(isbn: string) {
@@ -140,7 +141,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setNotFound(false)
     const found = await searchBookByIsbn(isbn)
     setIsSearching(false)
-    found ? selectResult(found) : setNotFound(true)
+    if (found) selectResult(found)
+    else setNotFound(true)
   }
 
   async function handleAdd() {

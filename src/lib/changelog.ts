@@ -12,6 +12,19 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '2.1.1',
+    date: '29 de septiembre de 2026',
+    title: 'Leer con cuidado',
+    items: [
+      'Avisos de contenido: agrégalos a tu reseña desde "Agregar avisos de contenido". Al leerla aparecen ocultos hasta que tocas Ver.',
+      'Cada cita de Mis citas tiene un menú (⋯) para compartirla, ver su reseña, editarla o eliminarla.',
+      'En tu perfil, los botones del banner ya no se salen de la cabecera, y en Editar perfil tu nickname ya no se corta.',
+      'Los menús de la app se abren con una animación suave.',
+      'Al actualizar tu progreso, lo que escribes ya no se borra si pones la fecha de inicio en ese momento.',
+      'Las confirmaciones para eliminar una reseña, una saga o una cita ahora dicen "eliminada".',
+    ],
+  },
+  {
     version: '2.1.0',
     date: '29 de septiembre de 2026',
     title: 'Tu rincón con más vida',

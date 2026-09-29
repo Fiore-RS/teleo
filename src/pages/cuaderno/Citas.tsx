@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { ImageOff, Quote, Share2, Shuffle } from 'lucide-react'
+import { ImageOff, Quote, Shuffle } from 'lucide-react'
 import { CoverImage } from '../../assets/components/atoms/CoverImage'
 import { Skeleton } from '../../assets/components/atoms/Skeleton'
 import { Eyebrow } from '../../assets/components/atoms/Eyebrow'
 import { Card } from '../../assets/components/molecules/Card'
+import { QuoteMenu } from '../../assets/components/molecules/QuoteMenu'
 import type { QuoteWithBook } from '../../hooks/useQuotes'
 
 interface CitasProps {
@@ -13,7 +14,11 @@ interface CitasProps {
   isLoading: boolean
   onShare: (quote: QuoteWithBook) => void
   onOpenBook: (bookId: string) => void
+  onEdit: (quote: QuoteWithBook) => void
+  onDelete: (quote: QuoteWithBook) => void
 }
+
+type QuoteActions = Pick<CitasProps, 'onShare' | 'onOpenBook' | 'onEdit' | 'onDelete'>
 
 function BookLine({ quote, onOpenBook }: { quote: QuoteWithBook; onOpenBook: (bookId: string) => void }) {
   const { book } = quote
@@ -41,31 +46,22 @@ function BookLine({ quote, onOpenBook }: { quote: QuoteWithBook; onOpenBook: (bo
   )
 }
 
-function ShareButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Compartir cita como imagen"
-      className="w-9 h-9 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
-    >
-      <Share2 size={16} />
-    </button>
-  )
-}
-
 function QuoteCard({
   quote,
+  align,
   onShare,
   onOpenBook,
-}: {
+  onEdit,
+  onDelete,
+}: QuoteActions & {
   quote: QuoteWithBook
-  onShare: (quote: QuoteWithBook) => void
-  onOpenBook: (bookId: string) => void
+  align: 'left' | 'right'
 }) {
   const { book } = quote
+  // Con el menú abierto, la tarjeta sube encima de las de abajo para que el panel no quede tapado.
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   return (
-    <article className="bg-surface border border-border rounded-card shadow-card p-3.5">
+    <article className={`relative ${isMenuOpen ? 'z-20' : ''} bg-surface border border-border rounded-card shadow-card p-3.5`}>
       <Quote size={14} className="text-ornament" aria-hidden="true" />
       <p className="font-display italic text-body-md leading-snug text-text whitespace-pre-line mt-1.5">{quote.quote_text}</p>
       <div className="flex items-end justify-between gap-2 mt-3 pt-3 border-t border-border">
@@ -78,14 +74,14 @@ function QuoteCard({
           <p className="text-body-sm font-semibold text-text line-clamp-2 leading-tight">{book.title}</p>
           {quote.page != null && <p className="text-body-sm text-text-secondary mt-0.5">Pág. {quote.page}</p>}
         </button>
-        <button
-          type="button"
-          onClick={() => onShare(quote)}
-          aria-label="Compartir cita como imagen"
-          className="w-8 h-8 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
-        >
-          <Share2 size={14} />
-        </button>
+        <QuoteMenu
+          align={align}
+          onOpenChange={setIsMenuOpen}
+          onShare={() => onShare(quote)}
+          onOpenReview={() => onOpenBook(book.id)}
+          onEdit={() => onEdit(quote)}
+          onDelete={() => onDelete(quote)}
+        />
       </div>
     </article>
   )
@@ -93,8 +89,10 @@ function QuoteCard({
 
 /** Pestaña Citas de Cuaderno (Mis citas, V.2.1.0): una cita al azar arriba y después todas
  *  las citas de tus reseñas, de la más reciente a la más antigua. Tocar el libro abre su
- *  reseña, donde también se pueden editar o quitar las citas. */
-export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook }: CitasProps) {
+ *  reseña. Desde la V.2.1.1 cada cita tiene su menú (⋯) para compartirla, ver la reseña,
+ *  editarla o eliminarla. */
+export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEdit, onDelete }: CitasProps) {
+  const [isRandomMenuOpen, setIsRandomMenuOpen] = useState(false)
   const [randomIndex, setRandomIndex] = useState(() => Math.floor(Math.random() * 1000))
   const random = quotes.length > 0 ? quotes[randomIndex % quotes.length] : null
 
@@ -132,7 +130,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook }: Ci
   return (
     <div className="flex flex-col gap-3">
       {showRandom && (
-        <Card labelledBy="cita-al-azar" tint="magenta">
+        <Card labelledBy="cita-al-azar" tint="magenta" className={isRandomMenuOpen ? 'z-20' : ''}>
           <div className="flex items-center justify-between gap-2 mb-3">
             <Eyebrow id="cita-al-azar" icon={Shuffle} tone="magenta">Cita al azar</Eyebrow>
             <button
@@ -148,7 +146,14 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook }: Ci
           </p>
           <div className="flex items-center justify-between gap-3 mt-4">
             <BookLine quote={random} onOpenBook={onOpenBook} />
-            <ShareButton onClick={() => onShare(random)} />
+            <QuoteMenu
+              size="md"
+              onOpenChange={setIsRandomMenuOpen}
+              onShare={() => onShare(random)}
+              onOpenReview={() => onOpenBook(random.book.id)}
+              onEdit={() => onEdit(random)}
+              onDelete={() => onDelete(random)}
+            />
           </div>
         </Card>
       )}
@@ -161,7 +166,15 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook }: Ci
             {quotes
               .filter((_, i) => i % 2 === col)
               .map((q) => (
-                <QuoteCard key={q.id} quote={q} onShare={onShare} onOpenBook={onOpenBook} />
+                <QuoteCard
+                  key={q.id}
+                  quote={q}
+                  align={col === 0 ? 'left' : 'right'}
+                  onShare={onShare}
+                  onOpenBook={onOpenBook}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
               ))}
           </div>
         ))}

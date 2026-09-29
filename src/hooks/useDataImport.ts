@@ -168,6 +168,8 @@ export function useDataImport(userId: string | undefined) {
           favorite_character_name: r.favorite_character_name ?? null,
           favorite_character_notes: r.favorite_character_notes ?? null,
           favorite_character_photo_url: r.favorite_character_photo_url ?? null,
+          content_warnings: r.content_warnings ?? [],
+          content_warnings_note: r.content_warnings_note ?? null,
           sort_order: r.sort_order ?? null,
           ...withCreatedAt(r.created_at),
         }))

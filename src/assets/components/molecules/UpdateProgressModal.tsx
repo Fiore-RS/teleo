@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ImageOff, Check, Flag, Quote } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { DetailSkeleton } from '../atoms/Skeleton'
@@ -46,12 +46,22 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   const isDigital = book?.format === 'digital'
   const showMissingStartDatePrompt = !!book && book.status === 'leyendo' && !book.start_date && !startDatePromptIgnored
 
-  useEffect(() => {
-    if (!book) return
-    if (isAudio) setValue(secondsToTimeInput(book.current_duration_seconds ?? 0))
-    else if (isDigital) setValue(String(book.progress_percent ?? 0))
-    else setValue(String(book.current_page ?? 0))
-  }, [book, isAudio, isDigital])
+  // El campo arranca con el progreso guardado y se vuelve a llenar solo cuando ese progreso
+  // cambia (al abrir o después de guardar). Se ajusta durante el render en vez de en un efecto,
+  // así no hay un render extra ni se borra lo que se está escribiendo si el libro se recarga
+  // por otra cosa (por ejemplo, al poner la fecha de inicio).
+  const savedValue = !book
+    ? null
+    : isAudio
+      ? secondsToTimeInput(book.current_duration_seconds ?? 0)
+      : isDigital
+        ? String(book.progress_percent ?? 0)
+        : String(book.current_page ?? 0)
+  const [filledFrom, setFilledFrom] = useState<string | null>(null)
+  if (savedValue !== null && savedValue !== filledFrom) {
+    setFilledFrom(savedValue)
+    setValue(savedValue)
+  }
 
   async function handleUpdate() {
     if (!book) return

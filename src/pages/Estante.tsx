@@ -9,11 +9,8 @@ import { getPriorityListName } from "../lib/priorityList";
 import { SearchHeader } from "../assets/components/molecules/SearchHeader";
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { SegmentedTabs } from "../assets/components/atoms/SegmentedTabs";
-import {
-  FilterModal,
-  defaultAdvancedFilters,
-  type AdvancedFilters,
-} from "../assets/components/molecules/FilterModal";
+import { FilterModal } from "../assets/components/molecules/FilterModal";
+import { defaultAdvancedFilters, type AdvancedFilters } from "../lib/advancedFilters";
 import { BookCard } from "../assets/components/molecules/BookCard";
 import { SeriesCard } from "../assets/components/molecules/SeriesCard";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
@@ -63,9 +60,22 @@ export function Estante() {
   const { profile } = useProfile(user?.id);
   const priorityListName = getPriorityListName(profile?.priority_list_name);
 
+  // Se puede llegar desde "Ver todos" en Perfil con un filtro ya activado, ej.
+  // /estante?filtro=deseado o /estante?filtro=favoritos. Se lee una sola vez al entrar y los
+  // filtros arrancan ya puestos (antes se ponían en un efecto, con un render de más).
+  const [initialFiltro] = useState(() => searchParams.get("filtro"));
+  const initialQuickFlag =
+    initialFiltro === "favoritos" || initialFiltro === "recomendados" || initialFiltro === "temporada"
+      ? initialFiltro
+      : null;
+
   const [tab, setTab] = useState<LibraryTab>("libros");
-  const [advFilters, setAdvFilters] = useState<AdvancedFilters>(defaultAdvancedFilters);
-  const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | "temporada" | null>(null);
+  const [advFilters, setAdvFilters] = useState<AdvancedFilters>(() =>
+    initialFiltro && !initialQuickFlag
+      ? { ...defaultAdvancedFilters, status: initialFiltro as AdvancedFilters["status"] }
+      : defaultAdvancedFilters
+  );
+  const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | "temporada" | null>(initialQuickFlag);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -103,21 +113,9 @@ export function Estante() {
     setStoredSortMode("estante-sagas", mode);
   }
 
-  // Soporta llegar desde "Ver todos" en Perfil con un filtro ya activado,
-  // ej. /estante?filtro=deseado o /estante?filtro=favoritos
+  // Ya aplicado el filtro de la URL, se limpia para que no vuelva a aplicarse al recargar.
   useEffect(() => {
-    const filtro = searchParams.get("filtro");
-    if (!filtro) return;
-
-    setTab("libros");
-    if (filtro === "favoritos" || filtro === "recomendados" || filtro === "temporada") {
-      setQuickFlag(filtro);
-      setAdvFilters(defaultAdvancedFilters);
-    } else {
-      setQuickFlag(null);
-      setAdvFilters({ ...defaultAdvancedFilters, status: filtro as AdvancedFilters["status"] });
-    }
-    setSearchParams({}, { replace: true });
+    if (initialFiltro) setSearchParams({}, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
