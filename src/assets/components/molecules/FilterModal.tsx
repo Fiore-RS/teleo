@@ -3,20 +3,7 @@ import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
 import { statusLabel, type ReadingStatus } from '../../../lib/status'
 import { categoryOptions, languageOptions, formatOptions } from '../../../lib/options'
-
-export interface AdvancedFilters {
-  status: 'todos' | ReadingStatus
-  language: string
-  category: string
-  format: string
-}
-
-export const defaultAdvancedFilters: AdvancedFilters = {
-  status: 'todos',
-  language: 'todos',
-  category: 'todos',
-  format: 'todos',
-}
+import { defaultAdvancedFilters, type AdvancedFilters } from '../../../lib/advancedFilters'
 
 const statusSelectOptions = [
   { value: 'todos', label: 'Todos' },

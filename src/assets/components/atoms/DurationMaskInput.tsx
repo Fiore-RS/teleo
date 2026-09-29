@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { Input } from './Input'
 
 function formatDurationDigits(digits: string): string {
@@ -17,10 +17,14 @@ interface DurationMaskInputProps {
 export function DurationMaskInput({ value, onChange, className }: DurationMaskInputProps) {
   const [digits, setDigits] = useState(() => value.replace(/\D/g, '').slice(0, 6))
 
-  useEffect(() => {
+  // Si el valor cambia desde afuera (ej. al abrir con el progreso guardado), los dígitos se
+  // ajustan durante el render en vez de en un efecto.
+  const [prevValue, setPrevValue] = useState(value)
+  if (value !== prevValue) {
+    setPrevValue(value)
     const external = value.replace(/\D/g, '').slice(0, 6)
-    setDigits((current) => (external !== current ? external : current))
-  }, [value])
+    if (external !== digits) setDigits(external)
+  }
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value
