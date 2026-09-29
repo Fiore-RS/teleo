@@ -63,8 +63,9 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
 
   return (
     <>
-      {/* Sub-pestañas como chips chicos, para no repetir la barra de arriba */}
-      <div className="flex gap-2 mb-4" role="tablist" aria-label="Vista del resumen">
+      {/* Sub-pestañas subrayadas, para distinguirlas de la barra de arriba (Estadísticas,
+          Resumen, Compras), que es de píldora. */}
+      <div className="flex justify-center gap-10 mb-4 px-1 border-b border-border" role="tablist" aria-label="Vista del resumen">
         {views.map(({ key, label }) => {
           const isActive = view === key
           return (
@@ -74,11 +75,17 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
               role="tab"
               aria-selected={isActive}
               onClick={() => onViewChange(key)}
-              className={`px-4 py-1.5 rounded-full text-body-sm font-body border transition-colors ${
-                isActive ? 'bg-primary-soft border-primary-soft text-primary-text font-bold' : 'bg-surface border-border text-text-secondary font-semibold'
+              className={`relative -mb-px pb-2.5 pt-1 text-body-md font-body transition-colors rounded-t-md focus-visible:outline-2 focus-visible:outline-primary-text ${
+                isActive ? 'text-primary-text font-bold' : 'text-text-secondary font-semibold'
               }`}
             >
               {label}
+              <span
+                aria-hidden="true"
+                className={`absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-primary-text transition-opacity duration-200 ${
+                  isActive ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
             </button>
           )
         })}

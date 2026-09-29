@@ -100,7 +100,7 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
         await navigator.share({
           files: [file],
           title: 'Mi perfil en Teleo',
-          text: `El perfil de lectura de @${username} en Teleo`,
+          text: 'Mi rincón lector: lo que leo, lo que me encantó y lo que sigue en la lista. Hecho con Teleo.',
         })
       } else {
         downloadBlob(blob)
