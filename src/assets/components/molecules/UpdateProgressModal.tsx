@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ImageOff, Check, Flag } from 'lucide-react'
+import { ImageOff, Check, Flag, Quote } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { DetailSkeleton } from '../atoms/Skeleton'
 import { CoverImage } from '../atoms/CoverImage'
@@ -17,6 +17,8 @@ import { FinishBookSheet } from './FinishBookSheet'
 import type { ReadingDates } from '../../../lib/readingDates'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { Resena } from '../../../pages/Resena'
+import { AddQuoteSheet } from './AddQuoteSheet'
+import { useQuotes } from '../../../hooks/useQuotes'
 
 interface UpdateProgressModalProps {
   bookId: string
@@ -32,6 +34,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
   const [isFinishOpen, setIsFinishOpen] = useState(false)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
+  const [isAddingQuote, setIsAddingQuote] = useState(false)
+  const { addQuote } = useQuotes(user?.id)
   const [error, setError] = useState<string | null>(null)
   // Se descarta (ignora) el aviso de fecha de inicio faltante localmente, sin tocar la base
   // de datos, para que no vuelva a aparecer mientras este modal siga abierto.
@@ -171,6 +175,10 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
             {error && <p className="text-body-sm text-primary-text mt-2">{error}</p>}
 
             <div className="flex flex-col gap-2.5 mt-6">
+              <Button variant="soft" onClick={() => setIsAddingQuote(true)}>
+                <Quote size={17} />
+                Anotar una cita
+              </Button>
               <Button variant="magenta" onClick={() => setIsFinishOpen(true)}>
                 <Check size={18} />
                 Marcar como terminado
@@ -206,6 +214,17 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
           initialStartDate={book.start_date}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}
+        />
+      )}
+
+      {isAddingQuote && book && (
+        <AddQuoteSheet
+          userId={user?.id}
+          initialBook={{ id: book.id, title: book.title, author: book.author, cover_url: book.cover_url, status: book.status }}
+          // En libros de papel arranca con la página escrita arriba (aunque aún no se guarde).
+          initialPage={!isAudio && !isDigital ? Number.parseInt(value, 10) || null : null}
+          onClose={() => setIsAddingQuote(false)}
+          onSave={addQuote}
         />
       )}
 

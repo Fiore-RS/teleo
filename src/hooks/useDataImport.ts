@@ -199,6 +199,9 @@ export function useDataImport(userId: string | undefined) {
           review_id: reviewIdMap.get(q.review_id!)!,
           quote_text: q.quote_text,
           sort_order: q.sort_order ?? 0,
+          // Respaldos anteriores a Mis citas (V.2.1.0) no traen página ni fecha.
+          page: q.page ?? null,
+          ...(q.created_at ? { created_at: q.created_at } : {}),
         }))
       )
 

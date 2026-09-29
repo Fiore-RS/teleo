@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
+import { isReviewWritten } from '../lib/reviews'
 
 type Review = Database['public']['Tables']['reviews']['Row']
 type Book = Database['public']['Tables']['books']['Row']
@@ -35,7 +36,8 @@ export function useReviews(userId: string | undefined) {
         }
       }
 
-      return rows
+      // Las reseñas borrador (solo citas anotadas mientras se lee) no se muestran en Reseñas.
+      return rows.filter(isReviewWritten)
     },
     EMPTY,
     { enabled: !!userId }

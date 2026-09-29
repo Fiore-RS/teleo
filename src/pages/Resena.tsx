@@ -21,6 +21,7 @@ import { syncLatestReading } from '../lib/readingHistory'
 import { supabase } from '../lib/supabase'
 import type { RatingShape } from '../assets/components/atoms/RatingIcon'
 import { X } from 'lucide-react'
+import { isReviewWritten } from '../lib/reviews'
 
 const MONTHS_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 
@@ -65,7 +66,10 @@ export function Resena({ bookId, onClose }: ResenaProps) {
   // Reseña nueva: las calificaciones personalizadas y las citas se guardan aquí hasta que se
   // crea la reseña, y se suben junto con ella al tocar "Guardar cambios".
   const [pendingRatings, setPendingRatings] = useState<{ id: string; label: string; icon: string; value: number }[]>([])
-  const [pendingQuotes, setPendingQuotes] = useState<{ id: string; quote_text: string }[]>([])
+  const [pendingQuotes, setPendingQuotes] = useState<{ id: string; quote_text: string; page: number | null }[]>([])
+  // Borrador: la reseña existe solo porque se anotaron citas mientras se leía (Mis citas).
+  // Se muestra como "sin reseña", pero al escribirla las citas ya están incluidas.
+  const isWritten = isReviewWritten(review)
   const shownRatings = review ? customRatings : pendingRatings
   const shownQuotes = review ? quotes : pendingQuotes
 
@@ -81,9 +85,9 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     if (review) removeCustomRating(id)
     else setPendingRatings((prev) => prev.filter((r) => r.id !== id))
   }
-  function handleAddQuote(text: string) {
-    if (review) addQuote(text)
-    else setPendingQuotes((prev) => [...prev, { id: crypto.randomUUID(), quote_text: text }])
+  function handleAddQuote(text: string, page: number | null) {
+    if (review) addQuote(text, page)
+    else setPendingQuotes((prev) => [...prev, { id: crypto.randomUUID(), quote_text: text, page }])
   }
   function handleRemoveQuote(id: string) {
     if (review) removeQuote(id)
@@ -144,7 +148,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
             ),
           pendingQuotes.length > 0 &&
             supabase.from('favorite_quotes').insert(
-              pendingQuotes.map((q, i) => ({ review_id: created.id, quote_text: q.quote_text, sort_order: i }))
+              pendingQuotes.map((q, i) => ({ review_id: created.id, quote_text: q.quote_text, sort_order: i, page: q.page }))
             ),
         ])
         setPendingRatings([])
@@ -167,7 +171,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
   return (
     <>
-      <Sheet onClose={onClose} title={isEditing ? (review ? 'Editar reseña' : 'Nueva reseña') : 'Reseña de lectura'}>
+      <Sheet onClose={onClose} title={isEditing ? (isWritten ? 'Editar reseña' : 'Nueva reseña') : 'Reseña de lectura'}>
         {isLoading || !book ? <DetailSkeleton /> : (
           <>
             <div className="flex gap-4 items-start">
@@ -181,7 +185,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
               <div className="flex-1 min-w-0 pt-1">
                 <h3 className="font-display font-semibold text-[20px] leading-tight text-text text-balance">{book.title}</h3>
                 {book.author && <p className="text-body-md text-text-secondary mt-1">{book.author}</p>}
-                {review && !isEditing && (
+                {review && isWritten && !isEditing && (
                   <div className="mt-2.5">
                     <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={18} />
                   </div>
@@ -189,9 +193,13 @@ export function Resena({ bookId, onClose }: ResenaProps) {
               </div>
             </div>
 
-            {!review && !isEditing && (
+            {!isWritten && !isEditing && (
               <div className="text-center mt-8">
-                <p className="text-body-md text-text-secondary mb-4">Aún no has escrito una reseña para este libro.</p>
+                <p className="text-body-md text-text-secondary mb-4">
+                  {quotes.length > 0
+                    ? `Aún no has escrito una reseña. ${quotes.length === 1 ? 'La cita que anotaste ya está incluida' : `Las ${quotes.length} citas que anotaste ya están incluidas`}.`
+                    : 'Aún no has escrito una reseña para este libro.'}
+                </p>
                 <Button variant="primary" onClick={startEditing}>
                   <PenLine size={17} />
                   Crear reseña de lectura
@@ -199,7 +207,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
               </div>
             )}
 
-            {review && !isEditing && (
+            {review && isWritten && !isEditing && (
               <div className="flex flex-col gap-6 mt-6 stagger-children">
                 <section>
                   <SectionLabel>Tu lectura</SectionLabel>
@@ -258,7 +266,10 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       {quotes.map((q) => (
                         <div key={q.id} className={`${box} px-4 py-3 flex gap-2.5`}>
                           <Quote size={16} className="text-ornament shrink-0 mt-0.5" />
-                          <p className="font-display italic text-body-md text-text">{q.quote_text}</p>
+                          <div className="min-w-0">
+                            <p className="font-display italic text-body-md text-text">{q.quote_text}</p>
+                            {q.page != null && <p className="text-body-sm text-text-secondary mt-1">Pág. {q.page}</p>}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -369,7 +380,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                 </div>
 
                 <div className="flex gap-2.5">
-                  <Button variant="outline" onClick={() => (review ? setIsEditing(false) : onClose())}>Cancelar</Button>
+                  <Button variant="outline" onClick={() => (isWritten ? setIsEditing(false) : onClose())}>Cancelar</Button>
                   <Button variant="primary" onClick={handleSave}>Guardar cambios</Button>
                 </div>
               </div>

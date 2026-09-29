@@ -61,7 +61,7 @@ export function useDataExport(userId: string | undefined) {
         fetchAllRows((from, to) =>
           supabase
             .from('favorite_quotes')
-            .select('id, review_id, quote_text, sort_order, reviews!inner(user_id)')
+            .select('id, review_id, quote_text, sort_order, page, created_at, reviews!inner(user_id)')
             .eq('reviews.user_id', userId)
             .order('id')
             .range(from, to)
@@ -83,7 +83,7 @@ export function useDataExport(userId: string | undefined) {
         bookTags: bookTags.map(({ book_id, tag }) => ({ book_id, tag })),
         reviews,
         customRatings: customRatings.map(({ id, review_id, label, icon, value }) => ({ id, review_id, label, icon, value })),
-        favoriteQuotes: favoriteQuotes.map(({ id, review_id, quote_text, sort_order }) => ({ id, review_id, quote_text, sort_order })),
+        favoriteQuotes: favoriteQuotes.map(({ id, review_id, quote_text, sort_order, page, created_at }) => ({ id, review_id, quote_text, sort_order, page, created_at })),
         readingGoals,
         readingHistory,
         readingSessions,
