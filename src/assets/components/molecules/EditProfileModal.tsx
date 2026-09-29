@@ -69,7 +69,7 @@ export function EditProfileModal({
         <BannerArt banner={banner} />
       </button>
 
-      <div className="flex items-end gap-3.5 px-2 -mt-10">
+      <div className="flex items-start gap-3.5 px-2 -mt-10">
         <button
           type="button"
           onClick={onChangePhoto}
@@ -87,13 +87,15 @@ export function EditProfileModal({
           )}
         </button>
 
-        <div className="min-w-0 pb-1">
+        {/* El texto empieza justo debajo del banner (la foto se sube 40 px sobre él), así el
+            nickname nunca se mete en el banner aunque la pista ocupe dos líneas. */}
+        <div className="min-w-0 flex-1 pt-12">
           {/* Se actualiza mientras se escribe el nickname, como vista previa. */}
-          <p className="font-display font-semibold text-body-lg text-text truncate">{nickname.trim() || username}</p>
+          <p className="font-display font-semibold text-body-lg leading-normal text-text truncate">{nickname.trim() || username}</p>
           {/* Pista en vez de botones: la foto y el banner se cambian tocándolos. */}
           <p className="flex items-center gap-1.5 mt-0.5 text-body-sm text-text-secondary">
             <Camera size={14} className="shrink-0" aria-hidden="true" />
-            {isUploadingPhoto ? 'Subiendo foto...' : 'Toca tu foto o el banner para cambiarlos'}
+            {isUploadingPhoto ? 'Subiendo foto...' : 'Toca la foto o el banner para cambiarlos'}
           </p>
         </div>
       </div>
