@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { Input } from './Input'
 
 // Deja pasar solo dígitos y un único punto decimal, con máximo 2 decimales — el mismo
@@ -35,10 +35,13 @@ interface PriceInputProps {
 export function PriceInput({ value, onChange, placeholder = '0.00', className }: PriceInputProps) {
   const [raw, setRaw] = useState(() => sanitizeDigitsAndDot(value))
 
-  useEffect(() => {
+  // Si el valor cambia desde afuera, el texto se ajusta durante el render en vez de en un efecto.
+  const [prevValue, setPrevValue] = useState(value)
+  if (value !== prevValue) {
+    setPrevValue(value)
     const external = sanitizeDigitsAndDot(value)
-    setRaw((current) => (external !== current ? external : current))
-  }, [value])
+    if (external !== raw) setRaw(external)
+  }
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const cleaned = sanitizeDigitsAndDot(e.target.value)

@@ -1,20 +1,6 @@
-import { createContext, useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { DEFAULT_PALETTE, isPaletteId, type PaletteId } from '../lib/palettes'
-
-type Theme = 'light' | 'dark' | 'system'
-type ResolvedTheme = 'light' | 'dark'
-
-interface ThemeContextType {
-  /** Modo: claro, oscuro o el del teléfono. */
-  theme: Theme
-  resolvedTheme: ResolvedTheme
-  setTheme: (theme: Theme) => void
-  /** Tema de color (Atardecer, Océano...). Va aparte del modo: todos tienen claro y oscuro. */
-  palette: PaletteId
-  setPalette: (palette: PaletteId) => void
-}
-
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+import { ThemeContext, type ResolvedTheme, type Theme } from './themeContextValue'
 
 const STORAGE_KEY = 'teleo-theme'
 const PALETTE_KEY = 'teleo-palette'
@@ -62,26 +48,20 @@ function getSystemTheme(): ResolvedTheme {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getInitialTheme)
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(
-    theme === 'system' ? getSystemTheme() : theme
-  )
+  // El modo del teléfono se escucha siempre; el modo que se ve sale de ahí solo si se eligió
+  // "Sistema". Así no hace falta copiar el modo a otro estado dentro de un efecto.
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme)
+  const resolvedTheme: ResolvedTheme = theme === 'system' ? systemTheme : theme
   const [palette, setPaletteState] = useState<PaletteId>(getInitialPalette)
 
   useEffect(() => {
-    if (theme !== 'system') {
-      setResolvedTheme(theme)
-      return
-    }
-
-    setResolvedTheme(getSystemTheme())
-
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     function handleChange(e: MediaQueryListEvent) {
-      setResolvedTheme(e.matches ? 'dark' : 'light')
+      setSystemTheme(e.matches ? 'dark' : 'light')
     }
     mediaQuery.addEventListener('change', handleChange)
     return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [theme])
+  }, [])
 
   useEffect(() => {
     const root = document.documentElement
