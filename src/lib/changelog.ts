@@ -8,11 +8,15 @@ export interface ChangelogEntry {
   date: string
   title: string
   items: string[]
+  /** true si la versión tuvo hoja de anuncio en La mesa (un cambio considerable). Cuenta
+   *  para el aviso de novedades acumuladas (V.2.1.2). */
+  announced?: boolean
 }
 
 export const changelog: ChangelogEntry[] = [
   {
     version: '2.1.1',
+    announced: true,
     date: '29 de septiembre de 2026',
     title: 'Leer con cuidado',
     items: [
@@ -26,6 +30,7 @@ export const changelog: ChangelogEntry[] = [
   },
   {
     version: '2.1.0',
+    announced: true,
     date: '29 de septiembre de 2026',
     title: 'Tu rincón con más vida',
     items: [
@@ -58,6 +63,7 @@ export const changelog: ChangelogEntry[] = [
   },
   {
     version: '2.0.0',
+    announced: true,
     date: '24 de septiembre de 2026',
     title: 'Teleo crece',
     items: [

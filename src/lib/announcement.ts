@@ -1,4 +1,5 @@
 import { Quote, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
@@ -26,3 +27,12 @@ export function isVersionBefore(seen: string | null | undefined, target: string)
   }
   return false
 }
+
+/** Versiones con anuncio que la persona no vio desde `lastSeen` (de la más nueva a la más
+ *  vieja). Si son 2 o más, la hoja de La mesa muestra el aviso de novedades acumuladas. */
+export function missedAnnouncedVersions(lastSeen: string | null | undefined): ChangelogEntry[] {
+  return changelog.filter((entry) => entry.announced && isVersionBefore(lastSeen, entry.version))
+}
+
+/** Desde cuántas versiones con anuncio se muestra el aviso de novedades acumuladas. */
+export const CATCH_UP_MIN = 2
