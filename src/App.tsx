@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, type ComponentType } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
+import { PaletteSync } from "./assets/components/atoms/PaletteSync";
 
 /* Cada pantalla se descarga recién cuando se abre (lazy), en vez de venir toda en un solo
  * archivo al abrir la app. La pantalla de carga sí va incluida, porque es la primera que se ve. */
@@ -117,6 +118,7 @@ function App() {
     // ancho de teléfono — mismo patrón que usan WhatsApp Web o Notion en
     // su vista móvil.
     <div className="min-h-screen bg-border">
+      <PaletteSync />
       <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl">
         {/* key = ruta: al cambiar de pantalla (por la barra de pestañas o navegando) el
             contenedor se vuelve a montar y reproduce el fundido de entrada. */}

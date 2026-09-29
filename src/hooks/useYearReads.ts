@@ -10,6 +10,8 @@ export interface YearRead {
   coverUrl: string | null
   endDate: string
   month: number // 1-12
+  category: string | null
+  format: string | null
 }
 
 export interface YearReadsData {
@@ -31,6 +33,7 @@ interface HistoryRow {
     total_pages: number | null
     total_duration_seconds: number | null
     format: string | null
+    category: string | null
   } | null
 }
 
@@ -42,7 +45,7 @@ export function useYearReads(userId: string | undefined, year: number) {
     async () => {
       const { data: rows } = await supabase
         .from('reading_history')
-        .select('id, book_id, end_date, books(title, author, cover_url, total_pages, total_duration_seconds, format)')
+        .select('id, book_id, end_date, books(title, author, cover_url, total_pages, total_duration_seconds, format, category)')
         .eq('user_id', userId!)
         .gte('end_date', `${year}-01-01`)
         .lte('end_date', `${year}-12-31`)
@@ -64,6 +67,8 @@ export function useYearReads(userId: string | undefined, year: number) {
           coverUrl: row.books.cover_url,
           endDate: row.end_date,
           month: parseInt(row.end_date.slice(5, 7), 10),
+          category: row.books.category,
+          format: row.books.format,
         })
       }
       return { reads, totalPages, totalAudioSeconds }

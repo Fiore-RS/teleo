@@ -76,6 +76,8 @@ export type Database = {
           format: string | null
           id: string
           is_favorite: boolean | null
+          is_gift: boolean
+          gift_from: string | null
           is_priority: boolean
           is_recommended: boolean
           isbn: string | null
@@ -106,6 +108,8 @@ export type Database = {
           format?: string | null
           id?: string
           is_favorite?: boolean | null
+          is_gift?: boolean
+          gift_from?: string | null
           is_priority?: boolean
           is_recommended?: boolean
           isbn?: string | null
@@ -136,6 +140,8 @@ export type Database = {
           format?: string | null
           id?: string
           is_favorite?: boolean | null
+          is_gift?: boolean
+          gift_from?: string | null
           is_priority?: boolean
           is_recommended?: boolean
           isbn?: string | null
@@ -197,19 +203,25 @@ export type Database = {
       }
       favorite_quotes: {
         Row: {
+          created_at: string
           id: string
+          page: number | null
           quote_text: string
           review_id: string
           sort_order: number | null
         }
         Insert: {
+          created_at?: string
           id?: string
+          page?: number | null
           quote_text: string
           review_id: string
           sort_order?: number | null
         }
         Update: {
+          created_at?: string
           id?: string
+          page?: number | null
           quote_text?: string
           review_id?: string
           sort_order?: number | null
@@ -235,6 +247,8 @@ export type Database = {
           is_deactivated: boolean
           last_seen_version: string | null
           nickname: string | null
+          palette: string
+          banner: string
           priority_list_name: string | null
           username: string
           username_changed_at: string | null
@@ -249,6 +263,8 @@ export type Database = {
           is_deactivated?: boolean
           last_seen_version?: string | null
           nickname?: string | null
+          palette?: string
+          banner?: string
           priority_list_name?: string | null
           username: string
           username_changed_at?: string | null
@@ -263,6 +279,8 @@ export type Database = {
           is_deactivated?: boolean
           last_seen_version?: string | null
           nickname?: string | null
+          palette?: string
+          banner?: string
           priority_list_name?: string | null
           username?: string
           username_changed_at?: string | null

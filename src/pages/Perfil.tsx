@@ -7,6 +7,8 @@ import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useAnnualGoal } from '../hooks/useAnnualGoal'
 import { useProfileLists } from '../hooks/useProfileLists'
 import { EditProfileModal } from '../assets/components/molecules/EditProfileModal'
+import { BannerSheet } from '../assets/components/molecules/BannerSheet'
+import { DEFAULT_BANNER, isBannerId, type BannerId } from '../lib/banners'
 import { ActivityCard } from '../assets/components/molecules/ActivityCard'
 import { PriorityListCard } from '../assets/components/molecules/PriorityListCard'
 import { ReadingCalendarSheet } from '../assets/components/molecules/ReadingCalendarSheet'
@@ -19,9 +21,10 @@ import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { ProfileView } from './ProfileView'
 import { hasUnseenChangelog } from '../lib/changelog'
 import { sampleWithSeed } from '../lib/random'
+import { queryClient } from '../lib/queryClient'
 
 // Cuántas portadas se muestran en Favoritos, Recomendados, Deseados y Abandonados.
-const SHELF_SIZE = 4
+const SHELF_SIZE = 5
 
 // Botones redondos translúcidos sobre la cabecera de degradado (Configuración y Editar perfil).
 const headerButtonClass =
@@ -31,16 +34,18 @@ export function Perfil() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { profile, updateProfile, isLoading: profileLoading } = useProfile(user?.id)
+  const banner: BannerId = isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER
   const { uploadAvatar, isUploading } = useAvatarUpload(user?.id)
   const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(user?.id)
   const { currentlyReading, favorites, recommended, wishlist, abandoned, counts, refetch: refetchLists, isLoading: listsLoading } = useProfileLists(user?.id)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+  const [isBannerOpen, setIsBannerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [hasNews] = useState(hasUnseenChangelog)
-  // Nueva semilla en cada visita: si una lista tiene más de 4 libros, se eligen otros 4.
+  // Nueva semilla en cada visita: si una lista tiene más de 5 libros, se eligen otros 5.
   const [shelfSeed] = useState(() => Math.floor(Math.random() * 1e9))
   // Hoja de compartir y, al elegir, el modal de esa opción.
   const [shareStep, setShareStep] = useState<'menu' | 'perfil' | 'deseados' | null>(null)
@@ -48,8 +53,11 @@ export function Perfil() {
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    await uploadAvatar(file)
-    window.location.reload() // forma simple de refrescar profile.avatar_url en toda la app
+    const url = await uploadAvatar(file)
+    e.target.value = ''
+    // Se refresca el perfil en caché (sin recargar la página), así la hoja de Editar perfil
+    // sigue abierta con lo que se estaba escribiendo y la foto nueva aparece en toda la app.
+    if (url) await queryClient.invalidateQueries({ queryKey: ['profile'] })
   }
 
   function handleTabBarChange(t: TabKey) {
@@ -65,6 +73,7 @@ export function Perfil() {
         areListsLoading={listsLoading}
         bio={profile?.bio}
         avatarUrl={profile?.avatar_url}
+        banner={banner}
         headerRight={
           <div className="flex flex-col gap-1.5">
             <button
@@ -91,8 +100,6 @@ export function Perfil() {
             </button>
           </div>
         }
-        onAvatarClick={() => fileInputRef.current?.click()}
-        isUploadingAvatar={isUploading}
         annualGoal={annualGoal}
         annualCompletedCount={annualCompletedCount}
         currentlyReading={currentlyReading}
@@ -123,8 +130,21 @@ export function Perfil() {
           username={profile?.username ?? ''}
           currentNickname={profile?.nickname ?? ''}
           currentBio={profile?.bio ?? ''}
+          avatarUrl={profile?.avatar_url}
+          isUploadingPhoto={isUploading}
           onChangePhoto={() => fileInputRef.current?.click()}
+          banner={banner}
+          onChangeBanner={() => setIsBannerOpen(true)}
           onSave={async (changes) => updateProfile(changes)}
+        />
+      )}
+
+      {/* Catálogo de banners, encima de Editar perfil. El banner se guarda al tocarlo. */}
+      {isBannerOpen && (
+        <BannerSheet
+          active={banner}
+          onClose={() => setIsBannerOpen(false)}
+          onSelect={(id) => updateProfile({ banner: id })}
         />
       )}
 

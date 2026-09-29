@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { BookCheck, CalendarRange, Crown, Heart, Check } from 'lucide-react'
+import { BookCheck, CalendarRange, Crown, Heart, Check, Shapes } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
 import { queryClient } from '../../lib/queryClient'
@@ -15,6 +15,8 @@ import { Card } from '../../assets/components/molecules/Card'
 import { PeriodNav } from '../../assets/components/molecules/PeriodNav'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
 import { DetalleLibro } from '../DetalleLibro'
+import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
+import { tally, formatLabel } from '../../lib/tally'
 
 export type ResumenView = 'mes' | 'anio' | 'favoritos'
 
@@ -63,8 +65,9 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
 
   return (
     <>
-      {/* Sub-pestañas como chips chicos, para no repetir la barra de arriba */}
-      <div className="flex gap-2 mb-4" role="tablist" aria-label="Vista del resumen">
+      {/* Sub-pestañas subrayadas, para distinguirlas de la barra de arriba (Estadísticas,
+          Resumen, Compras), que es de píldora. */}
+      <div className="flex justify-center gap-10 mb-4 px-1 border-b border-border" role="tablist" aria-label="Vista del resumen">
         {views.map(({ key, label }) => {
           const isActive = view === key
           return (
@@ -74,11 +77,17 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
               role="tab"
               aria-selected={isActive}
               onClick={() => onViewChange(key)}
-              className={`px-4 py-1.5 rounded-full text-body-sm font-body border transition-colors ${
-                isActive ? 'bg-primary-soft border-primary-soft text-primary-text font-bold' : 'bg-surface border-border text-text-secondary font-semibold'
+              className={`relative -mb-px pb-2.5 pt-1 text-body-md font-body transition-colors rounded-t-md focus-visible:outline-2 focus-visible:outline-primary-text ${
+                isActive ? 'text-primary-text font-bold' : 'text-text-secondary font-semibold'
               }`}
             >
               {label}
+              <span
+                aria-hidden="true"
+                className={`absolute inset-x-0 bottom-0 h-[3px] rounded-full bg-primary-text transition-opacity duration-200 ${
+                  isActive ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
             </button>
           )
         })}
@@ -223,6 +232,8 @@ function YearView({ year, reads, totalPages, totalAudioSeconds, isLoading, canGo
     for (const r of reads) groups[r.month - 1].push(r)
     return groups
   }, [reads])
+  const byCategory = useMemo(() => tally(reads.map((r) => r.category)), [reads])
+  const byFormat = useMemo(() => tally(reads.map((r) => formatLabel(r.format))), [reads])
 
   return (
     <div className="flex flex-col gap-5">
@@ -288,6 +299,19 @@ function YearView({ year, reads, totalPages, totalAudioSeconds, isLoading, canGo
         </PeriodTransition>
         <p className="text-body-sm text-text-muted text-center mt-4">Toca un mes para ver todos sus libros.</p>
       </Card>
+
+      {/* Qué leíste ese año, por categoría y formato (V.2.1.0). */}
+      {!isLoading && reads.length > 0 && (
+        <Card labelledBy="resumen-anio-tipos">
+          <Eyebrow id="resumen-anio-tipos" icon={Shapes} tone="orange" className="mb-3.5">{`Qué leíste en ${year}`}</Eyebrow>
+          <PeriodTransition order={year}>
+            <div className="space-y-5">
+              <BreakdownList title="Por categoría" entries={byCategory} />
+              <BreakdownList title="Por formato" entries={byFormat} />
+            </div>
+          </PeriodTransition>
+        </Card>
+      )}
     </div>
   )
 }

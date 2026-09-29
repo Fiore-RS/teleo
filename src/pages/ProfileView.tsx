@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
-import { Camera, Target, BookOpen, Heart, ThumbsUp, Bookmark, BookX } from 'lucide-react'
+import { UserRound, Target, BookOpen, Heart, ThumbsUp, Bookmark, BookX } from 'lucide-react'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
 import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { Eyebrow } from '../assets/components/atoms/Eyebrow'
-import { Sparkle } from '../assets/components/atoms/Sparkle'
+import { BannerArt } from '../assets/components/atoms/BannerArt'
+import { DEFAULT_BANNER, type BannerId } from '../lib/banners'
 import { Card } from '../assets/components/molecules/Card'
 import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
 import type { Database } from '../types/database'
@@ -30,10 +31,10 @@ interface ProfileViewProps {
   areListsLoading?: boolean
   bio: string | null | undefined
   avatarUrl: string | null | undefined
+  /** Banner elegido en Editar perfil (V.2.1.0). */
+  banner?: BannerId
 
   headerRight?: ReactNode
-  onAvatarClick?: () => void
-  isUploadingAvatar?: boolean
 
   annualGoal?: number
   annualCompletedCount?: number
@@ -73,9 +74,8 @@ export function ProfileView({
   areListsLoading = false,
   bio,
   avatarUrl,
+  banner = DEFAULT_BANNER,
   headerRight,
-  onAvatarClick,
-  isUploadingAvatar,
   annualGoal = 0,
   annualCompletedCount = 0,
   currentlyReading = [],
@@ -100,7 +100,7 @@ export function ProfileView({
   ) : initial ? (
     <span className="font-title text-[60px] leading-none text-primary-ink">{initial}</span>
   ) : (
-    <Camera size={40} strokeWidth={1.5} className="text-primary-ink" />
+    <UserRound size={44} strokeWidth={1.5} className="text-primary-ink" />
   )
 
   const avatarClasses =
@@ -108,34 +108,13 @@ export function ProfileView({
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Cabecera con degradado */}
-      <div className="relative h-40 rounded-b-[32px] bg-linear-to-br from-primary to-rose overflow-hidden">
-        {/* Decoración de la cabecera: luces suaves, una órbita punteada, destellos y puntitos.
-            Todo en el color crema con poca opacidad, para que funcione sobre el degradado en
-            los dos modos. Se deja libre la esquina de abajo a la izquierda (avatar) y la de
-            arriba a la derecha (Configuración). */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <span className="absolute -top-16 -left-10 w-48 h-48 rounded-full bg-primary-ink/10 blur-2xl" />
-          <span className="absolute -bottom-20 right-4 w-56 h-56 rounded-full bg-primary-ink/10 blur-2xl" />
-          <span className="absolute -bottom-28 right-[-40px] w-64 h-64 rounded-full border border-dashed border-primary-ink/25" />
-          <span className="absolute -top-24 left-[30%] w-52 h-52 rounded-full border border-primary-ink/10" />
-
-          <Sparkle size={18} className="absolute left-[44%] top-[58px] text-primary-ink/45" />
-          <Sparkle size={10} className="absolute left-[58%] top-[102px] text-primary-ink/35" />
-          <Sparkle size={13} className="absolute right-[26%] top-[34px] text-primary-ink/30" />
-          <Sparkle size={12} className="absolute right-10 bottom-8 text-primary-ink/40" />
-          <Sparkle size={8} className="absolute left-[34%] top-[118px] text-primary-ink/30" />
-          <Sparkle size={9} className="absolute left-[18%] top-[30px] text-primary-ink/30" />
-          <Sparkle size={7} className="absolute right-[40%] bottom-5 text-primary-ink/35" />
-
-          <span className="absolute left-[52%] top-[40px] w-1 h-1 rounded-full bg-primary-ink/50" />
-          <span className="absolute left-[28%] top-[76px] w-1.5 h-1.5 rounded-full bg-primary-ink/30" />
-          <span className="absolute right-[18%] top-[88px] w-1 h-1 rounded-full bg-primary-ink/45" />
-          <span className="absolute left-[66%] top-[70px] w-1 h-1 rounded-full bg-primary-ink/35" />
-          <span className="absolute right-[32%] bottom-12 w-1.5 h-1.5 rounded-full bg-primary-ink/25" />
-        </div>
-        {/* Sin título visible: este espacio de la cabecera queda libre para que más adelante
-            cada persona pueda personalizarlo (color, imagen, etc.). */}
+      {/* Cabecera con degradado. Tiene la misma proporción que el dibujo del banner (360 × 140),
+          así el banner se ve completo en cualquier ancho de pantalla. */}
+      <div className="relative aspect-18/7 rounded-b-[32px] bg-linear-to-br from-primary to-rose overflow-hidden">
+        {/* El banner que eligió la persona (se cambia desde el lápiz). Se pinta en el color
+            crema del tema sobre el degradado, así funciona en todos los temas y modos. */}
+        <BannerArt banner={banner} />
+        {/* Sin título visible: la cabecera es el espacio del banner. */}
         <h1 className="sr-only">Tu rincón</h1>
         <div className="flex items-start justify-end gap-3 px-5 pt-5">
           {headerRight}
@@ -145,21 +124,8 @@ export function ProfileView({
       <div className="px-4">
         {/* Avatar + nombre */}
         <div className="flex items-end gap-4 px-1 -mt-12">
-          {onAvatarClick ? (
-            <button
-              onClick={onAvatarClick}
-              disabled={isUploadingAvatar}
-              aria-label="Cambiar foto de perfil"
-              className={`${avatarClasses} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text`}
-            >
-              {avatarInner}
-              <span className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full bg-surface/95 text-primary-text flex items-center justify-center shadow-sm">
-                <Camera size={14} />
-              </span>
-            </button>
-          ) : (
-            <div className={avatarClasses}>{avatarInner}</div>
-          )}
+          {/* La foto se cambia solo desde el lápiz (Editar perfil), junto con nickname y bio. */}
+          <div className={avatarClasses}>{avatarInner}</div>
 
           {isProfileLoading ? (
             <div className="flex-1 min-w-0 pb-2">

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
-  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText,
+  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -13,6 +13,10 @@ import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
+import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
+import { PaletteSheet } from '../assets/components/molecules/PaletteSheet'
+import { useTheme } from '../hooks/useTheme'
+import { getPalette } from '../lib/palettes'
 import { Button } from '../assets/components/atoms/Button'
 import { Modal } from '../assets/components/atoms/Modal'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
@@ -37,6 +41,10 @@ export function Configuracion() {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
+  const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false)
+  const { palette, resolvedTheme } = useTheme()
+  const activePalette = getPalette(palette)
   const [confirmAction, setConfirmAction] = useState<
     'cerrarSesion' | 'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
   >(null)
@@ -124,15 +132,22 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Apariencia">
-          <SettingsField icon={Palette} label="Modo de color" description="Mañana con café o noche con lámpara">
+          <SettingsField icon={Palette} label="Modo de color" description="Sistema sigue el modo de tu teléfono">
             <ThemeToggle />
           </SettingsField>
-          <SettingsField icon={Paintbrush} label="Tema" description="Pronto podrás elegir otros colores para Teleo">
-            <div className="flex items-center gap-2">
-              <span className="px-4 py-2 rounded-full bg-primary text-primary-ink text-body-md font-bold">Atardecer</span>
-              <span className="px-3 py-1.5 rounded-full bg-surface-2 border border-border text-body-sm text-text-muted">Próximamente</span>
-            </div>
-          </SettingsField>
+          <SettingsRow
+            icon={Paintbrush}
+            label="Tema"
+            description={activePalette.name}
+            onClick={() => setIsPaletteOpen(true)}
+            trailing={
+              <span className="flex -space-x-1.5 shrink-0" aria-hidden="true">
+                {[activePalette[resolvedTheme].primary, ...activePalette[resolvedTheme].accents].map((color, i) => (
+                  <span key={i} className="w-5 h-5 rounded-full border-2 border-surface" style={{ background: color }} />
+                ))}
+              </span>
+            }
+          />
         </SettingsGroup>
 
         <SettingsGroup title="Sistema">
@@ -170,6 +185,7 @@ export function Configuracion() {
         <SettingsGroup title="Tus datos">
           <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
           <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
+          <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />
         </SettingsGroup>
 
         <SettingsGroup title="Zona de peligro">
@@ -189,6 +205,14 @@ export function Configuracion() {
           onClose={() => setIsShareModalOpen(false)}
           userId={user?.id}
         />
+      )}
+
+      {isPaletteOpen && (
+        <PaletteSheet onClose={() => setIsPaletteOpen(false)} onSave={(id) => updateProfile({ palette: id })} />
+      )}
+
+      {isGoodreadsOpen && (
+        <GoodreadsImportModal onClose={() => setIsGoodreadsOpen(false)} userId={user?.id} />
       )}
 
       {isShareWishlistModalOpen && (

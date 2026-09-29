@@ -1,11 +1,11 @@
 import {
-  BookHeart, CalendarClock, CalendarDays, Coins, Image, LibraryBig, NotebookPen, Settings, Shuffle, UserRound,
+  BookUp, Gauge, Gift, Palette, PanelTop, PieChart, Quote, SunMoon,
   type LucideIcon,
 } from 'lucide-react'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '2.0.0'
+export const ANNOUNCEMENT_VERSION = '2.1.0'
 
 export interface AnnouncementItem {
   icon: LucideIcon
@@ -14,16 +14,14 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { icon: CalendarDays, title: 'Calendario de lectura', text: 'Toca tu racha en La mesa para ver tus días leídos, tu racha más larga y los números de cada mes.' },
-  { icon: CalendarClock, title: 'Lanzamientos', text: 'Anota los libros que esperas y mira cuánto falta para que salgan.' },
-  { icon: UserRound, title: 'Perfil renovado', text: 'Tu nickname, tus números, tu actividad del mes, tu lista de temporada y tus abandonados.' },
-  { icon: LibraryBig, title: 'Resumen', text: 'En Bitácora, tus libros de cada mes y año, y tus favoritos del mes y del año.' },
-  { icon: Coins, title: 'Compras', text: 'Cuánto has invertido en tu biblioteca, libro por libro.' },
-  { icon: Image, title: 'Tarjeta para historias', text: 'Comparte tu perfil con las portadas de tu última lectura, la actual y la próxima.' },
-  { icon: Shuffle, title: '¿Qué leo ahora?', text: 'Teleo elige al azar uno de tus pendientes cuando no sabes con cuál seguir.' },
-  { icon: BookHeart, title: 'Fechas sin reseña', text: 'Guarda cuándo empezaste y terminaste un libro sin tener que escribir la reseña.' },
-  { icon: NotebookPen, title: 'Reseñas completas', text: 'Agrega calificaciones personalizadas y citas desde la primera vez que escribes una reseña.' },
-  { icon: Settings, title: 'Configuración ordenada', text: 'Novedades, Detrás de Teleo, privacidad y términos, todo en su lugar.' },
+  { icon: Palette, title: 'Temas de color', text: 'Seis temas para toda la app. Elige el tuyo en Configuración › Apariencia.' },
+  { icon: PanelTop, title: 'Banners', text: 'Diez dibujos para la cabecera de tu perfil. Cámbialo desde el lápiz.' },
+  { icon: SunMoon, title: 'Modo del teléfono', text: 'Teleo ahora sigue el modo claro u oscuro de tu teléfono. Si prefieres uno fijo, cámbialo en Configuración › Apariencia.' },
+  { icon: Quote, title: 'Mis citas', text: 'Todas tus citas en Cuaderno. Anótalas mientras lees y compártelas como imagen.' },
+  { icon: BookUp, title: 'Importar desde Goodreads', text: 'Trae tu biblioteca con sus sagas y portadas desde Configuración › Tus datos.' },
+  { icon: Gift, title: 'Regalos', text: 'Marca los libros que te regalaron y anota quién te los dio.' },
+  { icon: Gauge, title: 'Ritmo de lectura', text: 'En La mesa ves cuándo terminarías el libro que estás leyendo.' },
+  { icon: PieChart, title: 'Lo que leíste', text: 'En Bitácora, tus lecturas por categoría y formato, de siempre y de cada año.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */

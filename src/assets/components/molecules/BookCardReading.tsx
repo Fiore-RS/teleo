@@ -13,6 +13,8 @@ interface BookCardReadingProps {
   /** true cuando el libro está "leyendo" pero no tiene fecha de inicio — muestra un ícono de
    *  advertencia en la esquina de la portada para llamar la atención. */
   missingStartDate?: boolean
+  /** Ritmo de lectura (V.2.1.0): frase con la fecha estimada de fin, o null si no hay datos. */
+  paceText?: string | null
   onUpdateClick: () => void
 }
 
@@ -26,6 +28,7 @@ export function BookCardReading({
   progressPercent,
   progressLabel,
   missingStartDate = false,
+  paceText = null,
   onUpdateClick,
 }: BookCardReadingProps) {
   return (
@@ -65,6 +68,7 @@ export function BookCardReading({
             <span key={Math.round(progressPercent)} className="ml-auto animate-fade-in">{Math.round(progressPercent)}%</span>
           </div>
           <ProgressBar percent={progressPercent} />
+          {paceText && <p className="text-body-sm text-text-secondary mt-1.5 leading-snug">{paceText}</p>}
           <Button variant="soft" size="sm" onClick={onUpdateClick} className="mt-2.5">
             Actualizar
           </Button>

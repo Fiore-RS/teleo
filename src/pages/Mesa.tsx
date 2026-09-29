@@ -25,6 +25,7 @@ import { ANNOUNCEMENT_VERSION, isVersionBefore } from "../lib/announcement";
 import { markChangelogSeen } from "../lib/changelog";
 import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
+import { getReadingPace, paceSentence } from '../lib/readingPace'
 export function Mesa() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -118,6 +119,7 @@ export function Mesa() {
           <div className="divide-y divide-dashed divide-border stagger-children">
             {books.map((book) => {
               const { percent, label } = getProgressInfo(book);
+              const pace = getReadingPace(book);
               return (
                 <div key={book.id} className="py-3.5 first:pt-0 last:pb-0">
                   <BookCardReading
@@ -127,6 +129,7 @@ export function Mesa() {
                     progressPercent={percent}
                     progressLabel={label}
                     missingStartDate={!book.start_date}
+                    paceText={pace ? paceSentence(pace) : null}
                     onUpdateClick={() => setUpdatingBookId(book.id)}
                   />
                 </div>
@@ -191,7 +194,7 @@ export function Mesa() {
                   <span
                     className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center ${
                       d.read
-                        ? "bg-orange border-orange text-on-accent"
+                        ? "bg-orange border-orange text-on-orange"
                         : d.isToday
                           ? "border-dashed border-primary-text bg-surface-2"
                           : "border-border bg-surface-2"

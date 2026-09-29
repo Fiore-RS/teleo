@@ -1,7 +1,8 @@
 import { forwardRef, useState, type ReactNode } from 'react'
 import { BookOpen } from 'lucide-react'
 import logoFullCream from '../../images/logo/logo-full-dark.svg'
-import { Sparkle } from '../atoms/Sparkle'
+import { BannerArt } from '../atoms/BannerArt'
+import { DEFAULT_BANNER, type BannerId } from '../../../lib/banners'
 import { RatingRow } from './RatingRow'
 import { shareSafeImageUrl } from '../../../lib/shareImage'
 import type { ShareBook } from '../../../hooks/useShareCardExtras'
@@ -96,6 +97,8 @@ export interface ShareProfileCardProps {
   nextBook: ShareBook | null
   onPickCurrent?: () => void
   onPickNext?: () => void
+  /** Banner de Tu rincón (V.2.1.0); la tarjeta usa el mismo. */
+  banner?: BannerId
 }
 
 /** Tarjeta para compartir en formato historia (fase 8, maqueta aprobada el 23 de septiembre).
@@ -117,12 +120,14 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
     nextBook,
     onPickCurrent,
     onPickNext,
+    banner = DEFAULT_BANNER,
   },
   ref,
 ) {
   const now = new Date()
   const year = now.getFullYear()
-  const monthLabel = new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(now)
+  // "septiembre 2026", sin el "de" que agrega Intl.
+  const monthLabel = `${new Intl.DateTimeFormat('es', { month: 'long' }).format(now)} ${year}`
   const displayName = nickname?.trim() || username || ''
   const initial = displayName.charAt(0).toUpperCase()
   const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
@@ -135,22 +140,16 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
       style={{ width: SHARE_CARD_WIDTH, height: SHARE_CARD_HEIGHT }}
       className="relative overflow-hidden rounded-[22px] bg-bg bg-glow-top text-text flex flex-col"
     >
-      {/* Banner */}
-      <div className="relative h-[150px] shrink-0 rounded-b-[26px] overflow-hidden bg-linear-to-br from-primary to-rose">
-        <div aria-hidden="true" className="absolute inset-0">
-          <span className="absolute -top-[60px] -left-10 w-40 h-40 rounded-full bg-primary-ink/10 blur-xl" />
-          <span className="absolute -bottom-[90px] -right-[50px] w-[190px] h-[190px] rounded-full border border-dashed border-primary-ink/30" />
-          <span className="absolute -top-[70px] left-[34%] w-[150px] h-[150px] rounded-full border border-primary-ink/15" />
-          <Sparkle size={16} className="absolute left-[46%] top-[52px] text-primary-ink/50" />
-          <Sparkle size={9} className="absolute left-[62%] top-[96px] text-primary-ink/40" />
-          <Sparkle size={10} className="absolute left-[18%] top-[28px] text-primary-ink/40" />
-        </div>
+      {/* Banner, con la misma proporción que el dibujo (360 × 140) para que se vea completo */}
+      <div className="relative aspect-18/7 shrink-0 rounded-b-[26px] overflow-hidden bg-linear-to-br from-primary to-rose">
+        <BannerArt banner={banner} />
         <img src={logoFullCream} alt="Teleo" className="absolute top-4 right-[18px] h-[30px] w-auto" />
       </div>
 
       {/* Foto, nickname y @ */}
       <div className="relative flex items-end gap-3.5 px-5 -mt-11">
-        <div className="w-[108px] h-[108px] shrink-0 rounded-[30px] border-[3px] border-bg overflow-hidden bg-linear-to-br from-primary to-rose flex items-center justify-center shadow-[0_10px_20px_-12px_rgba(40,20,10,0.6)]">
+        {/* Con foto, sin degradado detrás: al exportar se colaba 1 a 2 px del degradado en el borde. */}
+        <div className={`w-[108px] h-[108px] shrink-0 rounded-[30px] border-[3px] border-bg overflow-hidden flex items-center justify-center shadow-[0_10px_20px_-12px_rgba(40,20,10,0.6)] ${avatarSrc ? 'bg-bg' : 'bg-linear-to-br from-primary to-rose'}`}>
           {avatarSrc ? (
             <img src={avatarSrc} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
           ) : (

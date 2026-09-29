@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ImageOff, ArrowDownAZ, User, CalendarDays, Move, Plus, Search } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
@@ -14,6 +14,12 @@ import { SortMenu, type SortMenuOption } from '../assets/components/molecules/So
 import { SortableItem } from '../assets/components/atoms/SortableItem'
 import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from '../lib/librarySort'
 import { Resena } from './Resena'
+import { Citas } from './cuaderno/Citas'
+import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
+import { AddQuoteSheet } from '../assets/components/molecules/AddQuoteSheet'
+import { ShareQuoteModal } from '../assets/components/molecules/ShareQuoteModal'
+import { useQuotes, type QuoteWithBook } from '../hooks/useQuotes'
+import { normalizeForSearch } from '../lib/quotes'
 import {
   DndContext,
   closestCenter,
@@ -66,6 +72,13 @@ export function Cuaderno() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { reviews, isLoading, refetch, reorderReview } = useReviews(user?.id)
+  const { quotes, isLoading: isLoadingQuotes, refetch: refetchQuotes, addQuote } = useQuotes(user?.id)
+
+  // Pestaña en la URL (?vista=citas), igual que Bitácora, para que al volver se conserve.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab: 'resenas' | 'citas' = searchParams.get('vista') === 'citas' ? 'citas' : 'resenas'
+  const [isAddingQuote, setIsAddingQuote] = useState(false)
+  const [sharingQuote, setSharingQuote] = useState<QuoteWithBook | null>(null)
 
   const [search, setSearch] = useState('')
   const [isSearching, setIsSearching] = useState(false)
@@ -91,6 +104,25 @@ export function Cuaderno() {
     const q = search.toLowerCase()
     return reviews.filter((r) => r.book.title.toLowerCase().includes(q) || (r.book.author ?? '').toLowerCase().includes(q))
   }, [reviews, search])
+
+  const filteredQuotes = useMemo(() => {
+    const q = normalizeForSearch(search.trim())
+    if (!q) return quotes
+    return quotes.filter((quote) =>
+      normalizeForSearch(`${quote.quote_text} ${quote.book.title} ${quote.book.author ?? ''}`).includes(q)
+    )
+  }, [quotes, search])
+
+  function changeTab(next: 'resenas' | 'citas') {
+    if (next === tab) return
+    setSearch('')
+    setIsSearching(false)
+    setIsReordering(false)
+    const params = new URLSearchParams(searchParams)
+    if (next === 'citas') params.set('vista', 'citas')
+    else params.delete('vista')
+    setSearchParams(params, { replace: true })
+  }
 
   const sortedReviews = useMemo(
     () =>
@@ -152,7 +184,7 @@ export function Cuaderno() {
         }}
         value={search}
         onChange={setSearch}
-        placeholder="Buscar por título o autor"
+        placeholder={tab === 'citas' ? 'Buscar en tus citas, título o autor' : 'Buscar por título o autor'}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
@@ -168,11 +200,13 @@ export function Cuaderno() {
               >
                 <Search size={17} />
               </button>
-              <SortMenu variant="icon" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
+              {tab === 'resenas' && (
+                <SortMenu variant="icon" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
+              )}
               <button
                 type="button"
-                onClick={() => setIsPickerOpen(true)}
-                aria-label="Escribir reseña nueva"
+                onClick={() => (tab === 'citas' ? setIsAddingQuote(true) : setIsPickerOpen(true))}
+                aria-label={tab === 'citas' ? 'Agregar cita' : 'Escribir reseña nueva'}
                 className="w-11 h-11 min-[400px]:w-12 min-[400px]:h-12 -mb-2 shrink-0 rounded-full bg-primary text-primary-ink shadow-card flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
               >
                 <Plus size={24} strokeWidth={2.4} />
@@ -180,49 +214,76 @@ export function Cuaderno() {
             </div>
           </div>
           <p className="font-body text-body-md text-text-secondary mt-1.5 tabular-nums">
-            {isLoading ? '\u00a0' : `${filtered.length} ${filtered.length === 1 ? 'reseña' : 'reseñas'}`}
+            {tab === 'citas'
+              ? isLoadingQuotes
+                ? '\u00a0'
+                : `${filteredQuotes.length} ${filteredQuotes.length === 1 ? 'cita' : 'citas'}`
+              : isLoading
+                ? '\u00a0'
+                : `${filtered.length} ${filtered.length === 1 ? 'reseña' : 'reseñas'}`}
           </p>
         </div>
       </SearchHeader>
 
-      <div className="space-y-5">
-        {isReordering && (
-          <p className="text-body-sm text-text-secondary text-center">
-            Mantén presionado unos instantes para arrastrar y organizar tus reseñas a tu gusto.
-          </p>
-        )}
-
-        {!isLoading && filtered.length === 0 && (
-          <p className="text-body-md text-text-secondary text-center">Aún no tienes reseñas escritas.</p>
-        )}
-
-        {isLoading && (
-          <div className="grid grid-cols-3 gap-x-3 gap-y-4" aria-label="Cargando">
-            {Array.from({ length: 6 }, (_, i) => (
-              <BookTileSkeleton key={i} />
-            ))}
-          </div>
-        )}
-        {isReordering ? (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReviewDragEnd}>
-            <SortableContext items={sortedReviews.map((r) => r.id)} strategy={rectSortingStrategy}>
-              <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
-                {sortedReviews.map((r) => (
-                  <SortableItem key={r.id} id={r.id}>
-                    <ReviewCard review={r} onOpen={() => setSelectedBookId(r.book_id)} />
-                  </SortableItem>
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        ) : (
-          <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
-            {sortedReviews.map((r) => (
-              <ReviewCard key={r.id} review={r} onOpen={() => setSelectedBookId(r.book_id)} />
-            ))}
-          </div>
-        )}
+      <div className="mb-5">
+        <SegmentedTabs
+          active={tab}
+          onChange={changeTab}
+          options={[
+            { value: 'resenas', label: 'Reseñas' },
+            { value: 'citas', label: 'Citas' },
+          ]}
+        />
       </div>
+
+      {tab === 'citas' ? (
+        <Citas
+          quotes={filteredQuotes}
+          isFiltered={search.trim().length > 0}
+          isLoading={isLoadingQuotes}
+          onShare={setSharingQuote}
+          onOpenBook={setSelectedBookId}
+        />
+      ) : (
+        <div className="space-y-5">
+          {isReordering && (
+            <p className="text-body-sm text-text-secondary text-center">
+              Mantén presionado unos instantes para arrastrar y organizar tus reseñas a tu gusto.
+            </p>
+          )}
+
+          {!isLoading && filtered.length === 0 && (
+            <p className="text-body-md text-text-secondary text-center">Aún no tienes reseñas escritas.</p>
+          )}
+
+          {isLoading && (
+            <div className="grid grid-cols-3 gap-x-3 gap-y-4" aria-label="Cargando">
+              {Array.from({ length: 6 }, (_, i) => (
+                <BookTileSkeleton key={i} />
+              ))}
+            </div>
+          )}
+          {isReordering ? (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReviewDragEnd}>
+              <SortableContext items={sortedReviews.map((r) => r.id)} strategy={rectSortingStrategy}>
+                <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
+                  {sortedReviews.map((r) => (
+                    <SortableItem key={r.id} id={r.id}>
+                      <ReviewCard review={r} onOpen={() => setSelectedBookId(r.book_id)} />
+                    </SortableItem>
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
+              {sortedReviews.map((r) => (
+                <ReviewCard key={r.id} review={r} onOpen={() => setSelectedBookId(r.book_id)} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="pb-24" />
       <ScrollToTopButton />
@@ -236,8 +297,14 @@ export function Cuaderno() {
       />
 
       {selectedBookId && (
-        <Resena bookId={selectedBookId} onClose={() => { setSelectedBookId(null); refetch() }} />
+        <Resena bookId={selectedBookId} onClose={() => { setSelectedBookId(null); refetch(); refetchQuotes() }} />
       )}
+
+      {isAddingQuote && (
+        <AddQuoteSheet userId={user?.id} onClose={() => setIsAddingQuote(false)} onSave={addQuote} />
+      )}
+
+      {sharingQuote && <ShareQuoteModal quote={sharingQuote} onClose={() => setSharingQuote(null)} />}
     </div>
   )
 }

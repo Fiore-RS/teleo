@@ -136,6 +136,8 @@ export function useDataImport(userId: string | undefined) {
           abandon_reason: b.abandon_reason ?? null,
           price: b.price ?? null,
           purchase_date: b.purchase_date ?? null,
+          is_gift: b.is_gift ?? false,
+          gift_from: b.gift_from ?? null,
           is_priority: b.is_priority ?? false,
           priority_sort_order: b.priority_sort_order ?? null,
           saga_sort_order: b.saga_sort_order ?? null,
@@ -197,6 +199,9 @@ export function useDataImport(userId: string | undefined) {
           review_id: reviewIdMap.get(q.review_id!)!,
           quote_text: q.quote_text,
           sort_order: q.sort_order ?? 0,
+          // Respaldos anteriores a Mis citas (V.2.1.0) no traen página ni fecha.
+          page: q.page ?? null,
+          ...(q.created_at ? { created_at: q.created_at } : {}),
         }))
       )
 
