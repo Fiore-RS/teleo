@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
 import { computeLongestStreak } from '../lib/streak'
 import { tally, formatLabel, type CountEntry } from '../lib/tally'
+import { languageLabel } from '../lib/languages'
 import { isReviewWritten, REVIEW_CONTENT_COLUMNS } from '../lib/reviews'
 
 export type { CountEntry }
@@ -139,7 +140,7 @@ export function useLibraryStats(userId: string | undefined) {
     const byFormat = tally(books.map((b) => formatLabel(b.format)))
     const readByCategory = tally(reads.map((h) => bookById.get(h.book_id)?.category))
     const readByFormat = tally(reads.map((h) => formatLabel(bookById.get(h.book_id)?.format)))
-    const byLanguage = tally(books.map((b) => b.language))
+    const byLanguage = tally(books.map((b) => languageLabel(b.language) || null))
     const booksWithPages = books.filter((b) => typeof b.total_pages === 'number' && b.total_pages! > 0)
     const longestBook = booksWithPages.length > 0
       ? booksWithPages.reduce((max, b) => (b.total_pages! > max.total_pages! ? b : max))

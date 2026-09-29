@@ -29,10 +29,11 @@ interface PriceInputProps {
   value: string
   onChange: (value: string) => void
   placeholder?: string
+  bare?: boolean
   className?: string
 }
 
-export function PriceInput({ value, onChange, placeholder = '0.00', className }: PriceInputProps) {
+export function PriceInput({ value, onChange, placeholder = '0.00', bare, className }: PriceInputProps) {
   const [raw, setRaw] = useState(() => sanitizeDigitsAndDot(value))
 
   // Si el valor cambia desde afuera, el texto se ajusta durante el render en vez de en un efecto.
@@ -55,6 +56,7 @@ export function PriceInput({ value, onChange, placeholder = '0.00', className }:
       onChange={handleChange}
       placeholder={placeholder}
       inputMode="decimal"
+      bare={bare}
       className={className}
     />
   )

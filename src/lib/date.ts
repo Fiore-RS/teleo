@@ -1,3 +1,5 @@
+import { MONTH_ABBR } from './months'
+
 /** Formatea una fecha en `YYYY-MM-DD` usando la hora LOCAL del dispositivo (no UTC).
  *  `Date.prototype.toISOString()` siempre da la fecha en UTC, lo que puede quedar
  *  desalineado con el día calendario real de la persona según su huso horario — por eso
@@ -12,4 +14,13 @@ export function formatLocalDate(date: Date): string {
 /** La fecha de hoy en `YYYY-MM-DD`, en hora local. */
 export function todayLocalDate(): string {
   return formatLocalDate(new Date())
+}
+
+/** 'YYYY-MM-DD' → '12 sep 2026', sin pasar por Date (evita el desfase de zona horaria).
+ *  Vacío si no hay fecha. */
+export function formatShortDate(value: string | null | undefined): string {
+  if (!value) return ''
+  const [y, m, d] = value.split('-').map((n) => parseInt(n, 10))
+  if (!y || !m || !d) return value
+  return `${d} ${MONTH_ABBR[m - 1]} ${y}`
 }
