@@ -78,6 +78,19 @@ export function useQuotes(userId: string | undefined) {
     return true
   }
 
+  /** Cambia el texto o la página de una cita (desde Mis citas, V.2.1.1). Devuelve false si
+   *  algo falló. */
+  async function updateQuote(quote: QuoteWithBook, quoteText: string, page: number | null) {
+    const { error } = await supabase.from('favorite_quotes').update({ quote_text: quoteText, page }).eq('id', quote.id)
+    if (error) {
+      console.error('[useQuotes] No se pudo editar la cita:', error)
+      return false
+    }
+    setQuotes((prev) => prev.map((q) => (q.id === quote.id ? { ...q, quote_text: quoteText, page } : q)))
+    queryClient.invalidateQueries({ queryKey: ['review', quote.book.id] })
+    return true
+  }
+
   async function removeQuote(quote: QuoteWithBook) {
     const { error } = await supabase.from('favorite_quotes').delete().eq('id', quote.id)
     if (error) return false
@@ -86,5 +99,5 @@ export function useQuotes(userId: string | undefined) {
     return true
   }
 
-  return { quotes, isLoading, refetch, addQuote, removeQuote }
+  return { quotes, isLoading, refetch, addQuote, updateQuote, removeQuote }
 }

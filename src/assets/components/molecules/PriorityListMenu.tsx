@@ -54,7 +54,7 @@ export function PriorityListMenu({
       {isOpen && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-48 overflow-hidden"
+          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-48 overflow-hidden animate-pop-in"
         >
           <button
             type="button"

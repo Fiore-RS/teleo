@@ -522,6 +522,7 @@ export function DetalleSaga({
         isOpen={deleteState !== "closed"}
         status={deleteState === "closed" ? "confirm" : deleteState}
         itemLabel="saga"
+        feminine
         onConfirm={handleDelete}
         onClose={() => {
           const wasSuccess = deleteState === "success";

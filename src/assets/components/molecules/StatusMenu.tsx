@@ -48,7 +48,7 @@ export function StatusMenu({ status, onChange, className = '' }: StatusMenuProps
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden"
+          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden animate-pop-in"
         >
           {ALL_STATUSES.map((s) => {
             const isSelected = s === status
