@@ -6,6 +6,7 @@ import { CoverImage } from '../atoms/CoverImage'
 import { useAuth } from '../../../hooks/useAuth'
 import { useBook } from '../../../hooks/useBook'
 import { getProgressInfo } from '../../../lib/progress'
+import { getReadingPace, paceSentence } from '../../../lib/readingPace'
 import { parseDurationInput, secondsToTimeInput } from '../../../lib/duration'
 import { recordBookCompletion } from '../../../lib/readingHistory'
 import { ProgressBar } from '../atoms/ProgressBar'
@@ -127,6 +128,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
                 {(() => {
                   const { percent } = getProgressInfo(book)
+                  const pace = getReadingPace(book)
 
                   let comparisonLabel: string | null = null
                   if (isAudio && book.total_duration_seconds) {
@@ -144,6 +146,11 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
                         <span className="ml-auto font-semibold text-primary-text">{Math.round(percent)}%</span>
                       </div>
                       <ProgressBar percent={percent} />
+                      {pace && (
+                        <p className="text-body-sm text-text-secondary mt-2 leading-snug">
+                          {paceSentence(pace)} · {pace.perDayLabel}
+                        </p>
+                      )}
                     </div>
                   )
                 })()}

@@ -1,13 +1,10 @@
 import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
 import { computeLongestStreak } from '../lib/streak'
-import { formatOptions } from '../lib/options'
+import { tally, formatLabel, type CountEntry } from '../lib/tally'
 import { isReviewWritten, REVIEW_CONTENT_COLUMNS } from '../lib/reviews'
 
-export interface CountEntry {
-  label: string
-  count: number
-}
+export type { CountEntry }
 
 export interface BookRef {
   title: string
@@ -34,6 +31,9 @@ export interface LibraryStats {
     byCategory: CountEntry[]
     byFormat: CountEntry[]
     byLanguage: CountEntry[]
+    /** Lo que leíste (V.2.1.0): cada lectura terminada, relecturas incluidas. */
+    readByCategory: CountEntry[]
+    readByFormat: CountEntry[]
     longestBook: BookRef | null
     shortestBook: BookRef | null
   }
@@ -63,22 +63,12 @@ export interface LibraryStats {
 const emptyStats: LibraryStats = {
   resumen: { pagesRead: 0, audioSeconds: 0, finishedCount: 0, readingCount: 0, wishlistCount: 0, abandonedCount: 0, sagaCount: 0, reviewCount: 0, memberSince: null },
   ritmo: { longestStreak: 0, sessionDates: [] },
-  coleccion: { byCategory: [], byFormat: [], byLanguage: [], longestBook: null, shortestBook: null },
+  coleccion: { byCategory: [], byFormat: [], byLanguage: [], readByCategory: [], readByFormat: [], longestBook: null, shortestBook: null },
   autoresYSeries: { topAuthor: null, sagasCompleted: 0, sagasInProgress: 0, mostRereadBook: null },
   calificaciones: { avgRating: null, bestRated: null, worstRated: null, hasTie: false, quotesCount: 0 },
   historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0 },
 }
 
-function tally(values: (string | null)[]): CountEntry[] {
-  const counts = new Map<string, number>()
-  for (const v of values) {
-    if (!v) continue
-    counts.set(v, (counts.get(v) ?? 0) + 1)
-  }
-  return Array.from(counts.entries())
-    .map(([label, count]) => ({ label, count }))
-    .sort((a, b) => b.count - a.count)
-}
 
 /** Trae y calcula todas las estadísticas de Bitácora en un solo lugar, a partir de datos
  *  que ya se guardan hoy (books, sagas, reviews, reading_history, reading_sessions,
@@ -146,9 +136,9 @@ export function useLibraryStats(userId: string | undefined) {
 
     // Desglose de colección
     const byCategory = tally(books.map((b) => b.category))
-    // El formato se guarda como clave (fisico, audiolibro); se muestra con su nombre.
-    const formatLabel = new Map<string, string>(formatOptions.map((o) => [o.value, o.label]))
-    const byFormat = tally(books.map((b) => (b.format ? formatLabel.get(b.format) ?? b.format : null)))
+    const byFormat = tally(books.map((b) => formatLabel(b.format)))
+    const readByCategory = tally(reads.map((h) => bookById.get(h.book_id)?.category))
+    const readByFormat = tally(reads.map((h) => formatLabel(bookById.get(h.book_id)?.format)))
     const byLanguage = tally(books.map((b) => b.language))
     const booksWithPages = books.filter((b) => typeof b.total_pages === 'number' && b.total_pages! > 0)
     const longestBook = booksWithPages.length > 0
@@ -241,6 +231,8 @@ export function useLibraryStats(userId: string | undefined) {
         byCategory,
         byFormat,
         byLanguage,
+        readByCategory,
+        readByFormat,
         longestBook: longestBook ? { title: longestBook.title, value: longestBook.total_pages ?? 0 } : null,
         shortestBook: shortestBook ? { title: shortestBook.title, value: shortestBook.total_pages ?? 0 } : null,
       },

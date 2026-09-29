@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { BookCheck, CalendarRange, Crown, Heart, Check } from 'lucide-react'
+import { BookCheck, CalendarRange, Crown, Heart, Check, Shapes } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
 import { queryClient } from '../../lib/queryClient'
@@ -15,6 +15,8 @@ import { Card } from '../../assets/components/molecules/Card'
 import { PeriodNav } from '../../assets/components/molecules/PeriodNav'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
 import { DetalleLibro } from '../DetalleLibro'
+import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
+import { tally, formatLabel } from '../../lib/tally'
 
 export type ResumenView = 'mes' | 'anio' | 'favoritos'
 
@@ -230,6 +232,8 @@ function YearView({ year, reads, totalPages, totalAudioSeconds, isLoading, canGo
     for (const r of reads) groups[r.month - 1].push(r)
     return groups
   }, [reads])
+  const byCategory = useMemo(() => tally(reads.map((r) => r.category)), [reads])
+  const byFormat = useMemo(() => tally(reads.map((r) => formatLabel(r.format))), [reads])
 
   return (
     <div className="flex flex-col gap-5">
@@ -295,6 +299,19 @@ function YearView({ year, reads, totalPages, totalAudioSeconds, isLoading, canGo
         </PeriodTransition>
         <p className="text-body-sm text-text-muted text-center mt-4">Toca un mes para ver todos sus libros.</p>
       </Card>
+
+      {/* Qué leíste ese año, por categoría y formato (V.2.1.0). */}
+      {!isLoading && reads.length > 0 && (
+        <Card labelledBy="resumen-anio-tipos">
+          <Eyebrow id="resumen-anio-tipos" icon={Shapes} tone="orange" className="mb-3.5">{`Qué leíste en ${year}`}</Eyebrow>
+          <PeriodTransition order={year}>
+            <div className="space-y-5">
+              <BreakdownList title="Por categoría" entries={byCategory} />
+              <BreakdownList title="Por formato" entries={byFormat} />
+            </div>
+          </PeriodTransition>
+        </Card>
+      )}
     </div>
   )
 }

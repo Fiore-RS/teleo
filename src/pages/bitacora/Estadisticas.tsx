@@ -1,13 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { Check, ChevronLeft, ChevronRight, Flame, LayoutGrid, Library, Users, Star, CalendarDays } from 'lucide-react'
-import { useLibraryStats, type CountEntry } from '../../hooks/useLibraryStats'
+import { Check, ChevronLeft, ChevronRight, Flame, LayoutGrid, Library, Users, Star, CalendarDays, BookCheck } from 'lucide-react'
+import { useLibraryStats } from '../../hooks/useLibraryStats'
+import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { useGoalHistory } from '../../hooks/useGoalHistory'
 import { useReadingStreak } from '../../hooks/useReadingStreak'
 import { StatTile } from '../../assets/components/atoms/StatTile'
 import { Skeleton, StatTileSkeleton } from '../../assets/components/atoms/Skeleton'
 import { Eyebrow } from '../../assets/components/atoms/Eyebrow'
 import { Card } from '../../assets/components/molecules/Card'
-import { ProgressBar } from '../../assets/components/atoms/ProgressBar'
 import { BarChart } from '../../assets/components/atoms/BarChart'
 import { MonthCalendar } from '../../assets/components/atoms/MonthCalendar'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
@@ -27,26 +27,6 @@ function Footnote({ children }: { children: ReactNode }) {
   return <p className="text-body-sm text-text-secondary text-center mt-4 text-balance">{children}</p>
 }
 
-function BreakdownList({ title, entries }: { title: string; entries: CountEntry[] }) {
-  if (entries.length === 0) return null
-  const total = entries.reduce((sum, e) => sum + e.count, 0)
-  return (
-    <div>
-      <SubLabel>{title}</SubLabel>
-      <div className="space-y-2.5">
-        {entries.map((e) => (
-          <div key={e.label}>
-            <div className="flex items-center justify-between text-body-sm text-text mb-1">
-              <span className="truncate">{e.label}</span>
-              <span className="text-text-secondary shrink-0 ml-2 tabular-nums">{e.count}</span>
-            </div>
-            <ProgressBar percent={total > 0 ? (e.count / total) * 100 : 0} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 interface EstadisticasProps {
   userId: string | undefined
@@ -180,6 +160,18 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
             Leído
           </div>
         </Card>
+
+        {/* Lo que leíste (V.2.1.0): el mismo desglose, pero solo de las lecturas terminadas. */}
+        {(stats.coleccion.readByCategory.length > 0 || stats.coleccion.readByFormat.length > 0) && (
+          <Card labelledBy="bit-leido">
+            <Eyebrow id="bit-leido" icon={BookCheck} tone="orange" className="mb-3.5">Lo que leíste</Eyebrow>
+            <div className="space-y-5">
+              <BreakdownList title="Por categoría" entries={stats.coleccion.readByCategory} />
+              <BreakdownList title="Por formato" entries={stats.coleccion.readByFormat} />
+            </div>
+            <Footnote>Cuenta cada libro que terminaste, relecturas incluidas.</Footnote>
+          </Card>
+        )}
 
         {/* 3. Desglose de colección */}
         <Card labelledBy="bit-coleccion">
