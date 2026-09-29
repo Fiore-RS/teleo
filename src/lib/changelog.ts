@@ -12,6 +12,26 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '2.1.0',
+    date: '29 de septiembre de 2026',
+    title: 'Tu rincón con más vida',
+    items: [
+      'Seis temas de color para toda la app: Atardecer, Aurora boreal, Biblioteca, Algodón de azúcar, Bosque y Margarita. Elígelo en Configuración › Apariencia.',
+      'Diez banners para la cabecera de tu perfil. Tócalo desde el lápiz para cambiarlo; también aparece en tu tarjeta para compartir.',
+      'Teleo ahora sigue el modo claro u oscuro de tu teléfono. Si prefieres uno fijo, cámbialo en Configuración › Apariencia.',
+      'Mis citas: una pestaña nueva en Cuaderno con todas tus citas, búsqueda, una cita al azar y la opción de compartirlas como imagen decorada.',
+      'Anota citas mientras lees, con su página. Cuando terminas el libro y escribes la reseña, ya están ahí.',
+      'Importa tu biblioteca desde Goodreads en Configuración › Tus datos, con tus sagas, estantes y portadas.',
+      'Marca un libro como regalo y anota quién te lo dio. Los regalos cuentan como ₡0 y tienen su propio filtro en Compras.',
+      'Ritmo de lectura: en La mesa ves cuándo terminarías el libro que estás leyendo si sigues al mismo ritmo.',
+      'Bitácora muestra por categoría y formato lo que leíste, en Estadísticas y en el Resumen de cada año.',
+      'En Compras, "En terminados" reemplaza a "Promedio por libro".',
+      'En tu perfil, Favoritos, Recomendados, Deseados y Abandonados ahora muestran cinco libros en cada visita.',
+      'Tu foto, nickname, bio y banner se cambian desde el lápiz de tu perfil. Se quitó el código QR de la tarjeta.',
+      'Pestañas nuevas en el Resumen de Bitácora y arreglos en la tarjeta para compartir: la fecha y el borde de la foto.',
+    ],
+  },
+  {
     version: '2.0.1',
     date: '25 de septiembre de 2026',
     title: 'Pequeños ajustes',
