@@ -203,19 +203,25 @@ export type Database = {
       }
       favorite_quotes: {
         Row: {
+          created_at: string
           id: string
+          page: number | null
           quote_text: string
           review_id: string
           sort_order: number | null
         }
         Insert: {
+          created_at?: string
           id?: string
+          page?: number | null
           quote_text: string
           review_id: string
           sort_order?: number | null
         }
         Update: {
+          created_at?: string
           id?: string
+          page?: number | null
           quote_text?: string
           review_id?: string
           sort_order?: number | null

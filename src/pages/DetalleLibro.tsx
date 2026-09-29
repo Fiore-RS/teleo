@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ImageOff, Heart, Camera, PenLine, Trash2, RotateCcw, Play, NotebookPen, CalendarPlus } from 'lucide-react'
+import { ImageOff, Heart, Camera, PenLine, Trash2, RotateCcw, Play, NotebookPen, CalendarPlus, Quote } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
@@ -28,6 +28,8 @@ import { ReadingDatesFields } from '../assets/components/molecules/ReadingDatesF
 import { readingDatesAreValid, type ReadingDates } from '../lib/readingDates'
 import { statusLabel, type ReadingStatus } from '../lib/status'
 import { Resena } from './Resena'
+import { AddQuoteSheet } from '../assets/components/molecules/AddQuoteSheet'
+import { useQuotes } from '../hooks/useQuotes'
 import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
 import { DurationMaskInput } from '../assets/components/atoms/DurationMaskInput'
 import { DateInput } from '../assets/components/atoms/DateInput'
@@ -69,6 +71,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const { user } = useAuth()
   const { book, tags, isLoading, updateBook, addTag, removeTag, deleteBook } = useBook(bookId)
   const { exists: hasReview, refetch: refetchReview } = useReviewExists(bookId)
+  const { addQuote } = useQuotes(user?.id)
+  const [isAddingQuote, setIsAddingQuote] = useState(false)
   const { count: readCount, refetch: refetchReadCount } = useBookReadCount(bookId)
   const { uploadCover, isUploading } = useCoverUpload(user?.id)
   const coverInputRef = useRef<HTMLInputElement>(null)
@@ -365,6 +369,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                       {hasReview ? 'Ver reseña de lectura' : 'Crear reseña de lectura'}
                     </Button>
                   )}
+                  {book.status === 'leyendo' && (
+                    <Button variant="soft" onClick={() => setIsAddingQuote(true)}>
+                      <Quote size={17} />
+                      Anotar una cita
+                    </Button>
+                  )}
                   {book.status === 'terminado' && (
                     <Button variant="soft" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
                       <RotateCcw size={17} />
@@ -576,6 +586,16 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           release={releaseForm.release}
           initialBookId={bookId}
           onClose={() => setReleaseForm(null)}
+        />
+      )}
+
+      {isAddingQuote && book && (
+        <AddQuoteSheet
+          userId={user?.id}
+          initialBook={{ id: book.id, title: book.title, author: book.author, cover_url: book.cover_url, status: book.status }}
+          initialPage={book.current_page}
+          onClose={() => setIsAddingQuote(false)}
+          onSave={addQuote}
         />
       )}
 

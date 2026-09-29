@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
 import { computeLongestStreak } from '../lib/streak'
 import { formatOptions } from '../lib/options'
+import { isReviewWritten, REVIEW_CONTENT_COLUMNS } from '../lib/reviews'
 
 export interface CountEntry {
   label: string
@@ -97,7 +98,7 @@ export function useLibraryStats(userId: string | undefined) {
         .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, created_at')
         .eq('user_id', userId),
       supabase.from('sagas').select('id, status').eq('user_id', userId),
-      supabase.from('reviews').select('id, book_id, general_rating').eq('user_id', userId),
+      supabase.from('reviews').select(`id, book_id, ${REVIEW_CONTENT_COLUMNS}`).eq('user_id', userId),
       supabase.from('reading_history').select('book_id, end_date').eq('user_id', userId),
       supabase.from('reading_sessions').select('session_date').eq('user_id', userId),
     ])
@@ -229,7 +230,7 @@ export function useLibraryStats(userId: string | undefined) {
         wishlistCount: wishlist.length,
         abandonedCount: abandoned.length,
         sagaCount: sagas.length,
-        reviewCount: reviews.length,
+        reviewCount: reviews.filter(isReviewWritten).length,
         memberSince: oldestCreatedAt,
       },
       ritmo: {

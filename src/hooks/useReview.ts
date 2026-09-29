@@ -76,11 +76,11 @@ export function useReview(bookId: string | undefined, userId: string | undefined
     setCustomRatings((prev) => prev.filter((r) => r.id !== id))
   }
 
-  async function addQuote(quoteText: string) {
+  async function addQuote(quoteText: string, page: number | null = null) {
     if (!review) return
     const sortOrder = quotes.length
     const { data: created, error } = await supabase
-      .from('favorite_quotes').insert({ review_id: review.id, quote_text: quoteText, sort_order: sortOrder }).select().single()
+      .from('favorite_quotes').insert({ review_id: review.id, quote_text: quoteText, sort_order: sortOrder, page }).select().single()
     if (!error && created) setQuotes((prev) => [...prev, created])
   }
 
