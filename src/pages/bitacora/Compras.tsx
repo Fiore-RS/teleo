@@ -77,7 +77,7 @@ export function Compras({ userId, currency }: ComprasProps) {
       owned,
       withPrice,
       invested,
-      avg: withPrice.length > 0 ? invested / withPrice.length : 0,
+      finished: sumPrices(inStatus('terminado')),
       pending: sumPrices(inStatus('pendiente')),
       wishlist: sumPrices(inStatus('deseado')),
       wishlistWithPrice: inStatus('deseado').length,
@@ -142,7 +142,7 @@ export function Compras({ userId, currency }: ComprasProps) {
           </p>
 
           <div className="grid grid-cols-2 gap-2.5 mt-5">
-            <StatTile compact tone="orange" label="Promedio por libro" value={summary.withPrice.length > 0 ? money(summary.avg) : '—'} />
+            <StatTile compact tone="orange" label="En terminados" value={money(summary.finished)} />
             <StatTile compact tone="magenta" label="En pendientes" value={money(summary.pending)} />
             <StatTile compact label="En abandonados" value={money(summary.abandoned)} />
             <StatTile

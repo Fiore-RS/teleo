@@ -126,7 +126,8 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
 ) {
   const now = new Date()
   const year = now.getFullYear()
-  const monthLabel = new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(now)
+  // "septiembre 2026", sin el "de" que agrega Intl.
+  const monthLabel = `${new Intl.DateTimeFormat('es', { month: 'long' }).format(now)} ${year}`
   const displayName = nickname?.trim() || username || ''
   const initial = displayName.charAt(0).toUpperCase()
   const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
@@ -147,7 +148,8 @@ export const ShareProfileCard = forwardRef<HTMLDivElement, ShareProfileCardProps
 
       {/* Foto, nickname y @ */}
       <div className="relative flex items-end gap-3.5 px-5 -mt-11">
-        <div className="w-[108px] h-[108px] shrink-0 rounded-[30px] border-[3px] border-bg overflow-hidden bg-linear-to-br from-primary to-rose flex items-center justify-center shadow-[0_10px_20px_-12px_rgba(40,20,10,0.6)]">
+        {/* Con foto, sin degradado detrás: al exportar se colaba 1 a 2 px del degradado en el borde. */}
+        <div className={`w-[108px] h-[108px] shrink-0 rounded-[30px] border-[3px] border-bg overflow-hidden flex items-center justify-center shadow-[0_10px_20px_-12px_rgba(40,20,10,0.6)] ${avatarSrc ? 'bg-bg' : 'bg-linear-to-br from-primary to-rose'}`}>
           {avatarSrc ? (
             <img src={avatarSrc} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
           ) : (

@@ -24,7 +24,7 @@ import { sampleWithSeed } from '../lib/random'
 import { queryClient } from '../lib/queryClient'
 
 // Cuántas portadas se muestran en Favoritos, Recomendados, Deseados y Abandonados.
-const SHELF_SIZE = 4
+const SHELF_SIZE = 5
 
 // Botones redondos translúcidos sobre la cabecera de degradado (Configuración y Editar perfil).
 const headerButtonClass =
@@ -45,7 +45,7 @@ export function Perfil() {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [hasNews] = useState(hasUnseenChangelog)
-  // Nueva semilla en cada visita: si una lista tiene más de 4 libros, se eligen otros 4.
+  // Nueva semilla en cada visita: si una lista tiene más de 5 libros, se eligen otros 5.
   const [shelfSeed] = useState(() => Math.floor(Math.random() * 1e9))
   // Hoja de compartir y, al elegir, el modal de esa opción.
   const [shareStep, setShareStep] = useState<'menu' | 'perfil' | 'deseados' | null>(null)
