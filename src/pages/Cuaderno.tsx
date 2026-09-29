@@ -18,6 +18,8 @@ import { Citas } from './cuaderno/Citas'
 import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
 import { AddQuoteSheet } from '../assets/components/molecules/AddQuoteSheet'
 import { ShareQuoteModal } from '../assets/components/molecules/ShareQuoteModal'
+import { EditQuoteSheet } from '../assets/components/molecules/EditQuoteSheet'
+import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { useQuotes, type QuoteWithBook } from '../hooks/useQuotes'
 import { normalizeForSearch } from '../lib/quotes'
 import {
@@ -72,13 +74,28 @@ export function Cuaderno() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { reviews, isLoading, refetch, reorderReview } = useReviews(user?.id)
-  const { quotes, isLoading: isLoadingQuotes, refetch: refetchQuotes, addQuote } = useQuotes(user?.id)
+  const { quotes, isLoading: isLoadingQuotes, refetch: refetchQuotes, addQuote, updateQuote, removeQuote } = useQuotes(user?.id)
 
   // Pestaña en la URL (?vista=citas), igual que Bitácora, para que al volver se conserve.
   const [searchParams, setSearchParams] = useSearchParams()
   const tab: 'resenas' | 'citas' = searchParams.get('vista') === 'citas' ? 'citas' : 'resenas'
   const [isAddingQuote, setIsAddingQuote] = useState(false)
   const [sharingQuote, setSharingQuote] = useState<QuoteWithBook | null>(null)
+  const [editingQuote, setEditingQuote] = useState<QuoteWithBook | null>(null)
+  // Eliminar una cita desde su menú: la cita elegida y el paso de la confirmación.
+  const [deletingQuote, setDeletingQuote] = useState<QuoteWithBook | null>(null)
+  const [deleteQuoteState, setDeleteQuoteState] = useState<'confirm' | 'success' | 'error'>('confirm')
+
+  function askDeleteQuote(quote: QuoteWithBook) {
+    setDeleteQuoteState('confirm')
+    setDeletingQuote(quote)
+  }
+
+  async function handleDeleteQuote() {
+    if (!deletingQuote) return
+    const ok = await removeQuote(deletingQuote)
+    setDeleteQuoteState(ok ? 'success' : 'error')
+  }
 
   const [search, setSearch] = useState('')
   const [isSearching, setIsSearching] = useState(false)
@@ -243,6 +260,8 @@ export function Cuaderno() {
           isLoading={isLoadingQuotes}
           onShare={setSharingQuote}
           onOpenBook={setSelectedBookId}
+          onEdit={setEditingQuote}
+          onDelete={askDeleteQuote}
         />
       ) : (
         <div className="space-y-5">
@@ -305,6 +324,19 @@ export function Cuaderno() {
       )}
 
       {sharingQuote && <ShareQuoteModal quote={sharingQuote} onClose={() => setSharingQuote(null)} />}
+
+      {editingQuote && (
+        <EditQuoteSheet quote={editingQuote} onClose={() => setEditingQuote(null)} onSave={updateQuote} />
+      )}
+
+      <ConfirmDialog
+        isOpen={deletingQuote !== null}
+        status={deleteQuoteState}
+        itemLabel="cita"
+        feminine
+        onConfirm={handleDeleteQuote}
+        onClose={() => setDeletingQuote(null)}
+      />
     </div>
   )
 }

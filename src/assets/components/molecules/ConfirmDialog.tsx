@@ -8,12 +8,17 @@ interface ConfirmDialogProps {
   isOpen: boolean
   status: ConfirmStatus
   itemLabel: string
+  /** true para palabras femeninas (cita, reseña, saga): "Esta cita será eliminada". */
+  feminine?: boolean
   onConfirm: () => void
   onClose: () => void
 }
 
-export function ConfirmDialog({ isOpen, status, itemLabel, onConfirm, onClose }: ConfirmDialogProps) {
+export function ConfirmDialog({ isOpen, status, itemLabel, feminine = false, onConfirm, onClose }: ConfirmDialogProps) {
   if (!isOpen) return null
+
+  const este = feminine ? 'Esta' : 'Este'
+  const eliminado = feminine ? 'eliminada' : 'eliminado'
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -34,7 +39,7 @@ export function ConfirmDialog({ isOpen, status, itemLabel, onConfirm, onClose }:
           <>
             <h3 className="font-display font-semibold text-display-md text-text text-balance">¿Eliminar {itemLabel}?</h3>
             <p className="text-body-md text-text-secondary mt-2">
-              Esta acción no se puede deshacer. Este {itemLabel} será eliminado permanentemente de tu diario digital.
+              Esta acción no se puede deshacer. {este} {itemLabel} será {eliminado} permanentemente de tu diario digital.
             </p>
             <Button variant="primary" className="mt-5" onClick={onConfirm}>Eliminar</Button>
             <Button variant="outline" className="mt-2.5" onClick={onClose}>Cancelar</Button>
@@ -42,8 +47,8 @@ export function ConfirmDialog({ isOpen, status, itemLabel, onConfirm, onClose }:
         )}
         {status === 'success' && (
           <>
-            <h3 className="font-display font-semibold text-display-md text-text text-balance">¡Eliminado con éxito!</h3>
-            <p className="text-body-md text-text-secondary mt-2">Este {itemLabel} ha sido borrado de tu archivo.</p>
+            <h3 className="font-display font-semibold text-display-md text-text text-balance">{feminine ? '¡Eliminada con éxito!' : '¡Eliminado con éxito!'}</h3>
+            <p className="text-body-md text-text-secondary mt-2">{este} {itemLabel} {feminine ? 'ha sido borrada' : 'ha sido borrado'} de tu archivo.</p>
             <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
           </>
         )}

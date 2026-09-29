@@ -67,7 +67,7 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
       {isOpen && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-52 overflow-hidden"
+          className="absolute right-0 top-[calc(100%+8px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-52 overflow-hidden animate-pop-in"
         >
           {options.map((opt) => {
             const isActive = opt.key === activeKey
