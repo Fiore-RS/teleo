@@ -449,6 +449,8 @@ export type Database = {
       reviews: {
         Row: {
           book_id: string
+          content_warnings: string[]
+          content_warnings_note: string | null
           created_at: string | null
           favorite_character_name: string | null
           favorite_character_notes: string | null
@@ -462,6 +464,8 @@ export type Database = {
         }
         Insert: {
           book_id: string
+          content_warnings?: string[]
+          content_warnings_note?: string | null
           created_at?: string | null
           favorite_character_name?: string | null
           favorite_character_notes?: string | null
@@ -475,6 +479,8 @@ export type Database = {
         }
         Update: {
           book_id?: string
+          content_warnings?: string[]
+          content_warnings_note?: string | null
           created_at?: string | null
           favorite_character_name?: string | null
           favorite_character_notes?: string | null

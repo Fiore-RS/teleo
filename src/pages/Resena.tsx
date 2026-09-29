@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageOff, ThumbsUp, Plus, PenLine, Trash2, Quote } from 'lucide-react'
+import { ImageOff, ThumbsUp, Plus, PenLine, Trash2, Quote, AlertTriangle } from 'lucide-react'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetailSkeleton } from '../assets/components/atoms/Skeleton'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
@@ -16,6 +16,8 @@ import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { CustomRatingPicker } from '../assets/components/molecules/CustomRatingPicker'
 import { QuotesEditor } from '../assets/components/molecules/QuotesEditor'
 import { FavoriteCharacterEditor } from '../assets/components/molecules/FavoriteCharacterEditor'
+import { ContentWarningsPicker } from '../assets/components/molecules/ContentWarningsPicker'
+import { sortedWarnings } from '../lib/contentWarnings'
 import { ratingIconColor } from '../lib/ratingIcons'
 import { syncLatestReading } from '../lib/readingHistory'
 import { supabase } from '../lib/supabase'
@@ -42,6 +44,46 @@ function SectionLabel({ children }: { children: string }) {
   )
 }
 
+/** Avisos de contenido al leer la reseña (V.2.1.1): una tarjeta arriba que solo dice que los
+ *  hay; los avisos se muestran al tocar Ver, para quien prefiere no leerlos de golpe. */
+function ContentWarningsCard({ warnings, note }: { warnings: string[]; note: string | null }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const items = sortedWarnings(warnings)
+  return (
+    <section className="bg-orange-tint border border-border rounded-2xl px-4 py-3">
+      <div className="flex items-center gap-2">
+        <AlertTriangle size={16} className="text-orange-text shrink-0" aria-hidden="true" />
+        <h4 className="text-body-md font-bold text-orange-text">Este libro tiene avisos de contenido</h4>
+        <button
+          type="button"
+          onClick={() => setIsOpen((o) => !o)}
+          aria-expanded={isOpen}
+          className="ml-auto shrink-0 text-body-sm font-bold text-orange-text rounded-md focus-visible:outline-2 focus-visible:outline-primary-text"
+        >
+          {isOpen ? 'Ocultar' : 'Ver'}
+        </button>
+      </div>
+      {/* Se despliega con una transición de alto (grid 0fr → 1fr). */}
+      <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+        <div className="overflow-hidden">
+          <div className="pt-2.5">
+            {items.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {items.map((w) => (
+                  <span key={w.key} className="px-3 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
+                    {w.label}
+                  </span>
+                ))}
+              </div>
+            )}
+            {note && <p className={`text-body-sm text-text-secondary ${items.length > 0 ? 'mt-2' : ''}`}>{items.length > 0 ? `También: ${note}` : note}</p>}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 interface ResenaProps {
   bookId: string
   onClose: () => void
@@ -63,6 +105,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
   const [isEditing, setIsEditing] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+  const [isWarningsPickerOpen, setIsWarningsPickerOpen] = useState(false)
   // Reseña nueva: las calificaciones personalizadas y las citas se guardan aquí hasta que se
   // crea la reseña, y se suben junto con ella al tocar "Guardar cambios".
   const [pendingRatings, setPendingRatings] = useState<{ id: string; label: string; icon: string; value: number }[]>([])
@@ -98,6 +141,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     start_date: string; end_date: string; general_rating: number
     general_comments: string; recommends: boolean
     favorite_character_name: string; favorite_character_notes: string; favorite_character_photo_url: string
+    content_warnings: string[]; content_warnings_note: string
   } | null>(null)
 
   function startEditing() {
@@ -110,6 +154,8 @@ export function Resena({ bookId, onClose }: ResenaProps) {
       favorite_character_name: review?.favorite_character_name ?? '',
       favorite_character_notes: review?.favorite_character_notes ?? '',
       favorite_character_photo_url: review?.favorite_character_photo_url ?? '',
+      content_warnings: review?.content_warnings ?? [],
+      content_warnings_note: review?.content_warnings_note ?? '',
     })
     setIsEditing(true)
   }
@@ -136,6 +182,8 @@ export function Resena({ bookId, onClose }: ResenaProps) {
       favorite_character_name: draft.favorite_character_name || null,
       favorite_character_notes: draft.favorite_character_notes || null,
       favorite_character_photo_url: draft.favorite_character_photo_url || null,
+      content_warnings: draft.content_warnings,
+      content_warnings_note: draft.content_warnings_note.trim() || null,
     }
 
     if (!review) {
@@ -209,6 +257,10 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
             {review && isWritten && !isEditing && (
               <div className="flex flex-col gap-6 mt-6 stagger-children">
+                {((review.content_warnings?.length ?? 0) > 0 || review.content_warnings_note) && (
+                  <ContentWarningsCard warnings={review.content_warnings ?? []} note={review.content_warnings_note} />
+                )}
+
                 <section>
                   <SectionLabel>Tu lectura</SectionLabel>
                   <div className="grid grid-cols-2 gap-2.5">
@@ -374,6 +426,38 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                   />
                 </div>
 
+                <div>
+                  <label className={labelClass}>Avisos de contenido</label>
+                  {(draft.content_warnings.length > 0 || draft.content_warnings_note.trim()) && (
+                    <div className="mb-2.5">
+                      {draft.content_warnings.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {sortedWarnings(draft.content_warnings).map((w) => (
+                            <span key={w.key} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
+                              {w.label}
+                              <button
+                                type="button"
+                                onClick={() => setDraft({ ...draft, content_warnings: draft.content_warnings.filter((k) => k !== w.key) })}
+                                aria-label={`Quitar ${w.label}`}
+                                className="w-5 h-5 rounded-full flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
+                              >
+                                <X size={13} />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {draft.content_warnings_note.trim() && (
+                        <p className="text-body-sm text-text-secondary mt-2">También: {draft.content_warnings_note.trim()}</p>
+                      )}
+                    </div>
+                  )}
+                  <Button variant="soft" size="sm" onClick={() => setIsWarningsPickerOpen(true)}>
+                    {draft.content_warnings.length > 0 || draft.content_warnings_note.trim() ? <PenLine size={16} /> : <Plus size={16} />}
+                    {draft.content_warnings.length > 0 || draft.content_warnings_note.trim() ? 'Editar avisos' : 'Agregar avisos de contenido'}
+                  </Button>
+                </div>
+
                 <div className={`${box} flex items-center justify-between gap-3 px-4 py-3`}>
                   <span className="text-body-md font-semibold text-text">¿Recomiendas este libro?</span>
                   <Toggle checked={draft.recommends} onChange={(v) => setDraft({ ...draft, recommends: v })} />
@@ -401,6 +485,15 @@ export function Resena({ bookId, onClose }: ResenaProps) {
           if (wasSuccess) onClose()
         }}
       />
+
+      {isWarningsPickerOpen && draft && (
+        <ContentWarningsPicker
+          selected={draft.content_warnings}
+          note={draft.content_warnings_note}
+          onClose={() => setIsWarningsPickerOpen(false)}
+          onSave={(content_warnings, content_warnings_note) => setDraft({ ...draft, content_warnings, content_warnings_note })}
+        />
+      )}
 
       <CustomRatingPicker
         isOpen={isPickerOpen}
