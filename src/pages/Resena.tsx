@@ -21,7 +21,7 @@ import { supabase } from '../lib/supabase'
 import type { RatingShape } from '../assets/components/atoms/RatingIcon'
 import { isReviewWritten } from '../lib/reviews'
 import { formatShortDate } from '../lib/date'
-import { readingDatesAreValid } from '../lib/readingDates'
+import { readingDatesAreValid, readingDaysLabel } from '../lib/readingDates'
 import { Avatar } from '../assets/components/atoms/Avatar'
 import { ReadingDatesFields } from '../assets/components/molecules/ReadingDatesFields'
 import {
@@ -31,18 +31,6 @@ import {
 /** Fecha corta o una raya si falta ('3 sep 2026' / '—'). */
 function dateOrDash(value: string | null | undefined): string {
   return formatShortDate(value) || '—'
-}
-
-/** Días que tomó la lectura, contando el primero y el último ("19 días"). Nada si falta
- *  alguna fecha o están al revés. */
-function readingDays(start: string | null | undefined, end: string | null | undefined): string | null {
-  if (!start || !end) return null
-  const [ys, ms, ds] = start.split('-').map(Number)
-  const [ye, me, de] = end.split('-').map(Number)
-  const diff = Math.round((Date.UTC(ye, me - 1, de) - Date.UTC(ys, ms - 1, ds)) / 86_400_000)
-  if (Number.isNaN(diff) || diff < 0) return null
-  const days = diff + 1
-  return days === 1 ? '1 día' : `${days} días`
 }
 
 /** Tus pensamientos (V.2.2.0): el espacio libre de la reseña, con una comilla de adorno. */
@@ -239,7 +227,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
       ? `${draft.content_warnings.length} ${draft.content_warnings.length === 1 ? 'aviso' : 'avisos'}`
       : draft.content_warnings_note.trim() ? 'Una nota' : 'Ninguno'
     : ''
-  const days = readingDays(book?.start_date, book?.end_date)
+  const days = readingDaysLabel(book?.start_date, book?.end_date)
 
   let footer: ReactNode = undefined
   if (isEditing && draft) {

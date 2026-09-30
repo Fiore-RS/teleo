@@ -1,5 +1,5 @@
 import { DateInput } from '../atoms/DateInput'
-import { readingDatesAreValid, type ReadingDates } from '../../../lib/readingDates'
+import { readingDatesAreValid, readingDaysLabel, type ReadingDates } from '../../../lib/readingDates'
 
 interface ReadingDatesFieldsProps extends ReadingDates {
   onChange: (dates: ReadingDates) => void
@@ -8,6 +8,8 @@ interface ReadingDatesFieldsProps extends ReadingDates {
   /** Línea que dice si la lectura cuenta para el reto anual. Solo aplica a libros terminados;
    *  el aviso de fechas inválidas se muestra siempre. */
   showGoalHint?: boolean
+  /** Antepone a la línea de abajo los días que tomó la lectura ("Lo leíste en 19 días"). */
+  showDays?: boolean
   className?: string
 }
 
@@ -20,6 +22,7 @@ export function ReadingDatesFields({
   onChange,
   endLabel = 'Fecha de fin',
   showGoalHint = true,
+  showDays = false,
   className = '',
 }: ReadingDatesFieldsProps) {
   const labelClass = 'font-body font-semibold text-body-sm text-text-secondary block mb-1.5'
@@ -30,6 +33,9 @@ export function ReadingDatesFields({
   else if (!showGoalHint) hint = null
   else if (!endDate) hint = 'Sin fecha de fin, este libro no cuenta para tu reto anual.'
   else hint = `Cuenta para tu reto de ${endDate.slice(0, 4)}.`
+
+  const days = showDays && isValid ? readingDaysLabel(startDate, endDate) : null
+  if (days) hint = hint ? `Lo leíste en ${days} · ${hint}` : `Lo leíste en ${days}.`
 
   return (
     <div className={className}>

@@ -4,7 +4,6 @@ import { supabase } from '../../../lib/supabase'
 import { queryClient } from '../../../lib/queryClient'
 import { recomputeSagaStatus } from '../../../lib/sagaStatus'
 import { prefersReducedMotion } from '../../../lib/motion'
-import { todayLocalDate } from '../../../lib/date'
 import { useCachedQuery } from '../../../hooks/useCachedQuery'
 import { Modal } from '../atoms/Modal'
 import { Button } from '../atoms/Button'
@@ -91,13 +90,13 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
     }, SHUFFLE_STEP_MS)
   }
 
-  async function startReading(withStartDate: boolean) {
+  async function startReading(startDate: string | null) {
     if (!current) return
     setIsAskingDate(false)
     setIsStarting(true)
     await supabase
       .from('books')
-      .update({ status: 'leyendo', ...(withStartDate ? { start_date: todayLocalDate() } : {}) })
+      .update({ status: 'leyendo', ...(startDate ? { start_date: startDate } : {}) })
       .eq('id', current.id)
     await recomputeSagaStatus(current.saga_id)
     // Mesa, Estante, Perfil y Bitácora vuelven a pedir sus datos con el libro ya en Leyendo.
@@ -170,8 +169,9 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
       </Modal>
       <StartReadingDateModal
         isOpen={isAskingDate}
-        onConfirm={() => startReading(true)}
-        onDismiss={() => startReading(false)}
+        book={current}
+        onConfirm={(startDate) => startReading(startDate)}
+        onDismiss={() => startReading(null)}
       />
     </>
   )

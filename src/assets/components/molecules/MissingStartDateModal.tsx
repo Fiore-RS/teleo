@@ -1,39 +1,24 @@
-import { useState } from 'react'
-import { Modal } from '../atoms/Modal'
-import { DateInput } from '../atoms/DateInput'
-import { Button } from '../atoms/Button'
-import { todayLocalDate } from '../../../lib/date'
+import { StartDatePromptSheet } from './StartDatePromptSheet'
+import type { MiniBook } from './BookMiniHeader'
 
 interface MissingStartDateModalProps {
   isOpen: boolean
+  book?: MiniBook | null
   onConfirm: (startDate: string) => Promise<void>
   onIgnore: () => void
 }
 
-/** Popup que avisa, al abrir "Actualizar progreso", que un libro "leyendo" no tiene fecha de
- *  inicio de lectura seleccionada — permite elegir una ahí mismo o ignorar el aviso. */
-export function MissingStartDateModal({ isOpen, onConfirm, onIgnore }: MissingStartDateModalProps) {
-  const [startDate, setStartDate] = useState(() => todayLocalDate())
-  const [isSaving, setIsSaving] = useState(false)
-
-  async function handleConfirm() {
-    if (!startDate) return
-    setIsSaving(true)
-    await onConfirm(startDate)
-    setIsSaving(false)
-  }
-
+/** Aviso al abrir "Actualizar progreso" cuando un libro que se está leyendo no tiene fecha de
+ *  inicio: permite ponerla ahí mismo (arranca en hoy) o seguir sin ella. */
+export function MissingStartDateModal({ isOpen, book, onConfirm, onIgnore }: MissingStartDateModalProps) {
+  if (!isOpen) return null
   return (
-    <Modal isOpen={isOpen} onClose={onIgnore} title="Falta la fecha de inicio">
-      <p className="text-body-md text-text-secondary mb-4">
-        Este libro no tiene una fecha de inicio de lectura seleccionada. ¿Quieres elegir una ahora?
-      </p>
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Fecha de inicio</label>
-      <DateInput value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-      <div className="flex gap-2.5 mt-5">
-        <Button variant="outline" className="flex-1" onClick={onIgnore}>Ignorar</Button>
-        <Button variant="primary" className="flex-1" onClick={handleConfirm} isLoading={isSaving}>Guardar</Button>
-      </div>
-    </Modal>
+    <StartDatePromptSheet
+      title="Falta la fecha de inicio"
+      message="Este libro no tiene fecha de inicio. ¿La pones ahora?"
+      book={book}
+      onConfirm={onConfirm}
+      onDismiss={onIgnore}
+    />
   )
 }

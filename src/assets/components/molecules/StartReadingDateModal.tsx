@@ -1,27 +1,27 @@
-import { Modal } from '../atoms/Modal'
-import { Button } from '../atoms/Button'
+import { StartDatePromptSheet } from './StartDatePromptSheet'
+import type { MiniBook } from './BookMiniHeader'
 
 interface StartReadingDateModalProps {
   isOpen: boolean
-  /** El usuario eligió "Sí" — se debe guardar hoy como fecha de inicio. */
-  onConfirm: () => void
-  /** El usuario eligió "No" — se guarda el cambio de estado sin tocar la fecha de inicio. */
+  book?: MiniBook | null
+  /** Se guarda esa fecha como inicio de la lectura (hoy, o la que se eligió). */
+  onConfirm: (startDate: string) => void
+  /** "Ahora no": se guarda el cambio de estado sin tocar la fecha de inicio. */
   onDismiss: () => void
 }
 
-/** Popup que aparece al marcar un libro con el estado "leyendo" (desde "Retomar Lectura" o
- *  desde el selector de Estado al editar un libro), para ofrecer completar la fecha de inicio
- *  de lectura automáticamente con el día de hoy, en vez de dejarla vacía. */
-export function StartReadingDateModal({ isOpen, onConfirm, onDismiss }: StartReadingDateModalProps) {
+/** "¡A leer!": aparece al marcar un libro como Leyendo (Retomar lectura, Leer de nuevo, el
+ *  menú de estado, Empezar a leer...) para poner la fecha de inicio. Arranca en hoy y se puede
+ *  cambiar (V.2.2.0; antes solo preguntaba sí o no a usar hoy). */
+export function StartReadingDateModal({ isOpen, book, onConfirm, onDismiss }: StartReadingDateModalProps) {
+  if (!isOpen) return null
   return (
-    <Modal isOpen={isOpen} onClose={onDismiss} title="¡A leer!">
-      <p className="text-body-md text-text-secondary mb-5">
-        ¿Quieres establecer hoy como la fecha de inicio de tu lectura?
-      </p>
-      <div className="flex gap-2.5">
-        <Button variant="outline" className="flex-1" onClick={onDismiss}>No</Button>
-        <Button variant="primary" className="flex-1" onClick={onConfirm}>Sí</Button>
-      </div>
-    </Modal>
+    <StartDatePromptSheet
+      title="¡A leer!"
+      message="¿Desde cuándo lo estás leyendo? Así tu racha y tu ritmo salen bien."
+      book={book}
+      onConfirm={onConfirm}
+      onDismiss={onDismiss}
+    />
   )
 }

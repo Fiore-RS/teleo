@@ -259,7 +259,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         <AbandonarLibroModal
           isOpen={isAbandonOpen}
           onClose={() => setIsAbandonOpen(false)}
-          bookTitle={book.title}
+          book={book}
           initialStartDate={book.start_date ?? ''}
           onConfirm={handleAbandonConfirm}
         />
@@ -267,13 +267,14 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
       <MissingStartDateModal
         isOpen={showMissingStartDatePrompt}
+        book={book}
         onConfirm={handleSetMissingStartDate}
         onIgnore={() => setStartDatePromptIgnored(true)}
       />
 
       {isFinishOpen && book && (
         <FinishBookSheet
-          bookTitle={book.title}
+          book={book}
           initialStartDate={book.start_date}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}
