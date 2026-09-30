@@ -18,7 +18,7 @@ import { StatusMenu } from '../assets/components/molecules/StatusMenu'
 import { AbandonarLibroModal } from '../assets/components/molecules/AbandonarLibroModal'
 import { FinishBookSheet } from '../assets/components/molecules/FinishBookSheet'
 import { EditBookForm, type BookDraft } from '../assets/components/molecules/EditBookForm'
-import { FormActions } from '../assets/components/molecules/FormLayout'
+import { FormActions, FormCard, FormSection } from '../assets/components/molecules/FormLayout'
 import { readingDatesAreValid, type ReadingDates } from '../lib/readingDates'
 import { type ReadingStatus } from '../lib/status'
 import { formatOptions, type BookFormat } from '../lib/options'
@@ -221,7 +221,6 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     if (writeReview) setIsResenaOpen(true)
   }
 
-  const labelClass = 'font-body font-semibold text-body-sm text-text-secondary block mb-1.5'
   const infoRows: { label: string; value: string }[] = book
     ? [
         ...(book.total_pages ? [{ label: 'Páginas', value: String(book.total_pages) }] : []),
@@ -238,7 +237,17 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       <Sheet
         onClose={onClose}
         title={isEditing ? 'Editar libro' : 'Detalles del libro'}
-        footer={isEditing && draft ? (
+        footer={!isEditing && book ? (
+          <FormActions>
+            <Button variant="outline" fullWidth={false} className="w-12.5 shrink-0 px-0!" aria-label="Eliminar libro" onClick={() => setDeleteState('confirm')}>
+              <Trash2 size={18} />
+            </Button>
+            <Button variant="soft" onClick={startEditing}>
+              <PenLine size={17} />
+              Editar libro
+            </Button>
+          </FormActions>
+        ) : isEditing && draft ? (
           <FormActions>
             <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
             <Button variant="primary" onClick={handleSave} disabled={!canSave} isLoading={isSaving}>Guardar cambios</Button>
@@ -263,8 +272,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           </div>
         ) : (
           <div key="detail" className="animate-fade-in">
-            <div className="flex gap-4 items-start mb-5">
-              <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)] w-28 shrink-0">
+            <div className="flex gap-4 items-start mb-4">
+              <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)] w-26 shrink-0">
                 {book.cover_url ? (
                   <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
                 ) : (
@@ -285,89 +294,86 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <div className="mt-3">
                   <StatusMenu status={book.status as ReadingStatus} onChange={handleStatusChange} align="left" />
                 </div>
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
+                    {tags.map((tag) => <Tag key={tag} label={tag} />)}
+                  </div>
+                )}
               </div>
             </div>
 
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((tag) => <Tag key={tag} label={tag} />)}
+            {/* Acciones del estado actual, justo debajo de la ficha (V.2.2.0). */}
+            {(book.status === 'terminado' || book.status === 'leyendo' || book.status === 'abandonado' ||
+              (book.status === 'deseado' && bookReleases.length === 0)) && (
+              <div className="flex gap-2 mb-5.5">
+                {book.status === 'terminado' && (
+                  <>
+                    <Button variant={hasReview ? 'soft' : 'primary'} className="flex-[1.5] px-3!" onClick={() => setIsResenaOpen(true)}>
+                      <NotebookPen size={16} />
+                      {hasReview ? 'Ver reseña' : 'Crear reseña'}
+                    </Button>
+                    <Button variant="outline" className="flex-1 px-3!" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
+                      <RotateCcw size={15} />
+                      Leer de nuevo
+                    </Button>
+                  </>
+                )}
+                {book.status === 'leyendo' && (
+                  <Button variant="soft" onClick={() => setIsAddingQuote(true)}>
+                    <Quote size={16} />
+                    Anotar una cita
+                  </Button>
+                )}
+                {book.status === 'abandonado' && (
+                  <Button variant="orange" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
+                    <Play size={16} />
+                    Retomar lectura
+                  </Button>
+                )}
+                {book.status === 'deseado' && (
+                  <Button variant="soft" onClick={() => setReleaseForm({})}>
+                    <CalendarPlus size={16} />
+                    Agregar lanzamiento
+                  </Button>
+                )}
               </div>
-            )}
-
-            {infoRows.length > 0 && (
-              <dl className="mt-5 bg-surface-2 border border-border rounded-2xl divide-y divide-border">
-                {infoRows.map((row) => (
-                  <div key={row.label} className="flex items-center justify-between gap-3 px-4 py-2.5">
-                    <dt className="text-body-md text-text-secondary">{row.label}</dt>
-                    <dd className="text-body-md font-semibold text-text text-right">{row.value}</dd>
-                  </div>
-                ))}
-              </dl>
             )}
 
             {book.status === 'abandonado' && book.abandon_reason && (
-              <div className="mt-5">
-                <p className={labelClass}>Motivo de abandono</p>
-                <p className="bg-surface-2 border border-border rounded-2xl px-4 py-3 font-display italic text-body-md text-text">
-                  {book.abandon_reason}
-                </p>
-              </div>
+              <FormSection label="Motivo de abandono">
+                <div className="relative bg-surface-2 border border-border rounded-[18px] px-4 pt-4.5 pb-3.5">
+                  <span aria-hidden="true" className="absolute left-3 -top-2.5 font-display font-semibold text-[40px] leading-none text-ornament select-none">
+                    “
+                  </span>
+                  <p className="font-display italic text-body-lg leading-relaxed text-text">{book.abandon_reason}</p>
+                </div>
+              </FormSection>
             )}
 
             {bookReleases.length > 0 && (
-              <div className="mt-5">
-                <p className={labelClass}>{bookReleases.length === 1 ? 'Lanzamiento' : 'Lanzamientos'}</p>
+              <FormSection label={bookReleases.length === 1 ? 'Lanzamiento' : 'Lanzamientos'}>
                 <div className="flex flex-col gap-2">
                   {bookReleases.map((r) => (
                     <ReleaseRow key={r.id} release={r} currency={profile?.currency} onClick={() => setReleaseForm({ release: r })} />
                   ))}
                 </div>
-              </div>
+              </FormSection>
             )}
 
-            <div className="flex flex-col gap-2.5 mt-6">
-              {book.status === 'deseado' && bookReleases.length === 0 && (
-                <Button variant="soft" onClick={() => setReleaseForm({})}>
-                  <CalendarPlus size={17} />
-                  Agregar lanzamiento
-                </Button>
-              )}
-              {book.status === 'terminado' && (
-                <Button variant={hasReview ? 'soft' : 'primary'} onClick={() => setIsResenaOpen(true)}>
-                  <NotebookPen size={18} />
-                  {hasReview ? 'Ver reseña de lectura' : 'Crear reseña de lectura'}
-                </Button>
-              )}
-              {book.status === 'leyendo' && (
-                <Button variant="soft" onClick={() => setIsAddingQuote(true)}>
-                  <Quote size={17} />
-                  Anotar una cita
-                </Button>
-              )}
-              {book.status === 'terminado' && (
-                <Button variant="soft" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
-                  <RotateCcw size={17} />
-                  Leer de nuevo
-                </Button>
-              )}
-              {book.status === 'abandonado' && (
-                <Button variant="orange" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
-                  <Play size={17} />
-                  Retomar lectura
-                </Button>
-              )}
-
-              <div className="flex gap-2.5">
-                <Button variant="outline" onClick={() => setDeleteState('confirm')}>
-                  <Trash2 size={17} />
-                  Eliminar
-                </Button>
-                <Button variant="soft" onClick={startEditing}>
-                  <PenLine size={17} />
-                  Editar
-                </Button>
-              </div>
-            </div>
+            {infoRows.length > 0 && (
+              <FormSection label="El libro" className="mb-2">
+                <FormCard>
+                  <dl className="divide-y divide-border">
+                    {infoRows.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+                        <dt className="text-body-md text-text-secondary">{row.label}</dt>
+                        <dd className="text-body-md font-bold text-text text-right">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </FormCard>
+              </FormSection>
+            )}
           </div>
         )}
       </Sheet>
