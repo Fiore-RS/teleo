@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, PenLine, GripVertical, Check } from "lucide-react";
+import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, PenLine, GripVertical, Check, X, RefreshCw } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
 import { DogEar } from "../assets/components/atoms/DogEar";
@@ -7,14 +7,15 @@ import { CoverImage } from "../assets/components/atoms/CoverImage";
 import { Badge } from "../assets/components/atoms/Badge";
 import { Input } from "../assets/components/atoms/Input";
 import { Select } from "../assets/components/atoms/Select";
-import { FavoriteToggle } from "../assets/components/atoms/FavoriteToggle";
 import { Button } from "../assets/components/atoms/Button";
 import { ProgressBar } from "../assets/components/atoms/ProgressBar";
 import { ConfirmDialog } from "../assets/components/molecules/ConfirmDialog";
 import { Sheet } from "../assets/components/atoms/Sheet";
 import { DetailSkeleton } from "../assets/components/atoms/Skeleton";
 import { getProgressInfo } from "../lib/progress";
-import { statusLabel, type ReadingStatus } from "../lib/status";
+import { type ReadingStatus } from "../lib/status";
+import { categoryOptions } from "../lib/options";
+import { FormActions, FormCard, FormRow, FormSection, FormSectionLabel, FormSwitchRow } from "../assets/components/molecules/FormLayout";
 import { SelectBookModal } from "../assets/components/molecules/SelectBookModal";
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
@@ -22,24 +23,6 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
-
-const categoryOptions = [
-  { value: "Libro", label: "Libro" },
-  { value: "Novela", label: "Novela" },
-  { value: "Novela gráfica", label: "Novela gráfica" },
-  { value: "Novela ligera", label: "Novela ligera" },
-  { value: "Cómic", label: "Cómic" },
-  { value: "Manga", label: "Manga" },
-  { value: "Manhua", label: "Manhua" },
-  { value: "Manhwa", label: "Manhwa" },
-];
-
-const statusOptions = (Object.keys(statusLabel) as ReadingStatus[]).map(
-  (value) => ({
-    value,
-    label: statusLabel[value],
-  }),
-);
 
 interface DetalleSagaProps {
   sagaId: string;
@@ -69,7 +52,7 @@ function SagaStackPreview({
 }) {
   if (bookCount === 0) {
     return (
-      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} rounded-[10px] overflow-hidden bg-magenta drop-shadow-md flex items-center justify-center`}>
+      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-23 shrink-0"} rounded-[10px] overflow-hidden bg-magenta drop-shadow-md flex items-center justify-center`}>
         <ImageOff size={20} className="text-surface" />
       </div>
     );
@@ -77,7 +60,7 @@ function SagaStackPreview({
 
   if (bookCount === 1) {
     return (
-      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} rounded-[10px] overflow-hidden bg-magenta drop-shadow-md`}>
+      <div className={`relative aspect-4/5 ${compact ? "w-28 shrink-0" : "w-23 shrink-0"} rounded-[10px] overflow-hidden bg-magenta drop-shadow-md`}>
         {covers[0] ? (
           <CoverImage src={covers[0]} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -106,7 +89,7 @@ function SagaStackPreview({
   }
 
   return (
-    <div className={`relative flex aspect-4/5 ${compact ? "w-28 shrink-0" : "w-32 mx-auto my-4"} drop-shadow-md`}>
+    <div className={`relative flex aspect-4/5 ${compact ? "w-28 shrink-0" : "w-23 shrink-0"} drop-shadow-md`}>
       {bookCount >= 3 && (
         <div className="relative w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md overflow-hidden shrink-0 bg-primary">
           {covers[2] && (
@@ -225,6 +208,52 @@ function SagaBookRow({
   );
 }
 
+/** Fila compacta de un libro en Editar saga (V.2.2.0): portada chica con doblez, número y
+ *  título, y una × para quitarlo de la saga (se esconde mientras se organiza). */
+function SagaEditBookRow({
+  book,
+  index,
+  isReordering,
+  onRemove,
+}: {
+  book: SagaBook;
+  index: number;
+  isReordering: boolean;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="flex gap-2.5 items-center px-3 py-2.5">
+      {isReordering && <GripVertical size={16} className="text-text-muted shrink-0 -mr-0.5" />}
+      <div className="relative w-8.5 shrink-0 aspect-2/3 rounded-[5px] overflow-hidden bg-surface">
+        {book.cover_url ? (
+          <CoverImage src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <ImageOff size={12} className="text-text-secondary" />
+          </div>
+        )}
+        <DogEar status={book.status as ReadingStatus} size={12} className="absolute top-0 right-0" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-body font-bold text-[10.5px] uppercase tracking-[0.12em] text-text-muted">
+          Libro {String(index + 1).padStart(2, "0")}
+        </p>
+        <p className="font-body font-semibold text-body-md text-text truncate">{book.title}</p>
+      </div>
+      {!isReordering && (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={`Quitar ${book.title} de la saga`}
+          className="w-8 h-8 rounded-full text-text-muted flex items-center justify-center shrink-0"
+        >
+          <X size={16} strokeWidth={2.2} />
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function DetalleSaga({
   sagaId,
   onClose,
@@ -258,13 +287,15 @@ export function DetalleSaga({
     "closed" | "confirm" | "success" | "error"
     >("closed");
   const [isSelectBookOpen, setIsSelectBookOpen] = useState(false);
+  // El estado de la saga no se edita: se calcula con el de sus libros (lib/sagaStatus).
   const [draft, setDraft] = useState<{
     title: string;
     author: string;
     category: string;
-    status: ReadingStatus;
     totalBooks: string;
+    isFavorite: boolean;
   } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -289,22 +320,27 @@ export function DetalleSaga({
       title: saga.title,
       author: saga.author ?? "",
       category: saga.category ?? "Novela",
-      status: (saga.status ?? "pendiente") as ReadingStatus,
       totalBooks: saga.total_books ? String(saga.total_books) : "",
+      isFavorite: saga.is_favorite ?? false,
     });
     setIsEditing(true);
     setIsReorderingBooks(false);
   }
 
+  const canSave = !!draft && draft.title.trim() !== "";
+
   async function handleSave() {
-    if (!draft) return;
+    if (!draft || !canSave) return;
+    setIsSaving(true);
+    const total = parseInt(draft.totalBooks, 10);
     await updateSaga({
-      title: draft.title,
-      author: draft.author || null,
+      title: draft.title.trim(),
+      author: draft.author.trim() || null,
       category: draft.category,
-      status: draft.status,
-      total_books: draft.totalBooks ? parseInt(draft.totalBooks, 10) : null,
+      total_books: total > 0 ? total : null,
+      is_favorite: draft.isFavorite,
     });
+    setIsSaving(false);
     setIsEditing(false);
     setIsReorderingBooks(false);
   }
@@ -320,26 +356,37 @@ export function DetalleSaga({
     books[2]?.cover_url ?? undefined,
   ];
 
-  const labelClass = "font-body font-semibold text-body-sm text-text-secondary block mb-1.5";
   const sagaStatus = (saga?.status ?? "pendiente") as ReadingStatus;
 
   // Lista de libros de la saga: en modo "Organizar" se envuelve en el contexto de arrastre.
+  // En Ver son tarjetas separadas; en Editar, filas compactas dentro de una sola tarjeta.
   function renderBookList(mode: "view" | "edit") {
-    const rows = books.map((book, i) => (
-      <SagaBookRow
-        key={book.id}
-        book={book}
-        index={i}
-        isReordering={isReorderingBooks}
-        onOpen={mode === "view" ? () => onOpenBook(book.id) : undefined}
-        onRemove={mode === "edit" ? () => removeBookFromSaga(book.id) : undefined}
-      />
-    ));
-    if (!isReorderingBooks) return <div className="flex flex-col gap-2.5 mt-3 stagger-children">{rows}</div>;
-    return (
+    const rows = books.map((book, i) =>
+      mode === "view" ? (
+        <SagaBookRow
+          key={book.id}
+          book={book}
+          index={i}
+          isReordering={isReorderingBooks}
+          onOpen={() => onOpenBook(book.id)}
+        />
+      ) : (
+        <SagaEditBookRow
+          key={book.id}
+          book={book}
+          index={i}
+          isReordering={isReorderingBooks}
+          onRemove={() => removeBookFromSaga(book.id)}
+        />
+      ),
+    );
+    const listClass = mode === "view" ? "flex flex-col gap-2.5 mt-3" : "";
+    const list = !isReorderingBooks ? (
+      <div className={`${listClass} ${mode === "view" ? "stagger-children" : ""}`}>{rows}</div>
+    ) : (
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
         <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-          <div className="flex flex-col gap-2.5 mt-3">
+          <div className={listClass}>
             {books.map((book, i) => (
               <SortableItem key={book.id} id={book.id}>
                 {rows[i]}
@@ -349,13 +396,10 @@ export function DetalleSaga({
         </SortableContext>
       </DndContext>
     );
+    return mode === "view" ? list : <FormCard>{list}</FormCard>;
   }
 
-  const booksHeader = (showEdit: boolean) => (
-    <div className="flex items-center justify-between gap-2 mt-6">
-      <p className="font-body font-bold text-body-sm uppercase tracking-[0.14em] text-primary-text">
-        Libros agregados
-      </p>
+  const bookActions = (showEdit: boolean) => (
       <div className="flex items-center gap-2">
         {books.length > 1 && (
           <button
@@ -390,14 +434,35 @@ export function DetalleSaga({
           <Plus size={18} strokeWidth={2.4} />
         </button>
       </div>
+  );
+
+  const booksHeader = (showEdit: boolean) => (
+    <div className="flex items-center justify-between gap-2 mt-6">
+      <p className="font-body font-bold text-body-sm uppercase tracking-[0.14em] text-primary-text">
+        Libros agregados
+      </p>
+      {bookActions(showEdit)}
     </div>
   );
 
   return (
     <>
-      <Sheet onClose={onClose} title={isEditing ? "Editar saga" : "Detalles de la saga"}>
+      <Sheet
+        onClose={onClose}
+        title={isEditing ? "Editar saga" : "Detalles de la saga"}
+        footer={isEditing && draft ? (
+          <FormActions>
+            <Button variant="outline" onClick={() => { setIsEditing(false); setIsReorderingBooks(false); }}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={handleSave} disabled={!canSave} isLoading={isSaving}>
+              Guardar cambios
+            </Button>
+          </FormActions>
+        ) : undefined}
+      >
         {!saga ? <DetailSkeleton /> : !isEditing ? (
-          <>
+          <div key="detail" className="animate-fade-in">
             <div className="flex gap-4 items-start">
               <SagaStackPreview
                 compact
@@ -443,77 +508,96 @@ export function DetalleSaga({
               renderBookList("view")
             )}
 
-          </>
+          </div>
         ) : draft ? (
-          <div className="flex flex-col gap-4">
-            <SagaStackPreview bookCount={books.length} covers={covers} status={sagaStatus} isFavorite={saga.is_favorite ?? false} />
-
-            <div>
-              <label className={labelClass}>Título</label>
-              <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
-            </div>
-
-            <div>
-              <label className={labelClass}>Autor</label>
-              <Input value={draft.author} onChange={(e) => setDraft({ ...draft, author: e.target.value })} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass}>Categoría</label>
-                <Select options={categoryOptions} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
-              </div>
-              <div>
-                <label className={labelClass}>Estado</label>
-                <Select
-                  options={statusOptions}
-                  value={draft.status}
-                  onChange={(e) => setDraft({ ...draft, status: e.target.value as ReadingStatus })}
+          <div key="edit" className="animate-fade-in">
+            <div className="flex gap-3.5 items-end mb-5.5">
+              <SagaStackPreview bookCount={books.length} covers={covers} status={sagaStatus} />
+              <div className="flex-1 min-w-0 flex flex-col gap-2">
+                <Input
+                  bare
+                  aria-label="Título"
+                  placeholder="Título"
+                  value={draft.title}
+                  onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                  className="border-b-[1.5px] border-border focus:border-primary-text py-1 font-display font-semibold text-[20px] leading-tight"
                 />
+                <Input
+                  bare
+                  aria-label="Autor"
+                  placeholder="Autor"
+                  value={draft.author}
+                  onChange={(e) => setDraft({ ...draft, author: e.target.value })}
+                  className="border-b-[1.5px] border-border focus:border-primary-text py-1 text-body-lg text-text-secondary"
+                />
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <Badge status={sagaStatus} />
+                  <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
+                    <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+                    Según tus libros
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className={labelClass}>Cantidad total de libros de la saga</label>
-              <Input
-                type="number"
-                min={1}
-                placeholder={`Ej. ${Math.max(books.length, 1)}`}
-                value={draft.totalBooks}
-                onChange={(e) => setDraft({ ...draft, totalBooks: e.target.value })}
-              />
-              <p className="text-body-sm text-text-secondary mt-1.5">Déjalo vacío si todavía no sabes cuántos libros tendrá.</p>
-            </div>
+            <FormSection label="La saga">
+              <FormCard>
+                <FormRow label="Categoría">
+                  <Select bare options={categoryOptions} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
+                </FormRow>
+                <div>
+                  <FormRow label="Libros en total" optional htmlFor="edit-saga-total" className="pb-1">
+                    <span className="flex items-center justify-end gap-2">
+                      <span className="font-display font-semibold text-body-lg text-text tabular-nums">{books.length}</span>
+                      <span className="text-body-md text-text-muted">de</span>
+                      <Input
+                        bare
+                        id="edit-saga-total"
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        placeholder="?"
+                        value={draft.totalBooks}
+                        onChange={(e) => setDraft({ ...draft, totalBooks: e.target.value })}
+                        className="w-11! text-center text-body-lg tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
+                      />
+                    </span>
+                  </FormRow>
+                  <p className="px-3.5 pb-2.5 text-body-sm text-text-muted">Déjalo vacío si todavía no sabes cuántos tendrá.</p>
+                </div>
+                <FormSwitchRow
+                  icon={Heart}
+                  label="Favorita"
+                  checked={draft.isFavorite}
+                  onChange={(isFavorite) => setDraft({ ...draft, isFavorite })}
+                />
+              </FormCard>
+            </FormSection>
 
-            <div>
-              <label className={labelClass}>Marcar como favorito</label>
-              <FavoriteToggle isFavorite={saga.is_favorite ?? false} onToggle={() => updateSaga({ is_favorite: !saga.is_favorite })} />
-            </div>
-
-            <div>
-              {booksHeader(false)}
+            <section className="mb-4">
+              <div className="flex items-center justify-between gap-2 mb-2.5">
+                <FormSectionLabel className="mb-0!">{`Libros · ${books.length}`}</FormSectionLabel>
+                {bookActions(false)}
+              </div>
               {isReorderingBooks && (
-                <p className="text-body-sm text-text-secondary text-center mt-2">Arrastra los libros para cambiar el orden.</p>
+                <p className="text-body-sm text-text-secondary text-center mb-2 animate-fade-in">Arrastra los libros para cambiar el orden.</p>
               )}
-              {renderBookList("edit")}
-            </div>
+              {books.length === 0 ? (
+                <p className="text-body-md text-text-secondary text-center py-3">Todavía no agregas libros a esta saga.</p>
+              ) : (
+                renderBookList("edit")
+              )}
+            </section>
 
-            <div className="flex gap-2.5 mt-2">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={handleSave}>
-                Guardar cambios
-              </Button>
-            </div>
-
-            {/* Eliminar va aparte, separado de Guardar, para no tocarlo sin querer. */}
-            <div className="border-t border-border pt-4">
-              <Button variant="outline" className="text-primary-text!" onClick={() => setDeleteState("confirm")}>
-                <Trash2 size={17} />
-                Eliminar saga
-              </Button>
-            </div>
+            {/* Eliminar va al final, lejos de Guardar, para no tocarlo sin querer. */}
+            <button
+              type="button"
+              onClick={() => setDeleteState("confirm")}
+              className="w-full flex items-center justify-center gap-2 py-2.5 font-body font-bold text-body-md text-primary-text"
+            >
+              <Trash2 size={16} />
+              Eliminar saga
+            </button>
           </div>
         ) : null}
       </Sheet>
