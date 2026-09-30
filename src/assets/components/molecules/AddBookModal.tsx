@@ -1,29 +1,25 @@
-import { useRef, useState } from 'react'
-import { ScanBarcode, Search, ImageOff, PenLine, Pencil } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
+import { useRef, useState, type ReactNode } from 'react'
+import { ScanBarcode, Search, ImageOff, PenLine, Camera, ChevronRight, Sparkles } from 'lucide-react'
+import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
+import { Badge } from '../atoms/Badge'
 import { CoverImage } from '../atoms/CoverImage'
-import { SegmentedTabs } from '../atoms/SegmentedTabs'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
-import { PriorityToggle } from '../atoms/PriorityToggle'
 import { BarcodeScannerModal } from './BarcodeScannerModal'
 import { ReadingDatesFields } from './ReadingDatesFields'
+import { StatusMenu } from './StatusMenu'
+import { FormatPicker } from './EditBookForm'
+import { FormActions, FormCard, FormRow, FormSection, FormSwitchRow } from './FormLayout'
 import { readingDatesAreValid, type ReadingDates } from '../../../lib/readingDates'
 import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 import type { ReadingStatus } from '../../../lib/status'
-import { categoryOptions, languageOptions, formatOptions, type BookFormat } from '../../../lib/options'
+import { categoryOptions, type BookFormat } from '../../../lib/options'
+import { languageLabel, languageOptionsFrom } from '../../../lib/languages'
 import { useCoverUpload } from '../../../hooks/useCoverUpload'
+import { useBookLanguages } from '../../../hooks/useBookLanguages'
 import { parseDurationInput } from '../../../lib/duration'
-
-const statusOptions: { value: ReadingStatus; label: string }[] = [
-  { value: 'pendiente', label: 'Pendiente' },
-  { value: 'leyendo', label: 'Leyendo' },
-  { value: 'terminado', label: 'Terminado' },
-  { value: 'abandonado', label: 'Abandonado' },
-  { value: 'deseado', label: 'Deseado' },
-]
 
 interface NewBookPayload {
   title: string; author: string | null; cover_url: string | null
@@ -81,6 +77,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const [finishDates, setFinishDates] = useState<ReadingDates>({ startDate: '', endDate: '' })
   const [isPriority, setIsPriority] = useState(false)
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
+  const bookLanguages = useBookLanguages(userId)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
   const canPickStatus = initialStatus !== 'deseado'
@@ -198,326 +195,330 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   }
 
   const showResultsList = results.length > 0 && !result
+  const activeStatus = isManual ? manualDraft.status : status
+  const datesInvalid = canPickStatus && activeStatus === 'terminado' && !readingDatesAreValid(finishDates)
+
+  function setActiveStatus(next: ReadingStatus) {
+    if (isManual) setManualDraft((prev) => ({ ...prev, status: next }))
+    else setStatus(next)
+  }
+
+  // Píldora de estado (como en Editar libro). Si el estado viene fijo (lista de deseados),
+  // se muestra sin menú.
+  const statusControl = canPickStatus ? (
+    <StatusMenu status={activeStatus} onChange={setActiveStatus} align="left" />
+  ) : (
+    <Badge status={initialStatus} />
+  )
+
+  // Tu lectura: fechas si se agrega ya terminado; Esta temporada si queda pendiente.
+  const readingSection = canPickStatus && (activeStatus === 'terminado' || activeStatus === 'pendiente') ? (
+    <FormSection label="Tu lectura" className="mb-2">
+      <div key={activeStatus} className="animate-fade-in">
+        {activeStatus === 'terminado' ? (
+          <ReadingDatesFields startDate={finishDates.startDate} endDate={finishDates.endDate} onChange={setFinishDates} />
+        ) : (
+          <FormCard>
+            <FormSwitchRow
+              icon={Sparkles}
+              label="Esta temporada"
+              hint="En tu lista de prioridad"
+              checked={isPriority}
+              onChange={setIsPriority}
+            />
+          </FormCard>
+        )}
+      </div>
+    </FormSection>
+  ) : null
+
+  const searchBar = (
+    <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-full pl-4 pr-1.5 py-1.5 focus-within:border-primary-text transition-colors">
+      <input
+        aria-label="Buscar un libro"
+        placeholder="Título, autor o ISBN"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        className="flex-1 min-w-0 bg-transparent focus:outline-none font-body text-body-lg text-text placeholder:text-text-muted"
+      />
+      <button
+        type="button"
+        onClick={handleSearch}
+        disabled={!query.trim() || isSearching}
+        aria-label="Buscar"
+        className="w-9.5 h-9.5 shrink-0 rounded-full bg-primary text-primary-ink flex items-center justify-center disabled:opacity-50 transition-opacity"
+      >
+        <Search size={18} strokeWidth={2.3} />
+      </button>
+    </div>
+  )
+
+  const searchStatus = (
+    <>
+      {isSearching && <p className="text-center text-body-sm text-text-secondary mt-3 animate-fade-in">Buscando...</p>}
+      {notFound && (
+        <p className="text-center text-body-sm text-primary-text mt-3 animate-fade-in">
+          No encontramos ese libro. Intenta con otro título o el ISBN exacto.
+        </p>
+      )}
+    </>
+  )
+
+  let title = 'Agregar libro'
+  let body: ReactNode
+  let footer: ReactNode
+
+  if (isManual) {
+    title = 'Crear libro'
+    const isAudiobook = manualDraft.format === 'audiolibro'
+    body = (
+      <div key="manual" className="animate-fade-in">
+        <div className="relative z-10 flex gap-3.5 items-end mb-5.5">
+          <button
+            type="button"
+            onClick={() => coverInputRef.current?.click()}
+            disabled={isUploadingCover || !userId}
+            aria-label={manualDraft.coverUrl ? 'Cambiar portada' : 'Agregar portada'}
+            className={`relative w-22 shrink-0 aspect-2/3 rounded-xl overflow-hidden flex flex-col items-center justify-center gap-1 ${
+              manualDraft.coverUrl
+                ? 'bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)]'
+                : 'bg-surface-2 border-[1.5px] border-dashed border-border text-text-muted'
+            } disabled:opacity-60`}
+          >
+            {manualDraft.coverUrl ? (
+              <>
+                <CoverImage src={manualDraft.coverUrl} alt="" className="w-full h-full object-cover" />
+                <span className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-surface/95 text-primary-text flex items-center justify-center shadow-sm">
+                  <Camera size={14} strokeWidth={2.2} />
+                </span>
+              </>
+            ) : (
+              <>
+                <Camera size={18} />
+                <span className="text-body-sm font-semibold">{isUploadingCover ? 'Subiendo...' : 'Portada'}</span>
+              </>
+            )}
+          </button>
+          <input ref={coverInputRef} type="file" accept="image/*" onChange={handleManualCoverChange} className="hidden" />
+
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <Input
+              bare
+              aria-label="Título"
+              placeholder="Título"
+              value={manualDraft.title}
+              onChange={(e) => setManualDraft({ ...manualDraft, title: e.target.value })}
+              className="border-b-[1.5px] border-border focus:border-primary-text py-1 font-display font-semibold text-[20px] leading-tight"
+            />
+            <Input
+              bare
+              aria-label="Autor"
+              placeholder="Autor"
+              value={manualDraft.author}
+              onChange={(e) => setManualDraft({ ...manualDraft, author: e.target.value })}
+              className="border-b-[1.5px] border-border focus:border-primary-text py-1 text-body-lg text-text-secondary"
+            />
+            <div className="mt-1">{statusControl}</div>
+          </div>
+        </div>
+
+        <FormSection label="El libro">
+          <FormatPicker value={manualDraft.format} onChange={(format) => setManualDraft({ ...manualDraft, format })} />
+          <FormCard>
+            {isAudiobook ? (
+              <FormRow label="Duración" optional>
+                <DurationMaskInput
+                  bare
+                  value={manualDraft.totalDuration}
+                  onChange={(v) => setManualDraft({ ...manualDraft, totalDuration: v })}
+                  className="text-right text-body-lg"
+                />
+              </FormRow>
+            ) : (
+              <FormRow label="Páginas" optional htmlFor="new-book-pages">
+                <Input
+                  bare
+                  id="new-book-pages"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="000"
+                  value={manualDraft.totalPages}
+                  onChange={(e) => setManualDraft({ ...manualDraft, totalPages: e.target.value })}
+                  className="text-right text-body-lg"
+                />
+              </FormRow>
+            )}
+            <FormRow label="Idioma" optional>
+              <Select
+                bare
+                placeholder="Sin idioma"
+                options={[{ value: '', label: 'Sin idioma' }, ...languageOptionsFrom(bookLanguages)]}
+                value={manualDraft.language}
+                onChange={(e) => setManualDraft({ ...manualDraft, language: e.target.value })}
+              />
+            </FormRow>
+            <FormRow label="Categoría">
+              <Select bare options={categoryOptions} value={manualDraft.category} onChange={(e) => setManualDraft({ ...manualDraft, category: e.target.value })} />
+            </FormRow>
+            <FormRow label="ISBN" optional htmlFor="new-book-isbn">
+              <Input
+                bare
+                id="new-book-isbn"
+                inputMode="numeric"
+                placeholder="978..."
+                value={manualDraft.isbn}
+                onChange={(e) => setManualDraft({ ...manualDraft, isbn: e.target.value })}
+                className="text-right text-body-lg"
+              />
+            </FormRow>
+          </FormCard>
+        </FormSection>
+
+        {readingSection}
+      </div>
+    )
+    footer = (
+      <FormActions>
+        <Button variant="outline" onClick={() => setIsManual(false)}>Volver</Button>
+        <Button variant="primary" onClick={handleManualCreate} isLoading={isSaving} disabled={!manualDraft.title.trim() || datesInvalid}>
+          Crear libro
+        </Button>
+      </FormActions>
+    )
+  } else if (result) {
+    const meta = [
+      result.totalPages ? `${result.totalPages} págs.` : null,
+      result.language ? languageLabel(result.language) : null,
+    ].filter(Boolean).join(' · ')
+    body = (
+      <div key="confirm" className="animate-fade-in">
+        <div className="relative z-10 flex gap-3.5 items-end mb-5.5">
+          <div className="relative w-22 shrink-0 aspect-2/3 rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)]">
+            {result.coverUrl ? (
+              <CoverImage src={result.coverUrl} alt={result.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <ImageOff size={22} className="text-text-secondary" />
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display font-semibold text-[20px] leading-tight text-text text-balance">{result.title}</h3>
+            {result.author && <p className="text-body-md text-text-secondary mt-1">{result.author}</p>}
+            {meta && <p className="text-body-sm text-text-muted mt-1">{meta}</p>}
+            <div className="mt-2.5">{statusControl}</div>
+          </div>
+        </div>
+
+        {result.isSeriesLevel && (
+          <p className="text-body-sm text-text-secondary bg-surface-2 border border-border rounded-2xl px-3.5 py-2.5 mb-5">
+            Este resultado es la serie completa, no un volumen, así que no trae páginas ni ISBN. Puedes completarlo después en Editar libro.
+          </p>
+        )}
+
+        <FormSection label="El libro">
+          <FormatPicker value={format} onChange={setFormat} />
+          <FormCard>
+            <FormRow label="Categoría">
+              <Select bare options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
+            </FormRow>
+          </FormCard>
+        </FormSection>
+
+        {readingSection}
+      </div>
+    )
+    footer = (
+      <FormActions>
+        <Button variant="outline" onClick={() => setResult(null)}>Volver</Button>
+        <Button variant="primary" onClick={handleAdd} isLoading={isSaving} disabled={datesInvalid}>Agregar</Button>
+      </FormActions>
+    )
+  } else if (showResultsList) {
+    body = (
+      <div key="results" className="animate-fade-in">
+        {searchBar}
+        {searchStatus}
+        <p className="text-body-sm text-text-secondary mt-4 mb-2.5 px-0.5">
+          {results.length === 1 ? 'Encontramos una coincidencia:' : 'Elige la más parecida:'}
+        </p>
+        <FormCard className="stagger-children">
+          {results.map((r, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => selectResult(r)}
+              className="w-full flex gap-3 items-center px-3 py-2.5 text-left"
+            >
+              <div className="w-9.5 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-surface">
+                {r.coverUrl ? (
+                  <CoverImage src={r.coverUrl} alt={r.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageOff size={13} className="text-text-secondary" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-body font-semibold text-body-lg text-text line-clamp-2 leading-snug">{r.title}</p>
+                {r.author && <p className="text-body-md text-text-secondary line-clamp-1">{r.author}</p>}
+              </div>
+              <ChevronRight size={18} className="text-text-muted shrink-0" />
+            </button>
+          ))}
+        </FormCard>
+      </div>
+    )
+    footer = (
+      <FormActions>
+        <Button variant="outline" onClick={handleClose}>Cancelar</Button>
+      </FormActions>
+    )
+  } else {
+    body = (
+      <div key="search" className="animate-fade-in">
+        {searchBar}
+        {searchStatus}
+        <p className="text-center text-body-sm text-text-muted mt-3 mb-5">Busca el libro para traer su portada y sus datos.</p>
+        <FormCard>
+          {/* El escáner todavía no está disponible: queda visible como adelanto. */}
+          <div className="flex items-center gap-3 px-3.5 py-3 opacity-70" aria-disabled="true">
+            <span className="w-8.5 h-8.5 rounded-full bg-surface border border-border text-text-muted flex items-center justify-center shrink-0">
+              <ScanBarcode size={16} />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-body font-semibold text-body-lg text-text-secondary">Escanear código de barras</span>
+              <span className="block text-body-sm text-text-muted">Próximamente</span>
+            </span>
+          </div>
+          <button type="button" onClick={() => setIsManual(true)} className="w-full flex items-center gap-3 px-3.5 py-3 text-left">
+            <span className="w-8.5 h-8.5 rounded-full bg-primary-soft text-primary-text flex items-center justify-center shrink-0">
+              <PenLine size={16} />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block font-body font-semibold text-body-lg text-text">¿No lo encuentras?</span>
+              <span className="block text-body-sm text-text-muted">Créalo desde cero</span>
+            </span>
+            <ChevronRight size={18} className="text-text-muted shrink-0" />
+          </button>
+        </FormCard>
+      </div>
+    )
+    footer = (
+      <FormActions>
+        <Button variant="outline" onClick={handleClose}>Cancelar</Button>
+      </FormActions>
+    )
+  }
 
   return (
     <>
-      <Modal variant="sheet" isOpen={isOpen} onClose={handleClose} title={isManual ? 'Crear libro desde cero' : 'Nuevo libro para el estante'}>
-        {isManual ? (
-          <div className="space-y-4">
-            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)]">
-              {manualDraft.coverUrl ? (
-                <CoverImage src={manualDraft.coverUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageOff size={24} className="text-text-secondary" />
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={() => coverInputRef.current?.click()}
-                disabled={isUploadingCover || !userId}
-                aria-label="Agregar portada desde el dispositivo"
-                className="absolute bottom-2 left-2 w-7 h-7 rounded-full bg-surface flex items-center justify-center shadow-sm disabled:opacity-50"
-              >
-                <Pencil size={14} className="text-primary-text" />
-              </button>
-            </div>
-            <input
-              ref={coverInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleManualCoverChange}
-              className="hidden"
-            />
-            {isUploadingCover && (
-              <p className="text-body-sm text-text-secondary text-center -mt-2">Subiendo portada...</p>
-            )}
-
-            <div>
-              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Título</label>
-              <Input
-                placeholder="Título del libro"
-                value={manualDraft.title}
-                onChange={(e) => setManualDraft({ ...manualDraft, title: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Autor</label>
-              <Input
-                placeholder="Autor del libro"
-                value={manualDraft.author}
-                onChange={(e) => setManualDraft({ ...manualDraft, author: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Formato</label>
-              <SegmentedTabs
-                options={formatOptions}
-                active={manualDraft.format}
-                onChange={(format) => setManualDraft({ ...manualDraft, format })}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Categoría</label>
-                <Select
-                  options={categoryOptions}
-                  value={manualDraft.category}
-                  onChange={(e) => setManualDraft({ ...manualDraft, category: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Idioma</label>
-                <Select
-                  options={languageOptions}
-                  value={manualDraft.language}
-                  onChange={(e) => setManualDraft({ ...manualDraft, language: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                {manualDraft.format === 'audiolibro' ? (
-                  <>
-                    <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Duración</label>
-                    <DurationMaskInput
-                      value={manualDraft.totalDuration}
-                      onChange={(v) => setManualDraft({ ...manualDraft, totalDuration: v })}
-                    />
-                  </>
-                ) : (
-                  <>
-                    <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Páginas</label>
-                    <Input
-                      type="number"
-                      placeholder="000"
-                      value={manualDraft.totalPages}
-                      onChange={(e) => setManualDraft({ ...manualDraft, totalPages: e.target.value })}
-                    />
-                  </>
-                )}
-              </div>
-              <div>
-                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">ISBN (opcional)</label>
-                <Input
-                  placeholder="ISBN"
-                  value={manualDraft.isbn}
-                  onChange={(e) => setManualDraft({ ...manualDraft, isbn: e.target.value })}
-                />
-              </div>
-            </div>
-
-            {canPickStatus && (
-              <div>
-                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado de lectura</label>
-                <Select
-                  options={statusOptions}
-                  value={manualDraft.status}
-                  onChange={(e) => setManualDraft({ ...manualDraft, status: e.target.value as ReadingStatus })}
-                />
-              </div>
-            )}
-
-            {canPickStatus && manualDraft.status === 'terminado' && (
-              <ReadingDatesFields startDate={finishDates.startDate} endDate={finishDates.endDate} onChange={setFinishDates} />
-            )}
-
-            {canPickStatus && manualDraft.status === 'pendiente' && (
-              <div>
-                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
-                  Agregar a mi lista de esta temporada
-                </label>
-                <PriorityToggle isPriority={isPriority} onToggle={() => setIsPriority((prev) => !prev)} />
-              </div>
-            )}
-
-            <div className="flex gap-3 mt-2">
-              <Button variant="outline" onClick={() => setIsManual(false)}>Volver</Button>
-              <Button
-                variant="primary"
-                onClick={handleManualCreate}
-                isLoading={isSaving}
-                disabled={!manualDraft.title.trim()}
-              >
-                Crear Libro
-              </Button>
-            </div>
-          </div>
-        ) : !result && !showResultsList ? (
-          <div className="space-y-4">
-            <p className="text-body-md text-text-secondary">
-              Busca un libro para agregarlo a tu colección.
-            </p>
-
-            <div>
-              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Buscar manualmente</label>
-              <Input
-                icon={Search}
-                iconPosition="right"
-                onIconClick={handleSearch}
-                placeholder="Título, autor, ISBN..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              />
-              <Button
-                variant="primary"
-                className="mt-2 flex items-center justify-center gap-2"
-                onClick={handleSearch}
-                disabled={!query.trim() || isSearching}
-              >
-                <Search size={18} />
-                Buscar
-              </Button>
-            </div>
-
-            <p className="text-center text-body-sm text-text-secondary">ó</p>
-
-            <div>
-              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Escaneo rápido</label>
-              <Button
-                variant="soft"
-                disabled
-                className="flex items-center justify-center gap-2"
-              >
-                <ScanBarcode size={18} />
-                Escanear código de barras
-              </Button>
-              <p className="text-body-sm text-text-secondary mt-2">
-                Esta opción estará disponible próximamente.
-              </p>
-            </div>
-
-            {isSearching && <p className="text-center text-body-sm text-text-secondary">Buscando...</p>}
-            {notFound && (
-              <p className="text-center text-body-sm text-primary-text">
-                No encontramos ese libro. Intenta con otro título o el ISBN exacto.
-              </p>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setIsManual(true)}
-              className="w-full flex items-center justify-center gap-2 text-body-sm text-text-secondary underline underline-offset-2"
-            >
-              <PenLine size={14} />
-              ¿No lo encuentras? Créalo desde cero
-            </button>
-          </div>
-        ) : showResultsList ? (
-          <div>
-            <p className="text-body-md text-text-secondary mb-4 text-center">
-              Encontramos {results.length} coincidencia{results.length > 1 ? 's' : ''}. Elige la más parecida:
-            </p>
-            <div className="space-y-2">
-              {results.map((r, i) => (
-                <button
-                  key={i}
-                  onClick={() => selectResult(r)}
-                  className="w-full flex gap-3 items-center bg-surface-2 border border-border rounded-2xl p-2 text-left"
-                >
-                  <div className="w-12 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-surface-2">
-                    {r.coverUrl ? (
-                      <CoverImage src={r.coverUrl} alt={r.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <ImageOff size={14} className="text-text-secondary" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-body-md text-text line-clamp-2">{r.title}</p>
-                    {r.author && <p className="text-body-sm text-text-secondary line-clamp-1">{r.author}</p>}
-                  </div>
-                </button>
-              ))}
-            </div>
-            <Button variant="outline" className="mt-4" onClick={reset}>Buscar de nuevo</Button>
-          </div>
-        ) : result ? (
-          <div>
-            <div className="relative aspect-2/3 w-32 mx-auto rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)] mb-4">
-              {result.coverUrl ? (
-                <CoverImage src={result.coverUrl} alt={result.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <ImageOff size={24} className="text-text-secondary" />
-                </div>
-              )}
-            </div>
-
-            <h3 className="font-display font-semibold text-[22px] leading-tight text-text text-center">
-              {result.title}
-            </h3>
-            {result.author && (
-              <p className="text-body-md text-text-secondary text-center mt-1">{result.author}</p>
-            )}
-
-            {result.isSeriesLevel && (
-              <p className="text-body-sm text-text-secondary text-center mt-2">
-                Este resultado corresponde a la serie completa, no a un volumen específico —
-                no incluye páginas ni ISBN. Puedes editarlo después de agregarlo.
-              </p>
-            )}
-
-            <div className="grid grid-cols-2 gap-2 mt-4">
-              {result.totalPages && (
-                <div className="bg-surface-2 border border-border rounded-2xl py-2 text-center text-body-sm text-text">
-                  {result.totalPages} páginas
-                </div>
-              )}
-              {result.language && (
-                <div className="bg-surface-2 border border-border rounded-2xl py-2 text-center text-body-sm text-text">
-                  {result.language.toUpperCase()}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4">
-              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Categoría</label>
-              <Select options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
-            </div>
-
-            <div className="mt-4">
-              <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Formato</label>
-              <Select options={formatOptions} value={format} onChange={(e) => setFormat(e.target.value as BookFormat)} />
-            </div>
-
-            {canPickStatus && (
-              <div className="mt-4">
-                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado de lectura</label>
-                <Select options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as ReadingStatus)} />
-              </div>
-            )}
-
-            {canPickStatus && status === 'terminado' && (
-              <ReadingDatesFields className="mt-4" startDate={finishDates.startDate} endDate={finishDates.endDate} onChange={setFinishDates} />
-            )}
-
-            {canPickStatus && status === 'pendiente' && (
-              <div className="mt-4">
-                <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
-                  Agregar a mi lista de esta temporada
-                </label>
-                <PriorityToggle isPriority={isPriority} onToggle={() => setIsPriority((prev) => !prev)} />
-              </div>
-            )}
-
-            <div className="flex gap-3 mt-6">
-              <Button variant="outline" onClick={() => setResult(null)}>
-                {results.length > 0 ? 'Volver a la lista' : 'Cancelar'}
-              </Button>
-              <Button variant="primary" onClick={handleAdd} isLoading={isSaving}>
-                Agregar
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </Modal>
+      {isOpen && (
+        <Sheet onClose={handleClose} title={title} footer={footer}>
+          {body}
+        </Sheet>
+      )}
 
       <BarcodeScannerModal
         isOpen={isScannerOpen}
