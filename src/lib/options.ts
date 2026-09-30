@@ -1,4 +1,4 @@
-// Opciones compartidas de categoría, idioma y formato — usadas al crear libros manualmente
+// Opciones compartidas de categoría y formato (los idiomas salen de lib/languages.ts) — usadas al crear libros manualmente
 // y en el modal de Filtros del Estante.
 
 export const categoryOptions = [
@@ -10,11 +10,6 @@ export const categoryOptions = [
   { value: 'Manga', label: 'Manga' },
   { value: 'Manhua', label: 'Manhua' },
   { value: 'Manhwa', label: 'Manhwa' },
-]
-
-export const languageOptions = [
-  { value: 'es', label: 'Español' },
-  { value: 'en', label: 'Inglés' },
 ]
 
 export type BookFormat = 'fisico' | 'digital' | 'audiolibro'

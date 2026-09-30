@@ -45,7 +45,7 @@ const formatChoices: { value: BookFormat; label: string; icon: LucideIcon }[] = 
   { value: 'audiolibro', label: 'Audiolibro', icon: Headphones },
 ]
 
-function FormatPicker({ value, onChange }: { value: BookFormat; onChange: (format: BookFormat) => void }) {
+export function FormatPicker({ value, onChange }: { value: BookFormat; onChange: (format: BookFormat) => void }) {
   return (
     <div role="radiogroup" aria-label="Formato" className="grid grid-cols-3 gap-1 p-1 mb-2.5 bg-surface-2 border border-border rounded-[14px]">
       {formatChoices.map(({ value: v, label, icon: Icon }) => {
