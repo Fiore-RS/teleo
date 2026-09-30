@@ -28,7 +28,6 @@ import { Resena } from './Resena'
 import { AddQuoteSheet } from '../assets/components/molecules/AddQuoteSheet'
 import { useQuotes } from '../hooks/useQuotes'
 import { parseDurationInput, secondsToTimeInput } from '../lib/duration'
-import { todayLocalDate } from '../lib/date'
 import { useProfile } from '../hooks/useProfile'
 import { useReleases, type Release } from '../hooks/useReleases'
 import { ReleaseRow } from '../assets/components/molecules/ReleaseRow'
@@ -165,7 +164,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     setIsEditing(false)
   }
 
-  async function applyPendingLeyendoUpdate(withStartDate: boolean) {
+  async function applyPendingLeyendoUpdate(startDate: string | null) {
     if (!pendingLeyendoUpdate) return
 
     // Si el libro ya estaba "terminado", esto es una relectura (por el botón "Leer de
@@ -179,7 +178,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     await updateBook({
       ...pendingLeyendoUpdate,
       ...(isReread ? { current_page: 0, progress_percent: 0, current_duration_seconds: 0, end_date: null } : {}),
-      ...(withStartDate ? { start_date: todayLocalDate() } : {}),
+      ...(startDate ? { start_date: startDate } : {}),
     })
     setPendingLeyendoUpdate(null)
     setIsEditing(false)
@@ -392,15 +391,16 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
       <StartReadingDateModal
         isOpen={pendingLeyendoUpdate !== null}
-        onConfirm={() => applyPendingLeyendoUpdate(true)}
-        onDismiss={() => applyPendingLeyendoUpdate(false)}
+        book={book}
+        onConfirm={(startDate) => applyPendingLeyendoUpdate(startDate)}
+        onDismiss={() => applyPendingLeyendoUpdate(null)}
       />
 
       {book && (
         <AbandonarLibroModal
           isOpen={isAbandonOpen}
           onClose={() => setIsAbandonOpen(false)}
-          bookTitle={book.title}
+          book={book}
           initialStartDate={book.start_date ?? ''}
           onConfirm={handleAbandonConfirm}
         />
@@ -408,7 +408,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
       {isFinishOpen && book && (
         <FinishBookSheet
-          bookTitle={book.title}
+          book={book}
           initialStartDate={book.start_date}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}

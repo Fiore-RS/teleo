@@ -13,7 +13,6 @@ import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-
 import { usePriorityBooks } from '../../../hooks/usePriorityBooks'
 import { useProfile } from '../../../hooks/useProfile'
 import { DEFAULT_PRIORITY_LIST_NAME, getPriorityListName } from '../../../lib/priorityList'
-import { todayLocalDate } from '../../../lib/date'
 import { queryClient } from '../../../lib/queryClient'
 import { Eyebrow } from '../atoms/Eyebrow'
 import { BookTileSkeleton } from '../atoms/Skeleton'
@@ -58,9 +57,9 @@ export function PriorityListCard({ userId }: PriorityListCardProps) {
     reorderBook(active.id as string, beforeId, afterId)
   }
 
-  async function confirmStartReading(withStartDate: boolean) {
+  async function confirmStartReading(startDate: string | null) {
     if (!pendingStartId) return
-    await startReading(pendingStartId, withStartDate ? todayLocalDate() : null)
+    await startReading(pendingStartId, startDate)
     setPendingStartId(null)
     // El libro pasa a Leyendo: se refrescan Leyendo ahora, los números del perfil, etc.
     await queryClient.invalidateQueries()
@@ -161,8 +160,9 @@ export function PriorityListCard({ userId }: PriorityListCardProps) {
 
       <StartReadingDateModal
         isOpen={pendingStartId !== null}
-        onConfirm={() => confirmStartReading(true)}
-        onDismiss={() => confirmStartReading(false)}
+        book={books.find((b) => b.id === pendingStartId)}
+        onConfirm={(startDate) => confirmStartReading(startDate)}
+        onDismiss={() => confirmStartReading(null)}
       />
     </>
   )

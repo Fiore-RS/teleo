@@ -1,51 +1,79 @@
 import { useState } from 'react'
-import { Modal } from '../atoms/Modal'
-import { Textarea } from '../atoms/Textarea'
-import { DateInput } from '../atoms/DateInput'
+import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
+import { todayLocalDate } from '../../../lib/date'
+import { readingDatesAreValid } from '../../../lib/readingDates'
+import { ReadingDatesFields } from './ReadingDatesFields'
+import { BookMiniHeader, type MiniBook } from './BookMiniHeader'
+import { FormActions, FormSection } from './FormLayout'
 
 interface AbandonarLibroModalProps {
   isOpen: boolean
   onClose: () => void
-  bookTitle: string
+  book: MiniBook
   initialStartDate: string
   onConfirm: (data: { abandon_reason: string; start_date: string; end_date: string }) => Promise<void>
 }
 
-export function AbandonarLibroModal({ isOpen, onClose, bookTitle, initialStartDate, onConfirm }: AbandonarLibroModalProps) {
+/** Abandonar un libro (rediseñada en la V.2.2.0): primero las fechas ("Lo dejaste" empieza en
+ *  hoy) y después el motivo, en la tarjeta con comilla de la reseña. */
+export function AbandonarLibroModal({ isOpen, onClose, book, initialStartDate, onConfirm }: AbandonarLibroModalProps) {
+  if (!isOpen) return null
+  return <AbandonarLibroSheet onClose={onClose} book={book} initialStartDate={initialStartDate} onConfirm={onConfirm} />
+}
+
+// Se separa para que el formulario arranque de cero (fecha de hoy incluida) cada vez que se abre.
+function AbandonarLibroSheet({ onClose, book, initialStartDate, onConfirm }: Omit<AbandonarLibroModalProps, 'isOpen'>) {
   const [reason, setReason] = useState('')
   const [startDate, setStartDate] = useState(initialStartDate)
-  const [endDate, setEndDate] = useState('')
+  const [endDate, setEndDate] = useState(() => todayLocalDate())
   const [isSaving, setIsSaving] = useState(false)
+  const isValid = readingDatesAreValid({ startDate, endDate })
 
   async function handleConfirm() {
+    if (!isValid) return
     setIsSaving(true)
-    await onConfirm({ abandon_reason: reason, start_date: startDate, end_date: endDate })
+    await onConfirm({ abandon_reason: reason.trim(), start_date: startDate, end_date: endDate })
     setIsSaving(false)
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Abandonar libro">
-      <p className="text-body-md text-text-secondary text-center mb-4">{bookTitle}</p>
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Motivo de abandono</label>
-      <Textarea placeholder="Escribe tus pensamientos aquí..." value={reason} onChange={(e) => setReason(e.target.value)} rows={4} />
-
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        <div>
-          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Fecha de inicio</label>
-          <DateInput value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        </div>
-        <div>
-          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Fecha de finalización</label>
-          <DateInput value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        </div>
+    <Sheet
+      onClose={onClose}
+      title="Abandonar libro"
+      footer={
+        <FormActions>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="primary" onClick={handleConfirm} isLoading={isSaving} disabled={!isValid}>Abandonar</Button>
+        </FormActions>
+      }
+    >
+      <div className="animate-fade-in">
+        <BookMiniHeader book={book} />
+        <ReadingDatesFields
+          startDate={startDate}
+          endDate={endDate}
+          endLabel="Lo dejaste"
+          showGoalHint={false}
+          onChange={(d) => { setStartDate(d.startDate); setEndDate(d.endDate) }}
+          className="mb-5"
+        />
+        <FormSection label="Motivo de abandono" className="mb-1">
+          <div className="relative bg-surface-2 border border-border rounded-[18px] px-4 pt-4.5 pb-3">
+            <span aria-hidden="true" className="absolute left-3 -top-2.5 font-display font-semibold text-[40px] leading-none text-ornament select-none">
+              “
+            </span>
+            <textarea
+              aria-label="Motivo de abandono"
+              rows={3}
+              value={reason}
+              placeholder="¿Por qué lo dejaste? (opcional)"
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full bg-transparent focus:outline-none resize-none font-body text-body-lg leading-relaxed text-text placeholder:text-text-muted"
+            />
+          </div>
+        </FormSection>
       </div>
-
-      <div className="flex gap-2.5 mt-5">
-        <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button variant="primary" onClick={handleConfirm} isLoading={isSaving}>Abandonar</Button>
-      </div>
-    </Modal>
+    </Sheet>
   )
 }
