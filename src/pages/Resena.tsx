@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ImageOff, ThumbsUp, Plus, PenLine, Trash2, Quote, AlertTriangle } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { ImageOff, ThumbsUp, Plus, PenLine, Trash2, Quote, AlertTriangle, X } from 'lucide-react'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetailSkeleton } from '../assets/components/atoms/Skeleton'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
@@ -8,9 +8,6 @@ import { useBook } from '../hooks/useBook'
 import { useReview } from '../hooks/useReview'
 import { useBookHistory } from '../hooks/useBookHistory'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
-import { DateInput } from '../assets/components/atoms/DateInput'
-import { Textarea } from '../assets/components/atoms/Textarea'
-import { Toggle } from '../assets/components/atoms/Toggle'
 import { Button } from '../assets/components/atoms/Button'
 import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
 import { CustomRatingPicker } from '../assets/components/molecules/CustomRatingPicker'
@@ -22,25 +19,41 @@ import { ratingIconColor } from '../lib/ratingIcons'
 import { syncLatestReading } from '../lib/readingHistory'
 import { supabase } from '../lib/supabase'
 import type { RatingShape } from '../assets/components/atoms/RatingIcon'
-import { X } from 'lucide-react'
 import { isReviewWritten } from '../lib/reviews'
+import { formatShortDate } from '../lib/date'
+import { readingDatesAreValid } from '../lib/readingDates'
+import { Avatar } from '../assets/components/atoms/Avatar'
+import { ReadingDatesFields } from '../assets/components/molecules/ReadingDatesFields'
+import {
+  FormActions, FormCard, FormCollapsible, FormSection, FormSwitchRow,
+} from '../assets/components/molecules/FormLayout'
 
-const MONTHS_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
-
-/** 'YYYY-MM-DD' → '3 sep 2026' (sin pasar por Date, para evitar el desfase de zona horaria). */
-function formatShortDate(value: string | null | undefined): string {
-  if (!value) return '—'
-  const [y, m, d] = value.split('-').map((n) => parseInt(n, 10))
-  if (!y || !m || !d) return value
-  return `${d} ${MONTHS_SHORT[m - 1]} ${y}`
+/** Fecha corta o una raya si falta ('3 sep 2026' / '—'). */
+function dateOrDash(value: string | null | undefined): string {
+  return formatShortDate(value) || '—'
 }
 
-function SectionLabel({ children }: { children: string }) {
+/** Días que tomó la lectura, contando el primero y el último ("19 días"). Nada si falta
+ *  alguna fecha o están al revés. */
+function readingDays(start: string | null | undefined, end: string | null | undefined): string | null {
+  if (!start || !end) return null
+  const [ys, ms, ds] = start.split('-').map(Number)
+  const [ye, me, de] = end.split('-').map(Number)
+  const diff = Math.round((Date.UTC(ye, me - 1, de) - Date.UTC(ys, ms - 1, ds)) / 86_400_000)
+  if (Number.isNaN(diff) || diff < 0) return null
+  const days = diff + 1
+  return days === 1 ? '1 día' : `${days} días`
+}
+
+/** Tus pensamientos (V.2.2.0): el espacio libre de la reseña, con una comilla de adorno. */
+function ThoughtsCard({ children }: { children: ReactNode }) {
   return (
-    <p className="flex items-center gap-2 mb-2.5 font-body font-bold text-body-sm uppercase tracking-[0.14em] text-primary-text">
-      <span className="w-4 h-0.5 rounded-full bg-primary-text" aria-hidden="true" />
+    <div className="relative bg-surface-2 border border-border rounded-[18px] px-4 pt-5 pb-4">
+      <span aria-hidden="true" className="absolute left-3 -top-2.5 font-display font-semibold text-[44px] leading-none text-ornament select-none">
+        “
+      </span>
       {children}
-    </p>
+    </div>
   )
 }
 
@@ -137,6 +150,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     else setPendingQuotes((prev) => prev.filter((q) => q.id !== id))
   }
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
+  const [isSaving, setIsSaving] = useState(false)
   const [draft, setDraft] = useState<{
     start_date: string; end_date: string; general_rating: number
     general_comments: string; recommends: boolean
@@ -160,12 +174,14 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     setIsEditing(true)
   }
 
+  const canSave = !!draft && readingDatesAreValid({ startDate: draft.start_date, endDate: draft.end_date })
+
   async function handleSave() {
-    if (!draft) return
+    if (!draft || !canSave) return
+    setIsSaving(true)
 
     const startDate = draft.start_date || null
     const endDate = draft.end_date || null
-    if (startDate && endDate && startDate > endDate) return
     await updateBook({ start_date: startDate, end_date: endDate })
     // Si el libro está terminado, la lectura más reciente del historial (de donde sale el reto
     // anual) se ajusta a estas fechas. Antes solo cambiaba el libro y el reto seguía contando
@@ -177,7 +193,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
 
     const reviewPayload = {
       general_rating: draft.general_rating || null,
-      general_comments: draft.general_comments || null,
+      general_comments: draft.general_comments.trim() || null,
       recommends: draft.recommends,
       favorite_character_name: draft.favorite_character_name || null,
       favorite_character_notes: draft.favorite_character_notes || null,
@@ -206,6 +222,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     } else {
       await updateReview(reviewPayload)
     }
+    setIsSaving(false)
     setIsEditing(false)
   }
 
@@ -214,29 +231,74 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     setDeleteState(ok ? 'success' : 'error')
   }
 
-  const labelClass = 'font-body font-semibold text-body-sm text-text-secondary block mb-1.5'
-  const box = 'bg-surface-2 border border-border rounded-2xl'
+  const box = 'bg-surface-2 border border-border rounded-[18px]'
+  const showView = !!review && isWritten && !isEditing
+  const hasWarnings = (draft?.content_warnings.length ?? 0) > 0 || !!draft?.content_warnings_note.trim()
+  const warningsSummary = draft
+    ? draft.content_warnings.length > 0
+      ? `${draft.content_warnings.length} ${draft.content_warnings.length === 1 ? 'aviso' : 'avisos'}`
+      : draft.content_warnings_note.trim() ? 'Una nota' : 'Ninguno'
+    : ''
+  const days = readingDays(book?.start_date, book?.end_date)
+
+  let footer: ReactNode = undefined
+  if (isEditing && draft) {
+    footer = (
+      <FormActions>
+        <Button variant="outline" onClick={() => (isWritten ? setIsEditing(false) : onClose())}>Cancelar</Button>
+        <Button variant="primary" onClick={handleSave} disabled={!canSave} isLoading={isSaving}>Guardar cambios</Button>
+      </FormActions>
+    )
+  } else if (showView) {
+    footer = (
+      <FormActions>
+        <Button variant="outline" fullWidth={false} className="w-12.5 shrink-0 px-0!" aria-label="Eliminar reseña" onClick={() => setDeleteState('confirm')}>
+          <Trash2 size={18} />
+        </Button>
+        <Button variant="soft" onClick={startEditing}>
+          <PenLine size={17} />
+          Editar reseña
+        </Button>
+      </FormActions>
+    )
+  }
 
   return (
     <>
-      <Sheet onClose={onClose} title={isEditing ? (isWritten ? 'Editar reseña' : 'Nueva reseña') : 'Reseña de lectura'}>
+      <Sheet
+        onClose={onClose}
+        title={isEditing ? (isWritten ? 'Editar reseña' : 'Nueva reseña') : 'Reseña de lectura'}
+        footer={footer}
+      >
         {isLoading || !book ? <DetailSkeleton /> : (
-          <>
-            <div className="flex gap-4 items-start">
-              <div className="relative aspect-2/3 w-24 shrink-0 rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)]">
+          <div key={isEditing ? 'edit' : 'view'} className="animate-fade-in">
+            <div className={`flex gap-3.5 items-end ${isEditing ? 'mb-5.5' : 'mb-5'}`}>
+              <div
+                className={`relative aspect-2/3 shrink-0 overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)] ${
+                  isEditing ? 'w-14 rounded-[9px]' : 'w-21 rounded-xl'
+                }`}
+              >
                 {book.cover_url ? (
                   <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center"><ImageOff size={22} className="text-text-secondary" /></div>
+                  <div className="w-full h-full flex items-center justify-center"><ImageOff size={isEditing ? 16 : 22} className="text-text-secondary" /></div>
                 )}
               </div>
-              <div className="flex-1 min-w-0 pt-1">
+              <div className="flex-1 min-w-0">
                 <h3 className="font-display font-semibold text-[20px] leading-tight text-text text-balance">{book.title}</h3>
                 {book.author && <p className="text-body-md text-text-secondary mt-1">{book.author}</p>}
-                {review && isWritten && !isEditing && (
-                  <div className="mt-2.5">
-                    <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={18} />
-                  </div>
+                {showView && (
+                  <>
+                    <div className="mt-2.5">
+                      <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={20} />
+                    </div>
+                    {review.recommends && (
+                      <span className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-magenta-soft text-magenta-text text-body-sm font-bold">
+                        <ThumbsUp size={13} strokeWidth={2.2} />
+                        Lo recomiendas
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -255,155 +317,168 @@ export function Resena({ bookId, onClose }: ResenaProps) {
               </div>
             )}
 
-            {review && isWritten && !isEditing && (
-              <div className="flex flex-col gap-6 mt-6 stagger-children">
+            {showView && (
+              <div className="stagger-children">
                 {((review.content_warnings?.length ?? 0) > 0 || review.content_warnings_note) && (
-                  <ContentWarningsCard warnings={review.content_warnings ?? []} note={review.content_warnings_note} />
-                )}
-
-                <section>
-                  <SectionLabel>Tu lectura</SectionLabel>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <div className={`${box} px-3.5 py-3`}>
-                      <p className="font-display font-semibold text-body-lg text-text">{formatShortDate(book.start_date)}</p>
-                      <p className="text-body-sm text-text-secondary mt-0.5">Inicio</p>
-                    </div>
-                    <div className={`${box} px-3.5 py-3`}>
-                      <p className="font-display font-semibold text-body-lg text-text">{formatShortDate(book.end_date)}</p>
-                      <p className="text-body-sm text-text-secondary mt-0.5">Final</p>
-                    </div>
+                  <div className="mb-5.5">
+                    <ContentWarningsCard warnings={review.content_warnings ?? []} note={review.content_warnings_note} />
                   </div>
-                  {pastReads.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-body-sm font-semibold text-text-secondary mb-1.5">Lecturas anteriores</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {pastReads.map((h) => (
-                          <span key={h.id} className="inline-flex px-3 py-1.5 rounded-full bg-primary-soft text-primary-text text-body-sm font-semibold">
-                            {h.start_date
-                              ? `Del ${formatShortDate(h.start_date)} al ${formatShortDate(h.end_date)}`
-                              : formatShortDate(h.end_date)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </section>
-
-                <section>
-                  <SectionLabel>Calificaciones</SectionLabel>
-                  <div className={`${box} px-4 py-3 space-y-2`}>
-                    <RatingRow label="General" shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} />
-                    {customRatings.map((cr) => (
-                      <RatingRow key={cr.id} label={cr.label} shape={cr.icon as RatingShape} color={ratingIconColor[cr.icon as RatingShape]} value={cr.value ?? 0} />
-                    ))}
-                  </div>
-                </section>
-
-                {review.favorite_character_name && (
-                  <section>
-                    <SectionLabel>Personaje favorito</SectionLabel>
-                    <div className={`${box} px-4 py-3.5`}>
-                      <p className="font-display font-semibold italic text-body-lg text-text">{review.favorite_character_name}</p>
-                      {review.favorite_character_notes && (
-                        <p className="text-body-md text-text-secondary mt-1.5">{review.favorite_character_notes}</p>
-                      )}
-                    </div>
-                  </section>
-                )}
-
-                {quotes.length > 0 && (
-                  <section>
-                    <SectionLabel>Citas favoritas</SectionLabel>
-                    <div className="space-y-2">
-                      {quotes.map((q) => (
-                        <div key={q.id} className={`${box} px-4 py-3 flex gap-2.5`}>
-                          <Quote size={16} className="text-ornament shrink-0 mt-0.5" />
-                          <div className="min-w-0">
-                            <p className="font-display italic text-body-md text-text">{q.quote_text}</p>
-                            {q.page != null && <p className="text-body-sm text-text-secondary mt-1">Pág. {q.page}</p>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
                 )}
 
                 {review.general_comments && (
-                  <section>
-                    <SectionLabel>Comentarios</SectionLabel>
-                    <p className={`${box} px-4 py-3 text-body-md leading-relaxed text-text whitespace-pre-line`}>{review.general_comments}</p>
-                  </section>
+                  <FormSection label="Tus pensamientos">
+                    <ThoughtsCard>
+                      <p className="text-body-lg leading-relaxed text-text whitespace-pre-line">{review.general_comments}</p>
+                    </ThoughtsCard>
+                  </FormSection>
                 )}
 
-                <div
-                  className={`flex items-center justify-center gap-2 rounded-full py-2.5 text-body-md font-bold ${
-                    review.recommends ? 'bg-magenta-soft text-magenta-text' : 'bg-surface-2 border border-border text-text-secondary'
-                  }`}
-                >
-                  <ThumbsUp size={16} className={review.recommends ? '' : 'rotate-180'} />
-                  {review.recommends ? 'Recomiendas este libro' : 'No lo recomiendas'}
-                </div>
+                {customRatings.length > 0 && (
+                  <FormSection label="Calificaciones">
+                    <FormCard>
+                      {customRatings.map((cr) => (
+                        <div key={cr.id} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+                          <span className="font-body font-semibold text-body-lg text-text truncate">{cr.label}</span>
+                          <RatingRow shape={cr.icon as RatingShape} color={ratingIconColor[cr.icon as RatingShape]} value={cr.value ?? 0} size={18} />
+                        </div>
+                      ))}
+                    </FormCard>
+                  </FormSection>
+                )}
 
-                <div className="flex gap-2.5">
-                  <Button variant="outline" onClick={() => setDeleteState('confirm')}>
-                    <Trash2 size={17} />
-                    Eliminar
-                  </Button>
-                  <Button variant="soft" onClick={startEditing}>
-                    <PenLine size={17} />
-                    Editar
-                  </Button>
-                </div>
+                {review.favorite_character_name && (
+                  <FormSection label="Personaje favorito">
+                    <div className={`${box} flex gap-3.5 items-center px-3.5 py-3.5`}>
+                      {review.favorite_character_photo_url && (
+                        <Avatar variant="character" size="md" src={review.favorite_character_photo_url} alt={review.favorite_character_name} className="ring-[1.5px] ring-border" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-display font-semibold italic text-body-lg text-text">{review.favorite_character_name}</p>
+                        {review.favorite_character_notes && (
+                          <p className="text-body-md text-text-secondary mt-0.5">{review.favorite_character_notes}</p>
+                        )}
+                      </div>
+                    </div>
+                  </FormSection>
+                )}
+
+                {quotes.length > 0 && (
+                  <FormSection label="Citas favoritas">
+                    <FormCard>
+                      {quotes.map((q) => (
+                        <div key={q.id} className="flex gap-2.5 px-3.5 py-3">
+                          <Quote size={16} className="text-ornament shrink-0 mt-0.5" aria-hidden="true" />
+                          <div className="min-w-0">
+                            <p className="font-display italic text-body-md text-text">{q.quote_text}</p>
+                            {q.page != null && <p className="text-body-sm text-text-muted mt-0.5">Pág. {q.page}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </FormCard>
+                  </FormSection>
+                )}
+
+                <FormSection label="Tu lectura" className="mb-2">
+                  <div className={box}>
+                    <div className="flex items-center gap-2.5 px-3.5 py-3">
+                      <div>
+                        <p className="text-body-sm font-semibold text-text-muted">Inicio</p>
+                        <p className="font-display font-semibold text-body-lg text-text">{dateOrDash(book.start_date)}</p>
+                      </div>
+                      <span className="text-text-muted" aria-hidden="true">→</span>
+                      <div>
+                        <p className="text-body-sm font-semibold text-text-muted">Final</p>
+                        <p className="font-display font-semibold text-body-lg text-text">{dateOrDash(book.end_date)}</p>
+                      </div>
+                      {days && (
+                        <span className="ml-auto shrink-0 px-2.5 py-1 rounded-full bg-primary-soft text-primary-text text-body-sm font-bold">{days}</span>
+                      )}
+                    </div>
+                    {pastReads.length > 0 && (
+                      <div className="px-3.5 pb-3">
+                        <p className="text-body-sm font-semibold text-text-secondary mb-1.5">Lecturas anteriores</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {pastReads.map((h) => (
+                            <span key={h.id} className="inline-flex px-2.5 py-1 rounded-full bg-surface border border-border text-text text-body-sm font-semibold">
+                              {h.start_date
+                                ? `Del ${dateOrDash(h.start_date)} al ${dateOrDash(h.end_date)}`
+                                : dateOrDash(h.end_date)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </FormSection>
               </div>
             )}
 
             {isEditing && draft && (
-              <div className="flex flex-col gap-5 mt-5">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={labelClass}>Fecha de inicio</label>
-                    <DateInput value={draft.start_date} onChange={(e) => setDraft({ ...draft, start_date: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Fecha de final</label>
-                    <DateInput value={draft.end_date} onChange={(e) => setDraft({ ...draft, end_date: e.target.value })} />
-                  </div>
-                </div>
-
-                <div>
-                  <label className={labelClass}>Calificaciones</label>
-                  <div className={`${box} px-4 py-3 space-y-2`}>
-                    <RatingRow
-                      label="General" shape="star" color="var(--color-orange)"
-                      value={draft.general_rating} onRate={(v) => setDraft({ ...draft, general_rating: v })}
-                    />
+              <>
+                <FormSection label="Calificación">
+                  <FormCard>
+                    {/* Misma forma que las personalizadas (nombre a la izquierda, íconos a la
+                        derecha); el espacio a la derecha iguala el de la × de las demás filas. */}
+                    <div className="flex items-center justify-between gap-2 pl-3.5 pr-2 py-2.5">
+                      <span className="font-body font-bold text-body-lg text-text truncate">General</span>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <RatingRow
+                          shape="star" color="var(--color-orange)" size={24}
+                          value={draft.general_rating} onRate={(v) => setDraft({ ...draft, general_rating: v })}
+                        />
+                        <span className="w-7" aria-hidden="true" />
+                      </div>
+                    </div>
                     {shownRatings.map((cr) => (
-                      <div key={cr.id} className="flex items-center gap-2">
-                        <div className="flex-1">
+                      <div key={cr.id} className="flex items-center justify-between gap-2 pl-3.5 pr-2 py-2 animate-fade-in">
+                        <span className="font-body font-semibold text-body-lg text-text truncate">{cr.label}</span>
+                        <div className="flex items-center gap-0.5 shrink-0">
                           <RatingRow
-                            label={cr.label} shape={cr.icon as RatingShape}
-                            color={ratingIconColor[cr.icon as RatingShape]} value={cr.value ?? 0}
-                            onRate={(v) => handleRateCustom(cr.id, v)}
+                            shape={cr.icon as RatingShape} color={ratingIconColor[cr.icon as RatingShape]}
+                            value={cr.value ?? 0} size={20} onRate={(v) => handleRateCustom(cr.id, v)}
                           />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRating(cr.id)}
+                            aria-label={`Quitar ${cr.label}`}
+                            className="w-7 h-7 rounded-full text-text-muted flex items-center justify-center"
+                          >
+                            <X size={15} strokeWidth={2.2} />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleRemoveRating(cr.id)}
-                          aria-label="Eliminar calificación"
-                          className="w-7 h-7 rounded-full bg-primary-soft text-primary-text flex items-center justify-center shrink-0"
-                        >
-                          <X size={14} />
-                        </button>
                       </div>
                     ))}
-                  </div>
-                  <Button variant="soft" size="sm" className="mt-2.5" onClick={() => setIsPickerOpen(true)}>
-                    <Plus size={16} />
-                    Agregar calificación personalizada
-                  </Button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsPickerOpen(true)}
+                      className="w-full flex items-center gap-2 px-3.5 py-3 font-body font-bold text-body-md text-primary-text"
+                    >
+                      <Plus size={16} strokeWidth={2.4} />
+                      Agregar calificación
+                    </button>
+                    <FormSwitchRow
+                      icon={ThumbsUp}
+                      label="Lo recomiendo"
+                      checked={draft.recommends}
+                      onChange={(recommends) => setDraft({ ...draft, recommends })}
+                    />
+                  </FormCard>
+                </FormSection>
 
-                <div>
-                  <label className={labelClass}>Personaje favorito</label>
+                <FormSection label="Tus pensamientos">
+                  <ThoughtsCard>
+                    <textarea
+                      aria-label="Tus pensamientos"
+                      placeholder="Escribe todo lo que quieras sobre este libro..."
+                      value={draft.general_comments}
+                      rows={8}
+                      onChange={(e) => setDraft({ ...draft, general_comments: e.target.value })}
+                      className="w-full min-h-48 bg-transparent focus:outline-none resize-y font-body text-body-lg leading-relaxed text-text placeholder:text-text-muted"
+                    />
+                  </ThoughtsCard>
+                </FormSection>
+
+                <FormSection label="Personaje favorito">
                   <FavoriteCharacterEditor
                     userId={user?.id}
                     name={draft.favorite_character_name} notes={draft.favorite_character_notes} photoUrl={draft.favorite_character_photo_url}
@@ -411,65 +486,62 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                     onNotesChange={(v) => setDraft({ ...draft, favorite_character_notes: v })}
                     onPhotoUrlChange={(v) => setDraft({ ...draft, favorite_character_photo_url: v })}
                   />
-                </div>
+                </FormSection>
 
-                <div>
-                  <label className={labelClass}>Citas favoritas</label>
+                <FormSection label="Citas favoritas">
                   <QuotesEditor quotes={shownQuotes} onAdd={handleAddQuote} onRemove={handleRemoveQuote} />
-                </div>
+                </FormSection>
 
-                <div>
-                  <label className={labelClass}>Comentarios</label>
-                  <Textarea
-                    placeholder="Tus pensamientos sobre el libro..." value={draft.general_comments}
-                    onChange={(e) => setDraft({ ...draft, general_comments: e.target.value })} rows={4}
+                <FormSection label="Avisos de contenido">
+                  <FormCollapsible title="Avisos" summary={warningsSummary} defaultOpen={hasWarnings}>
+                    {hasWarnings && (
+                      <div className="px-3.5 py-3">
+                        {draft.content_warnings.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {sortedWarnings(draft.content_warnings).map((w) => (
+                              <span key={w.key} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
+                                {w.label}
+                                <button
+                                  type="button"
+                                  onClick={() => setDraft({ ...draft, content_warnings: draft.content_warnings.filter((k) => k !== w.key) })}
+                                  aria-label={`Quitar ${w.label}`}
+                                  className="w-5 h-5 rounded-full flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
+                                >
+                                  <X size={13} />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {draft.content_warnings_note.trim() && (
+                          <p className={`text-body-sm text-text-secondary ${draft.content_warnings.length > 0 ? 'mt-2' : ''}`}>
+                            {draft.content_warnings.length > 0 ? `También: ${draft.content_warnings_note.trim()}` : draft.content_warnings_note.trim()}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsWarningsPickerOpen(true)}
+                      className="w-full flex items-center gap-2 px-3.5 py-3 font-body font-bold text-body-md text-primary-text"
+                    >
+                      {hasWarnings ? <PenLine size={16} /> : <Plus size={16} strokeWidth={2.4} />}
+                      {hasWarnings ? 'Editar avisos' : 'Agregar avisos de contenido'}
+                    </button>
+                  </FormCollapsible>
+                </FormSection>
+
+                <FormSection label="Tu lectura" className="mb-2">
+                  <ReadingDatesFields
+                    startDate={draft.start_date}
+                    endDate={draft.end_date}
+                    showGoalHint={book.status === 'terminado'}
+                    onChange={({ startDate, endDate }) => setDraft({ ...draft, start_date: startDate, end_date: endDate })}
                   />
-                </div>
-
-                <div>
-                  <label className={labelClass}>Avisos de contenido</label>
-                  {(draft.content_warnings.length > 0 || draft.content_warnings_note.trim()) && (
-                    <div className="mb-2.5">
-                      {draft.content_warnings.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {sortedWarnings(draft.content_warnings).map((w) => (
-                            <span key={w.key} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
-                              {w.label}
-                              <button
-                                type="button"
-                                onClick={() => setDraft({ ...draft, content_warnings: draft.content_warnings.filter((k) => k !== w.key) })}
-                                aria-label={`Quitar ${w.label}`}
-                                className="w-5 h-5 rounded-full flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
-                              >
-                                <X size={13} />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {draft.content_warnings_note.trim() && (
-                        <p className="text-body-sm text-text-secondary mt-2">También: {draft.content_warnings_note.trim()}</p>
-                      )}
-                    </div>
-                  )}
-                  <Button variant="soft" size="sm" onClick={() => setIsWarningsPickerOpen(true)}>
-                    {draft.content_warnings.length > 0 || draft.content_warnings_note.trim() ? <PenLine size={16} /> : <Plus size={16} />}
-                    {draft.content_warnings.length > 0 || draft.content_warnings_note.trim() ? 'Editar avisos' : 'Agregar avisos de contenido'}
-                  </Button>
-                </div>
-
-                <div className={`${box} flex items-center justify-between gap-3 px-4 py-3`}>
-                  <span className="text-body-md font-semibold text-text">¿Recomiendas este libro?</span>
-                  <Toggle checked={draft.recommends} onChange={(v) => setDraft({ ...draft, recommends: v })} />
-                </div>
-
-                <div className="flex gap-2.5">
-                  <Button variant="outline" onClick={() => (isWritten ? setIsEditing(false) : onClose())}>Cancelar</Button>
-                  <Button variant="primary" onClick={handleSave}>Guardar cambios</Button>
-                </div>
-              </div>
+                </FormSection>
+              </>
             )}
-          </>
+          </div>
         )}
       </Sheet>
 
