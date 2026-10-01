@@ -15,6 +15,22 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '2.2.0',
+    announced: true,
+    date: '1 de octubre de 2026',
+    title: 'Todo en su lugar',
+    items: [
+      'Agregar y editar libros, sagas y citas ahora tiene un diseño más ordenado y fácil de leer.',
+      'Los detalles de cada libro y de cada saga estrenan diseño.',
+      'El estado de una saga se calcula solo a partir de sus libros, y su categoría (novela, cómic, etc.) se completa automáticamente.',
+      'Reseñar, actualizar tu progreso y fijar tu meta ahora es más rápido.',
+      'Lanzamientos también se renovó.',
+      'Tu usuario, nombre, correo y contraseña ahora se editan desde paneles en Configuración, sin cambiar de página.',
+      'Elegir un libro para reseñar o compartir ahora tiene buscador.',
+      'Las confirmaciones son más claras y te muestran el libro del que se trata.',
+    ],
+  },
+  {
     version: '2.1.2',
     date: '29 de septiembre de 2026',
     title: 'Para ponerte al día',
