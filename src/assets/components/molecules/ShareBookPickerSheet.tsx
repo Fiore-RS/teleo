@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Check, EyeOff, Search } from 'lucide-react'
+import { Check, EyeOff } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
-import { Input } from '../atoms/Input'
+import { SearchPill } from '../atoms/SearchPill'
 import { Button } from '../atoms/Button'
-import { MiniCover } from '../atoms/MiniCover'
+import { BookPickList } from './BookPickList'
+import { FormActions } from './FormLayout'
 import type { ShareBook } from '../../../hooks/useShareCardExtras'
 
 interface ShareBookPickerSheetProps {
@@ -31,46 +32,34 @@ export function ShareBookPickerSheet({ title, books, searchPool, selectedId, emp
   }, [books, pool, search])
 
   return (
-    <Sheet title={title} onClose={onClose}>
-      {showSearch && (
-        <div className="mb-3">
-          <Input icon={Search} placeholder="Buscar por título o autor..." value={search} onChange={(e) => setSearch(e.target.value)} />
-        </div>
-      )}
+    <Sheet
+      title={title}
+      onClose={onClose}
+      footer={
+        <FormActions>
+          <Button variant="outline" onClick={() => onSelect(null)}>
+            <EyeOff size={17} />
+            No mostrar
+          </Button>
+        </FormActions>
+      }
+    >
+      <div className="animate-fade-in">
+        {showSearch && (
+          <SearchPill value={search} onChange={setSearch} placeholder="Buscar por título o autor..." className="mb-4" />
+        )}
 
-      {visible.length === 0 ? (
-        <p className="text-body-md text-text-secondary text-center py-4">{search ? 'Ningún libro coincide.' : emptyText}</p>
-      ) : (
-        <ul className="flex flex-col gap-1">
-          {visible.map((book) => {
-            const isSelected = book.id === selectedId
-            return (
-              <li key={book.id}>
-                <button
-                  type="button"
-                  onClick={() => onSelect(book.id)}
-                  aria-pressed={isSelected}
-                  className={`w-full flex items-center gap-3 p-2 rounded-2xl text-left border transition-colors ${
-                    isSelected ? 'bg-primary-soft border-primary' : 'border-transparent active:bg-surface-2'
-                  }`}
-                >
-                  <MiniCover src={book.cover_url} title={book.title} className="w-11" />
-                  <span className="flex-1 min-w-0">
-                    <span className="block font-display font-semibold text-body-md text-text truncate">{book.title}</span>
-                    {book.author && <span className="block text-body-sm text-text-secondary truncate">{book.author}</span>}
-                  </span>
-                  {isSelected && <Check size={18} className="text-primary-text shrink-0" />}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-
-      <Button variant="outline" className="mt-4" onClick={() => onSelect(null)}>
-        <EyeOff size={17} />
-        No mostrar
-      </Button>
+        {visible.length === 0 ? (
+          <p className="text-body-md text-text-secondary text-center py-4">{search ? 'Ningún libro coincide.' : emptyText}</p>
+        ) : (
+          <BookPickList
+            books={visible}
+            onPick={(book) => onSelect(book.id)}
+            isSelected={(book) => book.id === selectedId}
+            trailing={(book) => (book.id === selectedId ? <Check size={18} strokeWidth={2.6} className="text-primary-text shrink-0" /> : null)}
+          />
+        )}
+      </div>
     </Sheet>
   )
 }
