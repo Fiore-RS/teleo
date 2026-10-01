@@ -7,6 +7,7 @@ import { useAccountSettings } from '../hooks/useAccountSettings'
 import { Input } from '../assets/components/atoms/Input'
 import { Button } from '../assets/components/atoms/Button'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { FormCard, FormRow, FormSection } from '../assets/components/molecules/FormLayout'
 import { getUsernameCooldownInfo, USERNAME_COOLDOWN_DAYS } from '../lib/usernameCooldown'
 
 export function CambiarUsuario() {
@@ -29,37 +30,47 @@ export function CambiarUsuario() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader title="Cambiar nombre de usuario" subtitle="Actualiza bajo qué nombre estará tu librería virtual." onBack={goBack} backLabel="Regresar a Configuración" />
-      <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Nombre de usuario actual</label>
-      <Input value={`@${profile?.username ?? ''}`} disabled />
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Nuevo nombre de usuario</label>
-      <Input
-        placeholder="Nuevo usuario..."
-        value={newUsername}
-        onChange={(e) => setNewUsername(e.target.value)}
-        disabled={!canChange}
-      />
-
-      <p className="text-body-sm text-text-secondary mt-2">
-        {canChange
-          ? `Solo puedes cambiar tu nombre de usuario una vez cada ${USERNAME_COOLDOWN_DAYS} días. Si solo quieres cambiar cómo te llama Teleo, edita tu nickname desde tu perfil.`
-          : `Ya cambiaste tu nombre de usuario recientemente. Podrás volver a hacerlo en ${daysRemaining} día${daysRemaining === 1 ? '' : 's'}.`}
-      </p>
-
-      {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
-
-      <Button
-        variant="primary"
-        className="mt-6"
-        onClick={handleSave}
-        isLoading={isSaving}
-        disabled={!newUsername.trim() || !canChange}
-      >
-        Guardar cambios
-      </Button>
+      <PageHeader title="Cambiar usuario" subtitle="Bajo qué nombre está tu librería virtual." onBack={goBack} backLabel="Regresar a Configuración" />
+      <div className="animate-fade-in">
+        <FormSection label="Tu usuario" className="mb-0">
+          <FormCard>
+            <FormRow label="Actual">
+              <span className="text-body-lg text-text-secondary truncate">@{profile?.username ?? ''}</span>
+            </FormRow>
+            <FormRow label="Nuevo" htmlFor="new-username">
+              <span className="flex items-center justify-end min-w-0 w-full">
+                <span className="text-body-lg text-text-muted" aria-hidden="true">@</span>
+                <Input
+                  bare
+                  id="new-username"
+                  placeholder="nuevo.usuario"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value.replace(/^@/, ''))}
+                  disabled={!canChange}
+                  className="text-left text-body-lg w-auto! flex-1 max-w-48 disabled:opacity-50"
+                />
+              </span>
+            </FormRow>
+          </FormCard>
+        </FormSection>
+        <p className="text-body-sm text-text-muted mt-2 px-0.5">
+          {canChange
+            ? `Solo puedes cambiarlo una vez cada ${USERNAME_COOLDOWN_DAYS} días. Para cambiar cómo te saluda Teleo, edita tu nickname.`
+            : `Ya cambiaste tu usuario hace poco. Podrás volver a hacerlo en ${daysRemaining} día${daysRemaining === 1 ? '' : 's'}.`}
+        </p>
+        {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
+        <Button
+          variant="primary"
+          className="mt-6"
+          onClick={handleSave}
+          isLoading={isSaving}
+          disabled={!newUsername.trim() || !canChange}
+        >
+          Guardar cambios
+        </Button>
       </div>
     </div>
   )
