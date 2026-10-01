@@ -381,6 +381,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
         isOpen={deleteState !== 'closed'}
         status={deleteState === 'closed' ? 'confirm' : deleteState}
         itemLabel="libro"
+        book={book}
         onConfirm={handleDelete}
         onClose={() => {
           const wasSuccess = deleteState === 'success'
