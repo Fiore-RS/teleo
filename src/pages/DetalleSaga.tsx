@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, PenLine, GripVertical, Check, X, RefreshCw } from "lucide-react";
+import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, PenLine, GripVertical, Check, X, RefreshCw, ChevronRight } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
 import { DogEar } from "../assets/components/atoms/DogEar";
@@ -13,7 +13,8 @@ import { ConfirmDialog } from "../assets/components/molecules/ConfirmDialog";
 import { Sheet } from "../assets/components/atoms/Sheet";
 import { DetailSkeleton } from "../assets/components/atoms/Skeleton";
 import { getProgressInfo } from "../lib/progress";
-import { type ReadingStatus } from "../lib/status";
+import { statusLabel, type ReadingStatus } from "../lib/status";
+import { computeSagaCategories } from "../lib/sagaStatus";
 import { categoryOptions } from "../lib/options";
 import { FormActions, FormCard, FormRow, FormSection, FormSectionLabel, FormSwitchRow } from "../assets/components/molecules/FormLayout";
 import { SelectBookModal } from "../assets/components/molecules/SelectBookModal";
@@ -139,72 +140,54 @@ function SagaStackPreview({
 
 type SagaBook = ReturnType<typeof useSaga>["books"][number];
 
-/** Fila de un libro dentro de la saga (rediseño 2026): portada chica con doblez, número de
- *  libro en mayúsculas espaciadas, título en seminegrita y, según el modo, el progreso /
- *  estado (ver) o el botón para quitarlo de la saga (editar). */
+/** Fila de un libro en Detalles de la saga (V.2.2.0): portada chica con doblez, número,
+ *  título y, debajo, su estado (o la página y una barrita si se está leyendo). Si el libro es
+ *  de otra categoría que la principal de la saga (por ejemplo, un cómic complementario), se
+ *  muestra al lado del estado. */
 function SagaBookRow({
   book,
   index,
   isReordering,
+  mainCategory,
   onOpen,
-  onRemove,
 }: {
   book: SagaBook;
   index: number;
   isReordering?: boolean;
-  onOpen?: () => void;
-  onRemove?: () => void;
+  mainCategory?: string;
+  onOpen: () => void;
 }) {
   const { percent, label } = getProgressInfo(book);
-  const Wrapper = onOpen ? "button" : "div";
+  const otherCategory = book.category && book.category !== mainCategory ? book.category : null;
+  const isReading = book.status === "leyendo";
   return (
-    <Wrapper
-      {...(onOpen ? { type: "button" as const, onClick: onOpen } : {})}
-      className="w-full text-left flex gap-3 items-center bg-surface-2 border border-border rounded-2xl p-2.5 pr-3"
-    >
-      {isReordering && <GripVertical size={16} className="text-text-muted shrink-0 -mr-1" />}
-      <div className="relative w-12 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-surface shadow-[0_4px_10px_-6px_rgba(60,30,10,0.5)]">
+    <button type="button" onClick={onOpen} className="w-full text-left flex gap-2.5 items-center px-3 py-2.5">
+      {isReordering && <GripVertical size={16} className="text-text-muted shrink-0 -mr-0.5" />}
+      <div className="relative w-9 shrink-0 aspect-2/3 rounded-[5px] overflow-hidden bg-surface">
         {book.cover_url ? (
           <CoverImage src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <ImageOff size={14} className="text-text-secondary" />
+            <ImageOff size={12} className="text-text-secondary" />
           </div>
         )}
-        <DogEar status={book.status as ReadingStatus} size={18} className="absolute top-0 right-0" />
+        <DogEar status={book.status as ReadingStatus} size={13} className="absolute top-0 right-0" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-body font-bold text-[11px] uppercase tracking-[0.12em] text-text-muted">
+        <p className="font-body font-bold text-[10.5px] uppercase tracking-[0.12em] text-text-muted">
           Libro {String(index + 1).padStart(2, "0")}
         </p>
-        <p className="font-body font-semibold text-body-md text-text line-clamp-1">{book.title}</p>
-        {!onRemove &&
-          (book.status === "leyendo" ? (
-            <div className="mt-1.5">
-              <div className="flex justify-between text-body-sm text-text-secondary mb-1 tabular-nums">
-                {label && <span>{label}</span>}
-                <span className="ml-auto">{Math.round(percent)}%</span>
-              </div>
-              <ProgressBar percent={percent} />
-            </div>
-          ) : (
-            <Badge status={book.status as ReadingStatus} className="mt-1.5" />
-          ))}
+        <p className="font-body font-semibold text-body-md text-text truncate">{book.title}</p>
+        <p className="text-body-sm text-text-secondary mt-0.5 tabular-nums truncate">
+          {isReading
+            ? `${label ? `${label} · ` : ""}${Math.round(percent)} %`
+            : statusLabel[book.status as ReadingStatus]}
+          {otherCategory && ` · ${otherCategory}`}
+        </p>
+        {isReading && <ProgressBar percent={percent} className="mt-1.5 h-1.5! bg-surface!" />}
       </div>
-      {onRemove && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          aria-label="Quitar de la saga"
-          className="w-8 h-8 rounded-full bg-primary-soft text-primary-text flex items-center justify-center shrink-0"
-        >
-          <Trash2 size={15} />
-        </button>
-      )}
-    </Wrapper>
+      {!isReordering && <ChevronRight size={18} className="text-text-muted shrink-0" />}
+    </button>
   );
 }
 
@@ -357,6 +340,7 @@ export function DetalleSaga({
   ];
 
   const sagaStatus = (saga?.status ?? "pendiente") as ReadingStatus;
+  const categories = computeSagaCategories(books.map((b) => b.category), saga?.category);
 
   // Lista de libros de la saga: en modo "Organizar" se envuelve en el contexto de arrastre.
   // En Ver son tarjetas separadas; en Editar, filas compactas dentro de una sola tarjeta.
@@ -368,6 +352,7 @@ export function DetalleSaga({
           book={book}
           index={i}
           isReordering={isReorderingBooks}
+          mainCategory={categories[0]}
           onOpen={() => onOpenBook(book.id)}
         />
       ) : (
@@ -380,9 +365,9 @@ export function DetalleSaga({
         />
       ),
     );
-    const listClass = mode === "view" ? "flex flex-col gap-2.5 mt-3" : "";
+    const listClass = "";
     const list = !isReorderingBooks ? (
-      <div className={`${listClass} ${mode === "view" ? "stagger-children" : ""}`}>{rows}</div>
+      <div className={mode === "view" ? "stagger-children" : ""}>{rows}</div>
     ) : (
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
         <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
@@ -396,10 +381,10 @@ export function DetalleSaga({
         </SortableContext>
       </DndContext>
     );
-    return mode === "view" ? list : <FormCard>{list}</FormCard>;
+    return <FormCard>{list}</FormCard>;
   }
 
-  const bookActions = (showEdit: boolean) => (
+  const bookActions = () => (
       <div className="flex items-center gap-2">
         {books.length > 1 && (
           <button
@@ -415,16 +400,6 @@ export function DetalleSaga({
             {isReorderingBooks ? <Check size={16} /> : <ArrowUpDown size={16} />}
           </button>
         )}
-        {showEdit && (
-          <button
-            type="button"
-            onClick={startEditing}
-            aria-label="Editar saga"
-            className="w-9 h-9 rounded-full bg-surface-2 border border-border text-primary-text flex items-center justify-center"
-          >
-            <PenLine size={16} />
-          </button>
-        )}
         <button
           type="button"
           onClick={() => setIsSelectBookOpen(true)}
@@ -436,13 +411,17 @@ export function DetalleSaga({
       </div>
   );
 
-  const booksHeader = (showEdit: boolean) => (
-    <div className="flex items-center justify-between gap-2 mt-6">
-      <p className="font-body font-bold text-body-sm uppercase tracking-[0.14em] text-primary-text">
-        Libros agregados
-      </p>
-      {bookActions(showEdit)}
-    </div>
+  // Encabezado de la lista de libros, igual al ver y al editar.
+  const booksSectionHeader = (
+    <>
+      <div className="flex items-center justify-between gap-2 mb-2.5">
+        <FormSectionLabel className="mb-0!">{`Libros · ${books.length}`}</FormSectionLabel>
+        {bookActions()}
+      </div>
+      {isReorderingBooks && (
+        <p className="text-body-sm text-text-secondary text-center mb-2 animate-fade-in">Arrastra los libros para cambiar el orden.</p>
+      )}
+    </>
   );
 
   return (
@@ -450,7 +429,17 @@ export function DetalleSaga({
       <Sheet
         onClose={onClose}
         title={isEditing ? "Editar saga" : "Detalles de la saga"}
-        footer={isEditing && draft ? (
+        footer={!isEditing && saga ? (
+          <FormActions>
+            <Button variant="outline" fullWidth={false} className="w-12.5 shrink-0 px-0!" aria-label="Eliminar saga" onClick={() => setDeleteState("confirm")}>
+              <Trash2 size={18} />
+            </Button>
+            <Button variant="soft" onClick={startEditing}>
+              <PenLine size={17} />
+              Editar saga
+            </Button>
+          </FormActions>
+        ) : isEditing && draft ? (
           <FormActions>
             <Button variant="outline" onClick={() => { setIsEditing(false); setIsReorderingBooks(false); }}>
               Cancelar
@@ -463,7 +452,7 @@ export function DetalleSaga({
       >
         {!saga ? <DetailSkeleton /> : !isEditing ? (
           <div key="detail" className="animate-fade-in">
-            <div className="flex gap-4 items-start">
+            <div className="flex gap-4 items-start mb-4">
               <SagaStackPreview
                 compact
                 bookCount={books.length}
@@ -475,18 +464,26 @@ export function DetalleSaga({
               <div className="flex-1 min-w-0 pt-1">
                 <h3 className="font-display font-semibold text-[21px] leading-tight text-text text-balance">{saga.title}</h3>
                 {saga.author && <p className="text-body-md text-text-secondary mt-1">{saga.author}</p>}
-                <div className="flex flex-wrap items-center gap-2 mt-3">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3">
                   <Badge status={sagaStatus} />
-                  {saga.category && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-body-sm font-bold bg-primary-soft text-primary-text">
-                      {saga.category}
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
+                    <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+                    Según tus libros
+                  </span>
                 </div>
+                {categories.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
+                    {categories.map((c) => (
+                      <span key={c} className="inline-flex items-center px-2.5 py-1 rounded-full text-body-sm font-bold bg-primary-soft text-primary-text">
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="mt-5 bg-surface-2 border border-border rounded-2xl px-4 py-3">
+            <div className="bg-surface-2 border border-border rounded-[18px] px-3.5 py-3 mb-5.5">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-body-md text-text-secondary">Libros en tu estante</p>
                 <p className="font-display font-semibold text-body-lg text-text tabular-nums">
@@ -494,20 +491,18 @@ export function DetalleSaga({
                 </p>
               </div>
               {saga.total_books ? (
-                <ProgressBar percent={Math.min(100, (books.length / saga.total_books) * 100)} className="mt-2" />
+                <ProgressBar percent={Math.min(100, (books.length / saga.total_books) * 100)} className="mt-2 bg-surface!" />
               ) : null}
             </div>
 
-            {booksHeader(true)}
-            {isReorderingBooks && (
-              <p className="text-body-sm text-text-secondary text-center mt-2">Arrastra los libros para cambiar el orden.</p>
-            )}
-            {books.length === 0 ? (
-              <p className="text-body-md text-text-secondary text-center mt-4">Todavía no agregas libros a esta saga.</p>
-            ) : (
-              renderBookList("view")
-            )}
-
+            <section className="mb-2">
+              {booksSectionHeader}
+              {books.length === 0 ? (
+                <p className="text-body-md text-text-secondary text-center py-3">Todavía no agregas libros a esta saga.</p>
+              ) : (
+                renderBookList("view")
+              )}
+            </section>
           </div>
         ) : draft ? (
           <div key="edit" className="animate-fade-in">
@@ -543,7 +538,18 @@ export function DetalleSaga({
             <FormSection label="La saga">
               <FormCard>
                 <FormRow label="Categoría">
-                  <Select bare options={categoryOptions} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
+                  {books.length > 0 ? (
+                    // Con libros, las categorías salen de ellos (computeSagaCategories).
+                    <span className="flex flex-col items-end text-right min-w-0">
+                      <span className="text-body-lg text-text truncate max-w-full">{categories.join(", ")}</span>
+                      <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
+                        <RefreshCw size={11} strokeWidth={2.2} aria-hidden="true" />
+                        Según tus libros
+                      </span>
+                    </span>
+                  ) : (
+                    <Select bare options={categoryOptions} value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
+                  )}
                 </FormRow>
                 <div>
                   <FormRow label="Libros en total" optional htmlFor="edit-saga-total" className="pb-1">
@@ -575,13 +581,7 @@ export function DetalleSaga({
             </FormSection>
 
             <section className="mb-4">
-              <div className="flex items-center justify-between gap-2 mb-2.5">
-                <FormSectionLabel className="mb-0!">{`Libros · ${books.length}`}</FormSectionLabel>
-                {bookActions(false)}
-              </div>
-              {isReorderingBooks && (
-                <p className="text-body-sm text-text-secondary text-center mb-2 animate-fade-in">Arrastra los libros para cambiar el orden.</p>
-              )}
+              {booksSectionHeader}
               {books.length === 0 ? (
                 <p className="text-body-md text-text-secondary text-center py-3">Todavía no agregas libros a esta saga.</p>
               ) : (
