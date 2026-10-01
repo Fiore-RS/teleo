@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useGoBack } from '../hooks/useGoBack'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
@@ -15,6 +15,7 @@ import { ShareProfileModal } from '../assets/components/molecules/ShareProfileMo
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
 import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
 import { PaletteSheet } from '../assets/components/molecules/PaletteSheet'
+import { AccountSheet, type AccountSheetKey } from '../assets/components/molecules/AccountSheets'
 import { useTheme } from '../hooks/useTheme'
 import { getPalette } from '../lib/palettes'
 import { Button } from '../assets/components/atoms/Button'
@@ -43,6 +44,17 @@ export function Configuracion() {
   const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
   const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
   const [isPaletteOpen, setIsPaletteOpen] = useState(false)
+  // Hojas de Cuenta (V.2.2.0). Las rutas viejas (/configuracion/usuario, etc.) siguen
+  // funcionando: abren Configuración con la hoja correspondiente ya abierta.
+  const location = useLocation()
+  const [accountSheet, setAccountSheet] = useState<AccountSheetKey | null>(() => {
+    const key = location.pathname.split('/')[2]
+    return key === 'usuario' || key === 'nickname' || key === 'correo' || key === 'contrasena' ? key : null
+  })
+  function closeAccountSheet() {
+    setAccountSheet(null)
+    if (location.pathname !== '/configuracion') navigate('/configuracion', { replace: true })
+  }
   const { palette, resolvedTheme } = useTheme()
   const activePalette = getPalette(palette)
   const [confirmAction, setConfirmAction] = useState<
@@ -165,10 +177,10 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Cuenta">
-          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => openSubpage('/configuracion/usuario')} />
-          <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => openSubpage('/configuracion/nickname')} />
-          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => openSubpage('/configuracion/correo')} />
-          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => openSubpage('/configuracion/contrasena')} />
+          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />
+          <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
+          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />
+          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />
         </SettingsGroup>
 
         <SettingsGroup title="Compartir">
@@ -206,6 +218,8 @@ export function Configuracion() {
           userId={user?.id}
         />
       )}
+
+      {accountSheet && <AccountSheet sheet={accountSheet} onClose={closeAccountSheet} />}
 
       {isPaletteOpen && (
         <PaletteSheet onClose={() => setIsPaletteOpen(false)} onSave={(id) => updateProfile({ palette: id })} />

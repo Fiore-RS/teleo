@@ -8,6 +8,7 @@ import { Input } from '../assets/components/atoms/Input'
 import { emailInputProps } from '../lib/emailInput'
 import { Button } from '../assets/components/atoms/Button'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { FormCard, FormRow, FormSection } from '../assets/components/molecules/FormLayout'
 
 export function CambiarCorreo() {
   const navigate = useNavigate()
@@ -19,9 +20,19 @@ export function CambiarCorreo() {
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
+  const typedNew = newEmail.trim()
+  const typedConfirm = confirmEmail.trim()
+  const matches = typedNew !== '' && typedNew.toLowerCase() === typedConfirm.toLowerCase()
+  const isSame = typedNew !== '' && typedNew.toLowerCase() === (user?.email ?? '').toLowerCase()
+  const isValid = matches && !isSame && typedNew.includes('@')
+
+  let hint: string | null = null
+  if (isSame) hint = 'Ese ya es tu correo actual.'
+  else if (typedConfirm && !matches) hint = 'Los correos no coinciden.'
+
   async function handleSave() {
-    if (newEmail.trim() !== confirmEmail.trim()) { setError('Los correos no coinciden.'); return }
-    const { error } = await updateEmail(newEmail.trim())
+    if (!isValid) return
+    const { error } = await updateEmail(typedNew)
     if (error) { setError(error); return }
     setSubmitted(true)
   }
@@ -45,21 +56,24 @@ export function CambiarCorreo() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader title="Cambiar correo" subtitle="Actualiza tu dirección de correo electrónico." onBack={goBack} backLabel="Regresar a Configuración" />
-      <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Correo electrónico actual</label>
-      <Input value={user?.email ?? ''} disabled />
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Nuevo correo electrónico</label>
-      <Input {...emailInputProps} placeholder="Nuevo correo..." value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Confirmar correo electrónico</label>
-      <Input {...emailInputProps} autoComplete="off" placeholder="Confirmar correo..." value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} />
-
-      {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
-
-      <Button variant="primary" className="mt-6" onClick={handleSave} isLoading={isSaving}>Guardar cambios</Button>
+      <PageHeader title="Cambiar correo" subtitle="Te enviaremos un enlace al correo nuevo para confirmarlo." onBack={goBack} backLabel="Regresar a Configuración" />
+      <div className="animate-fade-in">
+        <FormSection label="Tu correo" className="mb-0">
+          <FormCard>
+            <FormRow label="Actual">
+              <span className="text-body-lg text-text-secondary truncate">{user?.email ?? ''}</span>
+            </FormRow>
+            <FormRow label="Nuevo" htmlFor="new-email">
+              <Input {...emailInputProps} bare id="new-email" placeholder="nuevo@correo.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="text-right text-body-lg" />
+            </FormRow>
+            <FormRow label="Confirmar" htmlFor="confirm-email">
+              <Input {...emailInputProps} bare id="confirm-email" autoComplete="off" placeholder="nuevo@correo.com" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} className="text-right text-body-lg" />
+            </FormRow>
+          </FormCard>
+        </FormSection>
+        {hint && <p className="text-body-sm text-primary-text mt-2 px-0.5 animate-fade-in">{hint}</p>}
+        {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
+        <Button variant="primary" className="mt-6" onClick={handleSave} isLoading={isSaving} disabled={!isValid}>Enviar enlace</Button>
       </div>
     </div>
   )
