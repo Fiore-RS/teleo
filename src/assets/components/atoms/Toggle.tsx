@@ -2,11 +2,13 @@ interface ToggleProps {
   checked: boolean
   onChange: (checked: boolean) => void
   label?: string
+  /** Nombre para lectores de pantalla cuando el texto visible está afuera del interruptor. */
+  ariaLabel?: string
   disabled?: boolean
   className?: string
 }
 
-export function Toggle({ checked, onChange, label, disabled = false, className = '' }: ToggleProps) {
+export function Toggle({ checked, onChange, label, ariaLabel, disabled = false, className = '' }: ToggleProps) {
   return (
     <label
       className={`inline-flex items-center gap-3 cursor-pointer ${
@@ -18,7 +20,7 @@ export function Toggle({ checked, onChange, label, disabled = false, className =
         type="button"
         role="switch"
         aria-checked={checked}
-        aria-label={label}
+        aria-label={ariaLabel ?? label}
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${

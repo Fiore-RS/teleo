@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Check } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
+import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
+import { FormActions, FormCard, FormRow, FormSection } from './FormLayout'
 import { CONTENT_WARNINGS } from '../../../lib/contentWarnings'
 
 const NOTE_MAX = 80
@@ -34,47 +35,57 @@ export function ContentWarningsPicker({ selected, note, onClose, onSave }: Conte
     onClose()
   }
 
+  const count = picked.size + (other.trim() ? 1 : 0)
+
   return (
-    <Modal isOpen onClose={onClose} title="Avisos de contenido">
-      <p className="text-body-sm text-text-secondary text-center -mt-1 mb-4">Elige los que tenga el libro.</p>
-
-      <div className="grid grid-cols-2 gap-2">
-        {CONTENT_WARNINGS.map((w) => {
-          const isOn = picked.has(w.key)
-          return (
-            <button
-              key={w.key}
-              type="button"
-              role="checkbox"
-              aria-checked={isOn}
-              onClick={() => toggle(w.key)}
-              className={`flex items-center gap-2 rounded-xl border px-2.5 py-2.5 text-left text-body-sm font-semibold text-text transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
-                isOn ? 'border-orange bg-orange-tint' : 'border-border bg-surface-2'
-              }`}
-            >
-              <span
-                className={`w-[18px] h-[18px] shrink-0 rounded-md border-2 flex items-center justify-center transition-colors ${
-                  isOn ? 'bg-orange border-orange text-on-orange' : 'border-border'
+    <Sheet
+      onClose={onClose}
+      title="Avisos de contenido"
+      footer={
+        <FormActions>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="primary" onClick={handleDone}>{count > 0 ? `Listo · ${count}` : 'Listo'}</Button>
+        </FormActions>
+      }
+    >
+      <div className="animate-fade-in">
+        <p className="text-body-md text-text-secondary mb-3.5">Elige los que tenga el libro.</p>
+        <div className="flex flex-wrap gap-2 mb-5.5">
+          {CONTENT_WARNINGS.map((w) => {
+            const isOn = picked.has(w.key)
+            return (
+              <button
+                key={w.key}
+                type="button"
+                role="checkbox"
+                aria-checked={isOn}
+                onClick={() => toggle(w.key)}
+                className={`inline-flex items-center gap-1.5 rounded-full border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
+                  isOn ? 'border-orange-text bg-orange-soft text-orange-text' : 'border-border bg-surface-2 text-text-secondary'
                 }`}
-                aria-hidden="true"
               >
-                {isOn && <Check size={12} strokeWidth={3.5} />}
-              </span>
-              {w.label}
-            </button>
-          )
-        })}
-      </div>
+                {isOn && <Check size={14} strokeWidth={3} aria-hidden="true" />}
+                {w.label}
+              </button>
+            )
+          })}
+        </div>
 
-      <div className="mt-4">
-        <Input
-          placeholder="Otro aviso (opcional)"
-          value={other}
-          onChange={(e) => setOther(e.target.value.slice(0, NOTE_MAX))}
-        />
+        <FormSection label="Otro aviso" className="mb-1">
+          <FormCard>
+            <FormRow label="Otro" optional htmlFor="other-warning">
+              <Input
+                bare
+                id="other-warning"
+                placeholder="Escríbelo aquí"
+                value={other}
+                onChange={(e) => setOther(e.target.value.slice(0, NOTE_MAX))}
+                className="text-right text-body-lg"
+              />
+            </FormRow>
+          </FormCard>
+        </FormSection>
       </div>
-
-      <Button variant="primary" className="mt-4" onClick={handleDone}>Listo</Button>
-    </Modal>
+    </Sheet>
   )
 }

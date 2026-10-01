@@ -1,6 +1,5 @@
-import { Trash2, Check, AlertTriangle } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
-import { Button } from '../atoms/Button'
+import { ConfirmSheet } from './ConfirmSheet'
+import type { MiniBook } from './BookMiniHeader'
 
 type ConfirmStatus = 'confirm' | 'success' | 'error'
 
@@ -8,58 +7,36 @@ interface ConfirmDialogProps {
   isOpen: boolean
   status: ConfirmStatus
   itemLabel: string
-  /** true para palabras femeninas (cita, reseña, saga): "Esta cita será eliminada". */
+  /** true para palabras femeninas (cita, reseña, saga): "Esta cita". */
   feminine?: boolean
+  /** Libro al que pertenece lo que se elimina, para mostrar su mini ficha. */
+  book?: MiniBook | null
   onConfirm: () => void
   onClose: () => void
 }
 
-export function ConfirmDialog({ isOpen, status, itemLabel, feminine = false, onConfirm, onClose }: ConfirmDialogProps) {
+/** Confirmar una eliminación (rediseñado en la V.2.2.0, sin ícono). */
+export function ConfirmDialog({ isOpen, status, itemLabel, feminine = false, book, onConfirm, onClose }: ConfirmDialogProps) {
   if (!isOpen) return null
 
-  const este = feminine ? 'Esta' : 'Este'
+  const este = feminine ? 'esta' : 'este'
   const eliminado = feminine ? 'eliminada' : 'eliminado'
+  const capitalized = itemLabel.charAt(0).toUpperCase() + itemLabel.slice(1)
 
+  if (status === 'success') {
+    return <ConfirmSheet title={`${capitalized} ${eliminado}`} message="Ya no está en tu diario." confirmLabel="Entendido" onClose={onClose} />
+  }
+  if (status === 'error') {
+    return <ConfirmSheet title="Algo salió mal" message="No se pudo eliminar. Inténtalo de nuevo." confirmLabel="Entendido" onClose={onClose} />
+  }
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col items-center text-center">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-          status === 'confirm'
-            ? 'bg-primary-soft text-primary-text'
-            : status === 'success'
-              ? 'bg-magenta-soft text-magenta-text'
-              : 'bg-orange-soft text-orange-text'
-        }`}>
-          {status === 'confirm' && <Trash2 size={26} />}
-          {status === 'success' && <Check size={28} strokeWidth={2.5} />}
-          {status === 'error' && <AlertTriangle size={26} />}
-        </div>
-
-        {status === 'confirm' && (
-          <>
-            <h3 className="font-display font-semibold text-display-md text-text text-balance">¿Eliminar {itemLabel}?</h3>
-            <p className="text-body-md text-text-secondary mt-2">
-              Esta acción no se puede deshacer. {este} {itemLabel} será {eliminado} permanentemente de tu diario digital.
-            </p>
-            <Button variant="primary" className="mt-5" onClick={onConfirm}>Eliminar</Button>
-            <Button variant="outline" className="mt-2.5" onClick={onClose}>Cancelar</Button>
-          </>
-        )}
-        {status === 'success' && (
-          <>
-            <h3 className="font-display font-semibold text-display-md text-text text-balance">{feminine ? '¡Eliminada con éxito!' : '¡Eliminado con éxito!'}</h3>
-            <p className="text-body-md text-text-secondary mt-2">{este} {itemLabel} {feminine ? 'ha sido borrada' : 'ha sido borrado'} de tu archivo.</p>
-            <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
-          </>
-        )}
-        {status === 'error' && (
-          <>
-            <h3 className="font-display font-semibold text-display-md text-text text-balance">Algo salió mal</h3>
-            <p className="text-body-md text-text-secondary mt-2">No se pudo procesar la solicitud, por favor inténtalo de nuevo.</p>
-            <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
-          </>
-        )}
-      </div>
-    </Modal>
+    <ConfirmSheet
+      title={`¿Eliminar ${este} ${itemLabel}?`}
+      message="Esta acción no se puede deshacer."
+      book={book}
+      confirmLabel="Eliminar"
+      onConfirm={onConfirm}
+      onClose={onClose}
+    />
   )
 }

@@ -19,13 +19,9 @@ const Login = page(() => import("./pages/Login"), "Login");
 const Registro = page(() => import("./pages/Registro"), "Registro");
 const Perfil = page(() => import("./pages/Perfil"), "Perfil");
 const Configuracion = page(() => import("./pages/Configuracion"), "Configuracion");
-const CambiarUsuario = page(() => import("./pages/CambiarUsuario"), "CambiarUsuario");
-const CambiarCorreo = page(() => import("./pages/CambiarCorreo"), "CambiarCorreo");
-const CambiarContrasena = page(() => import("./pages/CambiarContrasena"), "CambiarContrasena");
 const Instalar = page(() => import("./pages/Instalar"), "Instalar");
 const RecuperarContrasena = page(() => import("./pages/RecuperarContrasena"), "RecuperarContrasena");
 const NuevaContrasena = page(() => import("./pages/NuevaContrasena"), "NuevaContrasena");
-const CambiarNickname = page(() => import("./pages/CambiarNickname"), "CambiarNickname");
 const CorreoConfirmado = page(() => import("./pages/CorreoConfirmado"), "CorreoConfirmado");
 const DetrasDeTeleo = page(() => import("./pages/DetrasDeTeleo"), "DetrasDeTeleo");
 const Novedades = page(() => import("./pages/Novedades"), "Novedades");
@@ -143,10 +139,10 @@ function App() {
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
           <Route path="/nueva-contrasena" element={<NuevaContrasena />} />
           <Route path="/configuracion" element={<Configuracion />} />
-          <Route path="/configuracion/usuario" element={<CambiarUsuario />} />
-          <Route path="/configuracion/correo" element={<CambiarCorreo />} />
-          <Route path="/configuracion/contrasena" element={<CambiarContrasena />} />
-          <Route path="/configuracion/nickname" element={<CambiarNickname />} />
+          <Route path="/configuracion/usuario" element={<Configuracion />} />
+          <Route path="/configuracion/correo" element={<Configuracion />} />
+          <Route path="/configuracion/contrasena" element={<Configuracion />} />
+          <Route path="/configuracion/nickname" element={<Configuracion />} />
           <Route path="/configuracion/detras-de-teleo" element={<DetrasDeTeleo />} />
           <Route path="/configuracion/novedades" element={<Novedades />} />
           <Route path="/privacidad" element={<Privacidad />} />

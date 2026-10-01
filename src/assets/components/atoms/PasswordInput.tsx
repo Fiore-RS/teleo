@@ -2,6 +2,8 @@ import { useState, type InputHTMLAttributes } from 'react'
 import { Eye, EyeOff, Lock } from 'lucide-react'
 
 interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  /** Sin caja ni candado, alineado a la derecha: para filas compactas de formulario. */
+  bare?: boolean
   className?: string
 }
 
@@ -11,9 +13,34 @@ interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
  *
  *  Además apaga la mayúscula automática, el autocorrector y el corrector ortográfico del
  *  teclado del celular, que cambiaban la primera letra o "corregían" la contraseña. */
-export function PasswordInput({ className = '', ...props }: PasswordInputProps) {
+export function PasswordInput({ bare = false, className = '', ...props }: PasswordInputProps) {
   const [isVisible, setIsVisible] = useState(false)
   const ToggleIcon = isVisible ? EyeOff : Eye
+
+  if (bare) {
+    return (
+      <div className="flex items-center justify-end gap-1 w-full min-w-0">
+        <input
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          {...props}
+          type={isVisible ? 'text' : 'password'}
+          className={`w-full min-w-0 bg-transparent text-right text-body-lg font-body text-text placeholder:text-text-muted focus:outline-none ${className}`}
+        />
+        <button
+          type="button"
+          onClick={() => setIsVisible((v) => !v)}
+          onMouseDown={(e) => e.preventDefault()}
+          aria-label={isVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          aria-pressed={isVisible}
+          className="w-8 h-8 shrink-0 -mr-1.5 rounded-full flex items-center justify-center text-text-muted hover:text-primary-text focus-visible:outline-2 focus-visible:outline-primary-text"
+        >
+          <ToggleIcon size={17} strokeWidth={1.75} />
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="relative w-full">

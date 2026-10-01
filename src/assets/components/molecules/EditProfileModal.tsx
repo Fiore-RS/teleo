@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Camera, Loader2, UserRound } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
+import { useNavigate } from 'react-router-dom'
+import { Camera, Loader2, UserRound, ChevronRight } from 'lucide-react'
+import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
-import { Textarea } from '../atoms/Textarea'
 import { Button } from '../atoms/Button'
+import { FormActions, FormCard, FormRow, FormSection } from './FormLayout'
 import { BannerArt } from '../atoms/BannerArt'
 import type { BannerId } from '../../../lib/banners'
 
@@ -45,6 +46,7 @@ export function EditProfileModal({
   const [nickname, setNickname] = useState(currentNickname)
   const [bio, setBio] = useState(currentBio)
   const [isSaving, setIsSaving] = useState(false)
+  const navigate = useNavigate()
 
   async function handleSave() {
     setIsSaving(true)
@@ -54,10 +56,20 @@ export function EditProfileModal({
     onClose()
   }
 
-  const labelClass = 'font-body font-semibold text-body-sm text-text-secondary block mb-1.5'
+  if (!isOpen) return null
 
   return (
-    <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Editar perfil">
+    <Sheet
+      onClose={onClose}
+      title="Editar perfil"
+      footer={
+        <FormActions>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="primary" onClick={handleSave} isLoading={isSaving}>Guardar cambios</Button>
+        </FormActions>
+      }
+    >
+      <div className="animate-fade-in">
       {/* Mini cabecera: la misma de Tu rincón en chico, con el banner y la foto encima. Es una
           vista previa del perfil: tocar el banner abre el catálogo y tocar la foto la cambia. */}
       <button
@@ -100,31 +112,48 @@ export function EditProfileModal({
         </div>
       </div>
 
-      <label htmlFor="perfil-nickname" className={`${labelClass} mt-5`}>Nickname</label>
-      <Input
-        id="perfil-nickname"
-        value={nickname}
-        onChange={(e) => setNickname(e.target.value.slice(0, NICKNAME_MAX))}
-        placeholder={username ? `Por ejemplo, ${username}` : 'Cómo quieres que te llamen'}
-        autoComplete="nickname"
-      />
-      <p className="text-body-sm text-text-secondary mt-1">
-        Así te saluda Teleo. Puedes cambiarlo cuando quieras; tu @{username} sigue igual.
-      </p>
+      <FormSection label="Tu perfil" className="mt-5">
+        <FormCard>
+          <FormRow label="Nickname" htmlFor="perfil-nickname">
+            <Input
+              bare
+              id="perfil-nickname"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value.slice(0, NICKNAME_MAX))}
+              placeholder={username || 'Cómo quieres que te llamen'}
+              autoComplete="nickname"
+              className="text-right text-body-lg"
+            />
+          </FormRow>
+          {/* El @usuario tiene espera entre cambios: se cambia desde Configuración. */}
+          <FormRow label="Usuario">
+            <button
+              type="button"
+              onClick={() => navigate('/configuracion/usuario')}
+              className="flex items-center gap-1 min-w-0 font-body font-bold text-body-md text-primary-text"
+            >
+              <span className="truncate">@{username} · Cambiar</span>
+              <ChevronRight size={16} className="shrink-0" />
+            </button>
+          </FormRow>
+        </FormCard>
+      </FormSection>
 
-      <label htmlFor="perfil-bio" className={`${labelClass} mt-5`}>Sobre mí</label>
-      <Textarea
-        id="perfil-bio"
-        value={bio}
-        onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
-        placeholder="Cuéntale al mundo qué tipo de lectora o lector eres."
-        rows={3}
-      />
-      <p className="text-body-sm text-text-secondary text-right mt-1">{bio.length}/{BIO_MAX}</p>
-
-      <Button variant="primary" className="mt-3" onClick={handleSave} isLoading={isSaving}>
-        Guardar cambios
-      </Button>
-    </Modal>
+      <FormSection label="Sobre mí" className="mb-1">
+        <div className="bg-surface-2 border border-border rounded-[18px] px-3.5 pt-3 pb-2">
+          <textarea
+            id="perfil-bio"
+            aria-label="Sobre mí"
+            value={bio}
+            onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
+            placeholder="Cuéntale al mundo qué tipo de lectora o lector eres."
+            rows={3}
+            className="w-full bg-transparent focus:outline-none resize-none font-body text-body-lg leading-relaxed text-text placeholder:text-text-muted"
+          />
+          <p className="text-body-sm text-text-muted text-right tabular-nums">{bio.length}/{BIO_MAX}</p>
+        </div>
+      </FormSection>
+      </div>
+    </Sheet>
   )
 }

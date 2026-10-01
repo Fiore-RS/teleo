@@ -1,26 +1,12 @@
 import { useState } from 'react'
-import { Modal } from '../atoms/Modal'
+import { Heart, RefreshCw } from 'lucide-react'
+import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
-import { FavoriteToggle } from '../atoms/FavoriteToggle'
 import { Button } from '../atoms/Button'
+import { FormActions, FormCard, FormRow, FormSection, FormSwitchRow } from './FormLayout'
 import { supabase } from '../../../lib/supabase'
-import { statusLabel, type ReadingStatus } from '../../../lib/status'
-
-const categoryOptions = [
-  { value: 'Libro', label: 'Libro' },
-  { value: 'Novela', label: 'Novela' },
-  { value: 'Novela gráfica', label: 'Novela gráfica' },
-  { value: 'Novela ligera', label: 'Novela ligera' },
-  { value: 'Cómic', label: 'Cómic' },
-  { value: 'Manga', label: 'Manga' },
-  { value: 'Manhua', label: 'Manhua' },
-  { value: 'Manhwa', label: 'Manhwa' },
-]
-
-const statusOptions = (Object.keys(statusLabel) as ReadingStatus[]).map((value) => ({
-  value, label: statusLabel[value],
-}))
+import { categoryOptions } from '../../../lib/options'
 
 interface AddSagaModalProps {
   isOpen: boolean
@@ -34,11 +20,12 @@ interface AddSagaModalProps {
   onAdded: (newSagaId: string) => void
 }
 
+/** Agregar saga (V.2.2.0): misma forma que Editar saga. El estado no se elige: se calcula
+ *  con los libros que se le agreguen (lib/sagaStatus.ts); sin libros queda Pendiente. */
 export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }: AddSagaModalProps) {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [category, setCategory] = useState('Novela')
-  const [status, setStatus] = useState<ReadingStatus>('pendiente')
   const [totalBooks, setTotalBooks] = useState('')
   const [isFavorite, setIsFavorite] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -47,7 +34,6 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
     setTitle('')
     setAuthor('')
     setCategory('Novela')
-    setStatus('pendiente')
     setTotalBooks('')
     setIsFavorite(false)
   }
@@ -63,6 +49,7 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
     const maxOrder = existingSagas.length > 0
       ? Math.max(...existingSagas.map((s) => s.estante_sort_order ?? 0))
       : 0
+    const total = Number.parseInt(totalBooks, 10)
     const { data, error } = await supabase
       .from('sagas')
       .insert({
@@ -70,8 +57,8 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
         title: title.trim(),
         author: author.trim() || null,
         category,
-        status,
-        total_books: totalBooks ? parseInt(totalBooks, 10) : null,
+        status: 'pendiente',
+        total_books: total > 0 ? total : null,
         is_favorite: isFavorite,
         estante_sort_order: maxOrder + 1000,
       })
@@ -85,61 +72,77 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
     }
   }
 
+  if (!isOpen) return null
+
   return (
-    <Modal variant="sheet" isOpen={isOpen} onClose={handleClose} title="Nueva saga para el estante">
-      <div className="relative flex aspect-4/5 w-32 mx-auto my-4 drop-shadow-md">
-        <div className="w-5 h-[92%] mt-[8%] rounded-t-md rounded-l-md bg-primary" />
-        <div className="w-6 h-[96%] mt-[4%] rounded-t-md rounded-l-md bg-orange -ml-1" />
-        <div className="flex-1 h-full rounded-xl bg-magenta -ml-2" />
-      </div>
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Título</label>
-      <Input placeholder="Título de la saga" value={title} onChange={(e) => setTitle(e.target.value)} />
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Autor</label>
-      <Input placeholder="Autor de la saga" value={author} onChange={(e) => setAuthor(e.target.value)} />
-
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        <div>
-          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Categoría</label>
-          <Select options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
+    <Sheet
+      onClose={handleClose}
+      title="Agregar saga"
+      footer={
+        <FormActions>
+          <Button variant="outline" onClick={handleClose}>Cancelar</Button>
+          <Button variant="primary" onClick={handleCreate} isLoading={isSaving} disabled={!title.trim()}>
+            Crear saga
+          </Button>
+        </FormActions>
+      }
+    >
+      <div className="animate-fade-in">
+        <div className="flex gap-3.5 items-end mb-5.5">
+          <div className="relative flex aspect-4/5 w-23 shrink-0" aria-hidden="true">
+            <div className="w-4.5 h-[92%] mt-[8%] rounded-l-md bg-primary" />
+            <div className="w-5 h-[96%] mt-[4%] rounded-l-md bg-orange -ml-1" />
+            <div className="flex-1 h-full rounded-[10px] bg-magenta -ml-2" />
+          </div>
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <Input
+              bare
+              aria-label="Título"
+              placeholder="Título de la saga"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="border-b-[1.5px] border-border focus:border-primary-text py-1 font-display font-semibold text-[20px] leading-tight"
+            />
+            <Input
+              bare
+              aria-label="Autor"
+              placeholder="Autor"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              className="border-b-[1.5px] border-border focus:border-primary-text py-1 text-body-lg text-text-secondary"
+            />
+            <span className="inline-flex items-center gap-1 mt-1 text-body-sm text-text-muted">
+              <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+              El estado se calcula con sus libros
+            </span>
+          </div>
         </div>
-        <div>
-          <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Estado</label>
-          <Select
-            options={statusOptions}
-            value={status}
-            onChange={(e) => setStatus(e.target.value as ReadingStatus)}
-          />
-        </div>
+
+        <FormSection label="La saga" className="mb-1">
+          <FormCard>
+            <FormRow label="Categoría">
+              <Select bare options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
+            </FormRow>
+            <div>
+              <FormRow label="Libros en total" optional htmlFor="new-saga-total" className="pb-1">
+                <Input
+                  bare
+                  id="new-saga-total"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  placeholder="?"
+                  value={totalBooks}
+                  onChange={(e) => setTotalBooks(e.target.value)}
+                  className="w-11! text-center text-body-lg tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
+                />
+              </FormRow>
+              <p className="px-3.5 pb-2.5 text-body-sm text-text-muted">Déjalo vacío si todavía no sabes cuántos tendrá.</p>
+            </div>
+            <FormSwitchRow icon={Heart} label="Favorita" checked={isFavorite} onChange={setIsFavorite} />
+          </FormCard>
+        </FormSection>
       </div>
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">
-        Cantidad total de libros de la saga
-      </label>
-      <Input
-        type="number"
-        min={1}
-        placeholder="Ej. 5"
-        value={totalBooks}
-        onChange={(e) => setTotalBooks(e.target.value)}
-      />
-      <p className="text-body-sm text-text-secondary mt-1">
-        Déjalo vacío si todavía no sabes cuántos libros tendrá.
-      </p>
-
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5 mt-4">Marcar como favorito</label>
-      <FavoriteToggle isFavorite={isFavorite} onToggle={() => setIsFavorite((prev) => !prev)} />
-
-      <Button
-        variant="primary"
-        className="mt-5"
-        onClick={handleCreate}
-        isLoading={isSaving}
-        disabled={!title.trim()}
-      >
-        Crear Saga
-      </Button>
-    </Modal>
+    </Sheet>
   )
 }

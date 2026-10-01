@@ -1,9 +1,9 @@
-import { Quote, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { Library, Sparkles, UserCog, type LucideIcon } from 'lucide-react'
 import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '2.1.1'
+export const ANNOUNCEMENT_VERSION = '2.2.0'
 
 export interface AnnouncementItem {
   icon: LucideIcon
@@ -12,8 +12,9 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { icon: TriangleAlert, title: 'Avisos de contenido', text: 'Marca los temas sensibles de un libro en tu reseña. Quedan ocultos hasta que alguien toque Ver.' },
-  { icon: Quote, title: 'Tus citas, a tu manera', text: 'Edita o elimina tus citas desde el menú de cada una en Mis citas.' },
+  { icon: Sparkles, title: 'Un diseño más cuidado', text: 'Formularios, detalles y paneles se renovaron para que todo se vea más ordenado.' },
+  { icon: Library, title: 'Sagas que se ordenan solas', text: 'El estado y la categoría de tus sagas ahora se completan a partir de sus libros.' },
+  { icon: UserCog, title: 'Tu cuenta, a mano', text: 'Cambia tu usuario, correo o contraseña desde Configuración, sin salir de ahí.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */

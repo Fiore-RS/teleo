@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
-import { ImageOff } from 'lucide-react'
-import { CoverImage } from '../atoms/CoverImage'
-import { Modal } from '../atoms/Modal'
-import { Input } from '../atoms/Input'
+import { ChevronRight } from 'lucide-react'
+import { Sheet } from '../atoms/Sheet'
+import { SearchPill } from '../atoms/SearchPill'
+import { Button } from '../atoms/Button'
+import { BookPickList } from './BookPickList'
+import { FormActions } from './FormLayout'
 import { useReviewableBooks } from '../../../hooks/useReviewableBooks'
 
 interface SelectReviewBookModalProps {
@@ -12,6 +14,7 @@ interface SelectReviewBookModalProps {
   onSelect: (bookId: string) => void
 }
 
+/** Elegir un libro terminado para escribir su reseña (rediseñado en la V.2.2.0). */
 export function SelectReviewBookModal({ isOpen, onClose, userId, onSelect }: SelectReviewBookModalProps) {
   const { books, isLoading } = useReviewableBooks(userId)
   const [search, setSearch] = useState('')
@@ -22,31 +25,28 @@ export function SelectReviewBookModal({ isOpen, onClose, userId, onSelect }: Sel
     return books.filter((b) => b.title.toLowerCase().includes(q) || (b.author ?? '').toLowerCase().includes(q))
   }, [books, search])
 
+  if (!isOpen) return null
+
   return (
-    <Modal variant="sheet" isOpen={isOpen} onClose={onClose} title="Elige un libro para reseñar">
-      <Input placeholder="Buscar en tus libros terminados..." value={search} onChange={(e) => setSearch(e.target.value)} />
-      <div className="space-y-2 mt-4 max-h-96 overflow-y-auto">
-        {!isLoading && filtered.length === 0 && (
+    <Sheet
+      onClose={onClose}
+      title="Elige un libro para reseñar"
+      footer={<FormActions><Button variant="outline" onClick={onClose}>Cancelar</Button></FormActions>}
+    >
+      <div className="animate-fade-in">
+        <SearchPill value={search} onChange={setSearch} placeholder="Buscar en tus terminados..." className="mb-4" />
+        {!isLoading && filtered.length === 0 ? (
           <p className="text-body-md text-text-secondary text-center py-4">
-            No tienes libros terminados sin reseña todavía.
+            {search.trim() ? 'Ningún libro coincide con tu búsqueda.' : 'No tienes libros terminados sin reseña todavía.'}
           </p>
+        ) : (
+          <BookPickList
+            books={filtered}
+            onPick={(book) => onSelect(book.id)}
+            trailing={() => <ChevronRight size={18} className="text-text-muted shrink-0" />}
+          />
         )}
-        {filtered.map((book) => (
-          <button key={book.id} onClick={() => onSelect(book.id)} className="w-full flex gap-3 items-center bg-surface-2 border border-border rounded-2xl p-2 text-left">
-            <div className="w-10 shrink-0 aspect-2/3 rounded-md overflow-hidden bg-surface-2">
-              {book.cover_url ? (
-                <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center"><ImageOff size={14} className="text-text-secondary" /></div>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="text-body-md text-text line-clamp-1">{book.title}</p>
-              {book.author && <p className="text-body-sm text-text-secondary line-clamp-1">{book.author}</p>}
-            </div>
-          </button>
-        ))}
       </div>
-    </Modal>
+    </Sheet>
   )
 }

@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Modal } from '../atoms/Modal'
+import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
+import { FormActions, FormCard, FormRow } from './FormLayout'
 
 interface EditListNameModalProps {
   isOpen: boolean
@@ -13,8 +14,8 @@ interface EditListNameModalProps {
 
 const MAX_LENGTH = 40
 
-/** Mismo patrón que `EditGoalModal` — un pop up simple con un input y "Guardar cambios". Dejar
- *  el campo vacío restablece el nombre por defecto (se guarda `null`, no un string vacío). */
+/** Nombre de "Mi lista de esta temporada" (rediseñado en la V.2.2.0). Dejar el campo vacío
+ *  restablece el nombre por defecto (se guarda `null`, no un string vacío). */
 export function EditListNameModal({ isOpen, onClose, currentName, defaultName, onSave }: EditListNameModalProps) {
   const [value, setValue] = useState(currentName)
   const [isSaving, setIsSaving] = useState(false)
@@ -26,24 +27,36 @@ export function EditListNameModal({ isOpen, onClose, currentName, defaultName, o
     onClose()
   }
 
+  if (!isOpen) return null
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Nombre de tu lista">
-      <p className="font-body text-body-md text-text-secondary mb-4">
-        Personaliza cómo se llama tu lista de prioridad en tu perfil. Déjalo vacío para volver a
-        "{defaultName}".
-      </p>
-      <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">
-        Nombre de la lista
-      </label>
-      <Input
-        placeholder={defaultName}
-        value={value}
-        maxLength={MAX_LENGTH}
-        onChange={(e) => setValue(e.target.value)}
-      />
-      <Button variant="primary" className="mt-4" onClick={handleSave} isLoading={isSaving}>
-        Guardar cambios
-      </Button>
-    </Modal>
+    <Sheet
+      onClose={onClose}
+      title="Nombre de tu lista"
+      footer={
+        <FormActions>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button variant="primary" onClick={handleSave} isLoading={isSaving}>Guardar</Button>
+        </FormActions>
+      }
+    >
+      <div className="animate-fade-in">
+        <FormCard>
+          <FormRow label="Nombre" htmlFor="list-name">
+            <Input
+              bare
+              id="list-name"
+              autoFocus
+              placeholder={defaultName}
+              value={value}
+              maxLength={MAX_LENGTH}
+              onChange={(e) => setValue(e.target.value)}
+              className="text-right text-body-lg"
+            />
+          </FormRow>
+        </FormCard>
+        <p className="text-body-sm text-text-muted mt-2.5 mb-1 px-0.5">Déjalo vacío para volver a "{defaultName}".</p>
+      </div>
+    </Sheet>
   )
 }

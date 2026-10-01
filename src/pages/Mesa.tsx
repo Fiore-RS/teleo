@@ -281,12 +281,14 @@ export function Mesa() {
       <div className="pb-28" />
       <TabBar active="mesa" onChange={handleTabChange} />
 
-      <EditGoalModal
-        isOpen={isGoalModalOpen}
-        onClose={() => setIsGoalModalOpen(false)}
-        currentGoal={goal}
-        onSave={updateGoal}
-      />
+      {isGoalModalOpen && (
+        <EditGoalModal
+          onClose={() => setIsGoalModalOpen(false)}
+          currentGoal={goal}
+          completedCount={completedCount}
+          onSave={updateGoal}
+        />
+      )}
 
       {showAnnouncement && (
         <AnnouncementSheet

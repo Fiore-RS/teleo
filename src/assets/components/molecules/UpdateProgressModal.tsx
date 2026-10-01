@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ImageOff, Check, Flag, Quote } from 'lucide-react'
+import { FormActions, FormCard, FormRow } from './FormLayout'
 import { Sheet } from '../atoms/Sheet'
 import { DetailSkeleton } from '../atoms/Skeleton'
 import { CoverImage } from '../atoms/CoverImage'
@@ -86,6 +87,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
     setIsSaving(false)
     onUpdated()
+    // Desde la V.2.2.0 la hoja se cierra al guardar: la barra ya mostró el cambio al escribir.
+    onClose()
   }
 
   // Terminar un libro: se eligen las fechas en FinishBookSheet y la reseña es opcional.
@@ -119,93 +122,136 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     onUpdated()
   }
 
+  // Vista previa en vivo: la barra y lo que falta se calculan con lo que se está escribiendo,
+  // antes de guardar. Si el valor no se entiende todavía, se usa el guardado.
+  const typed = !book
+    ? null
+    : isAudio
+      ? parseDurationInput(value)
+      : Number.parseInt(value, 10)
+  const typedValid = typed !== null && !Number.isNaN(typed) && typed >= 0
+  const preview = book
+    ? {
+        ...book,
+        ...(typedValid
+          ? isAudio
+            ? { current_duration_seconds: typed }
+            : isDigital
+              ? { progress_percent: Math.min(typed, 100) }
+              : { current_page: typed }
+          : {}),
+      }
+    : null
+  const percent = preview ? Math.min(100, Math.max(0, getProgressInfo(preview).percent)) : 0
+
+  let remaining: string | null = null
+  if (preview) {
+    if (isAudio && preview.total_duration_seconds) {
+      const left = Math.max(0, preview.total_duration_seconds - (preview.current_duration_seconds ?? 0))
+      const h = Math.floor(left / 3600)
+      const m = Math.floor((left % 3600) / 60)
+      remaining = left === 0 ? 'Ya lo terminaste' : `Te faltan ${h > 0 ? `${h} h ` : ''}${m} min`
+    } else if (isDigital) {
+      const left = 100 - (preview.progress_percent ?? 0)
+      remaining = left <= 0 ? 'Ya lo terminaste' : `Te falta ${left} %`
+    } else if (preview.total_pages) {
+      const left = Math.max(0, preview.total_pages - (preview.current_page ?? 0))
+      remaining = left === 0 ? 'Ya lo terminaste' : `Te ${left === 1 ? 'falta 1 pág.' : `faltan ${left} págs.`}`
+    }
+  }
+
+  const pace = book ? getReadingPace(book) : null
+  const hasChanges = savedValue !== null && value.trim() !== savedValue
+
+  let totalLabel: string | null = null
+  if (book) {
+    if (isAudio) totalLabel = book.total_duration_seconds ? `de ${secondsToTimeInput(book.total_duration_seconds)}` : null
+    else if (isDigital) totalLabel = '%'
+    else totalLabel = book.total_pages ? `de ${book.total_pages}` : null
+  }
+
   return (
     <>
-      <Sheet onClose={onClose} title="Actualizar progreso">
+      <Sheet
+        onClose={onClose}
+        title="Actualizar progreso"
+        footer={book ? (
+          <FormActions>
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button variant="primary" onClick={handleUpdate} disabled={!hasChanges} isLoading={isSaving}>Guardar</Button>
+          </FormActions>
+        ) : undefined}
+      >
         {!book ? <DetailSkeleton /> : (
-          <>
-            <div className="flex gap-4 items-start">
-              <div className="relative aspect-2/3 w-24 shrink-0 rounded-xl overflow-hidden bg-surface-2 shadow-[0_10px_24px_-12px_rgba(60,30,10,0.55)]">
+          <div className="animate-fade-in">
+            <div className="flex gap-3.5 items-center mb-3.5">
+              <div className="relative aspect-2/3 w-14 shrink-0 rounded-[9px] overflow-hidden bg-surface-2 shadow-[0_8px_18px_-10px_rgba(60,30,10,0.55)]">
                 {book.cover_url ? (
                   <CoverImage src={book.cover_url ?? undefined} alt={book.title} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center"><ImageOff size={22} className="text-text-secondary" /></div>
+                  <div className="w-full h-full flex items-center justify-center"><ImageOff size={16} className="text-text-secondary" /></div>
                 )}
               </div>
-              <div className="flex-1 min-w-0 pt-1">
-                <h3 className="font-display font-semibold text-[20px] leading-tight text-text text-balance">{book.title}</h3>
-                {book.author && <p className="text-body-md text-text-secondary mt-1">{book.author}</p>}
-
-                {(() => {
-                  const { percent } = getProgressInfo(book)
-                  const pace = getReadingPace(book)
-
-                  let comparisonLabel: string | null = null
-                  if (isAudio && book.total_duration_seconds) {
-                    comparisonLabel = `Hora ${secondsToTimeInput(book.current_duration_seconds ?? 0)} de ${secondsToTimeInput(book.total_duration_seconds)}`
-                  } else if (isDigital) {
-                    comparisonLabel = null
-                  } else if (book.total_pages) {
-                    comparisonLabel = `Pág. ${book.current_page ?? 0} de ${book.total_pages}`
-                  }
-
-                  return (
-                    <div className="mt-3">
-                      <div className="flex justify-between text-body-sm text-text-secondary mb-1.5 tabular-nums">
-                        {comparisonLabel && <span>{comparisonLabel}</span>}
-                        <span className="ml-auto font-semibold text-primary-text">{Math.round(percent)}%</span>
-                      </div>
-                      <ProgressBar percent={percent} />
-                      {pace && (
-                        <p className="text-body-sm text-text-secondary mt-2 leading-snug">
-                          {paceSentence(pace)} · {pace.perDayLabel}
-                        </p>
-                      )}
-                    </div>
-                  )
-                })()}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-display font-semibold text-[18px] leading-tight text-text line-clamp-2">{book.title}</h3>
+                {book.author && <p className="text-body-md text-text-secondary mt-0.5 truncate">{book.author}</p>}
+                <div className="flex justify-between gap-2 text-body-sm text-text-secondary mt-2 mb-1.5 tabular-nums">
+                  {remaining && <span>{remaining}</span>}
+                  <span className="ml-auto font-bold text-primary-text">{Math.round(percent)} %</span>
+                </div>
+                <ProgressBar percent={percent} />
               </div>
             </div>
 
-            <label className="font-body font-semibold text-body-sm text-text-secondary block mt-5 mb-1.5">
-              {isAudio ? 'Tiempo escuchado' : isDigital ? 'Porcentaje leído' : 'Página actual'}
-            </label>
-            <div className="flex gap-2">
-              {isAudio ? (
-                <DurationMaskInput value={value} onChange={setValue} className="flex-1" />
-              ) : (
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  min={isDigital ? 0 : undefined}
-                  max={isDigital ? 100 : undefined}
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  placeholder={isDigital ? 'Porcentaje leído' : 'Página actual'}
-                  className="flex-1"
-                />
-              )}
-              <Button variant="primary" fullWidth={false} className="px-6!" onClick={handleUpdate} isLoading={isSaving}>
-                Guardar
-              </Button>
-            </div>
-            {error && <p className="text-body-sm text-primary-text mt-2">{error}</p>}
+            <FormCard>
+              <FormRow label={isAudio ? 'Tiempo escuchado' : isDigital ? 'Porcentaje leído' : 'Página actual'} htmlFor="progress-value">
+                <span className="flex items-baseline justify-end gap-1.5">
+                  {isAudio ? (
+                    <DurationMaskInput
+                      bare
+                      value={value}
+                      onChange={setValue}
+                      className="w-28! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
+                    />
+                  ) : (
+                    <Input
+                      bare
+                      id="progress-value"
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      max={isDigital ? 100 : undefined}
+                      value={value}
+                      onChange={(e) => setValue(e.target.value)}
+                      className="w-18! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
+                    />
+                  )}
+                  {totalLabel && <span className="text-body-md text-text-muted whitespace-nowrap">{totalLabel}</span>}
+                </span>
+              </FormRow>
+            </FormCard>
+            {error && <p className="text-body-sm text-primary-text mt-2 animate-fade-in">{error}</p>}
+            {pace && (
+              <p className="text-body-sm text-text-muted mt-2 px-0.5 leading-snug">
+                {paceSentence(pace)} · {pace.perDayLabel}
+              </p>
+            )}
 
-            <div className="flex flex-col gap-2.5 mt-6">
-              <Button variant="soft" onClick={() => setIsAddingQuote(true)}>
-                <Quote size={17} />
-                Anotar una cita
+            <div className="flex gap-1.5 mt-3.5 mb-1">
+              <Button variant="soft" size="sm" className="px-2!" onClick={() => setIsAddingQuote(true)}>
+                <Quote size={14} strokeWidth={2.4} />
+                Cita
               </Button>
-              <Button variant="magenta" onClick={() => setIsFinishOpen(true)}>
-                <Check size={18} />
-                Marcar como terminado
+              <Button variant="magenta" size="sm" className="px-2!" onClick={() => setIsFinishOpen(true)}>
+                <Check size={14} strokeWidth={2.8} />
+                Terminado
               </Button>
-              <Button variant="outline" onClick={() => setIsAbandonOpen(true)}>
-                <Flag size={17} />
+              <Button variant="outline" size="sm" className="px-2! text-text-secondary!" onClick={() => setIsAbandonOpen(true)}>
+                <Flag size={13} strokeWidth={2.4} />
                 Abandonar
               </Button>
             </div>
-          </>
+          </div>
         )}
       </Sheet>
 
@@ -213,7 +259,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         <AbandonarLibroModal
           isOpen={isAbandonOpen}
           onClose={() => setIsAbandonOpen(false)}
-          bookTitle={book.title}
+          book={book}
           initialStartDate={book.start_date ?? ''}
           onConfirm={handleAbandonConfirm}
         />
@@ -221,13 +267,14 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
       <MissingStartDateModal
         isOpen={showMissingStartDatePrompt}
+        book={book}
         onConfirm={handleSetMissingStartDate}
         onIgnore={() => setStartDatePromptIgnored(true)}
       />
 
       {isFinishOpen && book && (
         <FinishBookSheet
-          bookTitle={book.title}
+          book={book}
           initialStartDate={book.start_date}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}

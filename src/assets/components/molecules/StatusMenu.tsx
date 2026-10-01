@@ -7,13 +7,16 @@ const ALL_STATUSES: ReadingStatus[] = ['pendiente', 'leyendo', 'terminado', 'aba
 interface StatusMenuProps {
   status: ReadingStatus
   onChange: (status: ReadingStatus) => void
+  /** Hacia dónde se abre el menú: 'right' (por defecto) lo alinea al borde derecho de la
+   *  insignia; 'left' al izquierdo, para cuando la insignia está pegada a la izquierda. */
+  align?: 'left' | 'right'
   className?: string
 }
 
 /** Insignia de estado clickeable (como en Goodreads): al tocarla se abre un menú en cascada
  *  para cambiar el estado de lectura del libro directamente, sin tener que entrar a "Editar
  *  Libro". Se ve igual que el `Badge` normal, pero es un botón con un menú desplegable. */
-export function StatusMenu({ status, onChange, className = '' }: StatusMenuProps) {
+export function StatusMenu({ status, onChange, align = 'right', className = '' }: StatusMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -48,7 +51,7 @@ export function StatusMenu({ status, onChange, className = '' }: StatusMenuProps
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden animate-pop-in"
+          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden animate-pop-in`}
         >
           {ALL_STATUSES.map((s) => {
             const isSelected = s === status

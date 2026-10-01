@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useGoBack } from '../hooks/useGoBack'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
@@ -15,11 +15,12 @@ import { ShareProfileModal } from '../assets/components/molecules/ShareProfileMo
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
 import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
 import { PaletteSheet } from '../assets/components/molecules/PaletteSheet'
+import { AccountSheet, type AccountSheetKey } from '../assets/components/molecules/AccountSheets'
 import { useTheme } from '../hooks/useTheme'
 import { getPalette } from '../lib/palettes'
 import { Button } from '../assets/components/atoms/Button'
-import { Modal } from '../assets/components/atoms/Modal'
 import { ActionConfirmModal } from '../assets/components/molecules/ActionConfirmModal'
+import { ConfirmSheet } from '../assets/components/molecules/ConfirmSheet'
 import { ThemeToggle } from '../assets/components/atoms/ThemeToggle'
 import { Select } from '../assets/components/atoms/Select'
 import { currencyOptions } from '../lib/currencies'
@@ -43,6 +44,17 @@ export function Configuracion() {
   const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
   const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
   const [isPaletteOpen, setIsPaletteOpen] = useState(false)
+  // Hojas de Cuenta (V.2.2.0). Las rutas viejas (/configuracion/usuario, etc.) siguen
+  // funcionando: abren Configuración con la hoja correspondiente ya abierta.
+  const location = useLocation()
+  const [accountSheet, setAccountSheet] = useState<AccountSheetKey | null>(() => {
+    const key = location.pathname.split('/')[2]
+    return key === 'usuario' || key === 'nickname' || key === 'correo' || key === 'contrasena' ? key : null
+  })
+  function closeAccountSheet() {
+    setAccountSheet(null)
+    if (location.pathname !== '/configuracion') navigate('/configuracion', { replace: true })
+  }
   const { palette, resolvedTheme } = useTheme()
   const activePalette = getPalette(palette)
   const [confirmAction, setConfirmAction] = useState<
@@ -165,10 +177,10 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Cuenta">
-          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => openSubpage('/configuracion/usuario')} />
-          <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => openSubpage('/configuracion/nickname')} />
-          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => openSubpage('/configuracion/correo')} />
-          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => openSubpage('/configuracion/contrasena')} />
+          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />
+          <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
+          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />
+          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />
         </SettingsGroup>
 
         <SettingsGroup title="Compartir">
@@ -207,6 +219,8 @@ export function Configuracion() {
         />
       )}
 
+      {accountSheet && <AccountSheet sheet={accountSheet} onClose={closeAccountSheet} />}
+
       {isPaletteOpen && (
         <PaletteSheet onClose={() => setIsPaletteOpen(false)} onSave={(id) => updateProfile({ palette: id })} />
       )}
@@ -219,26 +233,20 @@ export function Configuracion() {
         <ShareWishlistModal onClose={() => setIsShareWishlistModalOpen(false)} userId={user?.id} />
       )}
 
-      <Modal isOpen={confirmAction === 'cerrarSesion'} onClose={() => setConfirmAction(null)}>
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-primary-soft text-primary-text flex items-center justify-center mb-4">
-            <LogOut size={26} />
-          </div>
-          <h3 className="font-display font-semibold text-display-md text-text">¿Cerrar sesión?</h3>
-          <p className="text-body-md text-text-secondary mt-2">
-            Tendrás que iniciar sesión de nuevo para volver a tu rincón de lectura.
-          </p>
-          <Button variant="primary" className="mt-5" onClick={handleSignOut}>Cerrar sesión</Button>
-          <Button variant="outline" className="mt-2.5" onClick={() => setConfirmAction(null)}>Cancelar</Button>
-        </div>
-      </Modal>
+      {confirmAction === 'cerrarSesion' && (
+        <ConfirmSheet
+          title="¿Cerrar sesión?"
+          message="Tendrás que iniciar sesión de nuevo para volver a tu rincón de lectura."
+          confirmLabel="Cerrar sesión"
+          onConfirm={handleSignOut}
+          onClose={() => setConfirmAction(null)}
+        />
+      )}
 
       {confirmAction === 'exportar' && (
         <ActionConfirmModal
           isOpen
           status={dialogState}
-          icon={Upload}
-          iconVariant="reading"
           confirmTitle="¿Exportar datos?"
           confirmDescription="Exportarás todos los datos de tu librería virtual: libros, reseñas, estadísticas..."
           confirmLabel="Exportar"
@@ -254,8 +262,6 @@ export function Configuracion() {
         <ActionConfirmModal
           isOpen
           status={dialogState}
-          icon={Download}
-          iconVariant="pending"
           confirmTitle="¿Importar datos?"
           confirmDescription="Importarás datos a tu librería virtual."
           confirmLabel="Importar"
@@ -271,8 +277,6 @@ export function Configuracion() {
         <ActionConfirmModal
           isOpen
           status={dialogState}
-          icon={ClearIcon}
-          iconVariant="reading"
           confirmTitle="Limpieza de estantes"
           confirmDescription="Estás a punto de vaciar tu diario de lectura. Todas tus reseñas, notas marginales y estadísticas acumuladas desaparecerán como tinta bajo la lluvia. Esta acción es permanente e irreversible."
           confirmLabel="Vaciar mi librería"
@@ -284,32 +288,34 @@ export function Configuracion() {
         />
       )}
 
-      <Modal isOpen={confirmAction === 'desactivar'} onClose={() => setConfirmAction(null)}>
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-pink-soft text-pink-text flex items-center justify-center mb-4">
-            <Pause size={26} />
-          </div>
-          <h3 className="font-display font-semibold text-display-md text-text">Pausa en tu lectura</h3>
-          <p className="text-body-md text-text-secondary mt-2">
-            ¿Sientes que es momento de un respiro? Al desactivar tu cuenta, tu perfil y lecturas descansarán con nosotros.
-            Guardaremos tu progreso como un marcapáginas eterno, esperando el momento en que decidas abrir de nuevo tus historias favoritas. ¡Te extrañaremos!
-          </p>
-          <Button variant="primary" className="mt-5" onClick={handleConfirmAction} isLoading={isProcessing}>Desactivar temporalmente</Button>
-          <Button variant="outline" className="mt-2.5" onClick={() => setConfirmAction(null)}>Seguir leyendo</Button>
-        </div>
-      </Modal>
+      {confirmAction === 'desactivar' && (
+        <ConfirmSheet
+          title="Pausa en tu lectura"
+          message="¿Sientes que es momento de un respiro? Al desactivar tu cuenta, tu perfil y lecturas descansarán con nosotros. Guardaremos tu progreso como un marcapáginas eterno, esperando el momento en que decidas abrir de nuevo tus historias favoritas. ¡Te extrañaremos!"
+          confirmLabel="Desactivar"
+          cancelLabel="Seguir leyendo"
+          isLoading={isProcessing}
+          onConfirm={handleConfirmAction}
+          onClose={() => setConfirmAction(null)}
+        />
+      )}
 
-      <Modal isOpen={confirmAction === 'eliminar'} onClose={() => setConfirmAction(null)}>
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-primary-soft text-primary-text flex items-center justify-center mb-4">
-            <Trash2 size={26} />
-          </div>
-          <h3 className="font-display font-semibold text-display-md text-text">Cerrar el libro para siempre</h3>
-          <p className="text-body-md text-text-secondary mt-2">
-            Estás a punto de borrar definitivamente toda tu biblioteca, reseñas y notas.
-          </p>
-          <p className="font-body font-semibold text-body-md text-text mt-2">Esta acción es permanente e irreversible.</p>
-          <label className="flex items-start gap-2.5 mt-4 text-body-sm text-text-secondary text-left bg-surface-2 border border-border rounded-2xl px-3.5 py-3">
+      {confirmAction === 'eliminar' && (
+        <ConfirmSheet
+          title="Cerrar el libro para siempre"
+          message={
+            <>
+              Estás a punto de borrar definitivamente toda tu biblioteca, reseñas y notas.{' '}
+              <span className="font-semibold text-text">Esta acción es permanente e irreversible.</span>
+            </>
+          }
+          confirmLabel="Eliminar mi cuenta"
+          confirmDisabled={!deleteChecked}
+          isLoading={isProcessing}
+          onConfirm={handleConfirmAction}
+          onClose={() => setConfirmAction(null)}
+        >
+          <label className="flex items-start gap-2.5 mt-4 text-body-sm text-text-secondary text-left bg-surface-2 border border-border rounded-[18px] px-3.5 py-3">
             <input
               type="checkbox"
               checked={deleteChecked}
@@ -318,12 +324,8 @@ export function Configuracion() {
             />
             Entiendo que perderé toda mi librería de manera irreversible.
           </label>
-          <Button variant="primary" className="mt-5" onClick={handleConfirmAction} isLoading={isProcessing} disabled={!deleteChecked}>
-            Eliminar mi cuenta
-          </Button>
-          <Button variant="outline" className="mt-2.5" onClick={() => setConfirmAction(null)}>Cancelar</Button>
-        </div>
-      </Modal>
+        </ConfirmSheet>
+      )}
     </div>
   )
 }

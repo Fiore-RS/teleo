@@ -37,6 +37,8 @@ import {
 import { SortableItem } from "../assets/components/atoms/SortableItem";
 import { SortMenu, type SortMenuOption } from "../assets/components/molecules/SortMenu";
 import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from "../lib/librarySort";
+import { languageOptionsFrom, normalizeLanguage } from "../lib/languages";
+import { computeSagaCategories } from "../lib/sagaStatus";
 
 type LibraryTab = "libros" | "sagas";
 
@@ -133,11 +135,14 @@ export function Estante() {
     advFilters.category !== "todos" ||
     advFilters.format !== "todos";
 
+  // Menú de idioma del filtro: Español, Inglés y los idiomas que ya tengan los libros.
+  const languageOptions = useMemo(() => languageOptionsFrom(books.map((b) => b.language)), [books]);
+
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
       const matchesFilter = advFilters.status === "todos" || book.status === advFilters.status;
       const matchesLanguage =
-        advFilters.language === "todos" || (book.language ?? "").toLowerCase() === advFilters.language;
+        advFilters.language === "todos" || normalizeLanguage(book.language) === advFilters.language;
       const matchesCategory = advFilters.category === "todos" || book.category === advFilters.category;
       const matchesFormat = advFilters.format === "todos" || book.format === advFilters.format;
       const matchesQuickFlag =
@@ -160,14 +165,19 @@ export function Estante() {
   const filteredSagas = useMemo(() => {
     return sagas.filter((saga) => {
       const matchesFilter = advFilters.status === "todos" || saga.status === advFilters.status;
-      const matchesCategory = advFilters.category === "todos" || saga.category === advFilters.category;
+      const matchesCategory =
+        advFilters.category === "todos" ||
+        computeSagaCategories(
+          books.filter((b) => b.saga_id === saga.id).map((b) => b.category),
+          saga.category,
+        ).includes(advFilters.category);
       const matchesSearch =
         !search.trim() ||
         saga.title.toLowerCase().includes(search.toLowerCase()) ||
         (saga.author ?? "").toLowerCase().includes(search.toLowerCase());
       return matchesFilter && matchesCategory && matchesSearch;
     });
-  }, [sagas, advFilters, search]);
+  }, [sagas, books, advFilters, search]);
 
   // Los tres modos de solo-vista (título/autor/fecha) se calculan encima de lo ya filtrado;
   // "libre" devuelve el mismo array, que ya viene en su orden persistido (estante_sort_order).
@@ -566,6 +576,7 @@ export function Estante() {
         onClose={() => setIsFilterModalOpen(false)}
         tab={tab}
         value={advFilters}
+        languageOptions={languageOptions}
         onApply={(filters) => {
           setAdvFilters(filters);
           setQuickFlag(null);

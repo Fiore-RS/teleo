@@ -2,7 +2,7 @@ import { Modal } from '../atoms/Modal'
 import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
 import { statusLabel, type ReadingStatus } from '../../../lib/status'
-import { categoryOptions, languageOptions, formatOptions } from '../../../lib/options'
+import { categoryOptions, formatOptions } from '../../../lib/options'
 import { defaultAdvancedFilters, type AdvancedFilters } from '../../../lib/advancedFilters'
 
 const statusSelectOptions = [
@@ -10,7 +10,6 @@ const statusSelectOptions = [
   ...(Object.keys(statusLabel) as ReadingStatus[]).map((value) => ({ value, label: statusLabel[value] })),
 ]
 
-const languageSelectOptions = [{ value: 'todos', label: 'Todos' }, ...languageOptions]
 const categorySelectOptions = [{ value: 'todos', label: 'Todas' }, ...categoryOptions]
 const formatSelectOptions = [{ value: 'todos', label: 'Todos' }, ...formatOptions]
 
@@ -20,9 +19,11 @@ interface FilterModalProps {
   tab: 'libros' | 'sagas'
   value: AdvancedFilters
   onApply: (filters: AdvancedFilters) => void
+  /** Idiomas de la biblioteca (Español, Inglés y los que tengan los libros), ver languages.ts. */
+  languageOptions: { value: string; label: string }[]
 }
 
-export function FilterModal({ isOpen, onClose, tab, value, onApply }: FilterModalProps) {
+export function FilterModal({ isOpen, onClose, tab, value, onApply, languageOptions }: FilterModalProps) {
   function update(patch: Partial<AdvancedFilters>) {
     onApply({ ...value, ...patch })
   }
@@ -52,7 +53,7 @@ export function FilterModal({ isOpen, onClose, tab, value, onApply }: FilterModa
           <div>
             <label className="font-body font-semibold text-body-sm text-text-secondary block mb-1.5">Idioma</label>
             <Select
-              options={languageSelectOptions}
+              options={[{ value: 'todos', label: 'Todos' }, ...languageOptions]}
               value={value.language}
               onChange={(e) => update({ language: e.target.value })}
             />
