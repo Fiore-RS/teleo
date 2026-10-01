@@ -37,3 +37,22 @@ export async function recomputeSagaStatus(sagaId: string | null | undefined): Pr
   const newStatus = computeSagaStatus((data ?? []).map((b) => b.status as ReadingStatus))
   await supabase.from('sagas').update({ status: newStatus }).eq('id', sagaId)
 }
+
+// Categorías de una saga en base a las de sus libros (V.2.2.0): sin repetir, de la más común
+// a la menos (en empate, la que aparece primero en la saga). Así una saga de novelas con un
+// cómic complementario muestra "Novela" y "Cómic". Si todavía no tiene libros con categoría,
+// se usa la que se eligió al crear la saga (sagas.category).
+export function computeSagaCategories(
+  bookCategories: (string | null | undefined)[],
+  fallback?: string | null,
+): string[] {
+  const counts = new Map<string, number>()
+  for (const c of bookCategories) {
+    if (!c) continue
+    counts.set(c, (counts.get(c) ?? 0) + 1)
+  }
+  if (counts.size === 0) return fallback ? [fallback] : []
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([category]) => category)
+}
