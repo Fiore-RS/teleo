@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Check, MailCheck } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { PasswordInput } from '../atoms/PasswordInput'
 import { Button } from '../atoms/Button'
 import { FormActions, FormCard, FormRow, FormSection } from './FormLayout'
+import { ConfirmSheet } from './ConfirmSheet'
 import { useAuth } from '../../../hooks/useAuth'
 import { useProfile } from '../../../hooks/useProfile'
 import { useAccountSettings } from '../../../hooks/useAccountSettings'
@@ -170,20 +171,16 @@ function ChangeEmailSheet({ onClose }: { onClose: () => void }) {
 
   if (submitted) {
     return (
-      <Sheet
-        onClose={onClose}
+      <ConfirmSheet
         title="Revisa tu correo"
-        footer={<FormActions><Button variant="primary" onClick={onClose}>Listo</Button></FormActions>}
-      >
-        <div className="animate-fade-in text-center py-2">
-          <div className="w-14 h-14 rounded-full bg-primary-soft flex items-center justify-center mx-auto mb-3">
-            <MailCheck size={26} className="text-primary-text" />
-          </div>
-          <p className="text-body-md text-text-secondary">
+        message={
+          <>
             Te enviamos un enlace a <span className="font-semibold text-text">{typedNew}</span>. Tócalo para confirmar el cambio; hasta entonces sigues entrando con tu correo actual.
-          </p>
-        </div>
-      </Sheet>
+          </>
+        }
+        confirmLabel="Listo"
+        onClose={onClose}
+      />
     )
   }
 

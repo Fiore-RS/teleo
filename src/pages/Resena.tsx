@@ -537,6 +537,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
         isOpen={deleteState !== 'closed'}
         status={deleteState === 'closed' ? 'confirm' : deleteState}
         itemLabel="reseña"
+        book={book}
         feminine
         onConfirm={handleDelete}
         onClose={() => {

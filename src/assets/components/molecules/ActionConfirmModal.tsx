@@ -1,14 +1,11 @@
-import { Check, AlertTriangle, type LucideIcon } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
-import { Button, type ButtonVariant } from '../atoms/Button'
+import { ConfirmSheet } from './ConfirmSheet'
+import type { ButtonVariant } from '../atoms/Button'
 
 type ActionStatus = 'confirm' | 'success' | 'error'
 
 interface ActionConfirmModalProps {
   isOpen: boolean
   status: ActionStatus
-  icon: LucideIcon
-  iconVariant?: 'wishlist' | 'reading' | 'finished' | 'pending'
   confirmTitle: string
   confirmDescription: string
   confirmLabel: string
@@ -19,58 +16,29 @@ interface ActionConfirmModalProps {
   onClose: () => void
 }
 
-const iconBg: Record<NonNullable<ActionConfirmModalProps['iconVariant']>, string> = {
-  wishlist: 'bg-primary-soft text-primary-text',
-  reading: 'bg-orange-soft text-orange-text',
-  finished: 'bg-magenta-soft text-magenta-text',
-  pending: 'bg-pink-soft text-pink-text',
-}
-
+/** Confirmar una acción de Configuración (exportar, importar, vaciar). Rediseñado en la
+ *  V.2.2.0 sobre `ConfirmSheet`, sin ícono. */
 export function ActionConfirmModal({
-  isOpen, status, icon: Icon, iconVariant = 'wishlist',
+  isOpen, status,
   confirmTitle, confirmDescription, confirmLabel, confirmVariant = 'primary',
   successTitle, successDescription, onConfirm, onClose,
 }: ActionConfirmModalProps) {
   if (!isOpen) return null
 
+  if (status === 'success') {
+    return <ConfirmSheet title={successTitle} message={successDescription} confirmLabel="Entendido" onClose={onClose} />
+  }
+  if (status === 'error') {
+    return <ConfirmSheet title="Algo salió mal" message="No se pudo completar. Inténtalo de nuevo." confirmLabel="Entendido" onClose={onClose} />
+  }
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="flex flex-col items-center text-center">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-          status === 'confirm'
-            ? iconBg[iconVariant]
-            : status === 'success'
-              ? 'bg-magenta-soft text-magenta-text'
-              : 'bg-orange-soft text-orange-text'
-        }`}>
-          {status === 'confirm' && <Icon size={26} />}
-          {status === 'success' && <Check size={28} strokeWidth={2.5} />}
-          {status === 'error' && <AlertTriangle size={26} />}
-        </div>
-
-        {status === 'confirm' && (
-          <>
-            <h3 className="font-display font-semibold text-display-md text-text text-balance">{confirmTitle}</h3>
-            <p className="text-body-md text-text-secondary mt-2">{confirmDescription}</p>
-            <Button variant={confirmVariant} className="mt-5" onClick={onConfirm}>{confirmLabel}</Button>
-            <Button variant="outline" className="mt-2.5" onClick={onClose}>Cancelar</Button>
-          </>
-        )}
-        {status === 'success' && (
-          <>
-            <h3 className="font-display font-semibold text-display-md text-text text-balance">{successTitle}</h3>
-            <p className="text-body-md text-text-secondary mt-2">{successDescription}</p>
-            <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
-          </>
-        )}
-        {status === 'error' && (
-          <>
-            <h3 className="font-display font-semibold text-display-md text-text text-balance">Algo salió mal</h3>
-            <p className="text-body-md text-text-secondary mt-2">No se pudo procesar la solicitud, por favor inténtalo de nuevo.</p>
-            <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
-          </>
-        )}
-      </div>
-    </Modal>
+    <ConfirmSheet
+      title={confirmTitle}
+      message={confirmDescription}
+      confirmLabel={confirmLabel}
+      confirmVariant={confirmVariant}
+      onConfirm={onConfirm}
+      onClose={onClose}
+    />
   )
 }
