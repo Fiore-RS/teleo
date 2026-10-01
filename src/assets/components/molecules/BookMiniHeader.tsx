@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { ImageOff } from 'lucide-react'
 import { CoverImage } from '../atoms/CoverImage'
 
@@ -9,7 +10,7 @@ export interface MiniBook {
 
 /** Mini ficha del libro (portada chica, título y autor) para las hojas cortas de cambio de
  *  estado: Terminar, Abandonar, Empezar a leer y Falta la fecha de inicio (V.2.2.0). */
-export function BookMiniHeader({ book, className = '' }: { book: MiniBook; className?: string }) {
+export function BookMiniHeader({ book, action, className = '' }: { book: MiniBook; /** Botón a la derecha (ej. "Cambiar"). */ action?: ReactNode; className?: string }) {
   return (
     <div className={`flex gap-3 items-center mb-4 ${className}`}>
       <div className="relative w-11 shrink-0 aspect-2/3 rounded-[7px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]">
@@ -21,10 +22,11 @@ export function BookMiniHeader({ book, className = '' }: { book: MiniBook; class
           </div>
         )}
       </div>
-      <div className="min-w-0">
+      <div className="flex-1 min-w-0">
         <p className="font-display font-semibold text-body-lg leading-tight text-text line-clamp-2">{book.title}</p>
         {book.author && <p className="text-body-md text-text-secondary mt-0.5 truncate">{book.author}</p>}
       </div>
+      {action}
     </div>
   )
 }

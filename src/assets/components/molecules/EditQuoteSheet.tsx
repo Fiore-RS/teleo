@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Modal } from '../atoms/Modal'
-import { Input } from '../atoms/Input'
-import { Textarea } from '../atoms/Textarea'
+import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
+import { BookMiniHeader } from './BookMiniHeader'
+import { FormActions } from './FormLayout'
+import { QuoteFields } from './QuoteFields'
 import type { QuoteWithBook } from '../../../hooks/useQuotes'
-import { cleanPageInput, parsePage } from '../../../lib/quotes'
+import { parsePage } from '../../../lib/quotes'
 
 interface EditQuoteSheetProps {
   quote: QuoteWithBook
@@ -12,8 +13,8 @@ interface EditQuoteSheetProps {
   onSave: (quote: QuoteWithBook, text: string, page: number | null) => Promise<boolean>
 }
 
-/** Editar el texto o la página de una cita desde Mis citas (V.2.1.1). El libro no se cambia
- *  acá: la cita sigue colgando de la reseña de su libro. */
+/** Editar el texto o la página de una cita desde Mis citas (V.2.1.1, rediseñada en la
+ *  V.2.2.0). El libro no se cambia acá: la cita sigue colgando de la reseña de su libro. */
 export function EditQuoteSheet({ quote, onClose, onSave }: EditQuoteSheetProps) {
   const [text, setText] = useState(quote.quote_text)
   const [page, setPage] = useState(quote.page != null ? String(quote.page) : '')
@@ -31,38 +32,21 @@ export function EditQuoteSheet({ quote, onClose, onSave }: EditQuoteSheetProps) 
   }
 
   return (
-    <Modal variant="sheet" isOpen onClose={onClose} title="Editar cita">
-      <div className="flex flex-col gap-4">
-        <p className="text-body-sm text-text-secondary line-clamp-1">
-          De <span className="font-semibold text-text">{quote.book.title}</span>
-        </p>
-
-        <Textarea
-          autoFocus
-          placeholder="¿Qué frase te gustó?"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={5}
-          className="font-display italic"
-        />
-
-        <div className="flex items-center gap-3">
-          <label htmlFor="edit-quote-page" className="text-body-md font-semibold text-text-secondary">Página</label>
-          <div className="w-28">
-            <Input
-              id="edit-quote-page" inputMode="numeric" placeholder="Opcional" value={page}
-              onChange={(e) => setPage(cleanPageInput(e.target.value))}
-            />
-          </div>
-        </div>
-
-        {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
-
-        <div className="flex gap-2.5">
+    <Sheet
+      onClose={onClose}
+      title="Editar cita"
+      footer={
+        <FormActions>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button variant="primary" onClick={handleSave} isLoading={isSaving} disabled={!text.trim()}>Guardar cambios</Button>
-        </div>
+        </FormActions>
+      }
+    >
+      <div className="animate-fade-in">
+        <BookMiniHeader book={quote.book} />
+        <QuoteFields text={text} page={page} onTextChange={setText} onPageChange={setPage} idPrefix="edit-quote" />
+        {error && <p className="text-body-sm text-primary-text text-center mt-3">{error}</p>}
       </div>
-    </Modal>
+    </Sheet>
   )
 }
