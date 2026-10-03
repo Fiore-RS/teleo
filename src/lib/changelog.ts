@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '2.2.1',
+    date: '3 de octubre de 2026',
+    title: 'Puliendo detalles',
+    items: [
+      'Los menús para elegir categoría, idioma o estado ya no se cortan dentro de las hojas.',
+      'En "¿Qué leo ahora?", al tocar "Otra vez" ahora también cambian las portadas, como una ruleta.',
+      'La pantalla ya no se queda sin poder desplazarse después de eliminar un libro.',
+    ],
+  },
+  {
     version: '2.2.0',
     announced: true,
     date: '1 de octubre de 2026',

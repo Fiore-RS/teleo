@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronDown, Check } from 'lucide-react'
+import { useFloatingMenu } from '../../../hooks/useFloatingMenu'
 import { statusColorVar, statusLabel, type ReadingStatus } from '../../../lib/status'
 
 const ALL_STATUSES: ReadingStatus[] = ['pendiente', 'leyendo', 'terminado', 'abandonado', 'deseado']
@@ -15,31 +16,24 @@ interface StatusMenuProps {
 
 /** Insignia de estado clickeable (como en Goodreads): al tocarla se abre un menú en cascada
  *  para cambiar el estado de lectura del libro directamente, sin tener que entrar a "Editar
- *  Libro". Se ve igual que el `Badge` normal, pero es un botón con un menú desplegable. */
+ *  Libro". Se ve igual que el `Badge` normal, pero es un botón con un menú desplegable.
+ *  El menú se dibuja en un portal (`useFloatingMenu`, V.2.2.1) para que no lo recorten las hojas. */
 export function StatusMenu({ status, onChange, align = 'right', className = '' }: StatusMenuProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const { isOpen, toggle, close, containerRef, anchorRef, menuRef, menuStyle } = useFloatingMenu({ align })
 
   function handleSelect(newStatus: ReadingStatus) {
-    setIsOpen(false)
+    close()
     if (newStatus !== status) onChange(newStatus)
   }
 
   return (
     <div className={`relative inline-block ${className}`} ref={containerRef}>
       <button
+        ref={anchorRef}
         type="button"
-        onClick={() => setIsOpen((o) => !o)}
+        onClick={toggle}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
         aria-label="Cambiar estado de lectura"
         className="inline-flex items-center gap-1.5 pl-4 pr-3 py-1.5 rounded-full text-body-sm font-body font-bold transition-opacity active:opacity-80"
         style={{ backgroundColor: statusColorVar[status], color: 'var(--color-surface)' }}
@@ -48,10 +42,12 @@ export function StatusMenu({ status, onChange, align = 'right', className = '' }
         <ChevronDown size={15} className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {isOpen && (
+      {isOpen && createPortal(
         <div
+          ref={menuRef}
           role="listbox"
-          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden animate-pop-in`}
+          style={menuStyle}
+          className="z-70 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-y-auto animate-pop-in"
         >
           {ALL_STATUSES.map((s) => {
             const isSelected = s === status
@@ -72,7 +68,8 @@ export function StatusMenu({ status, onChange, align = 'right', className = '' }
               </button>
             )
           })}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

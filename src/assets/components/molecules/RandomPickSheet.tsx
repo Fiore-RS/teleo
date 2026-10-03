@@ -8,6 +8,7 @@ import { useCachedQuery } from '../../../hooks/useCachedQuery'
 import { Modal } from '../atoms/Modal'
 import { Button } from '../atoms/Button'
 import { CoverImage } from '../atoms/CoverImage'
+import { coverDisplaySrc } from '../../../lib/coverSrc'
 import { CoverSkeleton, Skeleton } from '../atoms/Skeleton'
 import { StartReadingDateModal } from './StartReadingDateModal'
 
@@ -21,12 +22,48 @@ interface PendingBook {
 }
 
 const EMPTY: PendingBook[] = []
-const SHUFFLE_TICKS = 8
-const SHUFFLE_STEP_MS = 70
+/** Cuántos libros pasan por la ruleta (con su portada ya precargada). */
+const POOL_SIZE = 12
+/** Pausa antes de cada libro que pasa: rápido al inicio y cada vez más lento, como una ruleta
+ *  que frena. El último paso es el que cae en el elegido (~1 s en total). */
+const SHUFFLE_DELAYS_MS = [55, 55, 60, 70, 85, 105, 130, 165, 210]
 
 function pickOther(books: PendingBook[], excludeId: string | null): PendingBook | null {
   const pool = excludeId ? books.filter((b) => b.id !== excludeId) : books
   return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : null
+}
+
+function randomSample<T>(items: T[], count: number): T[] {
+  const copy = [...items]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy.slice(0, count)
+}
+
+/** Pide la portada al navegador para que ya esté lista cuando pase por la ruleta. Si la
+ *  versión grande no existe, precarga la original (igual que hace `CoverImage`). */
+function preloadCover(url: string | null) {
+  if (!url) return
+  const img = new Image()
+  const display = coverDisplaySrc(url)
+  if (display !== url) img.onerror = () => { new Image().src = url }
+  img.src = display
+}
+
+/** Libros que pasan por la ruleta: 12 a la vez (V.2.2.1). Después de cada vuelta, los que
+ *  ya pasaron se cambian por pendientes que todavía no salieron, así con cada "Otra vez"
+ *  van apareciendo más libros sin precargar todas las portadas al abrir. */
+function refillPool(pool: string[], shownIds: Set<string>, books: PendingBook[], seen: Set<string>): string[] {
+  let candidates = books.filter((b) => !pool.includes(b.id) && !seen.has(b.id))
+  if (candidates.length === 0) {
+    // Ya pasaron todos: se empieza de nuevo con los que no están en el grupo.
+    seen.clear()
+    candidates = books.filter((b) => !pool.includes(b.id))
+  }
+  const fresh = randomSample(candidates, candidates.length)
+  return pool.map((id) => (shownIds.has(id) && fresh.length > 0 ? fresh.pop()!.id : id))
 }
 
 interface RandomPickSheetProps {
@@ -34,8 +71,9 @@ interface RandomPickSheetProps {
   onClose: () => void
 }
 
-/** "¿Qué leo ahora?" (fase 2): elige al azar uno de los libros pendientes. "Otra vez" baraja
- *  las portadas un momento y cae en otro (nunca repite el que se estaba mostrando), "Ahora no"
+/** "¿Qué leo ahora?" (fase 2): elige al azar uno de los libros pendientes. "Otra vez" pasa
+ *  título, autor y portada como una ruleta que frena y cae en otro (nunca repite el que se
+ *  estaba mostrando; el elegido sale de todos los pendientes), "Ahora no"
  *  cierra sin cambiar nada y "Empezar a leer" lo pasa a Leyendo, preguntando antes si hoy es
  *  la fecha de inicio (mismo aviso que en el resto de la app).
  *
@@ -58,12 +96,25 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
   // Primera elección: un número al azar fijado al abrir, así no hace falta un efecto.
   const [seed] = useState(() => Math.random())
   const [pickedId, setPickedId] = useState<string | null>(null)
-  const [flashId, setFlashId] = useState<string | null>(null) // portada que pasa mientras se baraja
+  const [flashId, setFlashId] = useState<string | null>(null) // libro que pasa mientras se baraja
+  const [pool, setPool] = useState<string[] | null>(null)
   const [isAskingDate, setIsAskingDate] = useState(false)
   const [isStarting, setIsStarting] = useState(false)
   const timerRef = useRef<number | undefined>(undefined)
+  const seenRef = useRef<Set<string>>(new Set()) // los que ya pasaron por la ruleta
 
-  useEffect(() => () => window.clearInterval(timerRef.current), [])
+  // El primer grupo se arma apenas llegan los pendientes (durante el render, sin efecto).
+  if (pool === null && books.length > 0) {
+    setPool(randomSample(books, POOL_SIZE).map((b) => b.id))
+  }
+
+  // Precarga las portadas del grupo cada vez que cambia.
+  useEffect(() => {
+    if (!pool) return
+    for (const id of pool) preloadCover(books.find((b) => b.id === id)?.cover_url ?? null)
+  }, [pool, books])
+
+  useEffect(() => () => window.clearTimeout(timerRef.current), [])
 
   const current = books.find((b) => b.id === pickedId) ?? (books.length > 0 ? books[Math.floor(seed * books.length)] : null)
   const shown = (flashId && books.find((b) => b.id === flashId)) || current
@@ -77,17 +128,36 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
       setPickedId(next.id)
       return
     }
-    let ticks = 0
-    timerRef.current = window.setInterval(() => {
-      ticks++
-      if (ticks >= SHUFFLE_TICKS) {
-        window.clearInterval(timerRef.current)
-        setFlashId(null)
-        setPickedId(next.id)
-      } else {
-        setFlashId(pickOther(books, null)?.id ?? null)
+    preloadCover(next.cover_url)
+
+    // Libros que pasan antes de caer en el elegido: del grupo precargado, sin repetir uno
+    // seguido de otro y sin mostrar el elegido antes de tiempo.
+    const poolBooks = (pool ?? []).map((id) => books.find((b) => b.id === id)).filter((b): b is PendingBook => !!b)
+    const flashes: PendingBook[] = []
+    let prevId = current.id
+    for (let i = 0; i < SHUFFLE_DELAYS_MS.length - 1; i++) {
+      const options = poolBooks.filter((b) => b.id !== prevId && b.id !== next.id)
+      const pick = options.length > 0 ? options[Math.floor(Math.random() * options.length)] : pickOther(books, prevId)
+      if (!pick) break
+      flashes.push(pick)
+      prevId = pick.id
+    }
+
+    let step = 0
+    const tick = () => {
+      if (step < flashes.length) {
+        setFlashId(flashes[step].id)
+        step++
+        timerRef.current = window.setTimeout(tick, SHUFFLE_DELAYS_MS[step])
+        return
       }
-    }, SHUFFLE_STEP_MS)
+      setFlashId(null)
+      setPickedId(next.id)
+      const shownIds = new Set(flashes.map((b) => b.id))
+      shownIds.forEach((id) => seenRef.current.add(id))
+      setPool((prev) => (prev ? refillPool(prev, shownIds, books, seenRef.current) : prev))
+    }
+    timerRef.current = window.setTimeout(tick, SHUFFLE_DELAYS_MS[0])
   }
 
   async function startReading(startDate: string | null) {
@@ -134,7 +204,7 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
         <div className="flex flex-col items-center text-center mt-4" aria-live="polite">
           <div className="w-32 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-card flex items-center justify-center">
             {shown.cover_url ? (
-              <CoverImage src={shown.cover_url} alt="" className="w-full h-full object-cover" />
+              <CoverImage src={shown.cover_url} alt="" loading="eager" className="w-full h-full object-cover" />
             ) : (
               <ImageOff size={24} className="text-text-muted" />
             )}
