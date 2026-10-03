@@ -2,6 +2,26 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { prefersReducedMotion, EXIT_DURATION_MS } from '../../../lib/motion'
 import { X } from 'lucide-react'
 
+/** Cuántas hojas hay abiertas. El fondo se bloquea con la primera y se desbloquea al cerrar
+ *  la última (V.2.2.1): antes cada hoja guardaba y restauraba el valor anterior, y si dos se
+ *  cerraban a la vez (ej. Detalles del libro y el aviso de "Libro eliminado") la pantalla
+ *  podía quedar sin poder desplazarse. */
+let openSheets = 0
+let overflowBeforeSheets = ''
+
+function lockBodyScroll() {
+  if (openSheets === 0) {
+    overflowBeforeSheets = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+  openSheets++
+}
+
+function unlockBodyScroll() {
+  openSheets = Math.max(0, openSheets - 1)
+  if (openSheets === 0) document.body.style.overflow = overflowBeforeSheets
+}
+
 interface SheetProps {
   onClose: () => void
   title?: string
@@ -40,13 +60,13 @@ export function Sheet({ onClose, title, children, headerRight, footer }: SheetPr
       if (e.key === 'Escape') requestClose()
     }
     document.addEventListener('keydown', handleKey)
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handleKey)
-      document.body.style.overflow = prevOverflow
-    }
+    return () => document.removeEventListener('keydown', handleKey)
   }, [requestClose])
+
+  useEffect(() => {
+    lockBodyScroll()
+    return unlockBodyScroll
+  }, [])
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center" role="dialog" aria-modal="true" aria-label={title}>
