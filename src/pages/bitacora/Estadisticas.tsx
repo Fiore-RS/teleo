@@ -409,7 +409,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
             >
               <div className="grid grid-cols-2 gap-2.5">
                 <StatTile
-                  label="Autor más leído"
+                  label="Quien más has leído"
                   value={autoresYSeries.topAuthor ? `${autoresYSeries.topAuthor.label} (${autoresYSeries.topAuthor.count})` : '—'}
                 />
                 <StatTile
