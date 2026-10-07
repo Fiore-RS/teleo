@@ -1,11 +1,10 @@
 import { useNavigate } from 'react-router-dom'
-import { CalendarClock, ChevronRight } from 'lucide-react'
+import { CalendarClock } from 'lucide-react'
 import { useReleases } from '../../../hooks/useReleases'
 import { daysUntil, formatReleaseDate } from '../../../lib/releases'
-import { Eyebrow } from '../atoms/Eyebrow'
 import { Skeleton } from '../atoms/Skeleton'
 import { Button } from '../atoms/Button'
-import { Card } from './Card'
+import { Card, CardAction } from './Card'
 
 interface NextReleaseCardProps {
   userId: string | undefined
@@ -20,21 +19,17 @@ export function NextReleaseCard({ userId }: NextReleaseCardProps) {
   const days = next ? daysUntil(next.release_date) : 0
 
   return (
-    <Card labelledBy="mesa-lanzamiento" tint="magenta">
-      <div className="flex items-center justify-between gap-2 mb-3.5">
-        <Eyebrow id="mesa-lanzamiento" icon={CalendarClock} tone="magenta">Próximo lanzamiento</Eyebrow>
-        {next && (
-          <button
-            type="button"
-            onClick={() => navigate('/lanzamientos?vista=cuenta-atras')}
-            className="inline-flex items-center gap-0.5 shrink-0 text-body-sm font-bold text-magenta-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
-          >
+    <Card
+      tab={{ label: 'Próximo lanzamiento', icon: CalendarClock }}
+      tone="magenta"
+      action={
+        next && (
+          <CardAction onClick={() => navigate('/lanzamientos?vista=cuenta-atras')}>
             {upcoming.length > 1 ? `Ver los ${upcoming.length}` : 'Ver'}
-            <ChevronRight size={15} />
-          </button>
-        )}
-      </div>
-
+          </CardAction>
+        )
+      }
+    >
       {isLoading ? (
         <div aria-label="Cargando">
           <Skeleton className="h-6 w-3/4 rounded-full" />
