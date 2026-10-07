@@ -10,8 +10,9 @@ import { ScreenHeader, HeaderBarButton } from "../assets/components/molecules/Sc
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
 import { defaultAdvancedFilters, type AdvancedFilters } from "../lib/advancedFilters";
-import { BookCard } from "../assets/components/molecules/BookCard";
-import { SeriesCard } from "../assets/components/molecules/SeriesCard";
+import { BookCover } from "../assets/components/molecules/BookCover";
+import { SagaCover } from "../assets/components/molecules/SagaCover";
+import { Shelf } from "../assets/components/molecules/Shelf";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { Fab } from "../assets/components/atoms/Fab";
@@ -367,94 +368,71 @@ export function Estante() {
             ))}
           </div>
         )}
-        {tab === "libros" && (
-          isReorderingBooks ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleBookDragEnd}
-            >
-              <SortableContext
-                items={sortedBooks.map((b) => b.id)}
-                strategy={rectSortingStrategy}
-              >
-                <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-                  {sortedBooks.map((book) => (
-                    <SortableItem key={book.id} id={book.id}>
-                      <BookCard
-                        title={book.title}
-                        author={book.author ?? undefined}
-                        coverUrl={book.cover_url ?? undefined}
-                        status={book.status as ReadingStatus}
-                        isFavorite={book.is_favorite ?? false}
-                        onClick={() => setSelectedBookId(book.id)}
-                      />
-                    </SortableItem>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-              {sortedBooks.map((book) => (
-                <BookCard
-                  key={book.id}
-                  title={book.title}
-                  author={book.author ?? undefined}
-                  coverUrl={book.cover_url ?? undefined}
-                  status={book.status as ReadingStatus}
-                  isFavorite={book.is_favorite ?? false}
-                  onClick={() => setSelectedBookId(book.id)}
-                />
-              ))}
-            </div>
-          )
+        {tab === "libros" && !isLoading && (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
+            <SortableContext items={isReorderingBooks ? sortedBooks.map((b) => b.id) : []} strategy={rectSortingStrategy}>
+              <Shelf
+                className="stagger-children"
+                items={sortedBooks.map((book) => ({
+                  key: book.id,
+                  title: book.title,
+                  subtitle: book.author ?? undefined,
+                  onClick: () => setSelectedBookId(book.id),
+                  cover: (
+                    <BookCover
+                      title={book.title}
+                      coverUrl={book.cover_url ?? undefined}
+                      status={book.status as ReadingStatus}
+                      isFavorite={book.is_favorite ?? false}
+                    />
+                  ),
+                }))}
+                wrap={
+                  isReorderingBooks
+                    ? (item, cell) => (
+                        <SortableItem id={item.key} className="h-full">
+                          {cell}
+                        </SortableItem>
+                      )
+                    : undefined
+                }
+              />
+            </SortableContext>
+          </DndContext>
         )}
 
-        {tab === "sagas" && (
-          isReorderingSagas ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleSagaDragEnd}
-            >
-              <SortableContext
-                items={sortedSagas.map((s) => s.id)}
-                strategy={rectSortingStrategy}
-              >
-                <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-                  {sortedSagas.map((saga) => (
-                    <SortableItem key={saga.id} id={saga.id}>
-                      <SeriesCard
-                        title={saga.title}
-                        author={saga.author ?? undefined}
-                        covers={saga.covers}
-                        bookCount={saga.bookCount}
-                        status={(saga.status ?? "pendiente") as ReadingStatus}
-                        isFavorite={saga.is_favorite ?? false}
-                        onClick={() => setSelectedSagaId(saga.id)}
-                      />
-                    </SortableItem>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-              {sortedSagas.map((saga) => (
-                <SeriesCard
-                  key={saga.id}
-                  title={saga.title}
-                  author={saga.author ?? undefined}
-                  covers={saga.covers}
-                  bookCount={saga.bookCount}
-                  status={(saga.status ?? "pendiente") as ReadingStatus}
-                  isFavorite={saga.is_favorite ?? false}
-                  onClick={() => setSelectedSagaId(saga.id)}
-                />
-              ))}
-            </div>
-          )
+        {tab === "sagas" && !isLoading && (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSagaDragEnd}>
+            <SortableContext items={isReorderingSagas ? sortedSagas.map((s) => s.id) : []} strategy={rectSortingStrategy}>
+              <Shelf
+                className="stagger-children"
+                items={sortedSagas.map((saga) => ({
+                  key: saga.id,
+                  title: saga.title,
+                  subtitle: saga.author ?? undefined,
+                  onClick: () => setSelectedSagaId(saga.id),
+                  cover: (
+                    <SagaCover
+                      title={saga.title}
+                      covers={saga.covers}
+                      bookCount={saga.bookCount}
+                      status={(saga.status ?? "pendiente") as ReadingStatus}
+                      isFavorite={saga.is_favorite ?? false}
+                    />
+                  ),
+                }))}
+                wrap={
+                  isReorderingSagas
+                    ? (item, cell) => (
+                        <SortableItem id={item.key} className="h-full">
+                          {cell}
+                        </SortableItem>
+                      )
+                    : undefined
+                }
+              />
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
