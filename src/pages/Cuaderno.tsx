@@ -1,21 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ImageOff, ArrowDownAZ, User, CalendarDays, Move, Plus, Search } from 'lucide-react'
+import { ImageOff, ArrowDownAZ, User, CalendarDays, Move } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews, type ReviewWithBook } from '../hooks/useReviews'
-import { SearchHeader } from '../assets/components/molecules/SearchHeader'
+import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
 import { BookTileSkeleton } from '../assets/components/atoms/Skeleton'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
-import { ScrollToTopButton } from '../assets/components/atoms/ScrollToTopButton'
+import { Fab } from '../assets/components/atoms/Fab'
 import { SelectReviewBookModal } from '../assets/components/molecules/SelectReviewBookModal'
 import { SortMenu, type SortMenuOption } from '../assets/components/molecules/SortMenu'
 import { SortableItem } from '../assets/components/atoms/SortableItem'
 import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from '../lib/librarySort'
 import { Resena } from './Resena'
 import { Citas } from './cuaderno/Citas'
-import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
 import { AddQuoteSheet } from '../assets/components/molecules/AddQuoteSheet'
 import { ShareQuoteModal } from '../assets/components/molecules/ShareQuoteModal'
 import { EditQuoteSheet } from '../assets/components/molecules/EditQuoteSheet'
@@ -98,7 +97,6 @@ export function Cuaderno() {
   }
 
   const [search, setSearch] = useState('')
-  const [isSearching, setIsSearching] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   // El modo elegido se guarda en localStorage (mismo mecanismo que Estante) para que no se
@@ -133,7 +131,6 @@ export function Cuaderno() {
   function changeTab(next: 'resenas' | 'citas') {
     if (next === tab) return
     setSearch('')
-    setIsSearching(false)
     setIsReordering(false)
     const params = new URLSearchParams(searchParams)
     if (next === 'citas') params.set('vista', 'citas')
@@ -193,65 +190,25 @@ export function Cuaderno() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
-      <SearchHeader
-        isSearching={isSearching}
-        onCancel={() => {
-          setSearch('')
-          setIsSearching(false)
+      <ScreenHeader
+        title="Cuaderno"
+        tabsLabel="Reseñas o citas"
+        tabs={[
+          { value: 'resenas', label: 'Reseñas', count: isLoading ? undefined : filtered.length },
+          { value: 'citas', label: 'Citas', count: isLoadingQuotes ? undefined : filteredQuotes.length },
+        ]}
+        active={tab}
+        onTabChange={changeTab}
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: tab === 'citas' ? 'Buscar en tus citas, título o autor' : 'Buscar por título o autor',
+          actions:
+            tab === 'resenas' ? (
+              <SortMenu variant="bar" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
+            ) : undefined,
         }}
-        value={search}
-        onChange={setSearch}
-        placeholder={tab === 'citas' ? 'Buscar en tus citas, título o autor' : 'Buscar por título o autor'}
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="h-9 min-[400px]:h-10 flex items-center font-title text-[clamp(30px,8.5vw,44px)] leading-none text-text whitespace-nowrap">
-              Cuaderno
-            </h1>
-            <div className="flex items-start gap-1.5 min-[400px]:gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsSearching(true)}
-                aria-label="Buscar"
-                className="w-9 h-9 min-[400px]:w-10 min-[400px]:h-10 shrink-0 rounded-full bg-surface border border-border shadow-card text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
-              >
-                <Search size={17} />
-              </button>
-              {tab === 'resenas' && (
-                <SortMenu variant="icon" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
-              )}
-              <button
-                type="button"
-                onClick={() => (tab === 'citas' ? setIsAddingQuote(true) : setIsPickerOpen(true))}
-                aria-label={tab === 'citas' ? 'Agregar cita' : 'Escribir reseña nueva'}
-                className="w-11 h-11 min-[400px]:w-12 min-[400px]:h-12 -mb-2 shrink-0 rounded-full bg-primary text-primary-ink shadow-card flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
-              >
-                <Plus size={24} strokeWidth={2.4} />
-              </button>
-            </div>
-          </div>
-          <p className="font-body text-body-md text-text-secondary mt-1.5 tabular-nums">
-            {tab === 'citas'
-              ? isLoadingQuotes
-                ? '\u00a0'
-                : `${filteredQuotes.length} ${filteredQuotes.length === 1 ? 'cita' : 'citas'}`
-              : isLoading
-                ? '\u00a0'
-                : `${filtered.length} ${filtered.length === 1 ? 'reseña' : 'reseñas'}`}
-          </p>
-        </div>
-      </SearchHeader>
-
-      <div className="mb-5">
-        <SegmentedTabs
-          active={tab}
-          onChange={changeTab}
-          options={[
-            { value: 'resenas', label: 'Reseñas' },
-            { value: 'citas', label: 'Citas' },
-          ]}
-        />
-      </div>
+      />
 
       {tab === 'citas' ? (
         <Citas
@@ -305,7 +262,10 @@ export function Cuaderno() {
       )}
 
       <div className="pb-24" />
-      <ScrollToTopButton />
+      <Fab
+        label={tab === 'citas' ? 'Agregar cita' : 'Escribir reseña nueva'}
+        onClick={() => (tab === 'citas' ? setIsAddingQuote(true) : setIsPickerOpen(true))}
+      />
       <TabBar active="cuaderno" onChange={handleTabBarChange} />
 
       <SelectReviewBookModal
