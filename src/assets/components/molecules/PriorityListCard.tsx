@@ -14,7 +14,6 @@ import { usePriorityBooks } from '../../../hooks/usePriorityBooks'
 import { useProfile } from '../../../hooks/useProfile'
 import { DEFAULT_PRIORITY_LIST_NAME, getPriorityListName } from '../../../lib/priorityList'
 import { queryClient } from '../../../lib/queryClient'
-import { Eyebrow } from '../atoms/Eyebrow'
 import { BookTileSkeleton } from '../atoms/Skeleton'
 import { SortableItem } from '../atoms/SortableItem'
 import { HorizontalScroller } from '../atoms/HorizontalScroller'
@@ -77,33 +76,33 @@ export function PriorityListCard({ userId }: PriorityListCardProps) {
 
   return (
     <>
-      <Card labelledBy="lista-temporada">
-        <div className="flex items-center justify-between gap-2 mb-3.5">
-          <Eyebrow id="lista-temporada" icon={Star} tone="magenta">
-            {listName}
-          </Eyebrow>
-          {isReordering ? (
-            // Mientras se organiza, el menú se cambia por un botón para terminar. El orden ya
-            // se guarda al soltar cada libro; este botón solo sale del modo organizar.
-            <button
-              type="button"
-              onClick={() => setIsReordering(false)}
-              className="inline-flex items-center gap-1.5 shrink-0 rounded-full bg-magenta text-on-magenta px-3.5 py-1.5 text-body-sm font-bold animate-fade-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
-            >
-              <Check size={15} strokeWidth={2.5} />
-              Listo
-            </button>
-          ) : (
-            <PriorityListMenu
-              isReordering={isReordering}
-              canReorder={books.length > 1}
-              canViewInEstante={books.length > 0}
-              onEditName={() => setIsEditNameOpen(true)}
-              onToggleReorder={() => setIsReordering(true)}
-              onViewInEstante={() => navigate('/estante?filtro=temporada')}
-            />
-          )}
-        </div>
+      <Card
+        tab={{ label: listName, icon: Star }}
+        tone="magenta"
+        action={
+          isReordering ? (
+              // Mientras se organiza, el menú se cambia por un botón para terminar. El orden ya
+              // se guarda al soltar cada libro; este botón solo sale del modo organizar.
+              <button
+                type="button"
+                onClick={() => setIsReordering(false)}
+                className="inline-flex items-center gap-1.5 shrink-0 rounded-full bg-magenta text-on-magenta px-3.5 py-1.5 text-body-sm font-bold animate-fade-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+              >
+                <Check size={15} strokeWidth={2.5} />
+                Listo
+              </button>
+            ) : (
+              <PriorityListMenu
+                isReordering={isReordering}
+                canReorder={books.length > 1}
+                canViewInEstante={books.length > 0}
+                onEditName={() => setIsEditNameOpen(true)}
+                onToggleReorder={() => setIsReordering(true)}
+                onViewInEstante={() => navigate('/estante?filtro=temporada')}
+              />
+            )
+        }
+      >
 
         {isLoading ? (
           <div className="flex gap-4 overflow-hidden" aria-label="Cargando">
