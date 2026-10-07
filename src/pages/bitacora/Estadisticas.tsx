@@ -10,7 +10,6 @@ import {
   Star,
   TrendingUp,
   Users,
-  type LucideIcon,
 } from 'lucide-react'
 import { useLibraryStats } from '../../hooks/useLibraryStats'
 import { useGoalHistory } from '../../hooks/useGoalHistory'
@@ -19,27 +18,20 @@ import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { StatTile } from '../../assets/components/atoms/StatTile'
 import { Skeleton } from '../../assets/components/atoms/Skeleton'
 import { Card } from '../../assets/components/molecules/Card'
+import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MonthCalendar } from '../../assets/components/atoms/MonthCalendar'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
 import { StreakTiles } from '../../assets/components/molecules/StreakTiles'
 import { RatingRow } from '../../assets/components/molecules/RatingRow'
 import { formatDuration } from '../../lib/progress'
 import { MONTH_NAMES } from '../../lib/months'
+import { categoryPlural } from '../../lib/options'
 
 // "8.940" y no "8940": en español el separador de miles normalmente se omite con 4 cifras.
 const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' } as Intl.NumberFormatOptions)
 const fmt = (n: number) => numberFormat.format(n)
 
 const plural = (n: number, one: string, many: string) => `${fmt(n)} ${n === 1 ? one : many}`
-const CATEGORY_PLURAL: Record<string, string> = {
-  Novela: 'novelas',
-  'Novela gráfica': 'novelas gráficas',
-  'Novela ligera': 'novelas ligeras',
-  Cómic: 'cómics',
-  Manga: 'manga',
-  Manhua: 'manhua',
-  Manhwa: 'manhwa',
-}
 const oneDecimal = (n: number) => n.toLocaleString('es', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
 function Footnote({ children }: { children: ReactNode }) {
@@ -64,66 +56,6 @@ function NavButton({ label, onClick, disabled, children, className = '' }: {
     >
       {children}
     </button>
-  )
-}
-
-type RowTone = 'brand' | 'orange' | 'pink' | 'magenta'
-const rowToneStyles: Record<RowTone, string> = {
-  brand: 'bg-primary-soft text-primary-text',
-  orange: 'bg-orange-soft text-orange-text',
-  pink: 'bg-pink-soft text-pink-text',
-  magenta: 'bg-magenta-soft text-magenta-text',
-}
-
-/** Fila plegable de "Más de tu bitácora": ícono, nombre, una línea de resumen y una flecha
- *  que gira al abrir. */
-function MoreRow({ id, tone, icon: Icon, title, summary, isOpen, onToggle, children }: {
-  id: string
-  tone: RowTone
-  icon: LucideIcon
-  title: string
-  summary: string
-  isOpen: boolean
-  onToggle: () => void
-  children: ReactNode
-}) {
-  return (
-    <div className="border-t border-border first:border-t-0">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        aria-controls={`mas-${id}`}
-        className="w-full flex items-center gap-3 py-[13px] text-left rounded-xl focus-visible:outline-2 focus-visible:outline-primary-text"
-      >
-        <span className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center ${rowToneStyles[tone]}`}>
-          <Icon size={17} aria-hidden="true" />
-        </span>
-        <span className="flex-1 min-w-0">
-          <span className="block font-body font-bold text-[15px] text-text">{title}</span>
-          <span className="block font-body text-[13px] text-text-secondary truncate">{summary}</span>
-        </span>
-        <ChevronRight
-          size={18}
-          aria-hidden="true"
-          className={`shrink-0 text-text-muted transition-transform duration-200 motion-reduce:transition-none ${isOpen ? 'rotate-90' : ''}`}
-        />
-      </button>
-      {/* Se abre y se cierra deslizando: la fila de la cuadrícula pasa de 0fr a 1fr (así se
-          anima hasta el alto real del contenido) junto con un fundido. Cerrada queda inert
-          para que el teclado y los lectores de pantalla no entren. */}
-      <div
-        id={`mas-${id}`}
-        inert={!isOpen}
-        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${
-          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="pb-3.5">{children}</div>
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -246,10 +178,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   ]
 
   // ---------- Resúmenes de una línea ----------
-  // Categoría en plural para las frases ("sobre todo novelas"). "Libro" no se nombra: "467
-  // libros, sobre todo libros" no dice nada, así que en ese caso se habla del formato.
-  const categoryPlural = (label: string | undefined) =>
-    !label || label === 'Libro' ? null : CATEGORY_PLURAL[label] ?? label.toLowerCase()
+  // Categoría en plural para las frases; si es "Libro", se habla del formato.
   const topCategory = categoryPlural(coleccion.byCategory[0]?.label)
   const topFormat = coleccion.byFormat[0]?.label?.toLowerCase()
   const readCategory = categoryPlural(coleccion.readByCategory[0]?.label)
