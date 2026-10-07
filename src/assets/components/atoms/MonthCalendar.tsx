@@ -72,7 +72,7 @@ export function MonthCalendar({ year, month, markedDates, className = '', size =
                 ? 'text-text-muted/60'
                 : 'bg-surface-2 text-text-secondary'
           const cellClass = `aspect-square flex items-center justify-center font-semibold tabular-nums ${isLarge ? 'rounded-lg text-body-md' : 'rounded-md text-[11px]'} ${colors} ${
-            isToday && !isSelected ? 'ring-[1.5px] ring-primary-text' : ''
+            isToday && !isSelected ? 'outline-[1.5px] outline-dashed -outline-offset-[1.5px] outline-primary-text text-primary-text font-bold' : ''
           }`
           return onDayClick ? (
             <button

@@ -47,6 +47,8 @@ interface CardProps {
   tone?: CardTone
   /** Enlace o botón pequeño a la derecha, a la altura de la pestaña ("Ver todos"). */
   action?: ReactNode
+  /** Relleno de la tarjeta con pestaña. Por defecto 18px; las listas plegables usan menos. */
+  padding?: string
 }
 
 /** Tarjeta base: esquinas de 24px, borde fino y sombra casi imperceptible. V.3.0.0: puede
@@ -62,6 +64,7 @@ export function Card({
   tab,
   tone = 'brand',
   action,
+  padding = 'p-[18px]',
 }: CardProps) {
   const tabId = useId()
   const bg = tintStyles[tint ?? (tab ? toneTint[tone] : 'none')]
@@ -84,7 +87,7 @@ export function Card({
   // nunca queda pegada a ella.
   return (
     <Tag aria-labelledby={labelledBy ?? tabId} className={`relative pt-[31px] ${className}`}>
-      <div className={`relative ${bg} border border-border rounded-card rounded-tl-none shadow-card p-[18px]`}>
+      <div className={`relative ${bg} border border-border rounded-card rounded-tl-none shadow-card ${padding}`}>
         <h2
           id={tabId}
           className={`absolute -top-[31px] -left-px h-[31px] max-w-[calc(100%-6rem)] px-4 flex items-center gap-[7px] ${bg} border border-border border-b-0 rounded-t-[14px] font-body font-bold text-body-md ${toneText[tone]}`}
