@@ -10,7 +10,7 @@ import { Compras } from './bitacora/Compras'
 type BitacoraTab = 'estadisticas' | 'resumen' | 'compras'
 
 const subtitles: Record<BitacoraTab, string> = {
-  estadisticas: 'Tu viaje literario: tu ritmo, tu colección y tus calificaciones.',
+  estadisticas: 'Tu viaje literario, poco a poco.',
   resumen: 'Los libros que terminaste, mes a mes, y tus favoritos.',
   compras: 'Cuánto has invertido en tu biblioteca, libro por libro.',
 }

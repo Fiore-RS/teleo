@@ -22,6 +22,8 @@ export interface LibraryStats {
     abandonedCount: number
     sagaCount: number
     reviewCount: number
+    /** Todos los libros del estante, en cualquier estado. */
+    totalBooks: number
     memberSince: string | null
   }
   ritmo: {
@@ -58,16 +60,19 @@ export interface LibraryStats {
     monthlyThisYear: { month: number; count: number }[]
     currentYearCount: number
     previousYearCount: number
+    /** V.3.0.0, tarjeta del año en Estadísticas: por cada año con lecturas terminadas, las
+     *  páginas de esas lecturas y la calificación promedio de esos libros. */
+    porAnio: { year: number; finished: number; pages: number; avgRating: number | null }[]
   }
 }
 
 const emptyStats: LibraryStats = {
-  resumen: { pagesRead: 0, audioSeconds: 0, finishedCount: 0, readingCount: 0, wishlistCount: 0, abandonedCount: 0, sagaCount: 0, reviewCount: 0, memberSince: null },
+  resumen: { pagesRead: 0, audioSeconds: 0, finishedCount: 0, readingCount: 0, wishlistCount: 0, abandonedCount: 0, sagaCount: 0, reviewCount: 0, totalBooks: 0, memberSince: null },
   ritmo: { longestStreak: 0, sessionDates: [] },
   coleccion: { byCategory: [], byFormat: [], byLanguage: [], readByCategory: [], readByFormat: [], longestBook: null, shortestBook: null },
   autoresYSeries: { topAuthor: null, sagasCompleted: 0, sagasInProgress: 0, mostRereadBook: null },
   calificaciones: { avgRating: null, bestRated: null, worstRated: null, hasTie: false, quotesCount: 0 },
-  historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0 },
+  historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0, porAnio: [] },
 }
 
 
@@ -210,6 +215,20 @@ export function useLibraryStats(userId: string | undefined) {
     const yearsBreakdown = Array.from(yearCounts.entries())
       .map(([year, count]) => ({ year, count }))
       .sort((a, b) => b.year - a.year)
+    // Por año (V.3.0.0): páginas de las lecturas terminadas ese año (una relectura vuelve a
+    // sumar, igual que "Páginas leídas") y el promedio de calificación de esos libros.
+    const ratingByBook = new Map(
+      reviews.filter((r) => typeof r.general_rating === 'number').map((r) => [r.book_id, r.general_rating as number])
+    )
+    const porAnio = yearsBreakdown.map(({ year, count }) => {
+      const yearReads = reads.filter((h) => h.end_date.startsWith(String(year)))
+      const pages = yearReads.reduce((sum, h) => sum + (bookById.get(h.book_id)?.total_pages ?? 0), 0)
+      const ratings = [...new Set(yearReads.map((h) => h.book_id))]
+        .map((id) => ratingByBook.get(id))
+        .filter((v): v is number => typeof v === 'number')
+      const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null
+      return { year, finished: count, pages, avgRating: avg }
+    })
     const monthlyThisYear = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, count: monthCounts.get(i + 1) ?? 0 }))
 
     return {
@@ -222,6 +241,7 @@ export function useLibraryStats(userId: string | undefined) {
         abandonedCount: abandoned.length,
         sagaCount: sagas.length,
         reviewCount: reviews.filter(isReviewWritten).length,
+        totalBooks: books.length,
         memberSince: oldestCreatedAt,
       },
       ritmo: {
@@ -249,6 +269,7 @@ export function useLibraryStats(userId: string | undefined) {
         monthlyThisYear,
         currentYearCount: yearCounts.get(currentYear) ?? 0,
         previousYearCount: yearCounts.get(currentYear - 1) ?? 0,
+        porAnio,
       },
     }
   }
