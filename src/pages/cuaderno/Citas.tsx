@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { ImageOff, Quote, Shuffle } from 'lucide-react'
+import { ImageOff, Shuffle } from 'lucide-react'
 import { CoverImage } from '../../assets/components/atoms/CoverImage'
 import { Skeleton } from '../../assets/components/atoms/Skeleton'
-import { Eyebrow } from '../../assets/components/atoms/Eyebrow'
-import { Card } from '../../assets/components/molecules/Card'
+import { Card, CardAction } from '../../assets/components/molecules/Card'
 import { QuoteMenu } from '../../assets/components/molecules/QuoteMenu'
 import type { QuoteWithBook } from '../../hooks/useQuotes'
 
@@ -61,18 +60,26 @@ function QuoteCard({
   // Con el menú abierto, la tarjeta sube encima de las de abajo para que el panel no quede tapado.
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   return (
-    <article className={`relative ${isMenuOpen ? 'z-20' : ''} bg-surface border border-border rounded-card shadow-card p-3.5`}>
-      <Quote size={14} className="text-ornament" aria-hidden="true" />
-      <p className="font-display italic text-body-md leading-snug text-text whitespace-pre-line mt-1.5">{quote.quote_text}</p>
-      <div className="flex items-end justify-between gap-2 mt-3 pt-3 border-t border-border">
+    <article
+      className={`relative ${isMenuOpen ? 'z-20' : ''} bg-surface border border-border rounded-2xl shadow-card px-3 pt-3.5 pb-3`}
+    >
+      {/* Esquina doblada magenta, como una nota. */}
+      <span
+        aria-hidden="true"
+        className="absolute top-0 right-0 w-[18px] h-[18px] rounded-tr-2xl"
+        style={{ background: 'linear-gradient(45deg, var(--color-magenta-soft) 50%, var(--color-bg) 50%)' }}
+      />
+      <span aria-hidden="true" className="block h-3.5 font-title text-[30px] leading-[0.6] text-ornament">“</span>
+      <p className="font-display italic text-[14.5px] leading-[1.4] text-text whitespace-pre-line mt-1">{quote.quote_text}</p>
+      <div className="flex items-end justify-between gap-2 mt-2.5 pt-2 border-t border-dashed border-border">
         <button
           type="button"
           onClick={() => onOpenBook(book.id)}
           aria-label={`Ver reseña de ${book.title}`}
-          className="min-w-0 text-left rounded-md focus-visible:outline-2 focus-visible:outline-primary-text"
+          className="min-w-0 text-left text-[12px] rounded-md focus-visible:outline-2 focus-visible:outline-primary-text"
         >
-          <p className="text-body-sm font-semibold text-text line-clamp-2 leading-tight">{book.title}</p>
-          {quote.page != null && <p className="text-body-sm text-text-secondary mt-0.5">Pág. {quote.page}</p>}
+          <p className="font-bold leading-[1.2] text-text line-clamp-2">{book.title}</p>
+          {quote.page != null && <p className="text-text-secondary">Pág. {quote.page}</p>}
         </button>
         <QuoteMenu
           align={align}
@@ -130,17 +137,12 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
   return (
     <div className="flex flex-col gap-3">
       {showRandom && (
-        <Card labelledBy="cita-al-azar" tint="magenta" className={isRandomMenuOpen ? 'z-20' : ''}>
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <Eyebrow id="cita-al-azar" icon={Shuffle} tone="magenta">Cita al azar</Eyebrow>
-            <button
-              type="button"
-              onClick={nextRandom}
-              className="text-body-sm font-bold text-magenta-text rounded-md focus-visible:outline-2 focus-visible:outline-primary-text"
-            >
-              Otra cita
-            </button>
-          </div>
+        <Card
+          tab={{ label: 'Cita al azar', icon: Shuffle }}
+          tone="magenta"
+          action={<CardAction onClick={nextRandom}>Otra</CardAction>}
+          className={isRandomMenuOpen ? 'z-20' : ''}
+        >
           <p key={random.id} className="font-display italic text-[19px] leading-snug text-text animate-fade-in">
             “{random.quote_text}”
           </p>
@@ -160,9 +162,9 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
 
       {/* Dos columnas: las citas se reparten alternando (1 izquierda, 2 derecha, 3 izquierda...)
           para que el orden de más reciente a más antigua se siga leyendo de arriba hacia abajo. */}
-      <div className="grid grid-cols-2 gap-3 items-start">
+      <div className="grid grid-cols-2 gap-2.5 items-start">
         {[0, 1].map((col) => (
-          <div key={col} className="flex flex-col gap-3 min-w-0 stagger-children">
+          <div key={col} className="flex flex-col gap-2.5 min-w-0 stagger-children">
             {quotes
               .filter((_, i) => i % 2 === col)
               .map((q) => (
