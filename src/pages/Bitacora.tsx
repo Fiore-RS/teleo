@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
-import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
+import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { Estadisticas } from './bitacora/Estadisticas'
 import { Resumen, type ResumenView } from './bitacora/Resumen'
@@ -47,22 +47,18 @@ export function Bitacora() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
-      <header className="px-1 pt-4 pb-5">
-        <h1 className="font-title text-[clamp(30px,8.5vw,44px)] leading-none text-text">Bitácora</h1>
-        <p className="font-body text-body-md text-text-secondary mt-2">{subtitles[tab]}</p>
-      </header>
-
-      <div className="mb-5">
-        <SegmentedTabs
-          active={tab}
-          onChange={(t) => updateParams({ vista: t === 'estadisticas' ? null : t })}
-          options={[
-            { value: 'estadisticas', label: 'Estadísticas' },
-            { value: 'resumen', label: 'Resumen' },
-            { value: 'compras', label: 'Compras' },
-          ]}
-        />
-      </div>
+      <ScreenHeader
+        title="Bitácora"
+        lead={subtitles[tab]}
+        tabsLabel="Secciones de la bitácora"
+        tabs={[
+          { value: 'estadisticas', label: 'Estadísticas' },
+          { value: 'resumen', label: 'Resumen' },
+          { value: 'compras', label: 'Compras' },
+        ]}
+        active={tab}
+        onTabChange={(t) => updateParams({ vista: t === 'estadisticas' ? null : t })}
+      />
 
       {tab === 'estadisticas' && (
         <Estadisticas

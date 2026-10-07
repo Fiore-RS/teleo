@@ -13,8 +13,9 @@ interface SortMenuProps<T extends string> {
   onSelect: (key: T) => void
   className?: string
   /** 'pill': botón ancho con texto "Organizar". 'icon': botón redondo solo con ícono, para
-   *  la fila de acciones del encabezado (rediseño 2026). */
-  variant?: 'pill' | 'icon'
+   *  la fila de acciones del encabezado (rediseño 2026). 'bar': botón redondo sin borde,
+   *  dentro de la barra de búsqueda del encabezado fijo (V.3.0.0). */
+  variant?: 'pill' | 'icon' | 'bar'
 }
 
 /** Botón "Organizar" que despliega un menú de modos de orden — mismo patrón que
@@ -42,7 +43,17 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      {variant === 'icon' ? (
+      {variant === 'bar' ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen((o) => !o)}
+          aria-label="Organizar"
+          aria-expanded={isOpen}
+          className="w-9 h-9 shrink-0 rounded-full text-text flex items-center justify-center hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-primary-text"
+        >
+          <ArrowUpDown size={18} />
+        </button>
+      ) : variant === 'icon' ? (
         <button
           type="button"
           onClick={() => setIsOpen((o) => !o)}
