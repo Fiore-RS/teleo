@@ -9,14 +9,16 @@ interface SortableItemProps {
   // siempre). 'pan-x' para listas horizontales tipo swiper (la lista de "esta temporada" en
   // Mesa) — mismo razonamiento pero con los ejes invertidos, ver comentario abajo.
   axis?: 'x' | 'y'
+  className?: string
 }
 
-export function SortableItem({ id, children, axis = 'y' }: SortableItemProps) {
+export function SortableItem({ id, children, axis = 'y', className }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
 
   return (
     <div
       ref={setNodeRef}
+      className={className}
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
