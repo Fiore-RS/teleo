@@ -7,11 +7,11 @@ import { Toggle } from '../atoms/Toggle'
 // izquierda, valor a la derecha), filas con interruptor, una tarjeta plegable y los botones
 // del pie. Así todas las hojas se ven y se usan igual.
 
-/** Etiqueta de sección con una raya corta y mayúsculas espaciadas, igual que en la reseña. */
+/** Etiqueta de sección. V.3.0.0: en el mismo estilo que las pestañas de las tarjetas (negrita
+ *  en vino, sin mayúsculas), en vez de la raya con mayúsculas espaciadas. */
 export function FormSectionLabel({ children, className = '' }: { children: string; className?: string }) {
   return (
-    <p className={`flex items-center gap-2 mb-2.5 font-body font-bold text-body-sm uppercase tracking-[0.14em] text-primary-text ${className}`}>
-      <span className="w-4 h-0.5 rounded-full bg-primary-text" aria-hidden="true" />
+    <p className={`mb-2 px-1 font-body font-bold text-body-md text-primary-text ${className}`}>
       {children}
     </p>
   )

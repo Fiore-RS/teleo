@@ -41,7 +41,7 @@ interface CardProps {
   labelledBy?: string
   /** Tinte del fondo. Con pestaña, por defecto es el del tono. */
   tint?: CardTint
-  /** Pestaña de separador arriba a la izquierda, con ícono y nombre (reemplaza a Eyebrow). */
+  /** Pestaña de separador arriba a la izquierda, con ícono y nombre. */
   tab?: CardTab
   /** Color de la pestaña. Por defecto el vino de marca. */
   tone?: CardTone

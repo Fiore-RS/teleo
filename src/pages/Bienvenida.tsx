@@ -1,11 +1,8 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Coffee, BookOpen, NotebookPen, ScrollText, User, type LucideIcon } from 'lucide-react'
-import { useAuth } from '../hooks/useAuth'
-import { useProfile } from '../hooks/useProfile'
+import { useFinishIntro } from '../hooks/useFinishIntro'
 import logoIconDark from '../assets/images/logo/logo-icon-dark.svg'
 import { Button } from '../assets/components/atoms/Button'
-import { LATEST_VERSION, markChangelogSeen } from '../lib/changelog'
 
 interface Step {
   icon: LucideIcon
@@ -43,18 +40,7 @@ const steps: Step[] = [
 
 export function Bienvenida() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const { updateProfile } = useProfile(user?.id)
-  const [isSaving, setIsSaving] = useState(false)
-
-  async function handleStart() {
-    setIsSaving(true)
-    // Las cuentas nuevas no ven el anuncio de novedades: todo es nuevo para ellas.
-    await updateProfile({ has_seen_intro: true, last_seen_version: LATEST_VERSION })
-    markChangelogSeen()
-    setIsSaving(false)
-    navigate('/mesa', { replace: true })
-  }
+  const { finishIntro, isSaving } = useFinishIntro()
 
   return (
     <div className="min-h-screen bg-glow-top flex flex-col px-4 pt-8 pb-10">
@@ -85,10 +71,10 @@ export function Bienvenida() {
       </div>
 
       <div className="flex flex-col gap-2.5 mt-8">
-        <Button variant="primary" onClick={handleStart} isLoading={isSaving}>
+        <Button variant="primary" onClick={finishIntro} isLoading={isSaving}>
           Empezar a leer
         </Button>
-        <Button variant="outline" onClick={() => navigate('/tutorial')}>
+        <Button variant="outline" onClick={() => navigate('/tutorial', { state: { from: 'bienvenida' } })}>
           Ver el tutorial
         </Button>
       </div>

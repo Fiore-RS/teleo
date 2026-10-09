@@ -51,7 +51,7 @@ export function RecuperarContrasena() {
           <div className="mx-auto w-16 h-16 rounded-full bg-primary-soft flex items-center justify-center mb-4">
             <MailCheck size={28} strokeWidth={1.75} className="text-primary-text" />
           </div>
-          <h1 className="font-display text-display-md text-text font-semibold">Revisa tu correo</h1>
+          <h1 className="font-title text-[28px] leading-[1.1] text-text">Revisa tu correo</h1>
           <p className="font-body text-body-md text-text-secondary mt-2">
             Si hay una cuenta con {sentTo}, te llegará un enlace para crear una contraseña nueva. Puede
             tardar unos minutos; revisa también la carpeta de spam.

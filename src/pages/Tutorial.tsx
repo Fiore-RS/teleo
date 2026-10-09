@@ -1,5 +1,8 @@
-import { useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { useFinishIntro } from '../hooks/useFinishIntro'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { Card } from '../assets/components/molecules/Card'
+import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
 import {
   Coffee, BookOpen, NotebookPen, ScrollText, User, Settings, CalendarClock,
@@ -84,27 +87,25 @@ const sections: TutorialSection[] = [
   },
 ]
 
+/** Tutorial: se abre desde Configuración (con la barra de pestañas, Perfil marcado) o desde
+ *  la bienvenida de una cuenta nueva, que pasa { from: 'bienvenida' }: ahí todavía no hay
+ *  barra, así que termina con "Listo", que cierra la bienvenida y sigue a La mesa. */
 export function Tutorial() {
-  const navigate = useNavigate()
+  const location = useLocation()
+  const { finishIntro, isSaving } = useFinishIntro()
+  const fromWelcome = (location.state as { from?: string } | null)?.from === 'bienvenida'
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
       <PageHeader
         title="Tutorial de Teleo"
         subtitle="Un repaso punto por punto de todo lo que puedes hacer en cada sección de la app."
-        onBack={() => navigate(-1)}
       />
 
       <div className="flex flex-col gap-4 stagger-children">
         {sections.map(({ icon: Icon, title, points }) => (
-          <section key={title} className="bg-surface border border-border rounded-card shadow-card p-[18px]">
-            <div className="flex items-center gap-3">
-              <span className="w-10 h-10 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
-                <Icon size={19} />
-              </span>
-              <h2 className="font-display font-semibold text-display-md text-text">{title}</h2>
-            </div>
-            <ul className="mt-3.5 space-y-2.5">
+          <Card key={title} tab={{ label: title, icon: Icon }}>
+            <ul className="space-y-2.5">
               {points.map((point) => (
                 <li key={point} className="flex gap-2.5 text-body-md text-text-secondary">
                   <Sparkle size={9} className="text-ornament shrink-0 mt-1.5" />
@@ -112,9 +113,16 @@ export function Tutorial() {
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
         ))}
       </div>
+
+      <SubpageNav
+        tab="perfil"
+        parentPath="/configuracion"
+        onDone={fromWelcome ? finishIntro : undefined}
+        isDoneLoading={isSaving}
+      />
     </div>
   )
 }
