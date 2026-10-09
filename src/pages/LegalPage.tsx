@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { Card } from '../assets/components/molecules/Card'
+import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
 import { LEGAL_LAST_UPDATED, privacySections, termsSections, type LegalSection } from '../lib/legal'
 
@@ -9,17 +12,19 @@ interface LegalPageProps {
 }
 
 /** Pantalla de texto largo para Política de privacidad y Términos de uso: una tarjeta por
- *  apartado, con la fecha de la última actualización arriba. */
+ *  apartado, con la fecha de la última actualización arriba. Con sesión se abre desde
+ *  Configuración (barra con Perfil marcado); sin sesión termina con "Listo". */
 function LegalPage({ title, sections }: LegalPageProps) {
   const navigate = useNavigate()
+  const { user, isLoading } = useAuth()
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader title={title} subtitle={`Última actualización: ${LEGAL_LAST_UPDATED}.`} onBack={() => navigate(-1)} />
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <PageHeader title={title} subtitle={`Última actualización: ${LEGAL_LAST_UPDATED}.`} />
 
       <div className="flex flex-col gap-4 stagger-children">
         {sections.map((section) => (
-          <section key={section.title} className="bg-surface border border-border rounded-card shadow-card p-[18px]">
+          <Card key={section.title}>
             <h2 className="font-display font-semibold text-body-lg text-text">{section.title}</h2>
             {section.paragraphs?.map((p) => (
               <p key={p} className="text-body-md text-text-secondary leading-relaxed mt-2 text-pretty">{p}</p>
@@ -34,9 +39,17 @@ function LegalPage({ title, sections }: LegalPageProps) {
                 ))}
               </ul>
             )}
-          </section>
+          </Card>
         ))}
       </div>
+
+      {!isLoading && (
+        <SubpageNav
+          tab="perfil"
+          parentPath="/configuracion"
+          onDone={user ? undefined : () => (window.history.length > 1 ? navigate(-1) : navigate('/inicio'))}
+        />
+      )}
     </div>
   )
 }

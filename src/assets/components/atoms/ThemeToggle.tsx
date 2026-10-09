@@ -7,7 +7,7 @@ const options = [
   { value: 'system' as const, icon: Monitor, label: 'Sistema' },
 ]
 
-/** Selector de tema en forma de píldora (rediseño 2026), mismo lenguaje que SegmentedTabs:
+/** Selector de tema en forma de píldora (rediseño 2026), mismo lenguaje que las pestañas de antes:
  *  la opción activa va rellena en vino. */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()

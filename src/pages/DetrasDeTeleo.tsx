@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom'
 import { AtSign } from 'lucide-react'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../lib/legal'
 
@@ -12,11 +12,9 @@ const paragraphs = [
 
 /** "Detrás de Teleo" (Configuración): la historia de la app contada por Fiorella. */
 export function DetrasDeTeleo() {
-  const navigate = useNavigate()
-
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader title="Detrás de Teleo" onBack={() => navigate(-1)} />
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <PageHeader title="Detrás de Teleo" />
 
       <article className="bg-surface border border-border rounded-card shadow-card p-[22px] animate-fade-in">
         <img
@@ -49,6 +47,8 @@ export function DetrasDeTeleo() {
           {INSTAGRAM_HANDLE} en Instagram
         </a>
       </article>
+
+      <SubpageNav tab="perfil" parentPath="/configuracion" />
     </div>
   )
 }
