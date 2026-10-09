@@ -14,7 +14,7 @@ export interface AnnouncementItem {
 export const announcementItems: AnnouncementItem[] = [
   { icon: NotebookPen, title: 'Un cuaderno nuevo', text: 'Cada sección es como una hoja con pestañas de separador, y los títulos estrenan tipografía.' },
   { icon: Bookmark, title: 'Tu racha, en una cinta', text: 'Marca tu sesión del día y la cinta de La mesa se llena. Tócala para ver tu calendario.' },
-  { icon: BookOpen, title: 'Libros en repisas', text: 'Tu estante, tu año en Resumen y tus favoritos se acomodan en repisas, con todo más a mano.' },
+  { icon: BookOpen, title: 'Libros en repisas', text: 'Tu estante, tu año en Resumen y tus favoritos se acomodan en repisas. Elige cómo se ve tu estante desde el botón de vista.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */
