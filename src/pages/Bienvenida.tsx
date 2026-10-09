@@ -19,7 +19,7 @@ const steps: Step[] = [
   {
     icon: BookOpen,
     title: 'Estante',
-    description: 'Tu librería privada. Agrega libros y sagas, organízalos y, si no sabes qué leer, deja que Teleo elija un pendiente.',
+    description: 'Tu librería privada, en repisas. Agrega libros y sagas, organízalos y, si no sabes qué leer, deja que Teleo elija un pendiente.',
   },
   {
     icon: NotebookPen,
