@@ -1,27 +1,26 @@
 import type { ReactNode } from 'react'
 import { ChevronRight, type LucideIcon } from 'lucide-react'
+import { Card } from './Card'
 
 interface SettingsGroupProps {
   title: string
+  /** Ícono de la pestaña de la sección. */
+  icon?: LucideIcon
   children: ReactNode
   /** Texto de ayuda debajo de la tarjeta. */
   note?: string
 }
 
-/** Grupo de Configuración (rediseño 2026): etiqueta pequeña en mayúsculas con una rayita a
- *  la izquierda y, debajo, una sola tarjeta con las filas separadas por líneas finas. */
-export function SettingsGroup({ title, children, note }: SettingsGroupProps) {
+/** Grupo de Configuración. V.3.0.0: cada sección es una tarjeta con pestaña de separador
+ *  (ícono y nombre) y las filas separadas por líneas finas. */
+export function SettingsGroup({ title, icon, children, note }: SettingsGroupProps) {
   return (
-    <section>
-      <h2 className="flex items-center gap-2 px-1 mb-2.5 font-body font-bold text-body-sm uppercase tracking-[0.14em] text-primary-text">
-        <span className="w-4 h-0.5 rounded-full bg-primary-text" aria-hidden="true" />
-        {title}
-      </h2>
-      <div className="bg-surface border border-border rounded-card shadow-card divide-y divide-border">
-        {children}
-      </div>
+    <div>
+      <Card tab={{ label: title, icon }} padding="py-1">
+        <div className="divide-y divide-border">{children}</div>
+      </Card>
       {note && <p className="text-body-sm text-text-secondary mt-2 px-1">{note}</p>}
-    </section>
+    </div>
   )
 }
 

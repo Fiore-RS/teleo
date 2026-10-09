@@ -197,7 +197,10 @@ interface MonthViewProps extends SheetViewProps {
 
 /** Mes: los libros terminados ese mes, en repisas. */
 function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNext, onPrev, onNext, onBookClick }: MonthViewProps) {
+  // Envoltorio con stagger-children: la hoja entra con la misma animación que las tarjetas
+  // de Estadísticas y Compras.
   return (
+    <div className="stagger-children">
     <ResumenSheet view={view} onViewChange={onViewChange}>
       <h2 className="sr-only">Libros terminados en {MONTH_NAMES[month - 1]} de {year}</h2>
       <PeriodNav
@@ -234,6 +237,7 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
         )}
       </PeriodTransition>
     </ResumenSheet>
+    </div>
   )
 }
 
@@ -308,7 +312,7 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
     )
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 stagger-children">
       <ResumenSheet view={view} onViewChange={onViewChange}>
         <h2 className="sr-only">Tu {year} en libros</h2>
         <PeriodNav
@@ -461,7 +465,7 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
   const pickerCurrent = picking === null ? undefined : favoriteFor(picking === 0 ? null : picking)
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 stagger-children">
       <ResumenSheet view={view} onViewChange={onViewChange}>
         <h2 className="sr-only">Favoritos de {year}</h2>
         <PeriodNav

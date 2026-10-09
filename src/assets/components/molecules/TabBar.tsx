@@ -14,6 +14,9 @@ const tabs: { key: TabKey; label: string; icon: LucideIcon }[] = [
 interface TabBarProps {
   active: TabKey
   onChange: (tab: TabKey) => void
+  /** Qué hacer al tocar la pestaña marcada. Por defecto vuelve arriba; en las pantallas
+   *  secundarias (Configuración) lleva a la sección de la que se viene. */
+  onActiveTap?: () => void
 }
 
 /** Vuelve al inicio de la pantalla; sin animación si el sistema pide reducir movimiento. */
@@ -24,7 +27,7 @@ function scrollToTop() {
 
 /** Barra flotante de secciones. V.3.0.0: la pestaña activa es un círculo vino con el ícono
  *  claro. Tocar la pestaña en la que ya se está vuelve arriba (reemplaza al botón de subir). */
-export function TabBar({ active, onChange }: TabBarProps) {
+export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
   // Se monta en <body> con un portal para que quede fuera del contenedor que se desvanece al
   // cambiar de pantalla: así la barra se queda quieta y solo cambia la pestaña activa.
   return createPortal(
@@ -43,7 +46,7 @@ export function TabBar({ active, onChange }: TabBarProps) {
             <button
               key={key}
               type="button"
-              onClick={() => (isActive ? scrollToTop() : onChange(key))}
+              onClick={() => (isActive ? (onActiveTap ?? scrollToTop)() : onChange(key))}
               aria-current={isActive ? 'page' : undefined}
               className={`flex flex-col items-center gap-0.5 flex-1 rounded-2xl focus-visible:outline-2 focus-visible:outline-primary-text ${
                 isActive ? 'text-text' : 'text-text-secondary'
