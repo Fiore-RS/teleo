@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useGoBack } from '../hooks/useGoBack'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
   Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
+  Settings, Archive, TriangleAlert,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -26,6 +26,7 @@ import { Select } from '../assets/components/atoms/Select'
 import { currencyOptions } from '../lib/currencies'
 import { SettingsGroup, SettingsRow, SettingsField } from '../assets/components/molecules/SettingsList'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { supabase } from '../lib/supabase'
 import { LATEST_VERSION, hasUnseenChangelog } from '../lib/changelog'
 
@@ -33,7 +34,6 @@ const SCROLL_KEY = 'teleo-config-scroll'
 
 export function Configuracion() {
   const navigate = useNavigate()
-  const goBack = useGoBack('/perfil')
   const { user } = useAuth()
   const { profile, updateProfile } = useProfile(user?.id)
   const { exportData } = useDataExport(user?.id)
@@ -129,21 +129,22 @@ export function Configuracion() {
   }
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
+      {/* V.3.0.0: sin flecha de regresar; la barra de pestañas queda visible con Perfil
+          marcado, y tocar Perfil vuelve a Perfil (en iPhone instalado puede no haber gesto
+          para volver). */}
       <PageHeader
         title="Configuración"
         subtitle="Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto."
-        onBack={goBack}
-        backLabel="Regresar a Tu rincón"
       />
 
-      <div className="flex flex-col gap-7 stagger-children">
-        <SettingsGroup title="Teleo">
+      <div className="flex flex-col gap-5 stagger-children">
+        <SettingsGroup title="Teleo" icon={Heart}>
           <SettingsRow icon={Heart} label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
           <SettingsRow icon={Megaphone} label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Apariencia">
+        <SettingsGroup title="Apariencia" icon={Palette}>
           <SettingsField icon={Palette} label="Modo de color" description="Sistema sigue el modo de tu teléfono">
             <ThemeToggle />
           </SettingsField>
@@ -162,7 +163,7 @@ export function Configuracion() {
           />
         </SettingsGroup>
 
-        <SettingsGroup title="Sistema">
+        <SettingsGroup title="Sistema" icon={Settings}>
           <SettingsField icon={Languages} label="Idioma" description="Por ahora Teleo está solo en español">
             <Select options={[{ value: 'es', label: 'Español' }]} value="es" disabled />
           </SettingsField>
@@ -176,31 +177,31 @@ export function Configuracion() {
           </SettingsField>
         </SettingsGroup>
 
-        <SettingsGroup title="Cuenta">
+        <SettingsGroup title="Cuenta" icon={User}>
           <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />
           <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
           <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />
           <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Compartir">
+        <SettingsGroup title="Compartir" icon={Share2}>
           <SettingsRow icon={Share2} label="Compartir perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setIsShareModalOpen(true)} />
           <SettingsRow icon={LinkIcon} label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Información">
+        <SettingsGroup title="Información" icon={Info}>
           <SettingsRow icon={Info} label="Tutorial de Teleo" description="Un recorrido por cada sección" onClick={() => openSubpage('/tutorial')} />
           <SettingsRow icon={ShieldCheck} label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
           <SettingsRow icon={FileText} label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Tus datos">
+        <SettingsGroup title="Tus datos" icon={Archive}>
           <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
           <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
           <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Zona de peligro">
+        <SettingsGroup title="Zona de peligro" icon={TriangleAlert}>
           <SettingsRow danger icon={ClearIcon} label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Pause} label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Trash2} label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
@@ -211,6 +212,9 @@ export function Configuracion() {
           Cerrar sesión
         </Button>
       </div>
+
+      <div className="pb-28" />
+      <TabBar active="perfil" onChange={(t: TabKey) => navigate(`/${t}`)} onActiveTap={() => navigate('/perfil')} />
 
       {isShareModalOpen && (
         <ShareProfileModal
