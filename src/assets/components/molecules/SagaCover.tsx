@@ -10,15 +10,17 @@ interface SagaCoverProps {
   bookCount: number
   status: ReadingStatus
   isFavorite?: boolean
+  /** Más chica (estante de 4 columnas): doblez y corazón más pequeños. */
+  small?: boolean
 }
 
 const placeholderBg = ['var(--color-magenta)', 'var(--color-orange)', 'var(--color-primary)']
 
-function CoverBadges({ status, isFavorite }: { status: ReadingStatus; isFavorite?: boolean }) {
+function CoverBadges({ status, isFavorite, small }: { status: ReadingStatus; isFavorite?: boolean; small?: boolean }) {
   return (
     <>
-      <DogEar status={status} size={24} className="absolute top-0 right-0" />
-      {isFavorite && <FavoriteBadge />}
+      <DogEar status={status} size={small ? 18 : 24} className="absolute top-0 right-0" />
+      {isFavorite && <FavoriteBadge small={small} />}
     </>
   )
 }
@@ -26,7 +28,7 @@ function CoverBadges({ status, isFavorite }: { status: ReadingStatus; isFavorite
 /** Pila de portadas de una saga para la repisa de Estante (V.3.0.0): la del primer libro
  *  al frente y, detrás, los lomos de los dos siguientes. Solo la imagen; el título y el
  *  autor van debajo del tablón (sin avance de la saga). */
-export function SagaCover({ title, covers = [], bookCount, status, isFavorite = false }: SagaCoverProps) {
+export function SagaCover({ title, covers = [], bookCount, status, isFavorite = false, small = false }: SagaCoverProps) {
   const [cover1, cover2, cover3] = covers
 
   if (bookCount === 0) {
@@ -47,7 +49,7 @@ export function SagaCover({ title, covers = [], bookCount, status, isFavorite = 
         style={{ backgroundColor: placeholderBg[0] }}
       >
         {cover1 && <CoverImage src={cover1} alt={title} className="w-full h-full object-cover" />}
-        <CoverBadges status={status} isFavorite={isFavorite} />
+        <CoverBadges status={status} isFavorite={isFavorite} small={small} />
       </div>
     )
   }
@@ -69,7 +71,7 @@ export function SagaCover({ title, covers = [], bookCount, status, isFavorite = 
       </div>
       <div className="relative flex-1 h-full -ml-2 rounded-[9px] overflow-hidden" style={{ backgroundColor: placeholderBg[0] }}>
         {cover1 && <CoverImage src={cover1} alt={title} className="w-full h-full object-cover" />}
-        <CoverBadges status={status} isFavorite={isFavorite} />
+        <CoverBadges status={status} isFavorite={isFavorite} small={small} />
       </div>
     </div>
   )
