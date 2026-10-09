@@ -23,6 +23,7 @@ export const changelog: ChangelogEntry[] = [
       'Teleo estrena diseño: cada sección es como la hoja de un cuaderno, con pestañas de separador y títulos con nueva tipografía.',
       'Tu racha ahora es una cinta marcapáginas en La mesa: se llena al marcar tu sesión del día y al tocarla abre el calendario.',
       'Tus libros y sagas se acomodan en repisas, con título y autor debajo de cada portada.',
+      'Elige cómo se ve tu estante desde el botón de vista: 3 o 4 libros por fila, con o sin título y autor, y con o sin repisa.',
       'La barra de búsqueda y las pestañas se quedan fijas arriba al bajar en Estante, Cuaderno y Bitácora. Para volver arriba, toca la sección en la que estás.',
       'Agrega libros y reseñas con el botón flotante de abajo.',
       'Tus reseñas son hojas rayadas y tus citas, notas con la esquina doblada.',

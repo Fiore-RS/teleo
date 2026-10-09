@@ -34,6 +34,7 @@ const sections: TutorialSection[] = [
       'Al terminar un libro, guarda su fecha de inicio y de fin, y escribe la reseña solo si quieres. Todo libro con fecha de fin cuenta para la meta de ese año.',
       'Agrupa libros en sagas, agrega varios a la vez y anota cuántos tendrá en total para ver tu progreso, por ejemplo "2 de 5".',
       'Usa la barra de arriba para buscar por título o autor, y su botón de filtros para ver solo los libros de un estado, idioma, categoría o formato. Al bajar, la barra y las pestañas se quedan fijas; toca Estante en la barra de abajo para volver arriba.',
+      'Toca el botón de vista de la barra para elegir cómo se ve tu estante: 3 o 4 libros por fila, con o sin título y autor, y con o sin repisa. Se guarda en tu cuenta.',
       'Usa el botón de organizar de la barra para ordenar por título, autor o fecha, o elige "Libre" para reordenar tus repisas arrastrando tus libros o sagas.',
       '¿No sabes qué leer? Toca "¿Qué leo ahora?" y Teleo elegirá uno de tus pendientes.',
     ],

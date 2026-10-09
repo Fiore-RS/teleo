@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Shuffle } from "lucide-react";
+import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Shuffle, LayoutGrid } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
@@ -13,6 +13,8 @@ import { defaultAdvancedFilters, type AdvancedFilters } from "../lib/advancedFil
 import { BookCover } from "../assets/components/molecules/BookCover";
 import { SagaCover } from "../assets/components/molecules/SagaCover";
 import { Shelf } from "../assets/components/molecules/Shelf";
+import { ShelfViewSheet } from "../assets/components/molecules/ShelfViewSheet";
+import { shelfViewFromProfile, shelfViewToProfile, type ShelfView } from "../lib/shelfView";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { Fab } from "../assets/components/atoms/Fab";
@@ -59,7 +61,16 @@ export function Estante() {
     refetch: refetchSagas,
     reorderSaga,
   } = useLibrarySagas(user?.id);
-  const { profile } = useProfile(user?.id);
+  const { profile, updateProfile } = useProfile(user?.id);
+  // Vista del estante (V.3.0.0): sale del perfil; al cambiarla se aplica al instante y se
+  // guarda en la cuenta.
+  const [viewOverride, setViewOverride] = useState<ShelfView | null>(null);
+  const shelfView = viewOverride ?? shelfViewFromProfile(profile);
+  const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
+  function changeShelfView(view: ShelfView) {
+    setViewOverride(view);
+    updateProfile(shelfViewToProfile(view));
+  }
   const priorityListName = getPriorityListName(profile?.priority_list_name);
 
   // Se puede llegar desde "Ver todos" en Perfil con un filtro ya activado, ej.
@@ -301,6 +312,9 @@ export function Estante() {
               <HeaderBarButton label="Filtros" onClick={() => setIsFilterModalOpen(true)} dot={hasActiveAdvFilters}>
                 <SlidersHorizontal size={18} />
               </HeaderBarButton>
+              <HeaderBarButton label="Vista del estante" onClick={() => setIsViewSheetOpen(true)}>
+                <LayoutGrid size={18} />
+              </HeaderBarButton>
               {tab === "libros" ? (
                 <SortMenu variant="bar" options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} />
               ) : (
@@ -362,8 +376,12 @@ export function Estante() {
         )}
 
         {isLoading && (
-          <div className="grid grid-cols-3 gap-x-3 gap-y-4" aria-label="Cargando">
-            {Array.from({ length: 9 }, (_, i) => (
+          <div
+            className="grid gap-x-3 gap-y-4"
+            style={{ gridTemplateColumns: `repeat(${shelfView.columns}, minmax(0, 1fr))` }}
+            aria-label="Cargando"
+          >
+            {Array.from({ length: shelfView.columns * 3 }, (_, i) => (
               <BookTileSkeleton key={i} />
             ))}
           </div>
@@ -373,6 +391,9 @@ export function Estante() {
             <SortableContext items={isReorderingBooks ? sortedBooks.map((b) => b.id) : []} strategy={rectSortingStrategy}>
               <Shelf
                 className="stagger-children"
+                perRow={shelfView.columns}
+                showNames={shelfView.showNames}
+                planks={shelfView.planks}
                 items={sortedBooks.map((book) => ({
                   key: book.id,
                   title: book.title,
@@ -384,6 +405,7 @@ export function Estante() {
                       coverUrl={book.cover_url ?? undefined}
                       status={book.status as ReadingStatus}
                       isFavorite={book.is_favorite ?? false}
+                      small={shelfView.columns === 4}
                     />
                   ),
                 }))}
@@ -406,6 +428,9 @@ export function Estante() {
             <SortableContext items={isReorderingSagas ? sortedSagas.map((s) => s.id) : []} strategy={rectSortingStrategy}>
               <Shelf
                 className="stagger-children"
+                perRow={shelfView.columns}
+                showNames={shelfView.showNames}
+                planks={shelfView.planks}
                 items={sortedSagas.map((saga) => ({
                   key: saga.id,
                   title: saga.title,
@@ -418,6 +443,7 @@ export function Estante() {
                       bookCount={saga.bookCount}
                       status={(saga.status ?? "pendiente") as ReadingStatus}
                       isFavorite={saga.is_favorite ?? false}
+                      small={shelfView.columns === 4}
                     />
                   ),
                 }))}
@@ -500,6 +526,10 @@ export function Estante() {
           setSelectedSagaId(newSagaId);
         }}
       />
+
+      {isViewSheetOpen && (
+        <ShelfViewSheet view={shelfView} onChange={changeShelfView} onClose={() => setIsViewSheetOpen(false)} />
+      )}
 
       <FilterModal
         isOpen={isFilterModalOpen}
