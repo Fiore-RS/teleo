@@ -250,6 +250,9 @@ export type Database = {
           palette: string
           banner: string
           priority_list_name: string | null
+          shelf_columns: number
+          shelf_planks: boolean
+          shelf_show_names: boolean
           username: string
           username_changed_at: string | null
         }
@@ -266,6 +269,9 @@ export type Database = {
           palette?: string
           banner?: string
           priority_list_name?: string | null
+          shelf_columns?: number
+          shelf_planks?: boolean
+          shelf_show_names?: boolean
           username: string
           username_changed_at?: string | null
         }
@@ -282,6 +288,9 @@ export type Database = {
           palette?: string
           banner?: string
           priority_list_name?: string | null
+          shelf_columns?: number
+          shelf_planks?: boolean
+          shelf_show_names?: boolean
           username?: string
           username_changed_at?: string | null
         }

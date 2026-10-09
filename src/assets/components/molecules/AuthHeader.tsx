@@ -11,7 +11,7 @@ export function AuthHeader({ title, subtitle }: AuthHeaderProps) {
       <div className="mx-auto w-16 h-16 rounded-[20px] bg-linear-to-br from-primary to-rose shadow-card flex items-center justify-center mb-4">
         <img src={logoIconDark} alt="" className="w-7 h-7" />
       </div>
-      <h1 className="font-display font-semibold text-display-md text-text text-balance">{title}</h1>
+      <h1 className="font-title text-[28px] leading-[1.1] text-text text-balance">{title}</h1>
       <p className="font-body text-body-md text-text-secondary mt-2">{subtitle}</p>
     </div>
   )

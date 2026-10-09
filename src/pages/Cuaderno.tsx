@@ -1,21 +1,20 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ImageOff, ArrowDownAZ, User, CalendarDays, Move, Plus, Search } from 'lucide-react'
+import { ImageOff, ArrowDownAZ, User, CalendarDays, Move } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews, type ReviewWithBook } from '../hooks/useReviews'
-import { SearchHeader } from '../assets/components/molecules/SearchHeader'
-import { BookTileSkeleton } from '../assets/components/atoms/Skeleton'
+import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
+import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
-import { ScrollToTopButton } from '../assets/components/atoms/ScrollToTopButton'
+import { Fab } from '../assets/components/atoms/Fab'
 import { SelectReviewBookModal } from '../assets/components/molecules/SelectReviewBookModal'
 import { SortMenu, type SortMenuOption } from '../assets/components/molecules/SortMenu'
 import { SortableItem } from '../assets/components/atoms/SortableItem'
 import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from '../lib/librarySort'
 import { Resena } from './Resena'
 import { Citas } from './cuaderno/Citas'
-import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
 import { AddQuoteSheet } from '../assets/components/molecules/AddQuoteSheet'
 import { ShareQuoteModal } from '../assets/components/molecules/ShareQuoteModal'
 import { EditQuoteSheet } from '../assets/components/molecules/EditQuoteSheet'
@@ -37,35 +36,59 @@ interface ReviewCardProps {
   onOpen: () => void
 }
 
-/** Reseña en la cuadrícula de El cuaderno. Rediseño 2026: mismo patrón que las portadas de
- *  El estante (sin tarjeta propia, toda la pieza se toca para abrir la reseña) y el
- *  comentario como una citita en Fraunces itálica. */
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic']
+
+/** Fecha de la reseña al pie de la hoja: "12 sept", con el año solo si no es el actual. */
+function reviewDate(value: string | null): string {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return ''
+  const base = `${d.getDate()} ${MONTHS[d.getMonth()]}`
+  return d.getFullYear() === new Date().getFullYear() ? base : `${base} ${d.getFullYear()}`
+}
+
+/** Reseña como hoja rayada (V.3.0.0): portada pequeña, título, autor y estrellas arriba; el
+ *  comentario en Fraunces itálica sobre renglones con margen rosa; la fecha abajo. Toda la
+ *  hoja se toca para abrir la reseña. */
 function ReviewCard({ review, onOpen }: ReviewCardProps) {
+  const date = reviewDate(review.created_at)
   return (
     <button
       type="button"
       onClick={onOpen}
       aria-label={`Ver reseña de ${review.book.title}`}
-      className="text-left w-full flex flex-col rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+      className="block w-full text-left bg-surface border border-border rounded-2xl shadow-card px-3 pt-3 pb-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
     >
-      <div className="relative aspect-2/3 w-full rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]">
-        {review.book.cover_url ? (
-          <CoverImage src={review.book.cover_url ?? undefined} alt={review.book.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center"><ImageOff size={18} className="text-text-secondary" /></div>
-        )}
+      <div className="grid grid-cols-[40px_1fr] gap-[9px] items-start">
+        <div className="w-10 aspect-2/3 rounded-[5px] overflow-hidden bg-surface-2 shadow-[0_4px_8px_-5px_rgba(0,0,0,0.6)]">
+          {review.book.cover_url ? (
+            <CoverImage src={review.book.cover_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center"><ImageOff size={14} className="text-text-secondary" /></div>
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="font-display font-semibold text-[14px] leading-[1.2] text-text line-clamp-3">{review.book.title}</p>
+          {review.book.author && <p className="text-[11.5px] text-text-secondary mt-px truncate">{review.book.author}</p>}
+          {(review.general_rating ?? 0) > 0 && (
+            <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={10} className="mt-1" />
+          )}
+        </div>
       </div>
 
-      <p className="text-body-md font-semibold leading-tight text-text line-clamp-2 mt-2">{review.book.title}</p>
-      <p className="text-body-sm text-text-secondary line-clamp-1 mt-0.5">{review.book.author}</p>
-
-      <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={12} className="mt-1.5" />
-
       {review.general_comments && (
-        <p className="font-display italic text-body-sm leading-snug text-text-secondary line-clamp-3 mt-2 bg-surface border border-border rounded-xl px-2.5 py-2">
+        <p
+          className="font-display italic text-[13.5px] leading-[22px] text-text mt-2 pl-2.5 border-l-2 line-clamp-3 whitespace-pre-line break-words"
+          style={{
+            backgroundImage: 'linear-gradient(transparent 21px, var(--color-border) 21px)',
+            backgroundSize: '100% 22px',
+            borderLeftColor: 'color-mix(in srgb, var(--color-rose) 55%, transparent)',
+          }}
+        >
           {review.general_comments}
         </p>
       )}
+      {date && <span className="block text-[11px] font-semibold text-text-muted text-right mt-1.5">{date}</span>}
     </button>
   )
 }
@@ -98,7 +121,6 @@ export function Cuaderno() {
   }
 
   const [search, setSearch] = useState('')
-  const [isSearching, setIsSearching] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   // El modo elegido se guarda en localStorage (mismo mecanismo que Estante) para que no se
@@ -133,7 +155,6 @@ export function Cuaderno() {
   function changeTab(next: 'resenas' | 'citas') {
     if (next === tab) return
     setSearch('')
-    setIsSearching(false)
     setIsReordering(false)
     const params = new URLSearchParams(searchParams)
     if (next === 'citas') params.set('vista', 'citas')
@@ -193,65 +214,25 @@ export function Cuaderno() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
-      <SearchHeader
-        isSearching={isSearching}
-        onCancel={() => {
-          setSearch('')
-          setIsSearching(false)
+      <ScreenHeader
+        title="Cuaderno"
+        tabsLabel="Reseñas o citas"
+        tabs={[
+          { value: 'resenas', label: 'Reseñas', count: isLoading ? undefined : filtered.length },
+          { value: 'citas', label: 'Citas', count: isLoadingQuotes ? undefined : filteredQuotes.length },
+        ]}
+        active={tab}
+        onTabChange={changeTab}
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: tab === 'citas' ? 'Buscar en tus citas, título o autor' : 'Buscar por título o autor',
+          actions:
+            tab === 'resenas' ? (
+              <SortMenu variant="bar" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
+            ) : undefined,
         }}
-        value={search}
-        onChange={setSearch}
-        placeholder={tab === 'citas' ? 'Buscar en tus citas, título o autor' : 'Buscar por título o autor'}
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="h-9 min-[400px]:h-10 flex items-center font-title text-[clamp(30px,8.5vw,44px)] leading-none text-text whitespace-nowrap">
-              Cuaderno
-            </h1>
-            <div className="flex items-start gap-1.5 min-[400px]:gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsSearching(true)}
-                aria-label="Buscar"
-                className="w-9 h-9 min-[400px]:w-10 min-[400px]:h-10 shrink-0 rounded-full bg-surface border border-border shadow-card text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
-              >
-                <Search size={17} />
-              </button>
-              {tab === 'resenas' && (
-                <SortMenu variant="icon" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
-              )}
-              <button
-                type="button"
-                onClick={() => (tab === 'citas' ? setIsAddingQuote(true) : setIsPickerOpen(true))}
-                aria-label={tab === 'citas' ? 'Agregar cita' : 'Escribir reseña nueva'}
-                className="w-11 h-11 min-[400px]:w-12 min-[400px]:h-12 -mb-2 shrink-0 rounded-full bg-primary text-primary-ink shadow-card flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
-              >
-                <Plus size={24} strokeWidth={2.4} />
-              </button>
-            </div>
-          </div>
-          <p className="font-body text-body-md text-text-secondary mt-1.5 tabular-nums">
-            {tab === 'citas'
-              ? isLoadingQuotes
-                ? '\u00a0'
-                : `${filteredQuotes.length} ${filteredQuotes.length === 1 ? 'cita' : 'citas'}`
-              : isLoading
-                ? '\u00a0'
-                : `${filtered.length} ${filtered.length === 1 ? 'reseña' : 'reseñas'}`}
-          </p>
-        </div>
-      </SearchHeader>
-
-      <div className="mb-5">
-        <SegmentedTabs
-          active={tab}
-          onChange={changeTab}
-          options={[
-            { value: 'resenas', label: 'Reseñas' },
-            { value: 'citas', label: 'Citas' },
-          ]}
-        />
-      </div>
+      />
 
       {tab === 'citas' ? (
         <Citas
@@ -276,16 +257,28 @@ export function Cuaderno() {
           )}
 
           {isLoading && (
-            <div className="grid grid-cols-3 gap-x-3 gap-y-4" aria-label="Cargando">
-              {Array.from({ length: 6 }, (_, i) => (
-                <BookTileSkeleton key={i} />
+            <div className="grid grid-cols-2 gap-2.5" aria-label="Cargando">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div key={i} className="bg-surface border border-border rounded-2xl shadow-card p-3">
+                  <div className="flex gap-2.5">
+                    <Skeleton className="w-10 aspect-2/3 rounded-[5px] shrink-0" />
+                    <div className="flex-1">
+                      <Skeleton className="h-3.5 w-full rounded-full" />
+                      <Skeleton className="h-3 w-2/3 rounded-full mt-1.5" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-3 w-full rounded-full mt-4" />
+                  <Skeleton className="h-3 w-4/5 rounded-full mt-3" />
+                </div>
               ))}
             </div>
           )}
           {isReordering ? (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleReviewDragEnd}>
               <SortableContext items={sortedReviews.map((r) => r.id)} strategy={rectSortingStrategy}>
-                <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
+                {/* Al arrastrar se usa una cuadrícula simple de dos columnas (dnd-kit necesita
+                    una sola lista); fuera de ese modo, las hojas se reparten en dos columnas. */}
+                <div className="grid grid-cols-2 gap-2.5 items-start stagger-children">
                   {sortedReviews.map((r) => (
                     <SortableItem key={r.id} id={r.id}>
                       <ReviewCard review={r} onOpen={() => setSelectedBookId(r.book_id)} />
@@ -295,9 +288,17 @@ export function Cuaderno() {
               </SortableContext>
             </DndContext>
           ) : (
-            <div className="grid grid-cols-3 gap-x-3 gap-y-5 items-start stagger-children">
-              {sortedReviews.map((r) => (
-                <ReviewCard key={r.id} review={r} onOpen={() => setSelectedBookId(r.book_id)} />
+            // Dos columnas que se llenan alternando (1 izquierda, 2 derecha...), así el orden
+            // elegido se sigue leyendo de arriba hacia abajo, igual que en Citas.
+            <div className="grid grid-cols-2 gap-2.5 items-start">
+              {[0, 1].map((col) => (
+                <div key={col} className="flex flex-col gap-2.5 min-w-0 stagger-children">
+                  {sortedReviews
+                    .filter((_, i) => i % 2 === col)
+                    .map((r) => (
+                      <ReviewCard key={r.id} review={r} onOpen={() => setSelectedBookId(r.book_id)} />
+                    ))}
+                </div>
               ))}
             </div>
           )}
@@ -305,7 +306,10 @@ export function Cuaderno() {
       )}
 
       <div className="pb-24" />
-      <ScrollToTopButton />
+      <Fab
+        label={tab === 'citas' ? 'Agregar cita' : 'Escribir reseña nueva'}
+        onClick={() => (tab === 'citas' ? setIsAddingQuote(true) : setIsPickerOpen(true))}
+      />
       <TabBar active="cuaderno" onChange={handleTabBarChange} />
 
       <SelectReviewBookModal

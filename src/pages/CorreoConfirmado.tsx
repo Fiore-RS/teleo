@@ -18,7 +18,7 @@ export function CorreoConfirmado() {
         <div className="w-16 h-16 rounded-full bg-primary-soft flex items-center justify-center mx-auto mb-4">
           <Icon size={28} className="text-primary-text" />
         </div>
-        <h1 className="font-display font-semibold text-display-md text-text">
+        <h1 className="font-title text-[28px] leading-[1.1] text-text">
           {isHalfway ? 'Vas a la mitad' : '¡Correo actualizado!'}
         </h1>
         <p className="text-body-md text-text-secondary mt-2 text-pretty">

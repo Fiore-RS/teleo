@@ -1,21 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Plus, Search, Shuffle } from "lucide-react";
+import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Shuffle, LayoutGrid } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { useProfile } from "../hooks/useProfile";
 import { getPriorityListName } from "../lib/priorityList";
-import { SearchHeader } from "../assets/components/molecules/SearchHeader";
+import { ScreenHeader, HeaderBarButton } from "../assets/components/molecules/ScreenHeader";
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
-import { SegmentedTabs } from "../assets/components/atoms/SegmentedTabs";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
 import { defaultAdvancedFilters, type AdvancedFilters } from "../lib/advancedFilters";
-import { BookCard } from "../assets/components/molecules/BookCard";
-import { SeriesCard } from "../assets/components/molecules/SeriesCard";
+import { BookCover } from "../assets/components/molecules/BookCover";
+import { SagaCover } from "../assets/components/molecules/SagaCover";
+import { Shelf } from "../assets/components/molecules/Shelf";
+import { ShelfViewSheet } from "../assets/components/molecules/ShelfViewSheet";
+import { shelfViewFromProfile, shelfViewToProfile, type ShelfView } from "../lib/shelfView";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
-import { ScrollToTopButton } from "../assets/components/atoms/ScrollToTopButton";
+import { Fab } from "../assets/components/atoms/Fab";
 import type { ReadingStatus } from "../lib/status";
 import { DetalleLibro } from "../pages/DetalleLibro";
 import { DetalleSaga } from "../pages/DetalleSaga";
@@ -59,7 +61,16 @@ export function Estante() {
     refetch: refetchSagas,
     reorderSaga,
   } = useLibrarySagas(user?.id);
-  const { profile } = useProfile(user?.id);
+  const { profile, updateProfile } = useProfile(user?.id);
+  // Vista del estante (V.3.0.0): sale del perfil; al cambiarla se aplica al instante y se
+  // guarda en la cuenta.
+  const [viewOverride, setViewOverride] = useState<ShelfView | null>(null);
+  const shelfView = viewOverride ?? shelfViewFromProfile(profile);
+  const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
+  function changeShelfView(view: ShelfView) {
+    setViewOverride(view);
+    updateProfile(shelfViewToProfile(view));
+  }
   const priorityListName = getPriorityListName(profile?.priority_list_name);
 
   // Se puede llegar desde "Ver todos" en Perfil con un filtro ya activado, ej.
@@ -80,7 +91,6 @@ export function Estante() {
   const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | "temporada" | null>(initialQuickFlag);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
@@ -281,99 +291,53 @@ export function Estante() {
   }
 
   const isLoading = tab === "libros" ? booksLoading : sagasLoading;
-  const count = tab === "libros" ? filteredBooks.length : filteredSagas.length;
-
-  const countLabel =
-    tab === "libros"
-      ? `${count} ${count === 1 ? "libro" : "libros"}`
-      : `${count} ${count === 1 ? "saga" : "sagas"}`;
-  const headerIconBtn =
-    "relative w-9 h-9 min-[400px]:w-10 min-[400px]:h-10 shrink-0 rounded-full bg-surface border border-border shadow-card text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text";
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
-      <SearchHeader
-        isSearching={isSearching}
-        onCancel={() => {
-          setSearch("");
-          setIsSearching(false);
-        }}
-        value={search}
-        onChange={setSearch}
-        placeholder="Buscar por título o autor"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="h-9 min-[400px]:h-10 flex items-center font-title text-[clamp(30px,8.5vw,44px)] leading-none text-text whitespace-nowrap">
-              Estante
-            </h1>
-            <div className="flex items-start gap-1.5 min-[400px]:gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsSearching(true)}
-                aria-label="Buscar"
-                className={headerIconBtn}
-              >
-                <Search size={17} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsFilterModalOpen(true)}
-                aria-label="Filtros"
-                className={headerIconBtn}
-              >
-                <SlidersHorizontal size={17} />
-                {hasActiveAdvFilters && (
-                  <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-surface" />
-                )}
-              </button>
-
+      <ScreenHeader
+        title="Estante"
+        tabsLabel="Libros o sagas"
+        tabs={[
+          { value: "libros", label: "Libros", count: booksLoading ? undefined : filteredBooks.length },
+          { value: "sagas", label: "Sagas", count: sagasLoading ? undefined : filteredSagas.length },
+        ]}
+        active={tab}
+        onTabChange={handleTabSwitch}
+        search={{
+          value: search,
+          onChange: setSearch,
+          placeholder: "Buscar por título o autor",
+          actions: (
+            <>
+              <HeaderBarButton label="Filtros" onClick={() => setIsFilterModalOpen(true)} dot={hasActiveAdvFilters}>
+                <SlidersHorizontal size={18} />
+              </HeaderBarButton>
+              <HeaderBarButton label="Vista del estante" onClick={() => setIsViewSheetOpen(true)}>
+                <LayoutGrid size={18} />
+              </HeaderBarButton>
               {tab === "libros" ? (
-                <SortMenu variant="icon" options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} />
+                <SortMenu variant="bar" options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} />
               ) : (
-                <SortMenu variant="icon" options={sagaSortOptions} activeKey={sagaSortMode} onSelect={handleSagaSortSelect} />
+                <SortMenu variant="bar" options={sagaSortOptions} activeKey={sagaSortMode} onSelect={handleSagaSortSelect} />
               )}
-
-              <button
-                type="button"
-                onClick={() => (tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true))}
-                aria-label={tab === "libros" ? "Agregar libro" : "Agregar saga"}
-                className="w-11 h-11 min-[400px]:w-12 min-[400px]:h-12 -mb-2 shrink-0 rounded-full bg-primary text-primary-ink shadow-card flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
-              >
-                <Plus size={24} strokeWidth={2.4} />
-              </button>
-            </div>
-          </div>
-          {/* mt-4: el botón de agregar baja un poco por debajo de la fila del título, así que
-              esta fila deja espacio para que "¿Qué leo ahora?" no quede pegado a él. */}
-          <div className="flex items-center justify-between gap-3 mt-4">
-            <p className="font-body text-body-md text-text-secondary tabular-nums">
-              {isLoading ? " " : countLabel}
-            </p>
-            {tab === "libros" && (
-              <button
-                type="button"
-                onClick={() => setIsRandomPickOpen(true)}
-                className="inline-flex items-center gap-1.5 py-1 text-body-sm font-bold text-primary-text focus-visible:outline-2 focus-visible:outline-primary-text rounded-full"
-              >
-                <Shuffle size={14} />
-                ¿Qué leo ahora?
-              </button>
-            )}
-          </div>
-        </div>
-      </SearchHeader>
+            </>
+          ),
+        }}
+        tabsEnd={
+          tab === "libros" && (
+            <button
+              type="button"
+              onClick={() => setIsRandomPickOpen(true)}
+              className="inline-flex items-center gap-1.5 font-body text-[13px] font-bold text-primary-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+            >
+              <Shuffle size={14} aria-hidden="true" />
+              ¿Qué leo ahora?
+            </button>
+          )
+        }
+      />
 
       <div className="space-y-5">
-        <SegmentedTabs
-          active={tab}
-          onChange={handleTabSwitch}
-          options={[
-            { value: "libros", label: "Libros" },
-            { value: "sagas", label: "Sagas" },
-          ]}
-        />
-
         {quickFlag && (
           <div className="flex">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft text-primary-text pl-3.5 pr-2 py-1.5 text-body-sm font-body font-semibold">
@@ -412,105 +376,97 @@ export function Estante() {
         )}
 
         {isLoading && (
-          <div className="grid grid-cols-3 gap-x-3 gap-y-4" aria-label="Cargando">
-            {Array.from({ length: 9 }, (_, i) => (
+          <div
+            className="grid gap-x-3 gap-y-4"
+            style={{ gridTemplateColumns: `repeat(${shelfView.columns}, minmax(0, 1fr))` }}
+            aria-label="Cargando"
+          >
+            {Array.from({ length: shelfView.columns * 3 }, (_, i) => (
               <BookTileSkeleton key={i} />
             ))}
           </div>
         )}
-        {tab === "libros" && (
-          isReorderingBooks ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleBookDragEnd}
-            >
-              <SortableContext
-                items={sortedBooks.map((b) => b.id)}
-                strategy={rectSortingStrategy}
-              >
-                <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-                  {sortedBooks.map((book) => (
-                    <SortableItem key={book.id} id={book.id}>
-                      <BookCard
-                        title={book.title}
-                        author={book.author ?? undefined}
-                        coverUrl={book.cover_url ?? undefined}
-                        status={book.status as ReadingStatus}
-                        isFavorite={book.is_favorite ?? false}
-                        onClick={() => setSelectedBookId(book.id)}
-                      />
-                    </SortableItem>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-              {sortedBooks.map((book) => (
-                <BookCard
-                  key={book.id}
-                  title={book.title}
-                  author={book.author ?? undefined}
-                  coverUrl={book.cover_url ?? undefined}
-                  status={book.status as ReadingStatus}
-                  isFavorite={book.is_favorite ?? false}
-                  onClick={() => setSelectedBookId(book.id)}
-                />
-              ))}
-            </div>
-          )
+        {tab === "libros" && !isLoading && (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
+            <SortableContext items={isReorderingBooks ? sortedBooks.map((b) => b.id) : []} strategy={rectSortingStrategy}>
+              <Shelf
+                className="stagger-children"
+                perRow={shelfView.columns}
+                showNames={shelfView.showNames}
+                planks={shelfView.planks}
+                items={sortedBooks.map((book) => ({
+                  key: book.id,
+                  title: book.title,
+                  subtitle: book.author ?? undefined,
+                  onClick: () => setSelectedBookId(book.id),
+                  cover: (
+                    <BookCover
+                      title={book.title}
+                      coverUrl={book.cover_url ?? undefined}
+                      status={book.status as ReadingStatus}
+                      isFavorite={book.is_favorite ?? false}
+                      small={shelfView.columns === 4}
+                    />
+                  ),
+                }))}
+                wrap={
+                  isReorderingBooks
+                    ? (item, cell) => (
+                        <SortableItem id={item.key} className="h-full">
+                          {cell}
+                        </SortableItem>
+                      )
+                    : undefined
+                }
+              />
+            </SortableContext>
+          </DndContext>
         )}
 
-        {tab === "sagas" && (
-          isReorderingSagas ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleSagaDragEnd}
-            >
-              <SortableContext
-                items={sortedSagas.map((s) => s.id)}
-                strategy={rectSortingStrategy}
-              >
-                <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-                  {sortedSagas.map((saga) => (
-                    <SortableItem key={saga.id} id={saga.id}>
-                      <SeriesCard
-                        title={saga.title}
-                        author={saga.author ?? undefined}
-                        covers={saga.covers}
-                        bookCount={saga.bookCount}
-                        status={(saga.status ?? "pendiente") as ReadingStatus}
-                        isFavorite={saga.is_favorite ?? false}
-                        onClick={() => setSelectedSagaId(saga.id)}
-                      />
-                    </SortableItem>
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          ) : (
-            <div className="grid grid-cols-3 gap-x-3 gap-y-4 stagger-children">
-              {sortedSagas.map((saga) => (
-                <SeriesCard
-                  key={saga.id}
-                  title={saga.title}
-                  author={saga.author ?? undefined}
-                  covers={saga.covers}
-                  bookCount={saga.bookCount}
-                  status={(saga.status ?? "pendiente") as ReadingStatus}
-                  isFavorite={saga.is_favorite ?? false}
-                  onClick={() => setSelectedSagaId(saga.id)}
-                />
-              ))}
-            </div>
-          )
+        {tab === "sagas" && !isLoading && (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSagaDragEnd}>
+            <SortableContext items={isReorderingSagas ? sortedSagas.map((s) => s.id) : []} strategy={rectSortingStrategy}>
+              <Shelf
+                className="stagger-children"
+                perRow={shelfView.columns}
+                showNames={shelfView.showNames}
+                planks={shelfView.planks}
+                items={sortedSagas.map((saga) => ({
+                  key: saga.id,
+                  title: saga.title,
+                  subtitle: saga.author ?? undefined,
+                  onClick: () => setSelectedSagaId(saga.id),
+                  cover: (
+                    <SagaCover
+                      title={saga.title}
+                      covers={saga.covers}
+                      bookCount={saga.bookCount}
+                      status={(saga.status ?? "pendiente") as ReadingStatus}
+                      isFavorite={saga.is_favorite ?? false}
+                      small={shelfView.columns === 4}
+                    />
+                  ),
+                }))}
+                wrap={
+                  isReorderingSagas
+                    ? (item, cell) => (
+                        <SortableItem id={item.key} className="h-full">
+                          {cell}
+                        </SortableItem>
+                      )
+                    : undefined
+                }
+              />
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
       <div className="pb-24" />
-      <ScrollToTopButton />
+      <Fab
+        label={tab === "libros" ? "Agregar libro" : "Agregar saga"}
+        onClick={() => (tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true))}
+      />
       <TabBar active="estante" onChange={handleTabBarChange} />
 
       <AddBookModal
@@ -570,6 +526,10 @@ export function Estante() {
           setSelectedSagaId(newSagaId);
         }}
       />
+
+      {isViewSheetOpen && (
+        <ShelfViewSheet view={shelfView} onChange={changeShelfView} onClose={() => setIsViewSheetOpen(false)} />
+      )}
 
       <FilterModal
         isOpen={isFilterModalOpen}

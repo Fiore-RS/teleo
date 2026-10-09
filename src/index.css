@@ -167,7 +167,7 @@
 
   --radius-card: 24px;
 
-  --font-title: "Berkshire Swash", Georgia, serif;
+  --font-title: "Young Serif", Georgia, serif;
   --font-display: "Fraunces", serif;
   --font-body: "Karla", sans-serif;
 
@@ -229,6 +229,11 @@
   from { opacity: 0; transform: translateX(-18px); }
   to { opacity: 1; transform: translateX(0); }
 }
+/* Cinta de la racha al marcar la sesión de hoy: baja estirándose desde arriba con rebote. */
+@keyframes teleo-ribbon-drop {
+  from { transform: scaleY(0.35); }
+  to { transform: scaleY(1); }
+}
 @keyframes teleo-rise-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -243,6 +248,7 @@
   .animate-pop-out { animation: teleo-pop-out 0.18s ease-in forwards; }
   .animate-slide-next { animation: teleo-slide-next 0.75s cubic-bezier(0.33, 1, 0.68, 1); }
   .animate-slide-prev { animation: teleo-slide-prev 0.75s cubic-bezier(0.33, 1, 0.68, 1); }
+  .animate-ribbon-drop { animation: teleo-ribbon-drop 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
 
   /* Silueta de carga: pulso suave. */
   .animate-skeleton { animation: teleo-skeleton 1.4s ease-in-out infinite; }
@@ -267,7 +273,7 @@
   @media (prefers-reduced-motion: reduce) {
     .animate-sheet-down, .animate-sheet-out, .animate-fade-in, .animate-fade-out,
     .animate-pop-in, .animate-pop-out, .animate-page-in, .stagger-children > *, .animate-skeleton,
-    .animate-slide-next, .animate-slide-prev {
+    .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop {
       animation: none;
     }
   }

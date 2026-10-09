@@ -6,10 +6,10 @@ import { useReadingStreak } from "../hooks/useReadingStreak";
 import { useAnnualGoal } from "../hooks/useAnnualGoal";
 import { useProfile } from "../hooks/useProfile";
 import { getProgressInfo } from "../lib/progress";
-import { Eyebrow } from "../assets/components/atoms/Eyebrow";
+import { StreakRibbon } from "../assets/components/atoms/StreakRibbon";
 import { Sparkle } from "../assets/components/atoms/Sparkle";
 import { Skeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
-import { Card } from "../assets/components/molecules/Card";
+import { Card, CardAction } from "../assets/components/molecules/Card";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
 import { ProgressBar } from "../assets/components/atoms/ProgressBar";
 import { Button } from "../assets/components/atoms/Button";
@@ -38,6 +38,14 @@ export function Mesa() {
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  // La cinta de la racha baja con rebote cuando la sesión de hoy pasa de sin marcar a
+  // marcada (no al cargar la pantalla). Se compara con el valor anterior durante el render.
+  const [dropKey, setDropKey] = useState(0)
+  const [prevMarked, setPrevMarked] = useState<boolean | null>(null)
+  if (!streakLoading && markedToday !== prevMarked) {
+    if (prevMarked === false && markedToday) setDropKey((k) => k + 1)
+    setPrevMarked(markedToday)
+  }
   // Anuncio de la V.2.0.0: una sola vez por cuenta (se guarda en el perfil). Las cuentas
   // nuevas lo marcan como visto al terminar la Bienvenida.
   const [announcementDismissed, setAnnouncementDismissed] = useState(false)
@@ -83,37 +91,29 @@ export function Mesa() {
   const dayLetters = ["L", "M", "X", "J", "V", "S", "D"];
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
-      <header className="flex items-end justify-between gap-3 px-1 pt-4 pb-5">
-        <div>
-          <p className="font-body font-semibold text-body-lg text-primary-text">
-            {profile?.nickname ? `${greeting}, ${profile.nickname}` : greeting}
-          </p>
-          <h1 className="font-title leading-none whitespace-nowrap text-text mt-0.5">
-            <span className="text-[clamp(32px,10vw,44px)]">Teleo,</span>{" "}
-            <span className="text-[clamp(18px,5.5vw,26px)] text-text-secondary">a mi manera</span>
-          </h1>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsCalendarOpen(true)}
-          className="shrink-0 w-[58px] py-2 rounded-2xl bg-orange-soft border border-border shadow-card flex flex-col items-center gap-0.5 transition-transform active:scale-95 focus-visible:outline-2 focus-visible:outline-primary-text"
-          title="Ver calendario de lectura"
-          aria-label={`Racha de ${streak} días. Ver calendario de lectura`}
-        >
-          <Flame size={18} className="text-orange-text" fill="currentColor" />
-          {streakLoading ? (
-            <Skeleton className="w-6 h-5 rounded-md" />
-          ) : (
-            <span key={streak} className="font-display font-semibold text-[20px] leading-none text-text animate-fade-in">{streak}</span>
-          )}
-        </button>
+    <div className="relative min-h-screen bg-glow-top px-4 pt-4">
+      <StreakRibbon
+        streak={streak}
+        marked={markedToday}
+        isLoading={streakLoading}
+        dropKey={dropKey}
+        onClick={() => setIsCalendarOpen(true)}
+      />
+
+      {/* pr-16: deja libre el lugar de la cinta. */}
+      <header className="px-1 pr-16 pt-4 pb-5">
+        <p className="font-body font-semibold text-body-lg text-primary-text mb-1">
+          {profile?.nickname ? `${greeting}, ${profile.nickname}` : greeting}
+        </p>
+        <h1 className="font-title leading-none tracking-[-0.01em] whitespace-nowrap text-text">
+          <span className="text-[clamp(34px,11vw,42px)]">Teleo,</span>{" "}
+          <span className="font-display italic text-[clamp(17px,5.2vw,20px)] tracking-normal text-text-secondary">a mi manera</span>
+        </h1>
       </header>
 
       <div className="flex flex-col gap-5 stagger-children">
         {/* Leyendo ahora */}
-        <Card labelledBy="mesa-leyendo">
-          <Eyebrow id="mesa-leyendo" icon={BookOpen} className="mb-3.5">Leyendo ahora</Eyebrow>
+        <Card tab={{ label: "Leyendo ahora", icon: BookOpen }}>
 
           {booksLoading && (
             <div className="flex gap-3.5" aria-label="Cargando">
@@ -163,20 +163,11 @@ export function Mesa() {
         <NextReleaseCard userId={user?.id} />
 
         {/* Racha diaria */}
-        <Card labelledBy="mesa-racha" tint="orange">
-          <div className="flex items-center justify-between gap-2 mb-3.5">
-            <Eyebrow id="mesa-racha" icon={Flag} tone="orange">
-              Racha diaria de lectura
-            </Eyebrow>
-            <button
-              type="button"
-              onClick={() => setIsCalendarOpen(true)}
-              className="shrink-0 text-body-sm font-bold text-orange-text focus-visible:outline-2 focus-visible:outline-primary-text rounded-full"
-            >
-              Calendario
-            </button>
-          </div>
-
+        <Card
+          tab={{ label: "Racha diaria de lectura", icon: Flag }}
+          tone="orange"
+          action={<CardAction onClick={() => setIsCalendarOpen(true)}>Calendario</CardAction>}
+        >
           <div className="flex items-center gap-4">
             <div className="relative w-[74px] h-[74px] shrink-0 flex items-center justify-center">
               <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
@@ -240,8 +231,7 @@ export function Mesa() {
         </Card>
 
         {/* Meta anual */}
-        <Card labelledBy="mesa-meta" tint="pink">
-          <Eyebrow id="mesa-meta" icon={Target} tone="pink" className="mb-3.5">Meta anual de lectura</Eyebrow>
+        <Card tab={{ label: "Meta anual de lectura", icon: Target }} tone="pink">
           {goalLoading ? (
             <div aria-label="Cargando">
               <Skeleton className="h-7 w-3/5 rounded-full" />

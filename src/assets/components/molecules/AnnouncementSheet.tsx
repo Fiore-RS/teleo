@@ -2,7 +2,7 @@ import { History } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
 import { ANNOUNCEMENT_VERSION, announcementItems, CATCH_UP_MIN } from '../../../lib/announcement'
-import type { ChangelogEntry } from '../../../lib/changelog'
+import { changelog, type ChangelogEntry } from '../../../lib/changelog'
 
 interface AnnouncementSheetProps {
   /** Se llama al tocar "Empezar" o al cerrar la hoja: en los dos casos queda como vista. */
@@ -53,18 +53,20 @@ function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[];
  *  lanzamiento grande (V.2.0.0). Una tarjeta por novedad con su ícono y una línea. */
 export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeAll }: AnnouncementSheetProps) {
   const showCatchUp = missed.length >= CATCH_UP_MIN && !!onSeeAll
+  const announcedTitle = changelog.find((e) => e.version === ANNOUNCEMENT_VERSION)?.title
   return (
     <Sheet title="Novedades de Teleo" onClose={onDone}>
       {showCatchUp && <CatchUpCard missed={missed} lastSeen={lastSeen} onSeeAll={onSeeAll} />}
 
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2">
         <span className="px-2.5 py-1 rounded-full bg-primary text-primary-ink text-body-sm font-bold tabular-nums">
           V.{ANNOUNCEMENT_VERSION}
         </span>
-        <p className="text-body-md text-text-secondary">
-          {showCatchUp ? 'Lo más reciente:' : 'Esto es lo nuevo en tu rincón de lectura.'}
-        </p>
+        {announcedTitle && <h3 className="font-title text-[22px] leading-tight text-text">{announcedTitle}</h3>}
       </div>
+      <p className="text-body-md text-text-secondary mt-2 mb-4">
+        {showCatchUp ? 'Lo más reciente:' : 'Esto es lo nuevo en tu rincón de lectura.'}
+      </p>
 
       <ul className="flex flex-col gap-2.5 stagger-children">
         {announcementItems.map(({ icon: Icon, title, text }) => (

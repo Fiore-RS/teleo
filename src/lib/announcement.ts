@@ -1,9 +1,9 @@
-import { Library, Sparkles, UserCog, type LucideIcon } from 'lucide-react'
+import { BookOpen, Bookmark, NotebookPen, type LucideIcon } from 'lucide-react'
 import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '2.2.0'
+export const ANNOUNCEMENT_VERSION = '3.0.0'
 
 export interface AnnouncementItem {
   icon: LucideIcon
@@ -12,9 +12,9 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { icon: Sparkles, title: 'Un diseño más cuidado', text: 'Formularios, detalles y paneles se renovaron para que todo se vea más ordenado.' },
-  { icon: Library, title: 'Sagas que se ordenan solas', text: 'El estado y la categoría de tus sagas ahora se completan a partir de sus libros.' },
-  { icon: UserCog, title: 'Tu cuenta, a mano', text: 'Cambia tu usuario, correo o contraseña desde Configuración, sin salir de ahí.' },
+  { icon: NotebookPen, title: 'Un cuaderno nuevo', text: 'Cada sección es como una hoja con pestañas de separador, y los títulos estrenan tipografía.' },
+  { icon: Bookmark, title: 'Tu racha, en una cinta', text: 'Marca tu sesión del día y la cinta de La mesa se llena. Tócala para ver tu calendario.' },
+  { icon: BookOpen, title: 'Libros en repisas', text: 'Tu estante, tu año en Resumen y tus favoritos se acomodan en repisas. Elige cómo se ve tu estante desde el botón de vista.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */

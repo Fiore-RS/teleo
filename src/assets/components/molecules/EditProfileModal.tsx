@@ -146,7 +146,7 @@ export function EditProfileModal({
             aria-label="Sobre mí"
             value={bio}
             onChange={(e) => setBio(e.target.value.slice(0, BIO_MAX))}
-            placeholder="Cuéntale al mundo qué tipo de lectora o lector eres."
+            placeholder="Cuéntale al mundo cómo lees y qué te gusta leer."
             rows={3}
             className="w-full bg-transparent focus:outline-none resize-none font-body text-body-lg leading-relaxed text-text placeholder:text-text-muted"
           />

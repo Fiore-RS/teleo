@@ -26,9 +26,9 @@ import { queryClient } from '../lib/queryClient'
 // Cuántas portadas se muestran en Favoritos, Recomendados, Deseados y Abandonados.
 const SHELF_SIZE = 5
 
-// Botones redondos translúcidos sobre la cabecera de degradado (Configuración y Editar perfil).
+// Botones redondos translúcidos sobre la portada (Compartir, Editar perfil, Configuración).
 const headerButtonClass =
-  'w-10 h-10 shrink-0 rounded-full bg-surface/20 border border-primary-ink/30 text-primary-ink backdrop-blur-sm flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-ink'
+  'w-10 h-10 shrink-0 rounded-full bg-black/22 border border-white/25 text-[#FFF8EE] backdrop-blur-[4px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[#FFF8EE]'
 
 export function Perfil() {
   const navigate = useNavigate()
@@ -74,6 +74,7 @@ export function Perfil() {
         bio={profile?.bio}
         avatarUrl={profile?.avatar_url}
         banner={banner}
+        memberSinceYear={profile?.created_at ? new Date(profile.created_at).getFullYear() : undefined}
         headerRight={
           // En fila: en columna no cabían en el alto del banner y se salían por abajo.
           <div className="flex items-center gap-2">

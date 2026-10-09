@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { CalendarPlus, Plus } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { CalendarDays, CalendarHeart, CalendarPlus, Plus } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useReleases, type Release } from '../hooks/useReleases'
 import { formatLocalDate, todayLocalDate } from '../lib/date'
 import { daysUntil, formatReleaseDate } from '../lib/releases'
 import { MONTH_NAMES } from '../lib/months'
-import { PageHeader } from '../assets/components/molecules/PageHeader'
-import { SegmentedTabs } from '../assets/components/atoms/SegmentedTabs'
+import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
+import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { MonthCalendar } from '../assets/components/atoms/MonthCalendar'
 import { PeriodTransition } from '../assets/components/atoms/PeriodTransition'
 import { Button } from '../assets/components/atoms/Button'
@@ -21,9 +21,9 @@ import { ReleaseFormSheet } from '../assets/components/molecules/ReleaseFormShee
 type Tab = 'calendario' | 'cuenta-atras'
 
 /** Lanzamientos (fase 7): los libros que esperas, en un calendario por mes y en una cuenta
- *  atrás ordenada por fecha. Se llega desde la tarjeta de Mesa. */
+ *  atrás ordenada por fecha. Se llega desde la tarjeta de Mesa; V.3.0.0: sin flecha, con la
+ *  barra de pestañas y Mesa marcada. */
 export function Lanzamientos() {
-  const navigate = useNavigate()
   const { user } = useAuth()
   const { profile } = useProfile(user?.id)
   const { releases, isLoading } = useReleases(user?.id)
@@ -55,27 +55,24 @@ export function Lanzamientos() {
   }
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4 pb-12">
-      <PageHeader
+    <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <ScreenHeader
         title="Lanzamientos"
-        subtitle="Los libros que estás esperando y cuánto falta para que salgan."
-        onBack={() => navigate(-1)}
+        lead="Los libros que estás esperando y cuánto falta para que salgan."
+        tabsLabel="Vistas de lanzamientos"
+        tabs={[
+          { value: 'calendario', label: 'Calendario' },
+          { value: 'cuenta-atras', label: 'Cuenta atrás', count: upcoming.length || undefined },
+        ]}
+        active={tab}
+        onTabChange={(t) => setSearchParams(t === 'calendario' ? {} : { vista: t }, { replace: true })}
       />
 
-      <div className="flex flex-col gap-5">
-        <SegmentedTabs
-          active={tab}
-          onChange={(t) => setSearchParams(t === 'calendario' ? {} : { vista: t }, { replace: true })}
-          options={[
-            { value: 'calendario', label: 'Calendario' },
-            { value: 'cuenta-atras', label: 'Cuenta atrás' },
-          ]}
-        />
+      <div key={tab} className="flex flex-col gap-5 mt-5 stagger-children">
 
         {tab === 'calendario' ? (
           <>
-            <Card labelledBy="lanz-calendario">
-              <h2 id="lanz-calendario" className="sr-only">Calendario de lanzamientos</h2>
+            <Card tab={{ label: 'Calendario', icon: CalendarDays }} tone="magenta">
               <PeriodNav
                 label={`${MONTH_NAMES[month - 1]} ${year}`}
                 onPrev={() => changeMonth(-1)}
@@ -104,10 +101,7 @@ export function Lanzamientos() {
               </div>
             </Card>
 
-            <Card labelledBy="lanz-dia">
-              <h2 id="lanz-dia" className="font-display font-semibold text-body-lg text-text mb-3">
-                {formatReleaseDate(selectedDate)}
-              </h2>
+            <Card tab={{ label: formatReleaseDate(selectedDate), icon: CalendarHeart }}>
               {isLoading ? (
                 <Skeleton className="h-20 w-full rounded-2xl" />
               ) : dayReleases.length === 0 ? (
@@ -180,6 +174,8 @@ export function Lanzamientos() {
           onClose={() => setForm(null)}
         />
       )}
+
+      <SubpageNav tab="mesa" parentPath="/mesa" />
     </div>
   )
 }

@@ -1,294 +1,475 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { Check, ChevronLeft, ChevronRight, Flame, LayoutGrid, Library, Users, Star, CalendarDays, BookCheck } from 'lucide-react'
+import {
+  BookCheck,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  Library,
+  ScrollText,
+  Star,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
 import { useLibraryStats } from '../../hooks/useLibraryStats'
-import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { useGoalHistory } from '../../hooks/useGoalHistory'
 import { useReadingStreak } from '../../hooks/useReadingStreak'
+import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { StatTile } from '../../assets/components/atoms/StatTile'
-import { Skeleton, StatTileSkeleton } from '../../assets/components/atoms/Skeleton'
-import { Eyebrow } from '../../assets/components/atoms/Eyebrow'
+import { Skeleton } from '../../assets/components/atoms/Skeleton'
 import { Card } from '../../assets/components/molecules/Card'
-import { BarChart } from '../../assets/components/atoms/BarChart'
+import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MonthCalendar } from '../../assets/components/atoms/MonthCalendar'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
 import { StreakTiles } from '../../assets/components/molecules/StreakTiles'
 import { RatingRow } from '../../assets/components/molecules/RatingRow'
 import { formatDuration } from '../../lib/progress'
+import { MONTH_NAMES } from '../../lib/months'
+import { categoryPlural } from '../../lib/options'
 
-const MONTH_ABBR = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+// "8.940" y no "8940": en español el separador de miles normalmente se omite con 4 cifras.
+const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' } as Intl.NumberFormatOptions)
+const fmt = (n: number) => numberFormat.format(n)
 
-// Rediseño 2026: cada grupo es una tarjeta con su etiqueta en mayúsculas (Eyebrow), igual
-// que La mesa, y los datos van en recuadros (StatTile) con la cifra arriba y la etiqueta abajo.
-function SubLabel({ children }: { children: string }) {
-  return <p className="font-body font-semibold text-body-md text-text mb-2.5">{children}</p>
-}
+const plural = (n: number, one: string, many: string) => `${fmt(n)} ${n === 1 ? one : many}`
+const oneDecimal = (n: number) => n.toLocaleString('es', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
 function Footnote({ children }: { children: ReactNode }) {
   return <p className="text-body-sm text-text-secondary text-center mt-4 text-balance">{children}</p>
 }
 
+/** Botón redondo de las flechas de mes y año. */
+function NavButton({ label, onClick, disabled, children, className = '' }: {
+  label: string
+  onClick: () => void
+  disabled?: boolean
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={`rounded-full flex items-center justify-center disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-primary-text ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
 
 interface EstadisticasProps {
   userId: string | undefined
-  /** "Mis años en libros": abre ese año en Resumen. */
+  /** Abre ese año en Resumen. */
   onOpenYear: (year: number) => void
 }
 
-/** Bitácora > Estadísticas: todo lo que antes era la pantalla completa de Bitácora, menos
- *  "Valor de tu biblioteca", que se mudó a Compras (fase 6). */
+type RowKey = 'ritmo' | 'coleccion' | 'autores' | 'calificaciones' | 'leido'
+
+/** Bitácora > Estadísticas (V.3.0.0, "que no abrume"): arriba solo la tarjeta del año, con
+ *  una frase y tres números, y flechas para ver años anteriores. Todo lo demás va en "Más de
+ *  tu bitácora", plegado, una línea por tema; los temas sin datos no aparecen. Quien todavía
+ *  no termina ningún libro ve, en lugar de la tarjeta del año, tres pasos para empezar. */
 export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
-  const { stats, isLoading: statsLoading } = useLibraryStats(userId)
+  const { stats, isLoading } = useLibraryStats(userId)
   const { history: goalHistory } = useGoalHistory(userId)
-  // Racha actual: mismo hook que ya usa Mesa para el widget de "hoy" (maneja el caso de
-  // que aún no se marque hoy pero ayer sí, etc.) — acá solo se lee el número, sin las
-  // acciones de marcar/desmarcar, que siguen viviendo en Mesa.
   const { streak: currentStreak } = useReadingStreak(userId)
 
-  // Calendario de "Ritmo y hábito": se muestran 2 meses a la vez (más fácil de leer que
-  // intentar meter casi un año en una tira de semanas) y se navega de 2 en 2 meses hacia
-  // atrás con las flechas — 0 = mes actual + el anterior, no se puede navegar al futuro.
-  const [monthsBack, setMonthsBack] = useState(0)
-  const markedDates = useMemo(() => new Set(stats.ritmo.sessionDates), [stats.ritmo.sessionDates])
-
-  const newerMonthDate = new Date()
-  newerMonthDate.setDate(1)
-  newerMonthDate.setMonth(newerMonthDate.getMonth() - monthsBack)
-  const olderMonthDate = new Date(newerMonthDate)
-  olderMonthDate.setMonth(olderMonthDate.getMonth() - 1)
-  const newerMonth = { year: newerMonthDate.getFullYear(), month: newerMonthDate.getMonth() + 1 }
-  const olderMonth = { year: olderMonthDate.getFullYear(), month: olderMonthDate.getMonth() + 1 }
-
   const currentYear = new Date().getFullYear()
-  const memberSinceLabel = stats.resumen.memberSince
-    ? new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(new Date(stats.resumen.memberSince))
-    : null
+  const today = new Date()
+  const sessionDates = stats.ritmo.sessionDates
+  const markedDates = useMemo(() => new Set(sessionDates), [sessionDates])
+  const porAnio = stats.historialAnual.porAnio ?? []
 
-  // "Mis años en libros": mismo cruce entre yearsBreakdown y metas por año que antes vivía
-  // en ProfileView — se muda tal cual a Bitácora, dentro de "Historial anual".
-  const goalByYear = new Map(goalHistory.map((g) => [g.year, g]))
-  const yearsInBooks = [
-    ...new Set([...stats.historialAnual.yearsBreakdown.map((y) => y.year), ...goalHistory.map((g) => g.year)]),
-  ]
-    .sort((a, b) => b - a)
-    .map((year) => {
-      const goalEntry = goalByYear.get(year)
-      const count = stats.historialAnual.yearsBreakdown.find((y) => y.year === year)?.count ?? goalEntry?.completedCount ?? 0
-      return { year, count, goal: goalEntry?.goal }
-    })
+  // Años que se pueden recorrer con las flechas: desde el primero con lecturas, metas o
+  // sesiones hasta el actual.
+  const firstYear = Math.min(
+    currentYear,
+    ...porAnio.map((y) => y.year),
+    ...goalHistory.map((g) => g.year),
+    ...sessionDates.map((d) => parseInt(d.slice(0, 4), 10)).filter((y) => !Number.isNaN(y))
+  )
+  const [year, setYear] = useState(currentYear)
+  const [openRow, setOpenRow] = useState<RowKey | null>(null)
 
-  // Calificación promedio: redondeada al medio punto más cercano para las estrellas — el
-  // promedio real (ej. 4.3) casi nunca cae justo en un múltiplo de 0.5, y sin este
-  // redondeo la comparación "value >= position - 0.5" de RatingRow terminaba mostrando
-  // menos estrellas de las que el número en texto sugería (4.3 se veía como 4.0 en vez de
-  // la media estrella más cercana). Se usa el mismo valor redondeado tanto en las
-  // estrellas como en el texto para que ambos siempre coincidan.
-  const avgRatingRounded = stats.calificaciones.avgRating != null ? Math.round(stats.calificaciones.avgRating * 2) / 2 : null
+  // Ritmo: un solo mes grande; 0 = el mes actual. No se puede ir al futuro ni antes de la
+  // primera sesión marcada.
+  const [monthsBack, setMonthsBack] = useState(0)
+  const firstSession = sessionDates.reduce<string | null>((min, d) => (!min || d < min ? d : min), null)
+  const maxMonthsBack = firstSession
+    ? (today.getFullYear() - parseInt(firstSession.slice(0, 4), 10)) * 12 + today.getMonth() - (parseInt(firstSession.slice(5, 7), 10) - 1)
+    : 0
+  const shownMonth = new Date(today.getFullYear(), today.getMonth() - monthsBack, 1)
+  const shownMonthKey = `${shownMonth.getFullYear()}-${String(shownMonth.getMonth() + 1).padStart(2, '0')}`
+  const daysReadInMonth = sessionDates.filter((d) => d.startsWith(shownMonthKey)).length
 
-  // Primera carga: siluetas de tarjetas. Después, los datos en caché se muestran al instante.
-  return (
-    <>
-      {statsLoading ? (
-        <div className="flex flex-col gap-5" aria-label="Cargando">
-          {[8, 2, 4].map((tiles, i) => (
-            <div key={i} className="bg-surface border border-border rounded-card shadow-card p-[18px]">
-              <Skeleton className="h-3.5 w-2/5 rounded-full mb-4" />
-              <div className="grid grid-cols-2 gap-2.5">
-                {Array.from({ length: tiles }, (_, j) => (
-                  <StatTileSkeleton key={j} />
-                ))}
+  function toggle(row: RowKey) {
+    setOpenRow((current) => (current === row ? null : row))
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-5" aria-label="Cargando">
+        <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
+          <Skeleton className="h-5 w-4/5 rounded-full" />
+          <Skeleton className="h-5 w-3/5 rounded-full mt-2" />
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 rounded-[14px]" />)}
+          </div>
+        </div>
+        <div className="bg-surface border border-border rounded-card shadow-card px-4 py-2">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 py-3">
+              <Skeleton className="w-9 h-9 rounded-full shrink-0" />
+              <div className="flex-1">
+                <Skeleton className="h-3.5 w-2/5 rounded-full" />
+                <Skeleton className="h-3 w-3/5 rounded-full mt-1.5" />
               </div>
             </div>
           ))}
         </div>
+      </div>
+    )
+  }
+
+  const hasFinished = stats.historialAnual.yearsBreakdown.length > 0
+  const { resumen, coleccion, autoresYSeries, calificaciones } = stats
+
+  // ---------- Tarjeta del año ----------
+  const yearData = porAnio.find((y) => y.year === year)
+  const finished = yearData?.finished ?? 0
+  const goal = goalHistory.find((g) => g.year === year)?.goal
+  const daysRead = sessionDates.filter((d) => d.startsWith(String(year))).length
+  const isCurrent = year === currentYear
+  const booksText = plural(finished, 'libro', 'libros')
+
+  let sentence: ReactNode
+  if (isCurrent) {
+    sentence =
+      finished === 0 ? (
+        <>Todavía no terminas libros en {year}.{goal ? <> Tu meta es de <b className="font-semibold text-pink-text">{plural(goal, 'libro', 'libros')}</b>.</> : null}</>
       ) : (
-      <div className="flex flex-col gap-5 stagger-children">
-        {/* 1. Resumen general */}
-        <Card labelledBy="bit-resumen">
-          <Eyebrow id="bit-resumen" icon={LayoutGrid} tone="pink" className="mb-3.5">Resumen general</Eyebrow>
-          <div className="grid grid-cols-2 gap-2.5">
-            <StatTile tone="pink" label="Páginas leídas" value={stats.resumen.pagesRead.toLocaleString()} />
-            <StatTile tone="orange" label="Tiempo escuchado" value={formatDuration(stats.resumen.audioSeconds)} />
-            <StatTile tone="magenta" label="Libros terminados" value={String(stats.resumen.finishedCount)} />
-            <StatTile label="Libros en proceso" value={String(stats.resumen.readingCount)} />
-            <StatTile tone="pink" label="Libros deseados" value={String(stats.resumen.wishlistCount)} />
-            <StatTile tone="orange" label="Libros abandonados" value={String(stats.resumen.abandonedCount)} />
-            <StatTile tone="magenta" label="Sagas registradas" value={String(stats.resumen.sagaCount)} />
-            <StatTile label="Reseñas escritas" value={String(stats.resumen.reviewCount)} />
-          </div>
-          {memberSinceLabel && <Footnote>Leyendo en Teleo desde {memberSinceLabel}</Footnote>}
-        </Card>
+        <>
+          Llevas <b className="font-semibold text-magenta-text">{booksText}</b> en {year}
+          {goal ? (
+            finished >= goal ? <>, y ya cumpliste tu meta.</> : <>, a <b className="font-semibold text-pink-text">{goal - finished} de tu meta</b>.</>
+          ) : '.'}
+        </>
+      )
+  } else {
+    sentence =
+      finished === 0 ? (
+        <>En {year} no terminaste libros.</>
+      ) : (
+        <>
+          Terminaste <b className="font-semibold text-magenta-text">{booksText}</b> en {year}
+          {goal ? (
+            finished >= goal ? <>, y cumpliste tu meta de {goal}.</> : <>, de una meta de {goal}.</>
+          ) : '.'}
+        </>
+      )
+  }
 
-        {/* 2. Ritmo y hábito */}
-        <Card labelledBy="bit-ritmo">
-          <Eyebrow id="bit-ritmo" icon={Flame} tone="orange" className="mb-3.5">
-            Ritmo y hábito
-          </Eyebrow>
-          <StreakTiles current={currentStreak} longest={stats.ritmo.longestStreak} />
+  const trio: { value: string; label: string; color: string }[] = [
+    { value: fmt(yearData?.pages ?? 0), label: 'páginas', color: 'text-pink-text' },
+    { value: fmt(daysRead), label: daysRead === 1 ? 'día leído' : 'días leídos', color: 'text-orange-text' },
+    { value: yearData?.avgRating != null ? oneDecimal(yearData.avgRating) : '—', label: 'promedio', color: 'text-magenta-text' },
+  ]
 
-          <div className="flex items-center justify-between mt-5 mb-3">
-            <SubLabel>Días de lectura</SubLabel>
-            <div className="flex items-center gap-1.5 -mt-2.5">
-              <button
-                onClick={() => setMonthsBack((m) => m + 2)}
-                aria-label="Ver 2 meses anteriores"
-                className="w-8 h-8 rounded-full border border-border bg-surface-2 text-primary-text flex items-center justify-center"
-              >
-                <ChevronLeft size={18} strokeWidth={2} />
-              </button>
-              <button
-                onClick={() => setMonthsBack((m) => Math.max(0, m - 2))}
-                disabled={monthsBack === 0}
-                aria-label="Ver 2 meses siguientes"
-                className="w-8 h-8 rounded-full border border-border bg-surface-2 text-primary-text flex items-center justify-center disabled:opacity-30"
-              >
-                <ChevronRight size={18} strokeWidth={2} />
-              </button>
+  // ---------- Resúmenes de una línea ----------
+  // Categoría en plural para las frases; si es "Libro", se habla del formato.
+  const topCategory = categoryPlural(coleccion.byCategory[0]?.label)
+  const topFormat = coleccion.byFormat[0]?.label?.toLowerCase()
+  const readCategory = categoryPlural(coleccion.readByCategory[0]?.label)
+  const readFormat = coleccion.readByFormat[0]?.label?.toLowerCase()
+  const coleccionSummary = [
+    plural(resumen.totalBooks, 'libro', 'libros'),
+    topCategory ? `sobre todo ${topCategory}` : topFormat ? `la mayoría en ${topFormat}` : null,
+  ]
+    .filter(Boolean)
+    .join(', ')
+  const leidoSummary = readCategory
+    ? `Sobre todo ${readCategory}${readFormat ? `, en ${readFormat}` : ''}`
+    : readFormat
+      ? `Sobre todo en ${readFormat}`
+      : 'Por categoría y formato'
+  const avgRatingRounded = calificaciones.avgRating != null ? Math.round(calificaciones.avgRating * 2) / 2 : null
+
+  const showRitmo = sessionDates.length > 0
+  const showColeccion = resumen.totalBooks > 0
+  const showAutores = !!autoresYSeries.topAuthor || resumen.sagaCount > 0 || !!autoresYSeries.mostRereadBook
+  const showCalificaciones = calificaciones.avgRating != null
+  const showLeido = coleccion.readByCategory.length > 0 || coleccion.readByFormat.length > 0
+  const hasRows = showRitmo || showColeccion || showAutores || showCalificaciones || showLeido
+
+  const memberSinceLabel = resumen.memberSince
+    ? new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(new Date(resumen.memberSince))
+    : null
+
+  const steps = [
+    { label: 'Agregar tu primer libro', done: resumen.totalBooks > 0 },
+    { label: 'Marcar tu primera sesión de lectura', done: sessionDates.length > 0 },
+    { label: 'Terminar un libro', done: hasFinished },
+  ]
+
+  return (
+    <div className="flex flex-col gap-5 stagger-children">
+      {hasFinished ? (
+        <Card
+          tab={{ label: String(year), icon: TrendingUp }}
+          tone="pink"
+          action={
+            <div className="flex items-center gap-1.5">
+              <NavButton label="Año anterior" onClick={() => setYear((y) => y - 1)} disabled={year <= firstYear} className="w-[26px] h-[26px]">
+                <ChevronLeft size={16} />
+              </NavButton>
+              <NavButton label="Año siguiente" onClick={() => setYear((y) => y + 1)} disabled={year >= currentYear} className="w-[26px] h-[26px]">
+                <ChevronRight size={16} />
+              </NavButton>
             </div>
-          </div>
-
-          <PeriodTransition order={-monthsBack}>
-            <div className="grid grid-cols-2 gap-4">
-              <MonthCalendar year={olderMonth.year} month={olderMonth.month} markedDates={markedDates} />
-              <MonthCalendar year={newerMonth.year} month={newerMonth.month} markedDates={markedDates} />
+          }
+        >
+          <PeriodTransition order={year}>
+            <p className="font-display text-[20px] leading-[1.4] text-text">{sentence}</p>
+            <div className="grid grid-cols-3 gap-2 mt-3.5">
+              {trio.map((t) => (
+                <div key={t.label} className="rounded-[14px] p-2.5 text-center" style={{ background: 'color-mix(in srgb, var(--color-surface-2) 70%, transparent)' }}>
+                  <b className={`block font-display font-semibold text-[22px] leading-none tabular-nums ${t.color}`}>{t.value}</b>
+                  <span className="text-[11.5px] text-text-secondary">{t.label}</span>
+                </div>
+              ))}
             </div>
           </PeriodTransition>
-
-          <div className="flex items-center justify-center gap-1.5 mt-4 text-body-sm text-text-secondary">
-            <span className="w-2.5 h-2.5 rounded-xs bg-surface-2 border border-border" />
-            Sin marcar
-            <span className="w-2.5 h-2.5 rounded-xs ml-3 bg-orange" />
-            Leído
-          </div>
+          <button
+            type="button"
+            onClick={() => onOpenYear(year)}
+            className="mt-3.5 mx-auto flex items-center gap-0.5 font-body font-bold text-body-md text-pink-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+          >
+            Ver tu {year} en Resumen
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
         </Card>
-
-        {/* Lo que leíste (V.2.1.0): el mismo desglose, pero solo de las lecturas terminadas. */}
-        {(stats.coleccion.readByCategory.length > 0 || stats.coleccion.readByFormat.length > 0) && (
-          <Card labelledBy="bit-leido">
-            <Eyebrow id="bit-leido" icon={BookCheck} tone="orange" className="mb-3.5">Lo que leíste</Eyebrow>
-            <div className="space-y-5">
-              <BreakdownList title="Por categoría" entries={stats.coleccion.readByCategory} />
-              <BreakdownList title="Por formato" entries={stats.coleccion.readByFormat} />
+      ) : (
+        <Card tab={{ label: 'Tu bitácora', icon: TrendingUp }}>
+          <div className="text-center px-1.5 pt-2 pb-1">
+            <div className="relative w-[92px] h-[92px] mx-auto mb-3" aria-hidden="true">
+              <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
+              <span className="absolute inset-3.5 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
+                <ScrollText size={30} />
+              </span>
             </div>
-            <Footnote>Cuenta cada libro que terminaste, relecturas incluidas.</Footnote>
-          </Card>
-        )}
-
-        {/* 3. Desglose de colección */}
-        <Card labelledBy="bit-coleccion">
-          <Eyebrow id="bit-coleccion" icon={Library} tone="magenta" className="mb-3.5">Desglose de colección</Eyebrow>
-          <div className="space-y-5">
-            <BreakdownList title="Por categoría" entries={stats.coleccion.byCategory} />
-            <BreakdownList title="Por formato" entries={stats.coleccion.byFormat} />
-            <BreakdownList title="Por idioma" entries={stats.coleccion.byLanguage} />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 mt-5">
-            <StatTile
-              label="Libro más largo"
-              value={stats.coleccion.longestBook ? `${stats.coleccion.longestBook.title} (${stats.coleccion.longestBook.value} pág.)` : '—'}
-            />
-            <StatTile
-              label="Libro más corto"
-              value={stats.coleccion.shortestBook ? `${stats.coleccion.shortestBook.title} (${stats.coleccion.shortestBook.value} pág.)` : '—'}
-            />
-          </div>
-        </Card>
-
-        {/* 4. Autores y series */}
-        <Card labelledBy="bit-autores">
-          <Eyebrow id="bit-autores" icon={Users} tone="pink" className="mb-3.5">
-            Autores y series
-          </Eyebrow>
-          <div className="grid grid-cols-2 gap-2.5">
-            <StatTile
-              label="Autor más leído"
-              value={stats.autoresYSeries.topAuthor ? `${stats.autoresYSeries.topAuthor.label} (${stats.autoresYSeries.topAuthor.count})` : '—'}
-            />
-            <StatTile
-              label="Libro más releído"
-              value={stats.autoresYSeries.mostRereadBook ? `${stats.autoresYSeries.mostRereadBook.label} (${stats.autoresYSeries.mostRereadBook.count}x)` : '—'}
-            />
-            <StatTile label="Sagas terminadas" value={String(stats.autoresYSeries.sagasCompleted)} />
-            <StatTile label="Sagas en proceso" value={String(stats.autoresYSeries.sagasInProgress)} />
+            <h3 className="font-title text-[22px] leading-tight text-text">Aquí irá tu historia lectora</h3>
+            <p className="text-[14.5px] leading-normal text-text-secondary mt-1.5">
+              Cuando registres tus lecturas, esta pestaña se va llenando sola. Por ahora, tres pasos para empezar:
+            </p>
+            <ul className="mt-3.5 flex flex-col gap-2 text-left">
+              {steps.map((s) => (
+                <li
+                  key={s.label}
+                  className={`flex items-center gap-2.5 text-body-md bg-surface-2 rounded-xl px-3 py-2.5 ${s.done ? 'text-text-secondary line-through' : 'text-text'}`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`w-[22px] h-[22px] shrink-0 rounded-full flex items-center justify-center ${
+                      s.done ? 'bg-orange text-on-orange' : 'border-[1.5px] border-dashed border-ornament'
+                    }`}
+                  >
+                    {s.done && <Check size={12} strokeWidth={3.5} />}
+                  </span>
+                  {s.label}
+                  {s.done && <span className="sr-only"> (hecho)</span>}
+                </li>
+              ))}
+            </ul>
           </div>
         </Card>
-
-        {/* 5. Calificaciones */}
-        <Card labelledBy="bit-calificaciones">
-          <Eyebrow id="bit-calificaciones" icon={Star} tone="orange" className="mb-3.5">
-            Calificaciones
-          </Eyebrow>
-          <div className="flex flex-col items-center gap-2 mb-5">
-            <span className="font-display font-semibold text-[40px] leading-none text-text tabular-nums">
-              {avgRatingRounded != null ? avgRatingRounded.toFixed(1) : '—'}
-            </span>
-            <RatingRow shape="star" color="var(--color-orange)" value={avgRatingRounded ?? 0} size={20} />
-            {avgRatingRounded != null && (
-              <p className="text-body-sm text-text-secondary text-center">Promedio entre todos los libros que calificaste</p>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <StatTile label="Mejor calificado" value={stats.calificaciones.bestRated?.title ?? '—'} />
-            <StatTile label="Peor calificado" value={stats.calificaciones.worstRated?.title ?? '—'} />
-            <StatTile label="Citas guardadas" value={String(stats.calificaciones.quotesCount)} className="col-span-2" />
-          </div>
-          {stats.calificaciones.hasTie && (
-            <Footnote>
-              Si hay más de un libro con la misma calificación más alta o más baja, se mostrará uno al azar entre los empatados en cada visita a Bitácora.
-            </Footnote>
-          )}
-        </Card>
-
-        {/* 6. Historial anual */}
-        <Card labelledBy="bit-historial">
-          <Eyebrow id="bit-historial" icon={CalendarDays} tone="magenta" className="mb-3.5">Historial anual</Eyebrow>
-          <div className="grid grid-cols-2 gap-2.5">
-            <StatTile label={`Libros en ${currentYear}`} value={String(stats.historialAnual.currentYearCount)} />
-            <StatTile label={`Libros en ${currentYear - 1}`} value={String(stats.historialAnual.previousYearCount)} />
-          </div>
-
-          <div className="mt-5">
-            <SubLabel>{`Recap mensual ${currentYear}`}</SubLabel>
-            <BarChart
-              data={stats.historialAnual.monthlyThisYear.map((m) => ({ label: MONTH_ABBR[m.month - 1], value: m.count }))}
-              color="var(--color-magenta)"
-              highlightIndex={new Date().getMonth()}
-              highlightColor="var(--color-orange)"
-            />
-          </div>
-
-          {yearsInBooks.length > 0 && (
-            <div className="mt-5">
-              <SubLabel>Mis años en libros</SubLabel>
-              <div className="grid grid-cols-2 gap-2.5">
-                {yearsInBooks.map(({ year, count, goal }) => {
-                  const metGoal = typeof goal === 'number' && goal > 0 && count >= goal
-                  const subtitle =
-                    typeof goal === 'number'
-                      ? `${count} de ${goal} libros`
-                      : `${count} libro${count === 1 ? '' : 's'} terminado${count === 1 ? '' : 's'}`
-
-                  return (
-                    <button
-                      key={year}
-                      onClick={() => onOpenYear(year)}
-                      className="relative bg-surface-2 border border-border rounded-2xl p-4 text-center active:opacity-80 transition-opacity focus-visible:outline-2 focus-visible:outline-primary-text"
-                    >
-                      {metGoal && (
-                        <span className="absolute top-2 right-2 w-6 h-6 rounded-full bg-pink flex items-center justify-center" title="Meta cumplida">
-                          <Check size={13} strokeWidth={2.5} className="text-surface" />
-                        </span>
-                      )}
-                      <p className="font-title text-[30px] leading-none text-primary-text">{year}</p>
-                      <p className="text-body-sm text-text-secondary mt-1.5">{subtitle}</p>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </Card>
-      </div>
       )}
-    </>
+
+      {hasRows && (
+        <Card tab={{ label: 'Más de tu bitácora', icon: Library }} padding="px-4 py-1">
+          {/* Envoltorio propio: así "first:" apunta a la primera fila y no a la pestaña, y no
+              queda una línea justo debajo de "Más de tu bitácora". */}
+          <div>
+          {showRitmo && (
+            <MoreRow
+              id="ritmo"
+              tone="orange"
+              icon={Flag}
+              title="Ritmo y hábito"
+              summary={
+                stats.ritmo.longestStreak > 1
+                  ? `Tu mejor racha fue de ${plural(stats.ritmo.longestStreak, 'día', 'días')}`
+                  : plural(sessionDates.length, 'día leído', 'días leídos')
+              }
+              isOpen={openRow === 'ritmo'}
+              onToggle={() => toggle('ritmo')}
+            >
+              <StreakTiles current={currentStreak} longest={stats.ritmo.longestStreak} />
+              <div className="flex items-center justify-between mt-4 mb-2.5">
+                <NavButton
+                  label="Mes anterior"
+                  onClick={() => setMonthsBack((m) => m + 1)}
+                  disabled={monthsBack >= maxMonthsBack}
+                  className="w-[30px] h-[30px] border border-border bg-surface-2 text-primary-text"
+                >
+                  <ChevronLeft size={16} />
+                </NavButton>
+                <div className="text-center">
+                  <p className="font-title text-[18px] leading-none text-text">
+                    {MONTH_NAMES[shownMonth.getMonth()]} {shownMonth.getFullYear()}
+                  </p>
+                  <p className="text-[12px] text-text-secondary mt-1">{plural(daysReadInMonth, 'día leído', 'días leídos')}</p>
+                </div>
+                <NavButton
+                  label="Mes siguiente"
+                  onClick={() => setMonthsBack((m) => Math.max(0, m - 1))}
+                  disabled={monthsBack === 0}
+                  className="w-[30px] h-[30px] border border-border bg-surface-2 text-primary-text"
+                >
+                  <ChevronRight size={16} />
+                </NavButton>
+              </div>
+              <PeriodTransition order={-monthsBack}>
+                <MonthCalendar
+                  year={shownMonth.getFullYear()}
+                  month={shownMonth.getMonth() + 1}
+                  markedDates={markedDates}
+                  size="lg"
+                  showTitle={false}
+                />
+              </PeriodTransition>
+              <div className="flex items-center justify-center gap-3.5 mt-2.5 text-[12px] text-text-secondary">
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="w-2.5 h-2.5 rounded-[3px] bg-surface-2 border border-border" />
+                  Sin marcar
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <i className="w-2.5 h-2.5 rounded-[3px] bg-orange" />
+                  Leído
+                </span>
+              </div>
+            </MoreRow>
+          )}
+
+          {showColeccion && (
+            <MoreRow
+              id="coleccion"
+              tone="magenta"
+              icon={Library}
+              title="Tu colección"
+              summary={coleccionSummary}
+              isOpen={openRow === 'coleccion'}
+              onToggle={() => toggle('coleccion')}
+            >
+              <div className="grid grid-cols-2 gap-2.5">
+                <StatTile tone="pink" label="Páginas leídas" value={fmt(resumen.pagesRead)} />
+                <StatTile tone="orange" label="Tiempo escuchado" value={formatDuration(resumen.audioSeconds)} />
+                <StatTile tone="magenta" label="Libros terminados" value={String(resumen.finishedCount)} />
+                <StatTile label="Libros en proceso" value={String(resumen.readingCount)} />
+                <StatTile tone="pink" label="Libros deseados" value={String(resumen.wishlistCount)} />
+                <StatTile tone="orange" label="Libros abandonados" value={String(resumen.abandonedCount)} />
+                <StatTile tone="magenta" label="Sagas registradas" value={String(resumen.sagaCount)} />
+                <StatTile label="Reseñas escritas" value={String(resumen.reviewCount)} />
+              </div>
+              <div className="space-y-5 mt-5">
+                <BreakdownList title="Por categoría" entries={coleccion.byCategory} />
+                <BreakdownList title="Por formato" entries={coleccion.byFormat} />
+                <BreakdownList title="Por idioma" entries={coleccion.byLanguage} />
+              </div>
+              {(coleccion.longestBook || coleccion.shortestBook) && (
+                <div className="grid grid-cols-2 gap-2.5 mt-5">
+                  <StatTile
+                    label="Libro más largo"
+                    value={coleccion.longestBook ? `${coleccion.longestBook.title} (${coleccion.longestBook.value} pág.)` : '—'}
+                  />
+                  <StatTile
+                    label="Libro más corto"
+                    value={coleccion.shortestBook ? `${coleccion.shortestBook.title} (${coleccion.shortestBook.value} pág.)` : '—'}
+                  />
+                </div>
+              )}
+              {memberSinceLabel && <Footnote>Leyendo en Teleo desde {memberSinceLabel}</Footnote>}
+            </MoreRow>
+          )}
+
+          {showAutores && (
+            <MoreRow
+              id="autores"
+              tone="pink"
+              icon={Users}
+              title="Autores y sagas"
+              summary={
+                autoresYSeries.topAuthor
+                  ? `Más libros de ${autoresYSeries.topAuthor.label}`
+                  : plural(resumen.sagaCount, 'saga registrada', 'sagas registradas')
+              }
+              isOpen={openRow === 'autores'}
+              onToggle={() => toggle('autores')}
+            >
+              <div className="grid grid-cols-2 gap-2.5">
+                <StatTile
+                  label="Quien más has leído"
+                  value={autoresYSeries.topAuthor ? `${autoresYSeries.topAuthor.label} (${autoresYSeries.topAuthor.count})` : '—'}
+                />
+                <StatTile
+                  label="Libro más releído"
+                  value={autoresYSeries.mostRereadBook ? `${autoresYSeries.mostRereadBook.label} (${autoresYSeries.mostRereadBook.count}x)` : '—'}
+                />
+                <StatTile label="Sagas terminadas" value={String(autoresYSeries.sagasCompleted)} />
+                <StatTile label="Sagas en proceso" value={String(autoresYSeries.sagasInProgress)} />
+              </div>
+            </MoreRow>
+          )}
+
+          {showCalificaciones && avgRatingRounded != null && (
+            <MoreRow
+              id="calificaciones"
+              tone="orange"
+              icon={Star}
+              title="Calificaciones"
+              summary={`Tu promedio: ${oneDecimal(avgRatingRounded)} estrellas`}
+              isOpen={openRow === 'calificaciones'}
+              onToggle={() => toggle('calificaciones')}
+            >
+              <div className="flex flex-col items-center gap-2 mb-5">
+                <span className="font-display font-semibold text-[40px] leading-none text-text tabular-nums">{oneDecimal(avgRatingRounded)}</span>
+                <RatingRow shape="star" color="var(--color-orange)" value={avgRatingRounded} size={20} />
+                <p className="text-body-sm text-text-secondary text-center">Promedio entre todos los libros que calificaste</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <StatTile label="Mejor calificado" value={calificaciones.bestRated?.title ?? '—'} />
+                <StatTile label="Peor calificado" value={calificaciones.worstRated?.title ?? '—'} />
+                <StatTile label="Citas guardadas" value={String(calificaciones.quotesCount)} className="col-span-2" />
+              </div>
+              {calificaciones.hasTie && (
+                <Footnote>
+                  Si hay más de un libro con la misma calificación más alta o más baja, se mostrará uno al azar entre los empatados en cada visita a Bitácora.
+                </Footnote>
+              )}
+            </MoreRow>
+          )}
+
+          {showLeido && (
+            <MoreRow
+              id="leido"
+              tone="brand"
+              icon={BookCheck}
+              title="Lo que leíste"
+              summary={leidoSummary}
+              isOpen={openRow === 'leido'}
+              onToggle={() => toggle('leido')}
+            >
+              <div className="space-y-5">
+                <BreakdownList title="Por categoría" entries={coleccion.readByCategory} />
+                <BreakdownList title="Por formato" entries={coleccion.readByFormat} />
+              </div>
+              <Footnote>Cuenta cada libro que terminaste, relecturas incluidas.</Footnote>
+            </MoreRow>
+          )}
+          </div>
+        </Card>
+      )}
+    </div>
   )
 }
