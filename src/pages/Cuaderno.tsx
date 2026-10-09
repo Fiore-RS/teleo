@@ -36,22 +36,10 @@ interface ReviewCardProps {
   onOpen: () => void
 }
 
-const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', 'oct', 'nov', 'dic']
-
-/** Fecha de la reseña al pie de la hoja: "12 sept", con el año solo si no es el actual. */
-function reviewDate(value: string | null): string {
-  if (!value) return ''
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
-  const base = `${d.getDate()} ${MONTHS[d.getMonth()]}`
-  return d.getFullYear() === new Date().getFullYear() ? base : `${base} ${d.getFullYear()}`
-}
-
 /** Reseña como hoja rayada (V.3.0.0): portada pequeña, título, autor y estrellas arriba; el
- *  comentario en Fraunces itálica sobre renglones con margen rosa; la fecha abajo. Toda la
- *  hoja se toca para abrir la reseña. */
+ *  comentario en Fraunces itálica sobre renglones con margen rosa. Toda la
+ *  hoja se toca para abrir la reseña. Sin fecha: no hace falta saber cuándo se escribió. */
 function ReviewCard({ review, onOpen }: ReviewCardProps) {
-  const date = reviewDate(review.created_at)
   return (
     <button
       type="button"
@@ -88,7 +76,6 @@ function ReviewCard({ review, onOpen }: ReviewCardProps) {
           {review.general_comments}
         </p>
       )}
-      {date && <span className="block text-[11px] font-semibold text-text-muted text-right mt-1.5">{date}</span>}
     </button>
   )
 }
