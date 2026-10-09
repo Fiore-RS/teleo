@@ -21,7 +21,7 @@ const sections: TutorialSection[] = [
     title: 'Mesa',
     points: [
       'Ve los libros que estás leyendo, con su avance, y actualízalos cuando quieras. Si no estás leyendo nada, Teleo puede elegir al azar uno de tus pendientes.',
-      'Marca tu sesión de lectura del día para mantener tu racha. Toca la llama de arriba o "Calendario" para ver tus días leídos, tu racha más larga y los números de cada mes.',
+      'Marca tu sesión de lectura del día para mantener tu racha: la cinta de arriba a la derecha se llena. Tócala, o toca "Calendario", para ver tus días leídos, tu racha más larga y los números de cada mes.',
       'Mira cuánto falta para el próximo libro que esperas y toca la tarjeta para ir a Lanzamientos.',
       'Define una meta anual de libros y sigue tu progreso a lo largo del año.',
     ],
@@ -30,11 +30,11 @@ const sections: TutorialSection[] = [
     icon: BookOpen,
     title: 'Estante',
     points: [
-      'Toca el botón + del encabezado para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
+      'Toca el botón + de abajo para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
       'Al terminar un libro, guarda su fecha de inicio y de fin, y escribe la reseña solo si quieres. Todo libro con fecha de fin cuenta para la meta de ese año.',
       'Agrupa libros en sagas, agrega varios a la vez y anota cuántos tendrá en total para ver tu progreso, por ejemplo "2 de 5".',
-      'Toca la lupa para buscar por título o autor, y el botón de filtros para ver solo los libros de un estado, idioma, categoría o formato.',
-      'Usa el botón de organizar para ordenar por título, autor o fecha, o elige "Libre" para reordenar tu estante arrastrando tus libros o sagas.',
+      'Usa la barra de arriba para buscar por título o autor, y su botón de filtros para ver solo los libros de un estado, idioma, categoría o formato. Al bajar, la barra y las pestañas se quedan fijas; toca Estante en la barra de abajo para volver arriba.',
+      'Usa el botón de organizar de la barra para ordenar por título, autor o fecha, o elige "Libre" para reordenar tus repisas arrastrando tus libros o sagas.',
       '¿No sabes qué leer? Toca "¿Qué leo ahora?" y Teleo elegirá uno de tus pendientes.',
     ],
   },
@@ -42,17 +42,17 @@ const sections: TutorialSection[] = [
     icon: NotebookPen,
     title: 'Cuaderno',
     points: [
-      'Toca el botón + para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia, agrega calificaciones personalizadas (por ejemplo, romance o giros de trama) y guarda tus citas favoritas.',
-      'Consulta todas tus reseñas pasadas cuando quieras revivirlas.',
+      'Toca el botón + de abajo para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia, agrega calificaciones personalizadas (por ejemplo, romance o giros de trama) y guarda tus citas favoritas.',
+      'Consulta todas tus reseñas pasadas cuando quieras revivirlas, y en Citas encuentra todas tus citas guardadas, con una al azar arriba; agrega una nueva con el botón + de abajo.',
     ],
   },
   {
     icon: ScrollText,
     title: 'Bitácora',
     points: [
-      'En Estadísticas: páginas leídas, tiempo escuchado, libros terminados, tu racha con su calendario, el desglose de tu colección, tus autores y tus calificaciones.',
-      'En Resumen: los libros que terminaste cada mes y cada año, y tu favorito de cada mes. Al final del año, elige entre ellos tu favorito del año.',
-      'En Compras: cuánto has invertido en tu biblioteca y la lista de tus libros con su precio. Filtra los que no tienen precio y tócalos para agregarlo.',
+      'En Estadísticas: tu año en una tarjeta (usa las flechas para ver años anteriores) y, en "Más de tu bitácora", tu ritmo y tu racha, tu colección, tus autores y sagas, tus calificaciones y lo que leíste. Toca cada fila para abrirla.',
+      'En Resumen: los libros que terminaste cada mes, tu año en un estante (toca un lomo para ver ese mes) y, en Favoritos, tu favorito de cada mes y del año.',
+      'En Compras: cuánto has invertido en tu biblioteca por estado y la lista de tus libros agrupada por mes de compra. Filtra los que no tienen precio y tócalos para agregarlo.',
     ],
   },
   {
@@ -69,7 +69,7 @@ const sections: TutorialSection[] = [
     title: 'Perfil',
     points: [
       'Toca el lápiz de arriba para cambiar tu foto, tu nickname y tu descripción.',
-      'Toca cualquiera de tus números (leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
+      'En Tu biblioteca, toca cualquier estado (leyendo, leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
       'Mira tu actividad del mes y organiza tu lista de temporada desde sus tres puntos: cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
       'En Favoritos, Recomendados, Deseados y Abandonados verás cinco libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
       'El botón de compartir te deja enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',

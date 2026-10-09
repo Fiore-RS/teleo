@@ -15,6 +15,25 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.0.0',
+    announced: true,
+    date: '9 de octubre de 2026',
+    title: 'Pasando la página',
+    items: [
+      'Teleo estrena diseño: cada sección es como la hoja de un cuaderno, con pestañas de separador y títulos con nueva tipografía.',
+      'Tu racha ahora es una cinta marcapáginas en La mesa: se llena al marcar tu sesión del día y al tocarla abre el calendario.',
+      'Tus libros y sagas se acomodan en repisas, con título y autor debajo de cada portada.',
+      'La barra de búsqueda y las pestañas se quedan fijas arriba al bajar en Estante, Cuaderno y Bitácora. Para volver arriba, toca la sección en la que estás.',
+      'Agrega libros y reseñas con el botón flotante de abajo.',
+      'Tus reseñas son hojas rayadas y tus citas, notas con la esquina doblada.',
+      'Estadísticas más tranquila: tu año en una tarjeta y el resto plegado en "Más de tu bitácora".',
+      'Resumen renovado: tu año en un estante de lomos, y tus favoritos del año y de cada mes en una sola hoja.',
+      'Compras muestra cuánto has invertido por estado y agrupa tus libros por mes de compra.',
+      'Perfil con portada nueva: tu banner completo, tu foto a un lado y tu biblioteca de un vistazo.',
+      'Ya no hay flecha para regresar: la barra de abajo siempre queda a mano.',
+    ],
+  },
+  {
     version: '2.2.1',
     date: '3 de octubre de 2026',
     title: 'Puliendo detalles',
