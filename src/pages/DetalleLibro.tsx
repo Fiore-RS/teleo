@@ -39,6 +39,7 @@ import { formatPausedSince } from '../lib/pause'
 import { advanceNextInSaga, findNextInSaga, type NextInSaga } from '../lib/nextInSaga'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
+import { useUserTags } from '../hooks/useUserTags'
 import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
 
 /** Orden inicial al final de la lista de temporada (fuera del componente: el lint de React
@@ -71,6 +72,16 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   // Género, ánimo y ritmo (V.3.1.0).
   const queryClient = useQueryClient()
   const knownCustomMoods = useUserCustomMoods(user?.id)
+  const knownTags = useUserTags(user?.id)
+  // Una etiqueta nueva pasa a ser opción en todos los libros (V.3.1.0).
+  async function handleAddTag(tag: string) {
+    await addTag(tag)
+    void queryClient.invalidateQueries({ queryKey: ['userTags'] })
+  }
+  async function handleRemoveTag(tag: string) {
+    await removeTag(tag)
+    void queryClient.invalidateQueries({ queryKey: ['userTags'] })
+  }
   const bookTraits = traitsFromBook(book)
   async function saveTraits(traits: BookTraits) {
     await updateBook(traitsToColumns(traits, bookTraits))
@@ -332,13 +343,14 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               draft={draft}
               onChange={(patch) => setDraft({ ...draft, ...patch })}
               tags={tags}
-              onAddTag={addTag}
-              onRemoveTag={removeTag}
+              onAddTag={handleAddTag}
+              onRemoveTag={handleRemoveTag}
               languageOptions={languageOptionsFrom(bookLanguages)}
               currency={profile?.currency}
               onCoverFile={handleCoverFile}
               isUploadingCover={isUploading}
               knownCustomMoods={knownCustomMoods}
+              knownTags={knownTags}
             />
           </div>
         ) : (

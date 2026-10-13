@@ -102,6 +102,8 @@ interface EditBookFormProps {
   isUploadingCover: boolean
   /** Ánimos propios que la persona ya usó (useUserCustomMoods). */
   knownCustomMoods: string[]
+  /** Etiquetas que la persona ya usó en otros libros (useUserTags). */
+  knownTags: string[]
 }
 
 /** Cuerpo de la hoja Editar libro (V.2.2.0): ficha arriba (portada, título, autor, estado) y
@@ -120,6 +122,7 @@ export function EditBookForm({
   onCoverFile,
   isUploadingCover,
   knownCustomMoods,
+  knownTags,
 }: EditBookFormProps) {
   const coverInputRef = useRef<HTMLInputElement>(null)
 
@@ -286,7 +289,7 @@ export function EditBookForm({
             {tags.map((tag) => <Tag key={tag} label={tag} onRemove={() => onRemoveTag(tag)} />)}
           </div>
         )}
-        <TagInput onAdd={onAddTag} />
+        <TagInput onAdd={onAddTag} suggestions={knownTags} current={tags} />
       </FormSection>
 
       <FormSection label="Compra" className="mb-2">
