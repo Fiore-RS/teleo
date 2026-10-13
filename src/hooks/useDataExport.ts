@@ -61,7 +61,7 @@ export function useDataExport(userId: string | undefined) {
         fetchAllRows((from, to) =>
           supabase
             .from('favorite_quotes')
-            .select('id, review_id, quote_text, sort_order, page, created_at, reviews!inner(user_id)')
+            .select('id, review_id, quote_text, sort_order, cuaderno_sort_order, page, created_at, reviews!inner(user_id)')
             .eq('reviews.user_id', userId)
             .order('id')
             .range(from, to)
