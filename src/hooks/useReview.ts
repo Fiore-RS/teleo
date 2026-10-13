@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
+import { topQuoteOrder } from '../lib/quoteOrder'
 import { useCachedQuery, fieldSetter } from './useCachedQuery'
 
 type Review = Database['public']['Tables']['reviews']['Row']
@@ -79,8 +80,13 @@ export function useReview(bookId: string | undefined, userId: string | undefined
   async function addQuote(quoteText: string, page: number | null = null) {
     if (!review) return
     const sortOrder = quotes.length
+    // Arriba del orden libre de Cuaderno › Citas (V.3.1.0).
+    const cuadernoOrder = userId ? await topQuoteOrder(userId) : null
     const { data: created, error } = await supabase
-      .from('favorite_quotes').insert({ review_id: review.id, quote_text: quoteText, sort_order: sortOrder, page }).select().single()
+      .from('favorite_quotes')
+      .insert({ review_id: review.id, quote_text: quoteText, sort_order: sortOrder, page, cuaderno_sort_order: cuadernoOrder })
+      .select()
+      .single()
     if (!error && created) setQuotes((prev) => [...prev, created])
   }
 

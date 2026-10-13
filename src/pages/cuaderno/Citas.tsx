@@ -6,6 +6,9 @@ import { Card, CardAction } from '../../assets/components/molecules/Card'
 import { QuoteMenu } from '../../assets/components/molecules/QuoteMenu'
 import type { QuoteWithBook } from '../../hooks/useQuotes'
 import { useStaggerOnce } from '../../lib/motion'
+import { SortableItem } from '../../assets/components/atoms/SortableItem'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 
 interface CitasProps {
   quotes: QuoteWithBook[]
@@ -16,6 +19,10 @@ interface CitasProps {
   onOpenBook: (bookId: string) => void
   onEdit: (quote: QuoteWithBook) => void
   onDelete: (quote: QuoteWithBook) => void
+  /** Orden libre activo (V.3.1.0): se arrastran las citas y se oculta la cita al azar. */
+  isReordering?: boolean
+  /** Guarda la cita `id` entre `beforeId` y `afterId`. */
+  onReorder?: (id: string, beforeId: string | null, afterId: string | null) => void
 }
 
 type QuoteActions = Pick<CitasProps, 'onShare' | 'onOpenBook' | 'onEdit' | 'onDelete'>
@@ -96,11 +103,23 @@ function QuoteCard({
 }
 
 /** Pestaña Citas de Cuaderno (Mis citas, V.2.1.0): una cita al azar arriba y después todas
- *  las citas de tus reseñas, de la más reciente a la más antigua. Tocar el libro abre su
- *  reseña. Desde la V.2.1.1 cada cita tiene su menú (⋯) para compartirla, ver la reseña,
- *  editarla o eliminarla. */
-export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEdit, onDelete }: CitasProps) {
+ *  las citas de tus reseñas, en el orden elegido (desde la V.3.1.0; antes, siempre de la más
+ *  reciente a la más antigua). Tocar el libro abre su reseña. Desde la V.2.1.1 cada cita tiene
+ *  su menú (⋯) para compartirla, ver la reseña, editarla o eliminarla. */
+export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEdit, onDelete, isReordering = false, onReorder }: CitasProps) {
   const stagger = useStaggerOnce('cuaderno-citas')
+  // Mismo "mantener presionado" que Reseñas y Estante, para no arrastrar al hacer scroll.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 5 } }))
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id || !onReorder) return
+    const oldIndex = quotes.findIndex((q) => q.id === active.id)
+    const newIndex = quotes.findIndex((q) => q.id === over.id)
+    const reordered = arrayMove(quotes, oldIndex, newIndex)
+    const droppedIndex = reordered.findIndex((q) => q.id === active.id)
+    onReorder(active.id as string, reordered[droppedIndex - 1]?.id ?? null, reordered[droppedIndex + 1]?.id ?? null)
+  }
   const [isRandomMenuOpen, setIsRandomMenuOpen] = useState(false)
   const [randomIndex, setRandomIndex] = useState(() => Math.floor(Math.random() * 1000))
   const random = quotes.length > 0 ? quotes[randomIndex % quotes.length] : null
@@ -112,7 +131,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
     setRandomIndex(next)
   }
 
-  const showRandom = !isFiltered && quotes.length >= 2 && random
+  const showRandom = !isFiltered && !isReordering && quotes.length >= 2 && random
 
   if (isLoading) {
     return (
@@ -162,8 +181,35 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
         </Card>
       )}
 
-      {/* Dos columnas: las citas se reparten alternando (1 izquierda, 2 derecha, 3 izquierda...)
-          para que el orden de más reciente a más antigua se siga leyendo de arriba hacia abajo. */}
+      {isReordering ? (
+        <>
+          <p className="text-body-sm text-text-secondary text-center">
+            Mantén presionado unos instantes para arrastrar y organizar tus citas a tu gusto.
+          </p>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={quotes.map((q) => q.id)} strategy={rectSortingStrategy}>
+              {/* Al arrastrar, una cuadrícula simple de dos columnas (dnd-kit necesita una sola
+                  lista), igual que en Reseñas. */}
+              <div className="grid grid-cols-2 gap-2.5 items-start">
+                {quotes.map((q, i) => (
+                  <SortableItem key={q.id} id={q.id}>
+                    <QuoteCard
+                      quote={q}
+                      align={i % 2 === 0 ? 'left' : 'right'}
+                      onShare={onShare}
+                      onOpenBook={onOpenBook}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                    />
+                  </SortableItem>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </>
+      ) : (
+      /* Dos columnas: las citas se reparten alternando (1 izquierda, 2 derecha, 3 izquierda...)
+         para que el orden elegido se siga leyendo de arriba hacia abajo. */
       <div className="grid grid-cols-2 gap-2.5 items-start">
         {[0, 1].map((col) => (
           <div key={col} className={`flex flex-col gap-2.5 min-w-0 ${stagger}`}>
@@ -183,6 +229,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
           </div>
         ))}
       </div>
+      )}
     </div>
   )
 }
