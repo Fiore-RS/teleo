@@ -9,6 +9,9 @@ export interface BookSearchResult {
   /** true cuando el resultado viene de una fuente que describe la serie completa
    *  (ej. AniList) en vez de una edición/volumen específico — no trae ISBN ni páginas. */
   isSeriesLevel?: boolean
+  /** Categorías, temas o géneros tal como los da la fuente (Google Books, Open Library, AniList),
+   *  para sugerir el género del libro (lib/genreSuggest.ts, V.3.1.0). */
+  subjects?: string[]
 }
 
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes'
@@ -91,6 +94,7 @@ function mapGoogleVolume(volume: GoogleVolume, fallbackIsbn?: string): BookSearc
     language: info.language,
     category: info.categories?.[0],
     isbn: isbn13 ?? fallbackIsbn,
+    subjects: info.categories,
   }
 }
 
@@ -115,6 +119,7 @@ export async function searchBookByIsbn(isbn: string): Promise<BookSearchResult |
     coverUrl: entry.cover?.large ?? entry.cover?.medium,
     totalPages: entry.number_of_pages,
     isbn,
+    subjects: entry.subjects?.map((sub: { name: string }) => sub.name),
   }
 }
 
@@ -125,6 +130,7 @@ interface OpenLibraryDoc {
   number_of_pages_median?: number
   language?: string[]
   isbn?: string[]
+  subject?: string[]
 }
 
 const OL_LANGUAGE_CODES: Record<string, string> = {
@@ -139,6 +145,7 @@ function mapOpenLibraryDoc(doc: OpenLibraryDoc): BookSearchResult {
     totalPages: doc.number_of_pages_median,
     language: doc.language?.[0] ? (OL_LANGUAGE_CODES[doc.language[0]] ?? doc.language[0]) : undefined,
     isbn: doc.isbn?.[0],
+    subjects: doc.subject?.slice(0, 40),
   }
 }
 
@@ -147,6 +154,8 @@ interface AniListMedia {
   coverImage?: { extraLarge?: string; large?: string }
   format?: string
   countryOfOrigin?: string
+  genres?: string[]
+  tags?: { name?: string; rank?: number }[]
   staff?: { edges?: { node?: { name?: { full?: string } } }[] }
 }
 
@@ -166,6 +175,8 @@ function mapAniListMedia(media: AniListMedia): BookSearchResult {
     coverUrl: media.coverImage?.extraLarge ?? media.coverImage?.large,
     category: mapAniListCategory(media.format, media.countryOfOrigin),
     isSeriesLevel: true,
+    // Géneros y las etiquetas más relevantes (ej. "Boys' Love", "Yuri").
+    subjects: [...(media.genres ?? []), ...(media.tags ?? []).filter((t) => (t.rank ?? 0) >= 60 && t.name).map((t) => t.name!)],
   }
 }
 
@@ -177,6 +188,8 @@ const ANILIST_SEARCH_QUERY = `
         coverImage { extraLarge large }
         format
         countryOfOrigin
+        genres
+        tags { name rank }
         staff(sort: RELEVANCE, perPage: 1) {
           edges { node { name { full } } }
         }
@@ -263,7 +276,7 @@ async function openLibrarySearch(query: string, maxResults: number): Promise<Boo
   try {
     // lang=es: pone primero las ediciones en español, sin dejar fuera las demás.
     const olRes = await fetchWithRetry(
-      `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${maxResults}&lang=es&fields=title,author_name,cover_i,number_of_pages_median,language,isbn`
+      `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${maxResults}&lang=es&fields=title,author_name,cover_i,number_of_pages_median,language,isbn,subject`
     )
     if (!olRes?.ok) return []
     const olData = await olRes.json()
@@ -316,4 +329,74 @@ export async function searchBooks(query: string, maxResults = 3): Promise<BookSe
 /** Igual que searchBooks, solo los resultados (lo usa la importación de Goodreads). */
 export async function searchBooksByQueryMultiple(query: string, maxResults = 3): Promise<BookSearchResult[]> {
   return (await searchBooks(query, maxResults)).results
+}
+
+/* ---------- Temas de un libro que ya está en el estante (V.3.1.0) ----------
+ * Para la sugerencia de género de toda la biblioteca. Usa primero las fuentes sin clave (Open
+ * Library y, para manga y novela ligera, AniList) y solo después Google Books, para no gastar
+ * el límite diario de la clave, que es compartida. */
+
+const ANILIST_CATEGORIES = new Set(['Manga', 'Manhwa', 'Manhua', 'Novela ligera'])
+
+export interface BookToMatch {
+  title: string
+  author: string | null
+  isbn: string | null
+  category: string | null
+}
+
+export interface SubjectsOutcome {
+  subjects: string[]
+  /** true si ninguna fuente respondió: conviene reintentar ese libro más tarde. */
+  failed: boolean
+}
+
+/** Packs, estuches y colecciones: traen categorías que no son del libro (ej. "Juvenile
+ *  Nonfiction" en "Pack La Sombra del Viento + marcapáginas"). */
+const BUNDLE_TITLE = /\b(pack|estuche|box ?set|bundle|boxed|coleccion|collection|trilog(y|ia)|saga completa)\b/
+
+/** Temas del libro según las fuentes, tomados solo de resultados cuyo título se parece al del
+ *  libro (para no mezclar los de otro libro con palabras parecidas). Pasa a la fuente siguiente
+ *  mientras lo encontrado no sirva (`isUseful`, ej. que dé algún género): las ediciones en
+ *  español suelen tener temas que no dicen el género ("Mothers and sons", "Fiction"). */
+export async function findSubjectsForBook(book: BookToMatch, isUseful: (subjects: string[]) => boolean = (s) => s.length > 0): Promise<SubjectsOutcome> {
+  const fromMatches = (results: BookSearchResult[]) =>
+    results
+      .filter((r) => matchRank(r, book.title) <= 2 && !BUNDLE_TITLE.test(normalizeText(r.title)))
+      .flatMap((r) => r.subjects ?? [])
+  const collected: string[] = []
+  let anyResponded = false
+
+  function keep(subjects: string[]): boolean {
+    collected.push(...subjects)
+    return isUseful(collected)
+  }
+
+  if (book.category && ANILIST_CATEGORIES.has(book.category)) {
+    const aniList = await searchAniListManga(book.title, 3)
+    anyResponded = true
+    if (keep(fromMatches(aniList))) return { subjects: collected, failed: false }
+  }
+
+  try {
+    const query = book.isbn ? `isbn=${encodeURIComponent(book.isbn)}` : `title=${encodeURIComponent(book.title)}${book.author ? `&author=${encodeURIComponent(book.author)}` : ''}`
+    const res = await fetchWithRetry(`https://openlibrary.org/search.json?${query}&limit=3&fields=title,subject`)
+    if (res?.ok) {
+      anyResponded = true
+      const data = await res.json()
+      const docs: OpenLibraryDoc[] = data.docs ?? []
+      const subjects = book.isbn ? docs.flatMap((d) => d.subject ?? []) : fromMatches(docs.map(mapOpenLibraryDoc))
+      if (keep(subjects.slice(0, 60))) return { subjects: collected, failed: false }
+    }
+  } catch {
+    // seguimos con Google Books
+  }
+
+  const q = book.isbn ? `isbn:${book.isbn}` : `intitle:${book.title}${book.author ? ` inauthor:${book.author}` : ''}`
+  const google = await googleSearch(q, 5)
+  if (google) {
+    anyResponded = true
+    keep(book.isbn ? google.flatMap((r) => r.subjects ?? []) : fromMatches(google))
+  }
+  return { subjects: collected, failed: !anyResponded }
 }

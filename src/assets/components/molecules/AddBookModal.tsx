@@ -20,6 +20,9 @@ import { languageLabel, languageOptionsFrom } from '../../../lib/languages'
 import { useCoverUpload } from '../../../hooks/useCoverUpload'
 import { useBookLanguages } from '../../../hooks/useBookLanguages'
 import { parseDurationInput } from '../../../lib/duration'
+import { BookTraitsFields } from './BookTraitsFields'
+import { EMPTY_TRAITS, type BookTraits, type GenreKey } from '../../../lib/bookTraits'
+import { suggestGenres } from '../../../lib/genreSuggest'
 
 interface NewBookPayload {
   title: string; author: string | null; cover_url: string | null
@@ -28,6 +31,7 @@ interface NewBookPayload {
   total_duration_seconds?: number | null
   is_priority?: boolean; priority_sort_order?: number
   start_date?: string | null; end_date?: string | null
+  genres?: string[]; genres_source?: string | null
 }
 
 interface AddBookModalProps {
@@ -78,6 +82,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   // Empiezan vacías: sin fecha de fin el libro se guarda igual, pero no cuenta para el reto.
   const [finishDates, setFinishDates] = useState<ReadingDates>({ startDate: '', endDate: '' })
   const [isPriority, setIsPriority] = useState(false)
+  // Género (V.3.1.0): al elegir un resultado de la búsqueda viene sugerido y se puede cambiar.
+  const [traits, setTraits] = useState<BookTraits>(EMPTY_TRAITS)
+  const [suggestedGenres, setSuggestedGenres] = useState<GenreKey[]>([])
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
   const bookLanguages = useBookLanguages(userId)
   const coverInputRef = useRef<HTMLInputElement>(null)
@@ -106,6 +113,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setManualDraft(emptyManualDraft(initialStatus))
     setIsPriority(false)
     setFinishDates({ startDate: '', endDate: '' })
+    setTraits(EMPTY_TRAITS)
+    setSuggestedGenres([])
   }
 
   function datesFor(resolvedStatus: ReadingStatus) {
@@ -117,6 +126,23 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   function selectResult(r: BookSearchResult) {
     setResult(r)
     setCategory(r.category || 'Novela')
+    const suggested = suggestGenres(r.subjects ?? [])
+    setSuggestedGenres(suggested)
+    setTraits({ ...EMPTY_TRAITS, genres: suggested })
+  }
+
+  // Agregar a mano: sin sugerencia de género.
+  function startManual() {
+    setIsManual(true)
+    setTraits(EMPTY_TRAITS)
+    setSuggestedGenres([])
+  }
+
+  /** Género a guardar: 'suggested' si quedó tal cual se sugirió, 'manual' si se cambió. */
+  function genreColumns() {
+    if (traits.genres.length === 0) return { genres: [], genres_source: null }
+    const untouched = traits.genres.join() === suggestedGenres.join()
+    return { genres: traits.genres, genres_source: untouched ? 'suggested' : 'manual' }
   }
 
   function handleClose() {
@@ -168,6 +194,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         ? { is_priority: true, priority_sort_order: Date.now() }
         : {}),
       ...datesFor(resolvedStatus),
+      ...genreColumns(),
     })
     setIsSaving(false)
     if (!error) handleClose()
@@ -195,6 +222,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         ? { is_priority: true, priority_sort_order: Date.now() }
         : {}),
       ...datesFor(resolvedStatus),
+      ...genreColumns(),
     })
     setIsSaving(false)
     if (!error) handleClose()
@@ -386,6 +414,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
           </FormCard>
         </FormSection>
 
+        <BookTraitsFields className="mb-5.5" value={traits} onChange={setTraits} knownCustomMoods={[]} showMoodAndPace={false} />
+
         {readingSection}
       </div>
     )
@@ -436,6 +466,15 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             </FormRow>
           </FormCard>
         </FormSection>
+
+        <BookTraitsFields
+          className="mb-5.5"
+          value={traits}
+          onChange={setTraits}
+          knownCustomMoods={[]}
+          showMoodAndPace={false}
+          genreHint={suggestedGenres.length > 0 ? 'Sugerido según la búsqueda. Puedes cambiarlo.' : undefined}
+        />
 
         {readingSection}
       </div>
@@ -503,7 +542,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
               <span className="block text-body-sm text-text-muted">Próximamente</span>
             </span>
           </div>
-          <button type="button" onClick={() => setIsManual(true)} className="w-full flex items-center gap-3 px-3.5 py-3 text-left">
+          <button type="button" onClick={() => startManual()} className="w-full flex items-center gap-3 px-3.5 py-3 text-left">
             <span className="w-8.5 h-8.5 rounded-full bg-primary-soft text-primary-text flex items-center justify-center shrink-0">
               <PenLine size={16} />
             </span>

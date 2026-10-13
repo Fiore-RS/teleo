@@ -69,12 +69,16 @@ interface BookTraitsFieldsProps {
   knownCustomMoods: string[]
   /** false para no mostrar Género (ej. en "¿Cómo fue?" cuando el libro ya tiene). */
   showGenres?: boolean
+  /** false para mostrar solo Género (ej. al agregar un libro). */
+  showMoodAndPace?: boolean
+  /** Texto bajo "Género" (ej. "Sugerido por la búsqueda"). */
+  genreHint?: string
   className?: string
 }
 
 /** Secciones Género, Ánimo y Ritmo, en Editar libro y en "¿Cómo fue?" al terminar. Nada es
  *  obligatorio. Al llegar al máximo, los chips no elegidos se apagan. */
-export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres = true, className = '' }: BookTraitsFieldsProps) {
+export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres = true, showMoodAndPace = true, genreHint, className = '' }: BookTraitsFieldsProps) {
   const [isAddingMood, setIsAddingMood] = useState(false)
   const [newMood, setNewMood] = useState('')
 
@@ -131,8 +135,9 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
   return (
     <div className={className}>
       {showGenres && (
-        <section className="mb-5.5">
+        <section className={showMoodAndPace ? 'mb-5.5' : ''}>
           <SectionLabel label="Género" count={value.genres.length} max={MAX_GENRES} />
+          {genreHint && <p className="-mt-1 mb-2 px-1 text-body-sm text-text-muted">{genreHint}</p>}
           <div className="flex flex-wrap gap-2" role="group" aria-label="Género">
             {genreOptions.map((o) => {
               const checked = value.genres.includes(o.key)
@@ -142,6 +147,8 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
         </section>
       )}
 
+      {showMoodAndPace && (
+      <>
       <section className="mb-5.5">
         <SectionLabel label="Ánimo" count={moodCount} max={MAX_MOODS} />
         <div className="flex flex-wrap gap-2" role="group" aria-label="Ánimo">
@@ -210,6 +217,8 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
           })}
         </div>
       </FormSection>
+      </>
+      )}
     </div>
   )
 }
