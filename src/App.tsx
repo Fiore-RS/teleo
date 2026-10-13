@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, type ComponentType } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useState, type ComponentType } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
 import { PaletteSync } from "./assets/components/atoms/PaletteSync";
+import { routeTransition } from "./lib/motion";
 
 /* Cada pantalla se descarga recién cuando se abre (lazy), en vez de venir toda en un solo
  * archivo al abrir la app. La pantalla de carga sí va incluida, porque es la primera que se ve. */
@@ -55,6 +56,13 @@ function RutaDesconocida() {
 function App() {
   const location = useLocation();
   const navigationType = useNavigationType();
+
+  // Animación del cambio de pantalla (V.3.0.1): se calcula comparando con la pantalla
+  // anterior. Se ajusta durante el render (sin efecto) para que la clase ya esté al montar.
+  const [transition, setTransition] = useState({ path: location.pathname, className: "" });
+  if (transition.path !== location.pathname) {
+    setTransition({ path: location.pathname, className: routeTransition(transition.path, location.pathname) });
+  }
 
   // Después de la pantalla de carga (unos segundos), sin competir con lo que se ve primero.
   useEffect(() => {
@@ -115,10 +123,13 @@ function App() {
     // su vista móvil.
     <div className="min-h-screen bg-border">
       <PaletteSync />
-      <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl">
-        {/* key = ruta: al cambiar de pantalla (por la barra de pestañas o navegando) el
-            contenedor se vuelve a montar y reproduce el fundido de entrada. */}
-        <div key={location.pathname} className="animate-page-in">
+      {/* overflow-x-clip: mientras una pantalla secundaria entra desde el costado no aparece
+          desplazamiento horizontal (clip, y no hidden, para no romper los elementos sticky). */}
+      <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl overflow-x-clip">
+        {/* key = ruta: al cambiar de pantalla el contenedor se vuelve a montar. Cambiar de
+            pestaña no anima (el contenido aparece al instante); las pantallas secundarias
+            entran desde el costado (routeTransition en lib/motion.ts). */}
+        <div key={location.pathname} className={transition.className}>
         {/* Mientras llega el archivo de una pantalla que todavía no se abrió, no se muestra
             nada (suele ser un instante); cada pantalla ya trae sus siluetas de carga. */}
         <Suspense fallback={null}>

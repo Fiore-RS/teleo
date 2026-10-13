@@ -189,8 +189,20 @@
   --text-body-sm--line-height: 1.4;
 }
 
-/* ---------- Animaciones (rediseño 2026) ----------
-   Todas se apagan con "reducir movimiento" del sistema (ver el @media al final del bloque). */
+/* ---------- Animaciones ----------
+   Sistema de movimiento (V.3.0.1): tres duraciones y dos curvas. Regla: animar solo lo que
+   comunica algo (algo que se abre, algo que cambia, un logro), no cada visita. Las salidas son
+   más rápidas que las entradas. Todas se apagan con "reducir movimiento" del sistema (ver el
+   @media al final del bloque). EXIT_DURATION_MS en lib/motion.ts debe coincidir con
+   --motion-base. */
+:root {
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 300ms;
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
 @keyframes teleo-sheet-down {
   from { transform: translateY(-100%); }
   to { transform: translateY(0); }
@@ -238,42 +250,57 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Pantallas secundarias: entrar "más adentro" llega desde la derecha; volver a la pantalla de
+   la que se vino llega un poco desde la izquierda (ver routeTransition en lib/motion.ts). */
+@keyframes teleo-subpage-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes teleo-subpage-back {
+  from { opacity: 0.4; transform: translateX(-28%); }
+  to { opacity: 1; transform: translateX(0); }
+}
 
 @layer utilities {
-  .animate-sheet-down { animation: teleo-sheet-down 0.32s cubic-bezier(0.22, 1, 0.36, 1); }
-  .animate-sheet-out { animation: teleo-sheet-out 0.22s ease-in forwards; }
-  .animate-fade-in { animation: teleo-fade-in 0.2s ease-out; }
-  .animate-fade-out { animation: teleo-fade-out 0.22s ease-in forwards; }
-  .animate-pop-in { animation: teleo-pop-in 0.2s ease-out; }
-  .animate-pop-out { animation: teleo-pop-out 0.18s ease-in forwards; }
-  .animate-slide-next { animation: teleo-slide-next 0.75s cubic-bezier(0.33, 1, 0.68, 1); }
-  .animate-slide-prev { animation: teleo-slide-prev 0.75s cubic-bezier(0.33, 1, 0.68, 1); }
+  .animate-sheet-down { animation: teleo-sheet-down var(--motion-slow) var(--ease-enter); }
+  .animate-sheet-out { animation: teleo-sheet-out var(--motion-base) var(--ease-exit) forwards; }
+  .animate-fade-in { animation: teleo-fade-in var(--motion-base) var(--ease-enter); }
+  .animate-fade-out { animation: teleo-fade-out var(--motion-base) var(--ease-exit) forwards; }
+  .animate-pop-in { animation: teleo-pop-in var(--motion-base) var(--ease-enter); }
+  .animate-pop-out { animation: teleo-pop-out var(--motion-fast) var(--ease-exit) forwards; }
+  .animate-slide-next { animation: teleo-slide-next var(--motion-slow) var(--ease-enter); }
+  .animate-slide-prev { animation: teleo-slide-prev var(--motion-slow) var(--ease-enter); }
+  /* La cinta de la racha se queda en 0.7 s con rebote: es el momento que se celebra. */
   .animate-ribbon-drop { animation: teleo-ribbon-drop 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
 
   /* Silueta de carga: pulso suave. */
   .animate-skeleton { animation: teleo-skeleton 1.4s ease-in-out infinite; }
 
-  /* Cambio de pantalla: solo opacidad (sin transform) para no romper los elementos
-     "fixed" que viven dentro de la página. */
-  .animate-page-in { animation: teleo-fade-in 0.28s ease-out; }
+  /* Cambio de pantalla (App.tsx). Cambiar de pestaña no anima: el contenido aparece al
+     instante. Solo las pantallas secundarias se deslizan. Lleva transform, así que lo que
+     tenga "fixed" adentro se mueve con la página mientras dura; la barra de pestañas y el
+     botón de agregar viven en <body> con un portal y no se ven afectados. */
+  .animate-subpage-in { animation: teleo-subpage-in var(--motion-slow) var(--ease-enter); }
+  .animate-subpage-back { animation: teleo-subpage-back var(--motion-slow) var(--ease-enter); }
 
-  /* Aparición escalonada de tarjetas, portadas y filas. Se usa "backwards" (y no "both")
-     para que al terminar la animación no quede un transform fijo encima: dnd-kit mueve los
-     elementos con transform al arrastrar y una animación con "both" lo pisaría. */
-  .stagger-children > * { animation: teleo-rise-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
-  .stagger-children > *:nth-child(2) { animation-delay: 45ms; }
-  .stagger-children > *:nth-child(3) { animation-delay: 90ms; }
-  .stagger-children > *:nth-child(4) { animation-delay: 135ms; }
-  .stagger-children > *:nth-child(5) { animation-delay: 180ms; }
-  .stagger-children > *:nth-child(6) { animation-delay: 225ms; }
-  .stagger-children > *:nth-child(7) { animation-delay: 270ms; }
-  .stagger-children > *:nth-child(8) { animation-delay: 315ms; }
-  .stagger-children > *:nth-child(n + 9) { animation-delay: 360ms; }
+  /* Aparición escalonada de tarjetas, portadas y filas. Solo la primera vez que se muestra
+     cada pantalla en la sesión (useStaggerOnce en lib/motion.ts), en Bienvenida y en la hoja
+     de anuncio. Se usa "backwards" (y no "both") para que al terminar la animación no quede un
+     transform fijo encima: dnd-kit mueve los elementos con transform al arrastrar y una
+     animación con "both" lo pisaría. */
+  .stagger-children > * { animation: teleo-rise-in var(--motion-slow) var(--ease-enter) backwards; }
+  .stagger-children > *:nth-child(2) { animation-delay: 35ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 70ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 105ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 140ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 175ms; }
+  .stagger-children > *:nth-child(n + 7) { animation-delay: 210ms; }
 
   @media (prefers-reduced-motion: reduce) {
     .animate-sheet-down, .animate-sheet-out, .animate-fade-in, .animate-fade-out,
-    .animate-pop-in, .animate-pop-out, .animate-page-in, .stagger-children > *, .animate-skeleton,
-    .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop {
+    .animate-pop-in, .animate-pop-out, .stagger-children > *, .animate-skeleton,
+    .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop,
+    .animate-subpage-in, .animate-subpage-back {
       animation: none;
     }
   }

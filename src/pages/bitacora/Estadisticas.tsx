@@ -26,6 +26,7 @@ import { RatingRow } from '../../assets/components/molecules/RatingRow'
 import { formatDuration } from '../../lib/progress'
 import { MONTH_NAMES } from '../../lib/months'
 import { categoryPlural } from '../../lib/options'
+import { useStaggerOnce } from '../../lib/motion'
 
 // "8.940" y no "8940": en español el separador de miles normalmente se omite con 4 cifras.
 const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' } as Intl.NumberFormatOptions)
@@ -72,6 +73,7 @@ type RowKey = 'ritmo' | 'coleccion' | 'autores' | 'calificaciones' | 'leido'
  *  tu bitácora", plegado, una línea por tema; los temas sin datos no aparecen. Quien todavía
  *  no termina ningún libro ve, en lugar de la tarjeta del año, tres pasos para empezar. */
 export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
+  const stagger = useStaggerOnce('bitacora-estadisticas')
   const { stats, isLoading } = useLibraryStats(userId)
   const { history: goalHistory } = useGoalHistory(userId)
   const { streak: currentStreak } = useReadingStreak(userId)
@@ -214,7 +216,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   ]
 
   return (
-    <div className="flex flex-col gap-5 stagger-children">
+    <div className={`flex flex-col gap-5 ${stagger}`}>
       {hasFinished ? (
         <Card
           tab={{ label: String(year), icon: TrendingUp }}

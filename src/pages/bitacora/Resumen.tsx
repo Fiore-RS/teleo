@@ -18,6 +18,7 @@ import { DetalleLibro } from '../DetalleLibro'
 import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { tally, formatLabel } from '../../lib/tally'
 import { categoryPlural } from '../../lib/options'
+import { useStaggerOnce } from '../../lib/motion'
 
 export type ResumenView = 'mes' | 'anio' | 'favoritos'
 
@@ -197,10 +198,12 @@ interface MonthViewProps extends SheetViewProps {
 
 /** Mes: los libros terminados ese mes, en repisas. */
 function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNext, onPrev, onNext, onBookClick }: MonthViewProps) {
-  // Envoltorio con stagger-children: la hoja entra con la misma animación que las tarjetas
-  // de Estadísticas y Compras.
+  // La hoja entra con la misma animación que las tarjetas de Estadísticas y Compras (solo la
+  // primera vez en la sesión).
+  const stagger = useStaggerOnce('resumen-mes')
+  const staggerLibros = useStaggerOnce('resumen-mes-libros')
   return (
-    <div className="stagger-children">
+    <div className={stagger}>
     <ResumenSheet view={view} onViewChange={onViewChange}>
       <h2 className="sr-only">Libros terminados en {MONTH_NAMES[month - 1]} de {year}</h2>
       <PeriodNav
@@ -225,7 +228,7 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
               {reads.length} {reads.length === 1 ? 'libro terminado' : 'libros terminados'}
             </p>
             <Shelf
-              className="stagger-children"
+              className={staggerLibros}
               items={reads.map((read) => ({
                 key: read.id,
                 title: read.title,
@@ -268,6 +271,7 @@ const SPINE_TONES = [
 /** Año: una frase con lo esencial dentro de la hoja; debajo "Tu año en un estante" (un lomo
  *  por mes, más alto mientras más libros; tocarlo abre el mes) y "Más de tu año", plegado. */
 function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoading, canGoNext, onPrev, onNext, onMonthClick }: YearViewProps) {
+  const stagger = useStaggerOnce('resumen-anio')
   const now = new Date()
   const { favorites } = usePeriodFavorites(userId, year)
   const [openRow, setOpenRow] = useState<'leido' | 'favoritos' | null>(null)
@@ -312,7 +316,7 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
     )
 
   return (
-    <div className="flex flex-col gap-5 stagger-children">
+    <div className={`flex flex-col gap-5 ${stagger}`}>
       <ResumenSheet view={view} onViewChange={onViewChange}>
         <h2 className="sr-only">Tu {year} en libros</h2>
         <PeriodNav
@@ -440,6 +444,7 @@ interface FavoritesViewProps extends SheetViewProps {
 }
 
 function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, canGoNext, onPrev, onNext }: FavoritesViewProps) {
+  const stagger = useStaggerOnce('resumen-favoritos')
   const { favorites, setFavorite } = usePeriodFavorites(userId, year)
   // Qué se está eligiendo: un mes (1-12) o el año (0).
   const [picking, setPicking] = useState<number | null>(null)
@@ -465,7 +470,7 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
   const pickerCurrent = picking === null ? undefined : favoriteFor(picking === 0 ? null : picking)
 
   return (
-    <div className="flex flex-col gap-5 stagger-children">
+    <div className={`flex flex-col gap-5 ${stagger}`}>
       <ResumenSheet view={view} onViewChange={onViewChange}>
         <h2 className="sr-only">Favoritos de {year}</h2>
         <PeriodNav

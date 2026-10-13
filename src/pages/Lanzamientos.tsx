@@ -68,7 +68,7 @@ export function Lanzamientos() {
         onTabChange={(t) => setSearchParams(t === 'calendario' ? {} : { vista: t }, { replace: true })}
       />
 
-      <div key={tab} className="flex flex-col gap-5 mt-5 stagger-children">
+      <div key={tab} className="flex flex-col gap-5 mt-5">
 
         {tab === 'calendario' ? (
           <>
@@ -132,7 +132,7 @@ export function Lanzamientos() {
                 </p>
               </Card>
             ) : (
-              <div className="flex flex-col gap-2.5 stagger-children">
+              <div className="flex flex-col gap-2.5">
                 {upcoming.map((r) => (
                   <ReleaseRow key={r.id} release={r} currency={profile?.currency} onClick={() => setForm({ release: r })} />
                 ))}

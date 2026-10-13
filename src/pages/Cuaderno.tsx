@@ -30,6 +30,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { useStaggerOnce } from '../lib/motion'
 
 interface ReviewCardProps {
   review: ReviewWithBook
@@ -81,6 +82,7 @@ function ReviewCard({ review, onOpen }: ReviewCardProps) {
 }
 
 export function Cuaderno() {
+  const staggerResenas = useStaggerOnce('cuaderno-resenas')
   const navigate = useNavigate()
   const { user } = useAuth()
   const { reviews, isLoading, refetch, reorderReview } = useReviews(user?.id)
@@ -265,7 +267,7 @@ export function Cuaderno() {
               <SortableContext items={sortedReviews.map((r) => r.id)} strategy={rectSortingStrategy}>
                 {/* Al arrastrar se usa una cuadrícula simple de dos columnas (dnd-kit necesita
                     una sola lista); fuera de ese modo, las hojas se reparten en dos columnas. */}
-                <div className="grid grid-cols-2 gap-2.5 items-start stagger-children">
+                <div className={`grid grid-cols-2 gap-2.5 items-start ${staggerResenas}`}>
                   {sortedReviews.map((r) => (
                     <SortableItem key={r.id} id={r.id}>
                       <ReviewCard review={r} onOpen={() => setSelectedBookId(r.book_id)} />
@@ -279,7 +281,7 @@ export function Cuaderno() {
             // elegido se sigue leyendo de arriba hacia abajo, igual que en Citas.
             <div className="grid grid-cols-2 gap-2.5 items-start">
               {[0, 1].map((col) => (
-                <div key={col} className="flex flex-col gap-2.5 min-w-0 stagger-children">
+                <div key={col} className={`flex flex-col gap-2.5 min-w-0 ${staggerResenas}`}>
                   {sortedReviews
                     .filter((_, i) => i % 2 === col)
                     .map((r) => (

@@ -26,7 +26,10 @@ import { LATEST_VERSION, markChangelogSeen } from "../lib/changelog";
 import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 import { getReadingPace, paceSentence } from '../lib/readingPace'
+import { useStaggerOnce } from '../lib/motion'
 export function Mesa() {
+  const staggerMesa = useStaggerOnce("mesa");
+  const staggerTemporada = useStaggerOnce("mesa-temporada");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
@@ -111,7 +114,7 @@ export function Mesa() {
         </h1>
       </header>
 
-      <div className="flex flex-col gap-5 stagger-children">
+      <div className={`flex flex-col gap-5 ${staggerMesa}`}>
         {/* Leyendo ahora */}
         <Card tab={{ label: "Leyendo ahora", icon: BookOpen }}>
 
@@ -137,7 +140,7 @@ export function Mesa() {
               </Button>
             </>
           )}
-          <div className="divide-y divide-dashed divide-border stagger-children">
+          <div className={`divide-y divide-dashed divide-border ${staggerTemporada}`}>
             {books.map((book) => {
               const { percent, label } = getProgressInfo(book);
               const pace = getReadingPace(book);
