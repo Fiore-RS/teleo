@@ -34,6 +34,15 @@ import { ReleaseRow } from '../assets/components/molecules/ReleaseRow'
 import { ReleaseFormSheet } from '../assets/components/molecules/ReleaseFormSheet'
 import { useSaga } from '../hooks/useSaga'
 import { DetalleSaga } from './DetalleSaga'
+import { useQueryClient } from '@tanstack/react-query'
+import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
+import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
+
+/** Orden inicial al final de la lista de temporada (fuera del componente: el lint de React
+ *  marca Date.now() dentro de él aunque solo se use al guardar). */
+function newPriorityOrder() {
+  return Date.now()
+}
 
 interface DetalleLibroProps {
   bookId: string
@@ -56,6 +65,15 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   // Otro libro de la misma saga abierto desde Detalles de la saga, encima de todo.
   const [nestedBookId, setNestedBookId] = useState<string | null>(null)
   const [sagaRefresh, setSagaRefresh] = useState(0)
+  // Género, ánimo y ritmo (V.3.1.0).
+  const queryClient = useQueryClient()
+  const knownCustomMoods = useUserCustomMoods(user?.id)
+  const bookTraits = traitsFromBook(book)
+  async function saveTraits(traits: BookTraits) {
+    await updateBook(traitsToColumns(traits, bookTraits))
+    // Un ánimo propio nuevo pasa a ser opción en todos los libros.
+    void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
+  }
   const bookLanguages = useBookLanguages(user?.id)
   // Lanzamientos enlazados a este libro (fase 7). null = formulario cerrado.
   const { releases } = useReleases(user?.id)
@@ -101,6 +119,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       abandonReason: book.abandon_reason ?? '',
       isFavorite: book.is_favorite ?? false,
       isPriority: book.is_priority ?? false,
+      traits: bookTraits,
     })
     setIsEditing(true)
   }
@@ -118,7 +137,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     // Esta temporada solo se muestra en Pendiente; en otro estado se deja como estaba. Si
     // recién se marca, se le da un orden inicial al final de la lista.
     const priorityUpdate = draft.status === 'pendiente' && draft.isPriority !== (book.is_priority ?? false)
-      ? { is_priority: draft.isPriority, ...(draft.isPriority ? { priority_sort_order: Date.now() } : {}) }
+      ? { is_priority: draft.isPriority, ...(draft.isPriority ? { priority_sort_order: newPriorityOrder() } : {}) }
       : {}
 
     const updates = {
@@ -134,6 +153,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       gift_from: draft.isGift ? draft.giftFrom.trim().slice(0, 60) || null : null,
       is_favorite: draft.isFavorite,
       ...priorityUpdate,
+      ...traitsToColumns(draft.traits, bookTraits),
     }
 
     // Si se está marcando el libro como "leyendo" (y no lo estaba ya), se pregunta primero
@@ -168,6 +188,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       await updateBook(updates)
     }
 
+    void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
     setIsSaving(false)
     setIsEditing(false)
   }
@@ -217,18 +238,23 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     setIsAbandonOpen(false)
   }
 
-  // Terminar desde el menú de estado: fechas en FinishBookSheet, reseña opcional.
-  async function handleFinishConfirm(dates: ReadingDates, writeReview: boolean) {
+  // Terminar desde el menú de estado: fechas en FinishBookSheet, después "¿Cómo fue?" (V.3.1.0)
+  // y la reseña opcional.
+  async function handleFinishConfirm(dates: ReadingDates) {
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
     await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
     refetchReadCount()
+  }
+
+  function handleFinishDone(writeReview: boolean) {
     setIsFinishOpen(false)
     if (writeReview) setIsResenaOpen(true)
   }
 
   const sagaPosition = book && saga ? sagaBooks.findIndex((b) => b.id === book.id) + 1 : 0
+  const traitTexts = traitsSummary(bookTraits)
   const infoRows: { label: string; value: string; onClick?: () => void }[] = book
     ? [
         ...(book.total_pages ? [{ label: 'Páginas', value: String(book.total_pages) }] : []),
@@ -242,6 +268,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               onClick: () => setIsSagaOpen(true),
             }]
           : []),
+        ...(traitTexts.genres ? [{ label: 'Género', value: traitTexts.genres }] : []),
+        ...(traitTexts.moods ? [{ label: 'Ánimo', value: traitTexts.moods }] : []),
+        ...(traitTexts.pace ? [{ label: 'Ritmo', value: traitTexts.pace }] : []),
         ...(readCount > 1 ? [{ label: 'Lecturas', value: `${readCount} veces` }] : []),
         ...(book.is_gift ? [{ label: 'Regalo', value: book.gift_from ? `De ${book.gift_from}` : 'Sí' }] : []),
       ]
@@ -283,6 +312,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               currency={profile?.currency}
               onCoverFile={handleCoverFile}
               isUploadingCover={isUploading}
+              knownCustomMoods={knownCustomMoods}
             />
           </div>
         ) : (
@@ -460,8 +490,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
         <FinishBookSheet
           book={book}
           initialStartDate={book.start_date}
+          traits={bookTraits}
+          knownCustomMoods={knownCustomMoods}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}
+          onSaveTraits={saveTraits}
+          onDone={handleFinishDone}
         />
       )}
 

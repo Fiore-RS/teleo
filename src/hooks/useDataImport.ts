@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { fetchAllRows } from '../lib/fetchAllRows'
 import { queryClient } from '../lib/queryClient'
 import type { Tables } from '../types/database'
+import { cleanCustomMoods, cleanTraitKeys, genreOptions, moodOptions, paceLabel, MAX_GENRES, MAX_MOODS } from '../lib/bookTraits'
 
 /* Los respaldos pueden venir de cualquier versión del formato (ver EXPORT_VERSION en
  * useDataExport.ts), así que todos los campos se leen como opcionales: un respaldo viejo
@@ -134,6 +135,18 @@ export function useDataImport(userId: string | undefined) {
           start_date: b.start_date ?? null,
           end_date: b.end_date ?? null,
           abandon_reason: b.abandon_reason ?? null,
+          // Rasgos y pausa (V.3.1.0); los respaldos anteriores no los traen.
+          genres: cleanTraitKeys(b.genres, genreOptions, MAX_GENRES),
+          // Entre fijos y propios, hasta MAX_MOODS (los fijos primero).
+          ...(() => {
+            const moods = cleanTraitKeys(b.moods, moodOptions, MAX_MOODS)
+            return { moods, custom_moods: cleanCustomMoods(b.custom_moods).slice(0, MAX_MOODS - moods.length) }
+          })(),
+          pace: b.pace && paceLabel(b.pace) ? b.pace : null,
+          genres_source: b.genres_source === 'suggested' || b.genres_source === 'manual' ? b.genres_source : null,
+          paused_at: b.paused_at ?? null,
+          pause_reason: b.pause_reason ?? null,
+          paused_days: b.paused_days ?? 0,
           price: b.price ?? null,
           purchase_date: b.purchase_date ?? null,
           is_gift: b.is_gift ?? false,
@@ -203,6 +216,8 @@ export function useDataImport(userId: string | undefined) {
           sort_order: q.sort_order ?? 0,
           // Respaldos anteriores a Mis citas (V.2.1.0) no traen página ni fecha.
           page: q.page ?? null,
+          // Orden de Cuaderno › Citas (V.3.1.0). Sin él, la cita queda según su fecha.
+          cuaderno_sort_order: q.cuaderno_sort_order ?? (q.created_at ? -Date.parse(q.created_at) / 1000 : null),
           ...(q.created_at ? { created_at: q.created_at } : {}),
         }))
       )
