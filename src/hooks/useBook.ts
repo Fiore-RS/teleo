@@ -2,6 +2,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
 import { recomputeSagaStatus } from '../lib/sagaStatus'
+import { pauseTransition } from '../lib/pause'
+import type { ReadingStatus } from '../lib/status'
 import { useCachedQuery } from './useCachedQuery'
 
 type Book = Database['public']['Tables']['books']['Row']
@@ -41,8 +43,11 @@ export function useBook(bookId: string | undefined) {
   )
   const { book, tags } = data
 
-  async function updateBook(updates: Partial<Book>) {
+  async function updateBook(changes: Partial<Book>) {
     if (!bookId) return
+    // Al cambiar de estado se ajustan solas la fecha y los días en pausa (V.3.1.0); lo que
+    // venga en el cambio (ej. el motivo al pausar) tiene prioridad.
+    const updates = changes.status && book ? { ...pauseTransition(book, changes.status as ReadingStatus), ...changes } : changes
     await supabase.from('books').update(updates).eq('id', bookId)
     // El estado de la saga se recalcula solo cuando cambia el status del libro (es lo único
     // que afecta el cálculo) y el libro pertenece a una saga.

@@ -5,7 +5,7 @@ type Book = Database['public']['Tables']['books']['Row']
 type PaceFields = Pick<
   Book,
   'format' | 'start_date' | 'total_pages' | 'current_page' | 'progress_percent' | 'total_duration_seconds' | 'current_duration_seconds'
->
+> & { paused_days?: number | null }
 
 export interface ReadingPace {
   /** Fecha estimada de fin, en hora local. */
@@ -32,7 +32,8 @@ function daysSince(startDate: string, today: Date): number {
  *  inicio, sin avance, sin total o ya terminado). */
 export function getReadingPace(book: PaceFields, today = new Date()): ReadingPace | null {
   if (!book.start_date) return null
-  const days = daysSince(book.start_date, today)
+  // Los días en pausa (V.3.1.0) no cuentan como días de lectura.
+  const days = daysSince(book.start_date, today) - (book.paused_days ?? 0)
   if (days < 1) return null
 
   let done: number

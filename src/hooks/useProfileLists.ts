@@ -11,6 +11,8 @@ export interface ProfileCounts {
   pending: number
   wishlist: number
   abandoned: number
+  /** En pausa (V.3.1.0). */
+  paused: number
 }
 
 interface ProfileLists {
@@ -29,7 +31,7 @@ const EMPTY: ProfileLists = {
   recommended: [],
   wishlist: [],
   abandoned: [],
-  counts: { finished: 0, pending: 0, wishlist: 0, abandoned: 0 },
+  counts: { finished: 0, pending: 0, wishlist: 0, abandoned: 0, paused: 0 },
 }
 
 const SHELF_COLUMNS = 'id, title, cover_url, status'
@@ -53,6 +55,7 @@ export function useProfileLists(userId: string | undefined) {
         { count: pendingCount },
         { count: wishlistCount },
         { count: abandonedCount },
+        { count: pausedCount },
       ] = await Promise.all([
         supabase.from('books').select('*').eq('user_id', userId!).eq('status', 'leyendo').limit(6),
         supabase.from('books').select(SHELF_COLUMNS).eq('user_id', userId!).eq('is_favorite', true),
@@ -63,6 +66,7 @@ export function useProfileLists(userId: string | undefined) {
         countByStatus(userId!, 'pendiente'),
         countByStatus(userId!, 'deseado'),
         countByStatus(userId!, 'abandonado'),
+        countByStatus(userId!, 'pausado'),
       ])
       return {
         currentlyReading: reading ?? [],
@@ -75,6 +79,7 @@ export function useProfileLists(userId: string | undefined) {
           pending: pendingCount ?? 0,
           wishlist: wishlistCount ?? 0,
           abandoned: abandonedCount ?? 0,
+          paused: pausedCount ?? 0,
         },
       }
     },

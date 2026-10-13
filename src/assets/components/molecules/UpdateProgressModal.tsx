@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageOff, Check, Flag, Quote } from 'lucide-react'
+import { ImageOff, Check, Flag, Pause, Quote } from 'lucide-react'
 import { FormActions, FormCard, FormRow } from './FormLayout'
 import { Sheet } from '../atoms/Sheet'
 import { DetailSkeleton } from '../atoms/Skeleton'
@@ -16,6 +16,7 @@ import { Button } from '../atoms/Button'
 import { AbandonarLibroModal } from './AbandonarLibroModal'
 import { MissingStartDateModal } from './MissingStartDateModal'
 import { FinishBookSheet } from './FinishBookSheet'
+import { PauseBookSheet } from './PauseBookSheet'
 import type { ReadingDates } from '../../../lib/readingDates'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { Resena } from '../../../pages/Resena'
@@ -40,6 +41,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
+  const [isPauseOpen, setIsPauseOpen] = useState(false)
   const [isFinishOpen, setIsFinishOpen] = useState(false)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
   const [isAddingQuote, setIsAddingQuote] = useState(false)
@@ -122,6 +124,14 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
   function handleReviewClose() {
     setIsReviewOpen(false)
+    onClose()
+  }
+
+  // En pausa (V.3.1.0): el progreso queda guardado y el libro sale de Leyendo ahora.
+  async function handlePauseConfirm(reason: string) {
+    await updateBook({ status: 'pausado', pause_reason: reason || null })
+    setIsPauseOpen(false)
+    onUpdated()
     onClose()
   }
 
@@ -252,7 +262,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
               </p>
             )}
 
-            <div className="flex gap-1.5 mt-3.5 mb-1">
+            {/* 2 × 2 desde la V.3.1.0 (con Pausar, cuatro botones no caben en una fila). */}
+            <div className="grid grid-cols-2 gap-1.5 mt-3.5 mb-1">
               <Button variant="soft" size="sm" className="px-2!" onClick={() => setIsAddingQuote(true)}>
                 <Quote size={14} strokeWidth={2.4} />
                 Cita
@@ -260,6 +271,10 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
               <Button variant="magenta" size="sm" className="px-2!" onClick={() => setIsFinishOpen(true)}>
                 <Check size={14} strokeWidth={2.8} />
                 Terminado
+              </Button>
+              <Button variant="outline" size="sm" className="px-2! text-text-secondary!" onClick={() => setIsPauseOpen(true)}>
+                <Pause size={13} strokeWidth={2.4} />
+                Pausar
               </Button>
               <Button variant="outline" size="sm" className="px-2! text-text-secondary!" onClick={() => setIsAbandonOpen(true)}>
                 <Flag size={13} strokeWidth={2.4} />
@@ -286,6 +301,10 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         onConfirm={handleSetMissingStartDate}
         onIgnore={() => setStartDatePromptIgnored(true)}
       />
+
+      {isPauseOpen && book && (
+        <PauseBookSheet book={book} onClose={() => setIsPauseOpen(false)} onConfirm={handlePauseConfirm} />
+      )}
 
       {isFinishOpen && book && (
         <FinishBookSheet

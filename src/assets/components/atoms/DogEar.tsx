@@ -1,4 +1,4 @@
-export type DogEarStatus = 'leyendo' | 'pendiente' | 'terminado' | 'abandonado' | 'deseado'
+export type DogEarStatus = 'leyendo' | 'pendiente' | 'terminado' | 'abandonado' | 'deseado' | 'pausado'
 
 import { statusColorVar, type ReadingStatus } from '../../../lib/status'
 

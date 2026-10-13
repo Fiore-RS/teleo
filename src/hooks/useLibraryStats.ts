@@ -107,7 +107,8 @@ export function useLibraryStats(userId: string | undefined) {
 
     const bookById = new Map(books.map((b) => [b.id, b]))
     const finished = books.filter((b) => b.status === 'terminado')
-    const reading = books.filter((b) => b.status === 'leyendo')
+    // "Libros en proceso" incluye los que están en pausa (V.3.1.0): se empezaron y no se dejaron.
+    const reading = books.filter((b) => b.status === 'leyendo' || b.status === 'pausado')
     const wishlist = books.filter((b) => b.status === 'deseado')
     const abandoned = books.filter((b) => b.status === 'abandonado')
 

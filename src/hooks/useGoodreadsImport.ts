@@ -109,7 +109,7 @@ export async function analyzeGoodreadsFile(file: File, userId: string): Promise<
     books.push(book)
   }
 
-  const counts: Record<GoodreadsStatus, number> = { terminado: 0, leyendo: 0, pendiente: 0, deseado: 0, abandonado: 0 }
+  const counts: Record<GoodreadsStatus, number> = { terminado: 0, leyendo: 0, pausado: 0, pendiente: 0, deseado: 0, abandonado: 0 }
   books.forEach((b) => counts[b.status]++)
   const plan = planSagas(books, await fetchSagas(userId))
   return { books, duplicates, counts, newSagas: plan.toCreate.length, existingSagas: plan.existing.size }

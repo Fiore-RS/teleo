@@ -3,7 +3,7 @@ import { ChevronDown, Check } from 'lucide-react'
 import { useFloatingMenu } from '../../../hooks/useFloatingMenu'
 import { statusColorVar, statusLabel, type ReadingStatus } from '../../../lib/status'
 
-const ALL_STATUSES: ReadingStatus[] = ['pendiente', 'leyendo', 'terminado', 'abandonado', 'deseado']
+const ALL_STATUSES: ReadingStatus[] = ['pendiente', 'leyendo', 'pausado', 'terminado', 'abandonado', 'deseado']
 
 interface StatusMenuProps {
   status: ReadingStatus

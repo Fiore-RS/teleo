@@ -34,6 +34,8 @@ import { ReleaseRow } from '../assets/components/molecules/ReleaseRow'
 import { ReleaseFormSheet } from '../assets/components/molecules/ReleaseFormSheet'
 import { useSaga } from '../hooks/useSaga'
 import { DetalleSaga } from './DetalleSaga'
+import { PauseBookSheet } from '../assets/components/molecules/PauseBookSheet'
+import { formatPausedSince } from '../lib/pause'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
 import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
@@ -89,6 +91,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const [isEditing, setIsEditing] = useState(false)
   const [isResenaOpen, setIsResenaOpen] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
+  const [isPauseOpen, setIsPauseOpen] = useState(false)
   const [isFinishOpen, setIsFinishOpen] = useState(false)
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
   // Actualización de estado pendiente de confirmar: cuando se marca un libro como "leyendo"
@@ -158,7 +161,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
     // Si se está marcando el libro como "leyendo" (y no lo estaba ya), se pregunta primero
     // si hoy debe quedar como fecha de inicio antes de guardar — ver applyPendingLeyendoUpdate.
-    if (draft.status === 'leyendo' && book.status !== 'leyendo') {
+    // Al retomar un libro en pausa no se pregunta la fecha: ya tiene la de inicio.
+    if (draft.status === 'leyendo' && book.status !== 'leyendo' && book.status !== 'pausado') {
       setPendingLeyendoUpdate(updates)
       return
     }
@@ -222,8 +226,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   // necesidad de entrar a "Editar Libro" — cada destino conserva el mismo flujo/datos
   // adicionales que ya se le pedían al usuario en el resto de la app para ese estado.
   async function handleStatusChange(newStatus: ReadingStatus) {
-    if (newStatus === 'leyendo') {
+    if (newStatus === 'leyendo' && book?.status === 'pausado') {
+      await resumeReading()
+    } else if (newStatus === 'leyendo') {
       setPendingLeyendoUpdate({ status: 'leyendo' })
+    } else if (newStatus === 'pausado') {
+      setIsPauseOpen(true)
     } else if (newStatus === 'terminado') {
       setIsFinishOpen(true)
     } else if (newStatus === 'abandonado') {
@@ -231,6 +239,17 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     } else {
       updateBook({ status: newStatus })
     }
+  }
+
+  // En pausa (V.3.1.0). useBook.updateBook guarda la fecha de pausa al pausar y, al retomar,
+  // suma los días en pausa y borra la fecha y el motivo.
+  async function handlePauseConfirm(reason: string) {
+    await updateBook({ status: 'pausado', pause_reason: reason || null })
+    setIsPauseOpen(false)
+  }
+
+  async function resumeReading() {
+    await updateBook({ status: 'leyendo' })
   }
 
   async function handleAbandonConfirm(data: { abandon_reason: string; start_date: string; end_date: string }) {
@@ -339,6 +358,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <div className="mt-3">
                   <StatusMenu status={book.status as ReadingStatus} onChange={handleStatusChange} align="left" />
                 </div>
+                {book.status === 'pausado' && book.paused_at && (
+                  <p className="text-body-sm text-text-secondary mt-2">En pausa desde el {formatPausedSince(book.paused_at)}</p>
+                )}
                 {tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2.5">
                     {tags.map((tag) => <Tag key={tag} label={tag} />)}
@@ -348,7 +370,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
             </div>
 
             {/* Acciones del estado actual, justo debajo de la ficha (V.2.2.0). */}
-            {(book.status === 'terminado' || book.status === 'leyendo' || book.status === 'abandonado' ||
+            {(book.status === 'terminado' || book.status === 'leyendo' || book.status === 'abandonado' || book.status === 'pausado' ||
               (book.status === 'deseado' && bookReleases.length === 0)) && (
               <div className="flex gap-2 mb-5.5">
                 {book.status === 'terminado' && (
@@ -369,6 +391,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                     Anotar una cita
                   </Button>
                 )}
+                {book.status === 'pausado' && (
+                  <Button variant="orange" onClick={resumeReading}>
+                    <Play size={16} />
+                    Retomar lectura
+                  </Button>
+                )}
                 {book.status === 'abandonado' && (
                   <Button variant="orange" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
                     <Play size={16} />
@@ -382,6 +410,17 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   </Button>
                 )}
               </div>
+            )}
+
+            {book.status === 'pausado' && book.pause_reason && (
+              <FormSection label="Motivo de la pausa">
+                <div className="relative bg-surface-2 border border-border rounded-[18px] px-4 pt-4.5 pb-3.5">
+                  <span aria-hidden="true" className="absolute left-3 -top-2.5 font-display font-semibold text-[40px] leading-none text-ornament select-none">
+                    “
+                  </span>
+                  <p className="font-display italic text-body-lg leading-relaxed text-text">{book.pause_reason}</p>
+                </div>
+              </FormSection>
             )}
 
             {book.status === 'abandonado' && book.abandon_reason && (
@@ -484,6 +523,10 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           initialStartDate={book.start_date ?? ''}
           onConfirm={handleAbandonConfirm}
         />
+      )}
+
+      {isPauseOpen && book && (
+        <PauseBookSheet book={book} onClose={() => setIsPauseOpen(false)} onConfirm={handlePauseConfirm} />
       )}
 
       {isFinishOpen && book && (
