@@ -5,11 +5,12 @@ import type { ReadingStatus } from './status'
 // Se evalúa de arriba hacia abajo: gana la primera regla que aplique.
 //   1. Todos terminados               -> terminado
 //   2. Al menos 1 leyendo             -> leyendo
-//   3. Al menos 1 abandonado          -> abandonado   (y ninguno leyendo)
-//   4. Al menos 1 terminado (no todos)-> leyendo       (saga empezada, aunque ahora mismo no
+//   3. Al menos 1 en pausa            -> pausado      (y ninguno leyendo; V.3.1.0)
+//   4. Al menos 1 abandonado          -> abandonado   (y ninguno leyendo ni en pausa)
+//   5. Al menos 1 terminado (no todos)-> leyendo       (saga empezada, aunque ahora mismo no
 //                                                        se esté leyendo nada de ella)
-//   5. Al menos 1 pendiente           -> pendiente
-//   6. Todos deseado (o sin libros)   -> deseado / pendiente
+//   6. Al menos 1 pendiente           -> pendiente
+//   7. Todos deseado (o sin libros)   -> deseado / pendiente
 export function computeSagaStatus(bookStatuses: ReadingStatus[]): ReadingStatus {
   if (bookStatuses.length === 0) return 'pendiente'
 
@@ -18,6 +19,7 @@ export function computeSagaStatus(bookStatuses: ReadingStatus[]): ReadingStatus 
 
   if (all('terminado')) return 'terminado'
   if (has('leyendo')) return 'leyendo'
+  if (has('pausado')) return 'pausado'
   if (has('abandonado')) return 'abandonado'
   if (has('terminado')) return 'leyendo'
   if (has('pendiente')) return 'pendiente'

@@ -14,7 +14,7 @@ export interface GoodreadsBook {
   author: string | null
   /** ISBN-13 si viene, si no el ISBN-10. Sin guiones ni el ="..." que agrega Goodreads. */
   isbn: string | null
-  status: 'terminado' | 'leyendo' | 'pendiente' | 'deseado' | 'abandonado'
+  status: 'terminado' | 'leyendo' | 'pendiente' | 'deseado' | 'abandonado' | 'pausado'
   format: BookFormat | null
   totalPages: number | null
   /** Fecha de fin (AAAA-MM-DD). Solo para libros leídos. */
@@ -129,6 +129,13 @@ function isAbandonedShelf(shelf: string): boolean {
   return ABANDONED_SHELF.test(shelf.trim().toLowerCase())
 }
 
+/** Estanterías que se usan para los libros que se dejaron por un tiempo (V.3.1.0). */
+const PAUSED_SHELF = /^(on-hold|on-pause|paused|hiatus|en-pausa|pausado|pausados|en-espera)$/
+
+function isPausedShelf(shelf: string): boolean {
+  return PAUSED_SHELF.test(shelf.trim().toLowerCase())
+}
+
 function splitShelves(raw: string | undefined): string[] {
   return (raw ?? '')
     .split(',')
@@ -163,18 +170,19 @@ export function parseGoodreadsCsv(text: string): GoodreadsBook[] | null {
 
     let status: GoodreadsBook['status']
     if (isAbandonedShelf(exclusiveShelf) || shelves.some(isAbandonedShelf)) status = 'abandonado'
+    else if (isPausedShelf(exclusiveShelf) || shelves.some(isPausedShelf)) status = 'pausado'
     else if (exclusiveShelf === 'read') status = 'terminado'
     else if (exclusiveShelf === 'currently-reading') status = 'leyendo'
     // "Want to Read" junta lo que ya se tiene y lo que se quiere comprar: se separa por las
     // copias que la persona marcó como suyas en Goodreads.
     else if (exclusiveShelf === 'to-read') status = ownedCopies > 0 ? 'pendiente' : 'deseado'
-    // Otra estantería exclusiva propia (ej. "en-pausa"): queda pendiente y con su etiqueta.
+    // Otra estantería exclusiva propia: queda pendiente y con su etiqueta.
     else status = 'pendiente'
 
-    // Las estanterías personalizadas pasan a etiquetas. Las de abandonados no, porque ya
-    // se reflejan en el estado.
+    // Las estanterías personalizadas pasan a etiquetas. Las de abandonados y en pausa no,
+    // porque ya se reflejan en el estado.
     const tags = [...new Set([...shelves, exclusiveShelf])].filter(
-      (shelf) => shelf && !BUILT_IN_SHELVES.has(shelf.toLowerCase()) && !isAbandonedShelf(shelf)
+      (shelf) => shelf && !BUILT_IN_SHELVES.has(shelf.toLowerCase()) && !isAbandonedShelf(shelf) && !isPausedShelf(shelf)
     )
 
     const rating = parseInt(get(row, 'My Rating') ?? '0', 10)
