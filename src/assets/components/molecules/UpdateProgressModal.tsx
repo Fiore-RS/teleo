@@ -21,6 +21,9 @@ import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { Resena } from '../../../pages/Resena'
 import { AddQuoteSheet } from './AddQuoteSheet'
 import { useQuotes } from '../../../hooks/useQuotes'
+import { useQueryClient } from '@tanstack/react-query'
+import { useUserCustomMoods } from '../../../hooks/useUserCustomMoods'
+import { traitsFromBook, traitsToColumns, type BookTraits } from '../../../lib/bookTraits'
 
 interface UpdateProgressModalProps {
   bookId: string
@@ -31,6 +34,9 @@ interface UpdateProgressModalProps {
 export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgressModalProps) {
   const { user } = useAuth()
   const { book, updateBook } = useBook(bookId)
+  const queryClient = useQueryClient()
+  const knownCustomMoods = useUserCustomMoods(user?.id)
+  const bookTraits = traitsFromBook(book)
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
@@ -91,8 +97,9 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     onClose()
   }
 
-  // Terminar un libro: se eligen las fechas en FinishBookSheet y la reseña es opcional.
-  async function handleFinishConfirm(dates: ReadingDates, writeReview: boolean) {
+  // Terminar un libro: se eligen las fechas en FinishBookSheet, después "¿Cómo fue?" (V.3.1.0)
+  // y la reseña es opcional.
+  async function handleFinishConfirm(dates: ReadingDates) {
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
@@ -100,6 +107,14 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     // "Mis años en libros" y el Resumen la cuenten en el año de la fecha de fin.
     await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
     onUpdated()
+  }
+
+  async function handleSaveTraits(traits: BookTraits) {
+    await updateBook(traitsToColumns(traits, bookTraits))
+    void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
+  }
+
+  function handleFinishDone(writeReview: boolean) {
     setIsFinishOpen(false)
     if (writeReview) setIsReviewOpen(true)
     else onClose()
@@ -276,8 +291,12 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         <FinishBookSheet
           book={book}
           initialStartDate={book.start_date}
+          traits={bookTraits}
+          knownCustomMoods={knownCustomMoods}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}
+          onSaveTraits={handleSaveTraits}
+          onDone={handleFinishDone}
         />
       )}
 

@@ -141,3 +141,59 @@ export function cleanCustomMoods(moods: readonly string[] | null | undefined): s
   }
   return result
 }
+
+/** Género, ánimo y ritmo de un libro, como los usa la interfaz. Los ánimos propios
+ *  (customMoods) son texto libre; entre fijos y propios, hasta MAX_MOODS. */
+export interface BookTraits {
+  genres: GenreKey[]
+  moods: MoodKey[]
+  customMoods: string[]
+  pace: PaceKey | null
+}
+
+export const EMPTY_TRAITS: BookTraits = { genres: [], moods: [], customMoods: [], pace: null }
+
+interface BookTraitColumns {
+  genres?: string[] | null
+  moods?: string[] | null
+  custom_moods?: string[] | null
+  pace?: string | null
+}
+
+/** Rasgos de un libro tal como vienen de la base, limpios. */
+export function traitsFromBook(book: BookTraitColumns | null | undefined): BookTraits {
+  if (!book) return EMPTY_TRAITS
+  const moods = cleanTraitKeys(book.moods, moodOptions, MAX_MOODS)
+  return {
+    genres: cleanTraitKeys(book.genres, genreOptions, MAX_GENRES),
+    moods,
+    customMoods: cleanCustomMoods(book.custom_moods).slice(0, MAX_MOODS - moods.length),
+    pace: book.pace && paceLabel(book.pace) ? (book.pace as PaceKey) : null,
+  }
+}
+
+/** Columnas a guardar. Si el género cambió respecto de `previous`, queda marcado como puesto a
+ *  mano (genres_source 'manual'), para que la sugerencia automática no lo pise. */
+export function traitsToColumns(traits: BookTraits, previous?: BookTraits) {
+  const genresChanged = !previous || previous.genres.join() !== traits.genres.join()
+  const moods = traits.moods.slice(0, MAX_MOODS)
+  return {
+    genres: traits.genres.slice(0, MAX_GENRES),
+    moods,
+    custom_moods: cleanCustomMoods(traits.customMoods).slice(0, MAX_MOODS - moods.length),
+    pace: traits.pace,
+    ...(genresChanged ? { genres_source: traits.genres.length > 0 ? 'manual' : null } : {}),
+  }
+}
+
+/** ¿Tiene ánimo y ritmo? Para saltarse el paso "¿Cómo fue?" si ya está completo. */
+export function hasMoodAndPace(traits: BookTraits): boolean {
+  return traits.pace !== null && traits.moods.length + traits.customMoods.length > 0
+}
+
+/** Textos para Detalles del libro ("Fantasía · Romance · BL"), o null si no hay. */
+export function traitsSummary(traits: BookTraits): { genres: string | null; moods: string | null; pace: string | null } {
+  const genres = traits.genres.map((g) => genreLabel(g)).filter(Boolean).join(' · ')
+  const moods = [...traits.moods.map((m) => moodLabel(m)).filter(Boolean), ...traits.customMoods].join(' · ')
+  return { genres: genres || null, moods: moods || null, pace: traits.pace ? paceLabel(traits.pace) : null }
+}
