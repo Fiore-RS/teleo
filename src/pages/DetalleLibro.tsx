@@ -36,6 +36,7 @@ import { useSaga } from '../hooks/useSaga'
 import { DetalleSaga } from './DetalleSaga'
 import { PauseBookSheet } from '../assets/components/molecules/PauseBookSheet'
 import { formatPausedSince } from '../lib/pause'
+import { advanceNextInSaga, findNextInSaga, type NextInSaga } from '../lib/nextInSaga'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
 import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
@@ -265,6 +266,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
     await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
     refetchReadCount()
+  }
+
+  // Sigue en la saga (V.3.1.0): se refresca todo porque el siguiente libro cambia de estado.
+  async function handleAdvanceNext(next: NextInSaga) {
+    await advanceNextInSaga(next)
+    void queryClient.invalidateQueries()
   }
 
   function handleFinishDone(writeReview: boolean) {
@@ -539,6 +546,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           onConfirm={handleFinishConfirm}
           onSaveTraits={saveTraits}
           onDone={handleFinishDone}
+          nextInSaga={findNextInSaga(bookId, saga, sagaBooks)}
+          onAdvanceNext={handleAdvanceNext}
         />
       )}
 
