@@ -25,13 +25,15 @@ import { StartReadingDateModal } from './StartReadingDateModal'
 
 interface PriorityListCardProps {
   userId: string | undefined
+  /** Tocar la portada de un libro abre Detalles del libro (V.3.0.1). */
+  onOpenBook?: (bookId: string) => void
 }
 
 /** "Mi lista de esta temporada" como tarjeta completa: portadas en orden, menú (editar
  *  nombre, organizar, ver en Estante), reordenamiento con mantener presionado y "Empezar a
  *  leer". Vivía en La mesa; en la fase 4 se mudó a Tu rincón (Perfil). Todo su estado va
  *  adentro para poder ubicarla en cualquier pantalla. */
-export function PriorityListCard({ userId }: PriorityListCardProps) {
+export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) {
   const navigate = useNavigate()
   const { books, isLoading, reorderBook, startReading } = usePriorityBooks(userId)
   const { profile, updateProfile } = useProfile(userId)
@@ -71,6 +73,7 @@ export function PriorityListCard({ userId }: PriorityListCardProps) {
       coverUrl={book.cover_url ?? undefined}
       position={i + 1}
       onStartReading={() => setPendingStartId(book.id)}
+      onOpen={onOpenBook && !isReordering ? () => onOpenBook(book.id) : undefined}
     />
   ))
 

@@ -16,6 +16,8 @@ interface BookCardReadingProps {
   /** Ritmo de lectura (V.2.1.0): frase con la fecha estimada de fin, o null si no hay datos. */
   paceText?: string | null
   onUpdateClick: () => void
+  /** Tocar la portada o el título abre Detalles del libro (V.3.0.1). */
+  onOpen?: () => void
 }
 
 /** Libro en progreso dentro de la tarjeta "Leyendo ahora" de Mesa. Rediseño 2026: ya no es
@@ -30,10 +32,16 @@ export function BookCardReading({
   missingStartDate = false,
   paceText = null,
   onUpdateClick,
+  onOpen,
 }: BookCardReadingProps) {
+  // Con onOpen, la portada es un botón; sin él, se ve igual pero no hace nada.
+  const CoverTag = onOpen ? 'button' : 'div'
   return (
     <article className="flex gap-3.5">
-      <div className="relative w-26 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]">
+      <CoverTag
+        {...(onOpen ? { type: 'button' as const, onClick: onOpen, 'aria-label': `Ver detalles de ${title}` } : {})}
+        className="relative w-26 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)] block p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+      >
         {coverUrl ? (
           <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover" />
         ) : (
@@ -50,12 +58,18 @@ export function BookCardReading({
             <TriangleAlert size={14} className="text-surface" />
           </span>
         )}
-      </div>
+      </CoverTag>
 
       <div className="flex-1 min-w-0 flex flex-col justify-between gap-2.5">
         <div>
           <h3 className="font-display font-semibold text-[17px] leading-tight text-text line-clamp-2">
-            {title}
+            {onOpen ? (
+              <button type="button" onClick={onOpen} className="text-left focus-visible:outline-2 focus-visible:outline-primary-text rounded-sm">
+                {title}
+              </button>
+            ) : (
+              title
+            )}
           </h3>
           {author && (
             <p className="text-body-md font-body text-text-secondary line-clamp-1 mt-0.5">{author}</p>
