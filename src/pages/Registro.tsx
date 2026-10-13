@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { User, Mail, MailCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { authErrorMessage } from '../lib/authErrors'
 import { Input } from '../assets/components/atoms/Input'
 import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { emailInputProps } from '../lib/emailInput'
@@ -33,7 +34,7 @@ export function Registro() {
     setIsLoading(false)
 
     if (signUpError) {
-      setError(signUpError.message)
+      setError(authErrorMessage(signUpError, 'signup'))
       return
     }
 

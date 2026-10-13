@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { authErrorMessage } from '../lib/authErrors'
 import { useAuth } from '../hooks/useAuth'
 import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { Button } from '../assets/components/atoms/Button'
@@ -28,11 +29,7 @@ export function NuevaContrasena() {
     setIsSaving(false)
 
     if (updateError) {
-      setError(
-        updateError.code === 'same_password'
-          ? 'La contraseña nueva tiene que ser distinta a la anterior.'
-          : 'No se pudo guardar la contraseña. Inténtalo de nuevo.'
-      )
+      setError(authErrorMessage(updateError, 'newPassword'))
       return
     }
 
