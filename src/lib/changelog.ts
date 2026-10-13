@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.0.1',
+    date: '13 de octubre de 2026',
+    title: 'A buen ritmo',
+    items: [
+      'Teleo se siente más ágil: al cambiar de sección todo aparece al instante, y las pantallas como Configuración y Novedades entran desde un costado.',
+      'Toca la portada de un libro en Leyendo ahora o en tu lista de la temporada para ver sus detalles.',
+      'Si un libro es parte de una saga, sus detalles muestran a cuál pertenece y qué número es. Toca la saga para verla completa.',
+      'El buscador de libros muestra hasta 10 resultados, con los que más se parecen a lo que escribiste primero, y en español o inglés antes que en otros idiomas.',
+      'Si el buscador de libros no responde, Teleo te avisa en vez de decir que no encontró el libro.',
+      'Mensajes más claros al iniciar sesión, al crear tu cuenta y al cambiar tu correo o contraseña: ahora te dicen si es la contraseña, la conexión o demasiados intentos.',
+      'Las reseñas sin fecha ya aparecen en el Cuaderno.',
+    ],
+  },
+  {
     version: '3.0.0',
     announced: true,
     date: '9 de octubre de 2026',
