@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { authErrorMessage } from '../lib/authErrors'
 import { Input } from '../assets/components/atoms/Input'
 import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { emailInputProps } from '../lib/emailInput'
@@ -24,11 +25,7 @@ export function Login() {
 
     if (signInError) {
       setIsLoading(false)
-      setError(
-        signInError.message.includes('Email not confirmed')
-          ? 'Confirma tu correo antes de iniciar sesión.'
-          : 'Correo o contraseña incorrectos.'
-      )
+      setError(authErrorMessage(signInError, 'login'))
       return
     }
 
