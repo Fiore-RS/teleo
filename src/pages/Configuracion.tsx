@@ -4,7 +4,7 @@ import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
   Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
-  Settings, Archive, TriangleAlert, Tags,
+  Settings, Archive, TriangleAlert, Tags, LibraryBig,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -15,6 +15,7 @@ import { ShareProfileModal } from '../assets/components/molecules/ShareProfileMo
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
 import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
 import { GenreSuggestSheet } from '../assets/components/molecules/GenreSuggestSheet'
+import { CompleteShelfSheet } from '../assets/components/molecules/CompleteShelfSheet'
 import { PaletteSheet } from '../assets/components/molecules/PaletteSheet'
 import { AccountSheet, type AccountSheetKey } from '../assets/components/molecules/AccountSheets'
 import { useTheme } from '../hooks/useTheme'
@@ -45,6 +46,7 @@ export function Configuracion() {
   const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
   const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
   const [isGenreSuggestOpen, setIsGenreSuggestOpen] = useState(false)
+  const [isCompleteShelfOpen, setIsCompleteShelfOpen] = useState(false)
   const [isPaletteOpen, setIsPaletteOpen] = useState(false)
   // Hojas de Cuenta (V.2.2.0). Las rutas viejas (/configuracion/usuario, etc.) siguen
   // funcionando: abren Configuración con la hoja correspondiente ya abierta.
@@ -202,6 +204,7 @@ export function Configuracion() {
           <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
           <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />
           <SettingsRow icon={Tags} label="Completar géneros" description="Sugerencias para tus libros sin género" onClick={() => setIsGenreSuggestOpen(true)} />
+          <SettingsRow icon={LibraryBig} label="Completa tu estante" description="Género, ánimo y ritmo de lo que ya leíste, libro por libro" onClick={() => setIsCompleteShelfOpen(true)} />
         </SettingsGroup>
 
         <SettingsGroup title="Zona de peligro" icon={TriangleAlert}>
@@ -233,6 +236,7 @@ export function Configuracion() {
       )}
 
       {isGenreSuggestOpen && <GenreSuggestSheet userId={user?.id} onClose={() => setIsGenreSuggestOpen(false)} />}
+      {isCompleteShelfOpen && <CompleteShelfSheet userId={user?.id} onClose={() => setIsCompleteShelfOpen(false)} />}
 
       {isGoodreadsOpen && (
         <GoodreadsImportModal onClose={() => setIsGoodreadsOpen(false)} userId={user?.id} />
