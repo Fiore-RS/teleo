@@ -27,9 +27,11 @@ import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 import { getReadingPace, paceSentence } from '../lib/readingPace'
 import { useStaggerOnce } from '../lib/motion'
+import { queryClient } from '../lib/queryClient'
+import { DetalleLibro } from './DetalleLibro'
 export function Mesa() {
   const staggerMesa = useStaggerOnce("mesa");
-  const staggerTemporada = useStaggerOnce("mesa-temporada");
+  const staggerLeyendo = useStaggerOnce("mesa-leyendo");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
@@ -39,6 +41,7 @@ export function Mesa() {
   const [isUnmarkOpen, setIsUnmarkOpen] = useState(false);
   const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   // La cinta de la racha baja con rebote cuando la sesión de hoy pasa de sin marcar a
@@ -140,7 +143,7 @@ export function Mesa() {
               </Button>
             </>
           )}
-          <div className={`divide-y divide-dashed divide-border ${staggerTemporada}`}>
+          <div className={`divide-y divide-dashed divide-border ${staggerLeyendo}`}>
             {books.map((book) => {
               const { percent, label } = getProgressInfo(book);
               const pace = getReadingPace(book);
@@ -155,6 +158,7 @@ export function Mesa() {
                     missingStartDate={!book.start_date}
                     paceText={pace ? paceSentence(pace) : null}
                     onUpdateClick={() => setUpdatingBookId(book.id)}
+                    onOpen={() => setSelectedBookId(book.id)}
                   />
                 </div>
               );
@@ -302,6 +306,16 @@ export function Mesa() {
         }}
         onDismiss={() => setIsUnmarkOpen(false)}
       />
+
+      {/* Detalles del libro: al cerrar se refresca todo, porque desde ahí se puede terminar
+          el libro (cambia Leyendo ahora, la meta y la racha). */}
+      {selectedBookId && (
+        <DetalleLibro
+          bookId={selectedBookId}
+          onClose={() => { setSelectedBookId(null); void queryClient.invalidateQueries() }}
+          onDeleted={() => { setSelectedBookId(null); void queryClient.invalidateQueries() }}
+        />
+      )}
 
       {updatingBookId && (
   <UpdateProgressModal
