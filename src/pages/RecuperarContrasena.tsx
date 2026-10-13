@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Mail, MailCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { authErrorMessage } from '../lib/authErrors'
 import { emailInputProps } from '../lib/emailInput'
 import { Input } from '../assets/components/atoms/Input'
 import { Button } from '../assets/components/atoms/Button'
@@ -33,11 +34,7 @@ export function RecuperarContrasena() {
     setIsLoading(false)
 
     if (resetError) {
-      setError(
-        resetError.status === 429
-          ? 'Ya pediste un enlace hace poco. Espera un minuto y vuelve a intentarlo.'
-          : 'No se pudo enviar el correo. Revisa tu conexión e inténtalo de nuevo.'
-      )
+      setError(authErrorMessage(resetError, 'reset'))
       return
     }
 

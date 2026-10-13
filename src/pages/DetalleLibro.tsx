@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageOff, Heart, PenLine, Trash2, RotateCcw, Play, NotebookPen, CalendarPlus, Quote } from 'lucide-react'
+import { ImageOff, Heart, PenLine, Trash2, RotateCcw, Play, NotebookPen, CalendarPlus, Quote, ChevronRight } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
@@ -32,6 +32,8 @@ import { useProfile } from '../hooks/useProfile'
 import { useReleases, type Release } from '../hooks/useReleases'
 import { ReleaseRow } from '../assets/components/molecules/ReleaseRow'
 import { ReleaseFormSheet } from '../assets/components/molecules/ReleaseFormSheet'
+import { useSaga } from '../hooks/useSaga'
+import { DetalleSaga } from './DetalleSaga'
 
 interface DetalleLibroProps {
   bookId: string
@@ -48,6 +50,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const { count: readCount, refetch: refetchReadCount } = useBookReadCount(bookId)
   const { uploadCover, isUploading } = useCoverUpload(user?.id)
   const { profile } = useProfile(user?.id)
+  // Saga del libro (V.3.0.1): nombre y número del libro dentro de la saga para la fila "Saga".
+  const { saga, books: sagaBooks } = useSaga(book?.saga_id ?? undefined)
+  const [isSagaOpen, setIsSagaOpen] = useState(false)
+  // Otro libro de la misma saga abierto desde Detalles de la saga, encima de todo.
+  const [nestedBookId, setNestedBookId] = useState<string | null>(null)
+  const [sagaRefresh, setSagaRefresh] = useState(0)
   const bookLanguages = useBookLanguages(user?.id)
   // Lanzamientos enlazados a este libro (fase 7). null = formulario cerrado.
   const { releases } = useReleases(user?.id)
@@ -220,12 +228,20 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     if (writeReview) setIsResenaOpen(true)
   }
 
-  const infoRows: { label: string; value: string }[] = book
+  const sagaPosition = book && saga ? sagaBooks.findIndex((b) => b.id === book.id) + 1 : 0
+  const infoRows: { label: string; value: string; onClick?: () => void }[] = book
     ? [
         ...(book.total_pages ? [{ label: 'Páginas', value: String(book.total_pages) }] : []),
         ...(book.language ? [{ label: 'Idioma', value: languageLabel(book.language) }] : []),
         ...(book.format ? [{ label: 'Formato', value: formatOptions.find((f) => f.value === book.format)?.label ?? book.format }] : []),
         ...(book.category ? [{ label: 'Categoría', value: book.category }] : []),
+        ...(saga
+          ? [{
+              label: 'Saga',
+              value: sagaPosition > 0 ? `${saga.title} · Libro ${sagaPosition}` : saga.title,
+              onClick: () => setIsSagaOpen(true),
+            }]
+          : []),
         ...(readCount > 1 ? [{ label: 'Lecturas', value: `${readCount} veces` }] : []),
         ...(book.is_gift ? [{ label: 'Regalo', value: book.gift_from ? `De ${book.gift_from}` : 'Sí' }] : []),
       ]
@@ -364,9 +380,23 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <FormCard>
                   <dl className="divide-y divide-border">
                     {infoRows.map((row) => (
-                      <div key={row.label} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
-                        <dt className="text-body-md text-text-secondary">{row.label}</dt>
-                        <dd className="text-body-md font-bold text-text text-right">{row.value}</dd>
+                      <div key={row.label} className="relative flex items-center justify-between gap-3 px-3.5 py-2.5">
+                        <dt className="text-body-md text-text-secondary shrink-0">{row.label}</dt>
+                        {row.onClick ? (
+                          // Toda la fila se puede tocar (el after cubre la fila completa).
+                          <dd className="min-w-0">
+                            <button
+                              type="button"
+                              onClick={row.onClick}
+                              className="flex items-center gap-1 text-body-md font-bold text-primary-text text-right after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-primary-text rounded-sm"
+                            >
+                              <span className="truncate">{row.value}</span>
+                              <ChevronRight size={16} className="shrink-0" aria-hidden="true" />
+                            </button>
+                          </dd>
+                        ) : (
+                          <dd className="text-body-md font-bold text-text text-right">{row.value}</dd>
+                        )}
                       </div>
                     ))}
                   </dl>
@@ -376,6 +406,25 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
           </div>
         )}
       </Sheet>
+
+      {/* Detalles de la saga encima de este libro. Si desde ahí se abre otro libro, se abre
+          encima; si es este mismo, solo se cierra la saga. */}
+      {isSagaOpen && book?.saga_id && (
+        <DetalleSaga
+          sagaId={book.saga_id}
+          refreshSignal={sagaRefresh}
+          onClose={() => setIsSagaOpen(false)}
+          onOpenBook={(id) => (id === bookId ? setIsSagaOpen(false) : setNestedBookId(id))}
+          onDeleted={() => setIsSagaOpen(false)}
+        />
+      )}
+      {nestedBookId && (
+        <DetalleLibro
+          bookId={nestedBookId}
+          onClose={() => { setNestedBookId(null); setSagaRefresh((n) => n + 1) }}
+          onDeleted={() => { setNestedBookId(null); setSagaRefresh((n) => n + 1) }}
+        />
+      )}
 
       <ConfirmDialog
         isOpen={deleteState !== 'closed'}

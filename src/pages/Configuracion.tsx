@@ -138,7 +138,7 @@ export function Configuracion() {
         subtitle="Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto."
       />
 
-      <div className="flex flex-col gap-5 stagger-children">
+      <div className="flex flex-col gap-5">
         <SettingsGroup title="Teleo" icon={Heart}>
           <SettingsRow icon={Heart} label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
           <SettingsRow icon={Megaphone} label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />

@@ -41,10 +41,13 @@ import { SortMenu, type SortMenuOption } from "../assets/components/molecules/So
 import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from "../lib/librarySort";
 import { languageOptionsFrom, normalizeLanguage } from "../lib/languages";
 import { computeSagaCategories } from "../lib/sagaStatus";
+import { useStaggerOnce } from '../lib/motion'
 
 type LibraryTab = "libros" | "sagas";
 
 export function Estante() {
+  const staggerLibros = useStaggerOnce('estante-libros')
+  const staggerSagas = useStaggerOnce('estante-sagas')
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
@@ -390,7 +393,7 @@ export function Estante() {
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
             <SortableContext items={isReorderingBooks ? sortedBooks.map((b) => b.id) : []} strategy={rectSortingStrategy}>
               <Shelf
-                className="stagger-children"
+                className={staggerLibros}
                 perRow={shelfView.columns}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
@@ -427,7 +430,7 @@ export function Estante() {
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSagaDragEnd}>
             <SortableContext items={isReorderingSagas ? sortedSagas.map((s) => s.id) : []} strategy={rectSortingStrategy}>
               <Shelf
-                className="stagger-children"
+                className={staggerSagas}
                 perRow={shelfView.columns}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}

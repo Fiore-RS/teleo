@@ -111,7 +111,7 @@ export function Perfil() {
         abandoned={sampleWithSeed(abandoned, SHELF_SIZE, shelfSeed)}
         counts={counts}
         activity={<ActivityCard userId={user?.id} onOpenCalendar={() => setIsCalendarOpen(true)} />}
-        priorityList={<PriorityListCard userId={user?.id} />}
+        priorityList={<PriorityListCard userId={user?.id} onOpenBook={setSelectedBookId} />}
         onBookClick={(id) => setSelectedBookId(id)}
         onSeeAllBooks={(list) => navigate(`/estante?filtro=${list}`)}
         footer={

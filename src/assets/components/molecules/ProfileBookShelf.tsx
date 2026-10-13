@@ -6,6 +6,7 @@ import { CoverSkeleton } from '../atoms/Skeleton'
 import { Card, CardAction, type CardTone } from './Card'
 import type { Database } from '../../../types/database'
 import type { ReadingStatus } from '../../../lib/status'
+import { useStaggerOnce } from '../../../lib/motion'
 
 type Book = Pick<Database['public']['Tables']['books']['Row'], 'id' | 'title' | 'cover_url' | 'status'>
 
@@ -25,6 +26,7 @@ interface ProfileBookShelfProps {
  *  tarjeta con pestaña de separador y "Ver todos ›" a la altura de la pestaña; las
  *  portadas llegan hasta los bordes de la tarjeta al desplazarse. */
 export function ProfileBookShelf({ title, books, isLoading = false, icon, tone, onBookClick, onSeeAll }: ProfileBookShelfProps) {
+  const stagger = useStaggerOnce(`perfil-${title}`)
   const coverClasses =
     'relative w-24 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]'
 
@@ -43,7 +45,7 @@ export function ProfileBookShelf({ title, books, isLoading = false, icon, tone, 
       ) : books.length === 0 ? (
         <p className="text-body-md text-text-secondary">Nada por aquí todavía.</p>
       ) : (
-        <HorizontalScroller className="-mx-[18px] px-[18px] gap-3! pb-1 stagger-children">
+        <HorizontalScroller className={`-mx-[18px] px-[18px] gap-3! pb-1 ${stagger}`}>
           {books.map((book) => {
             const cover = (
               <>

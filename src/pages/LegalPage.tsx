@@ -22,7 +22,7 @@ function LegalPage({ title, sections }: LegalPageProps) {
     <div className="min-h-screen bg-glow-top px-4 pt-4">
       <PageHeader title={title} subtitle={`Última actualización: ${LEGAL_LAST_UPDATED}.`} />
 
-      <div className="flex flex-col gap-4 stagger-children">
+      <div className="flex flex-col gap-4">
         {sections.map((section) => (
           <Card key={section.title}>
             <h2 className="font-display font-semibold text-body-lg text-text">{section.title}</h2>

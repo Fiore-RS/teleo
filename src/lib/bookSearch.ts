@@ -23,7 +23,7 @@ function withKey(url: string): string {
  *  nada la primera vez y hubiera que darle "Buscar" varias veces hasta que funcionara. Con
  *  este helper el reintento pasa solo, con una pequeña espera creciente entre intentos, sin
  *  que el usuario tenga que notarlo ni volver a tocar el botón. */
-async function fetchWithRetry(url: string, init?: RequestInit, attempts = 3): Promise<Response | null> {
+async function fetchWithRetry(url: string, init?: RequestInit, attempts = 4): Promise<Response | null> {
   for (let i = 0; i < attempts; i++) {
     try {
       const res = await fetch(url, init)
@@ -32,7 +32,9 @@ async function fetchWithRetry(url: string, init?: RequestInit, attempts = 3): Pr
     } catch {
       if (i === attempts - 1) return null
     }
-    await new Promise((resolve) => setTimeout(resolve, 300 * (i + 1)))
+    // Espera creciente: 0.4, 0.8 y 1.6 s. Google Books a veces responde "no disponible"
+    // (503) varias veces seguidas.
+    await new Promise((resolve) => setTimeout(resolve, 400 * 2 ** i))
   }
   return null
 }
@@ -69,12 +71,20 @@ function bestCoverUrl(imageLinks?: GoogleImageLinks): string | undefined {
     .replace(/&edge=curl/, '')
 }
 
+/** Algunas editoriales (ej. Norma) cargan los tomos como "La mancha que nos queda - Tome 1 -
+ *  La mancha que nos queda". Se deja como "La mancha que nos queda 1". */
+function cleanVolumeTitle(title: string): string {
+  const match = title.match(/^(.+?)\s+-\s+(?:tome|tomo|vol\.?|volume|volumen)\s+(\d+)\s+-\s+(.+)$/i)
+  if (match && match[1].trim().toLowerCase() === match[3].trim().toLowerCase()) return `${match[1].trim()} ${match[2]}`
+  return title
+}
+
 function mapGoogleVolume(volume: GoogleVolume, fallbackIsbn?: string): BookSearchResult {
   const info = volume.volumeInfo ?? {}
   const isbn13 = info.industryIdentifiers?.find((id) => id.type === 'ISBN_13')?.identifier
 
   return {
-    title: info.title ?? 'Título desconocido',
+    title: cleanVolumeTitle(info.title ?? 'Título desconocido'),
     author: info.authors?.join(', '),
     coverUrl: bestCoverUrl(info.imageLinks),
     totalPages: info.pageCount,
@@ -194,57 +204,116 @@ async function searchAniListManga(query: string, maxResults: number): Promise<Bo
   }
 }
 
-/** Busca en Google Books y, si no alcanza el número de resultados pedido (algunos libros —
- *  sobre todo ediciones en español o títulos menos conocidos — no aparecen ahí), completa con
- *  Open Library. Si todavía faltan resultados, agrega AniList como última fuente, pensada
- *  especialmente para manga, manhwa, manhua y novela ligera. */
-export async function searchBooksByQueryMultiple(query: string, maxResults = 3): Promise<BookSearchResult[]> {
-  const results: BookSearchResult[] = []
+/* ---------- Orden de los resultados (V.3.0.1) ----------
+ * Google Books ordena por su propia relevancia y suele poner primero libros que solo comparten
+ * palabras con la búsqueda (ej. "Compendio de expedientes" quedaba detrás de libros de
+ * derecho), o las ediciones japonesas de un manga. Por eso Teleo reordena: primero lo que más
+ * se parece al título buscado y, dentro de eso, español, inglés y después el resto. */
 
+/** Minúsculas, sin tildes y sin signos, para comparar títulos. */
+function normalizeText(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+}
+
+/** 0 título exacto, 1 empieza igual, 2 lo contiene, 3 están todas las palabras (en el título o
+ *  el autor, útil para la importación de Goodreads, que busca "título autor"), 4 el resto. */
+function matchRank(result: BookSearchResult, query: string): number {
+  const q = normalizeText(query)
+  const title = normalizeText(result.title)
+  if (!q) return 4
+  if (title === q) return 0
+  if (title.startsWith(q)) return 1
+  if (title.includes(q)) return 2
+  const words = new Set(normalizeText(`${result.title} ${result.author ?? ''}`).split(' '))
+  return q.split(' ').every((w) => words.has(w)) ? 3 : 4
+}
+
+/** Primero español, después inglés, después otros idiomas con alfabeto latino (o sin idioma,
+ *  como AniList, que trae el título en romaji o inglés) y al final títulos en otra escritura
+ *  (japonés, chino, coreano...). */
+const OTHER_SCRIPT = /[Ѐ-ӿ֐-ۿ฀-๿぀-ヿ㐀-鿿가-힯]/
+
+function languageRank(result: BookSearchResult): number {
+  if (OTHER_SCRIPT.test(result.title)) return 3
+  const lang = (result.language ?? '').toLowerCase()
+  if (lang.startsWith('es')) return 0
+  if (lang.startsWith('en')) return 1
+  return 2
+}
+
+/** null si Google Books no respondió (después de los reintentos). */
+async function googleSearch(query: string, maxResults: number): Promise<BookSearchResult[] | null> {
   try {
-    const url = withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=${maxResults}`)
-    const res = await fetchWithRetry(url)
-    if (res?.ok) {
-      const data = await res.json()
-      const items: GoogleVolume[] = data.items ?? []
-      results.push(...items.map((item) => mapGoogleVolume(item)))
-    }
+    const res = await fetchWithRetry(withKey(`${GOOGLE_BOOKS_API}?q=${encodeURIComponent(query)}&maxResults=${maxResults}`))
+    if (!res?.ok) return null
+    const data = await res.json()
+    const items: GoogleVolume[] = data.items ?? []
+    return items.map((item) => mapGoogleVolume(item))
   } catch {
-    // seguimos con las demás fuentes aunque Google Books falle
+    return null
+  }
+}
+
+async function openLibrarySearch(query: string, maxResults: number): Promise<BookSearchResult[]> {
+  try {
+    // lang=es: pone primero las ediciones en español, sin dejar fuera las demás.
+    const olRes = await fetchWithRetry(
+      `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${maxResults}&lang=es&fields=title,author_name,cover_i,number_of_pages_median,language,isbn`
+    )
+    if (!olRes?.ok) return []
+    const olData = await olRes.json()
+    const docs: OpenLibraryDoc[] = olData.docs ?? []
+    return docs.map(mapOpenLibraryDoc)
+  } catch {
+    return []
+  }
+}
+
+export interface BookSearchOutcome {
+  results: BookSearchResult[]
+  /** true si Google Books no respondió: si no hay resultados, no es que el libro no exista. */
+  googleFailed: boolean
+}
+
+/** Busca en Google Books. Si no aparece nada que se parezca al título en un idioma con
+ *  alfabeto latino (o Google no respondió), completa con Open Library y AniList (pensada
+ *  para manga, manhwa, manhua y novela ligera), en paralelo. Ordena por parecido con la
+ *  búsqueda y por idioma, sin duplicados, y se queda con los primeros. */
+export async function searchBooks(query: string, maxResults = 3): Promise<BookSearchOutcome> {
+  const google = await googleSearch(query, Math.min(Math.max(maxResults * 2, 10), 40))
+  let candidates = google ?? []
+
+  const hasGoodMatch = candidates.some((r) => matchRank(r, query) <= 3 && languageRank(r) < 3)
+  if (!hasGoodMatch) {
+    const [openLibrary, aniList] = await Promise.all([
+      openLibrarySearch(query, maxResults),
+      searchAniListManga(query, Math.min(maxResults, 5)),
+    ])
+    candidates = [...candidates, ...openLibrary, ...aniList]
   }
 
-  if (results.length < maxResults) {
-    try {
-      const olRes = await fetchWithRetry(
-        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${maxResults}&fields=title,author_name,cover_i,number_of_pages_median,language,isbn`
-      )
-      if (olRes?.ok) {
-        const olData = await olRes.json()
-        const docs: OpenLibraryDoc[] = olData.docs ?? []
-        const existingTitles = new Set(results.map((r) => r.title.toLowerCase()))
-        for (const doc of docs) {
-          if (results.length >= maxResults) break
-          const mapped = mapOpenLibraryDoc(doc)
-          if (existingTitles.has(mapped.title.toLowerCase())) continue
-          results.push(mapped)
-          existingTitles.add(mapped.title.toLowerCase())
-        }
-      }
-    } catch {
-      // si también falla Open Library, seguimos con AniList
-    }
+  // sort es estable: con el mismo parecido e idioma se respeta el orden de cada fuente.
+  const ranked = [...candidates].sort(
+    (a, b) => matchRank(a, query) - matchRank(b, query) || languageRank(a) - languageRank(b)
+  )
+  const seen = new Set<string>()
+  const results: BookSearchResult[] = []
+  for (const r of ranked) {
+    const key = `${normalizeText(r.title)}|${normalizeText(r.author ?? '')}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    results.push(r)
+    if (results.length >= maxResults) break
   }
+  return { results, googleFailed: google === null }
+}
 
-  if (results.length < maxResults) {
-    const aniListResults = await searchAniListManga(query, maxResults - results.length)
-    const existingTitles = new Set(results.map((r) => r.title.toLowerCase()))
-    for (const mapped of aniListResults) {
-      if (results.length >= maxResults) break
-      if (existingTitles.has(mapped.title.toLowerCase())) continue
-      results.push(mapped)
-      existingTitles.add(mapped.title.toLowerCase())
-    }
-  }
-
-  return results
+/** Igual que searchBooks, solo los resultados (lo usa la importación de Goodreads). */
+export async function searchBooksByQueryMultiple(query: string, maxResults = 3): Promise<BookSearchResult[]> {
+  return (await searchBooks(query, maxResults)).results
 }

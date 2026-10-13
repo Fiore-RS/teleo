@@ -10,15 +10,22 @@ interface BookCardPriorityProps {
   /** Posición en la lista (1, 2, 3...). Se muestra como un numerito sobre la portada. */
   position?: number
   onStartReading: () => void
+  /** Tocar la portada abre Detalles del libro (V.3.0.1). */
+  onOpen?: () => void
 }
 
 /** Libro de "Mi lista de esta temporada" (Tu rincón): portada arriba, datos del libro y botón de
  *  acción abajo. Rediseño 2026: sin tarjeta propia (la tarjeta contenedora la pone Mesa), con
  *  el número de prioridad sobre la portada y el botón siempre alineado abajo. */
-export function BookCardPriority({ title, author, coverUrl, position, onStartReading }: BookCardPriorityProps) {
+export function BookCardPriority({ title, author, coverUrl, position, onStartReading, onOpen }: BookCardPriorityProps) {
+  // Con onOpen, la portada es un botón; sin él (mientras se organiza), no hace nada.
+  const CoverTag = onOpen ? 'button' : 'div'
   return (
     <div className="h-full flex flex-col gap-1.5">
-      <div className="relative aspect-2/3 w-full rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]">
+      <CoverTag
+        {...(onOpen ? { type: 'button' as const, onClick: onOpen, 'aria-label': `Ver detalles de ${title}` } : {})}
+        className="relative aspect-2/3 w-full rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)] block p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+      >
         {coverUrl ? (
           <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover" />
         ) : (
@@ -32,7 +39,7 @@ export function BookCardPriority({ title, author, coverUrl, position, onStartRea
           </span>
         )}
         <DogEar status="pendiente" size={24} className="absolute top-0 right-0" />
-      </div>
+      </CoverTag>
 
       <p className="text-body-md font-semibold text-text leading-tight line-clamp-2 min-h-[2.5em] mt-0.5">{title}</p>
       {author && <p className="text-body-sm text-text-secondary truncate">{author}</p>}

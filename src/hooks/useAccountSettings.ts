@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { USERNAME_COOLDOWN_DAYS } from '../lib/usernameCooldown'
 import { supabase } from '../lib/supabase'
+import { authErrorMessage } from '../lib/authErrors'
 
 export function useAccountSettings(userId: string | undefined) {
   const [isSaving, setIsSaving] = useState(false)
@@ -21,14 +22,14 @@ export function useAccountSettings(userId: string | undefined) {
     setIsSaving(true)
     const { error } = await supabase.auth.updateUser({ email: newEmail })
     setIsSaving(false)
-    return { error: error?.message ?? null }
+    return { error: error ? authErrorMessage(error, 'changeEmail') : null }
   }
 
   async function updatePassword(newPassword: string) {
     setIsSaving(true)
     const { error } = await supabase.auth.updateUser({ password: newPassword })
     setIsSaving(false)
-    return { error: error?.message ?? null }
+    return { error: error ? authErrorMessage(error, 'changePassword') : null }
   }
 
   return { updateUsername, updateEmail, updatePassword, isSaving }

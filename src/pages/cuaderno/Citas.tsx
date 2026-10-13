@@ -5,6 +5,7 @@ import { Skeleton } from '../../assets/components/atoms/Skeleton'
 import { Card, CardAction } from '../../assets/components/molecules/Card'
 import { QuoteMenu } from '../../assets/components/molecules/QuoteMenu'
 import type { QuoteWithBook } from '../../hooks/useQuotes'
+import { useStaggerOnce } from '../../lib/motion'
 
 interface CitasProps {
   quotes: QuoteWithBook[]
@@ -99,6 +100,7 @@ function QuoteCard({
  *  reseña. Desde la V.2.1.1 cada cita tiene su menú (⋯) para compartirla, ver la reseña,
  *  editarla o eliminarla. */
 export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEdit, onDelete }: CitasProps) {
+  const stagger = useStaggerOnce('cuaderno-citas')
   const [isRandomMenuOpen, setIsRandomMenuOpen] = useState(false)
   const [randomIndex, setRandomIndex] = useState(() => Math.floor(Math.random() * 1000))
   const random = quotes.length > 0 ? quotes[randomIndex % quotes.length] : null
@@ -164,7 +166,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
           para que el orden de más reciente a más antigua se siga leyendo de arriba hacia abajo. */}
       <div className="grid grid-cols-2 gap-2.5 items-start">
         {[0, 1].map((col) => (
-          <div key={col} className="flex flex-col gap-2.5 min-w-0 stagger-children">
+          <div key={col} className={`flex flex-col gap-2.5 min-w-0 ${stagger}`}>
             {quotes
               .filter((_, i) => i % 2 === col)
               .map((q) => (
