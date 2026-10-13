@@ -24,6 +24,7 @@ import { formatShortDate } from '../lib/date'
 import { readingDatesAreValid, readingDaysLabel } from '../lib/readingDates'
 import { Avatar } from '../assets/components/atoms/Avatar'
 import { ReadingDatesFields } from '../assets/components/molecules/ReadingDatesFields'
+import { topQuoteOrder } from '../lib/quoteOrder'
 import {
   FormActions, FormCard, FormCollapsible, FormSection, FormSwitchRow,
 } from '../assets/components/molecules/FormLayout'
@@ -199,8 +200,17 @@ export function Resena({ bookId, onClose }: ResenaProps) {
               pendingRatings.map(({ label, icon, value }) => ({ review_id: created.id, label, icon, value }))
             ),
           pendingQuotes.length > 0 &&
-            supabase.from('favorite_quotes').insert(
-              pendingQuotes.map((q, i) => ({ review_id: created.id, quote_text: q.quote_text, sort_order: i, page: q.page }))
+            // Arriba del orden libre de Cuaderno › Citas (V.3.1.0), en el orden en que se escribieron.
+            (user ? topQuoteOrder(user.id) : Promise.resolve(0)).then((top) =>
+              supabase.from('favorite_quotes').insert(
+                pendingQuotes.map((q, i) => ({
+                  review_id: created.id,
+                  quote_text: q.quote_text,
+                  sort_order: i,
+                  page: q.page,
+                  cuaderno_sort_order: top - (pendingQuotes.length - 1 - i),
+                }))
+              )
             ),
         ])
         setPendingRatings([])
