@@ -25,6 +25,8 @@ import { useQuotes } from '../../../hooks/useQuotes'
 import { useQueryClient } from '@tanstack/react-query'
 import { useUserCustomMoods } from '../../../hooks/useUserCustomMoods'
 import { traitsFromBook, traitsToColumns, type BookTraits } from '../../../lib/bookTraits'
+import { useSaga } from '../../../hooks/useSaga'
+import { advanceNextInSaga, findNextInSaga, type NextInSaga } from '../../../lib/nextInSaga'
 
 interface UpdateProgressModalProps {
   bookId: string
@@ -38,6 +40,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   const queryClient = useQueryClient()
   const knownCustomMoods = useUserCustomMoods(user?.id)
   const bookTraits = traitsFromBook(book)
+  // Para "Sigue en la saga" al terminar (V.3.1.0).
+  const { saga, books: sagaBooks } = useSaga(book?.saga_id ?? undefined)
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
@@ -114,6 +118,11 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   async function handleSaveTraits(traits: BookTraits) {
     await updateBook(traitsToColumns(traits, bookTraits))
     void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
+  }
+
+  async function handleAdvanceNext(next: NextInSaga) {
+    await advanceNextInSaga(next)
+    void queryClient.invalidateQueries()
   }
 
   function handleFinishDone(writeReview: boolean) {
@@ -316,6 +325,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
           onConfirm={handleFinishConfirm}
           onSaveTraits={handleSaveTraits}
           onDone={handleFinishDone}
+          nextInSaga={findNextInSaga(bookId, saga, sagaBooks)}
+          onAdvanceNext={handleAdvanceNext}
         />
       )}
 
