@@ -13,7 +13,7 @@ import { StatusMenu } from './StatusMenu'
 import { FormatPicker } from './EditBookForm'
 import { FormActions, FormCard, FormRow, FormSection, FormSwitchRow } from './FormLayout'
 import { readingDatesAreValid, type ReadingDates } from '../../../lib/readingDates'
-import { searchBooksByQueryMultiple, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
+import { searchBooks, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
 import type { ReadingStatus } from '../../../lib/status'
 import { categoryOptions, type BookFormat } from '../../../lib/options'
 import { languageLabel, languageOptionsFrom } from '../../../lib/languages'
@@ -65,6 +65,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const [results, setResults] = useState<BookSearchResult[]>([])
   const [result, setResult] = useState<BookSearchResult | null>(null)
   const [notFound, setNotFound] = useState(false)
+  // Google Books no respondió: el aviso es distinto a "no encontramos ese libro".
+  const [searchFailed, setSearchFailed] = useState(false)
   const [isScannerOpen, setIsScannerOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [status, setStatus] = useState<ReadingStatus>(initialStatus)
@@ -95,6 +97,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setResults([])
     setResult(null)
     setNotFound(false)
+    setSearchFailed(false)
     setIsSearching(false)
     setStatus(initialStatus)
     setCategory('Novela')
@@ -125,10 +128,12 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     if (!query.trim() || isSearching) return
     setIsSearching(true)
     setNotFound(false)
+    setSearchFailed(false)
     setResults([])
-    const found = await searchBooksByQueryMultiple(query.trim(), 3)
+    const { results: found, googleFailed } = await searchBooks(query.trim(), 10)
     setIsSearching(false)
     if (found.length > 0) setResults(found)
+    else if (googleFailed) setSearchFailed(true)
     else setNotFound(true)
   }
 
@@ -136,6 +141,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setIsScannerOpen(false)
     setIsSearching(true)
     setNotFound(false)
+    setSearchFailed(false)
     const found = await searchBookByIsbn(isbn)
     setIsSearching(false)
     if (found) selectResult(found)
@@ -260,6 +266,11 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       {notFound && (
         <p className="text-center text-body-sm text-primary-text mt-3 animate-fade-in">
           No encontramos ese libro. Intenta con otro título o el ISBN exacto.
+        </p>
+      )}
+      {searchFailed && (
+        <p className="text-center text-body-sm text-primary-text mt-3 animate-fade-in">
+          El buscador de libros no respondió. Inténtalo de nuevo en un momento.
         </p>
       )}
     </>
