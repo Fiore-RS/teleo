@@ -8,6 +8,7 @@ import { Card } from '../assets/components/molecules/Card'
 import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
 import type { Database } from '../types/database'
 import type { ProfileCounts } from '../hooks/useProfileLists'
+import { useStaggerOnce } from '../lib/motion'
 
 type Book = Pick<Database['public']['Tables']['books']['Row'], 'id' | 'title' | 'cover_url' | 'status'>
 
@@ -96,6 +97,7 @@ export function ProfileView({
   onSeeAllBooks,
   footer,
 }: ProfileViewProps) {
+  const stagger = useStaggerOnce('perfil')
   const currentYear = new Date().getFullYear()
   const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
   const displayName = nickname?.trim() || username
@@ -178,7 +180,7 @@ export function ProfileView({
           </p>
         )}
 
-        <div className="flex flex-col gap-5 mt-5 stagger-children">
+        <div className={`flex flex-col gap-5 mt-5 ${stagger}`}>
           {/* Tu biblioteca: total, barra por estado y leyenda; cada estado abre Estante. */}
           <Card tab={{ label: 'Tu biblioteca', icon: Library }}>
             {areListsLoading ? (

@@ -367,7 +367,7 @@ export function DetalleSaga({
     );
     const listClass = "";
     const list = !isReorderingBooks ? (
-      <div className={mode === "view" ? "stagger-children" : ""}>{rows}</div>
+      <div>{rows}</div>
     ) : (
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
         <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>

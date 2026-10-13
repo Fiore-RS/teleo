@@ -27,7 +27,7 @@ export function Novedades() {
     <div className="min-h-screen bg-glow-top px-4 pt-4">
       <PageHeader title="Novedades" subtitle="Lo que ha cambiado en Teleo, versión por versión." />
 
-      <div className="flex flex-col gap-4 stagger-children">
+      <div className="flex flex-col gap-4">
         {changelog.map((entry, i) => (
           <Fragment key={entry.version}>
           {i === firstSeenIndex && i > 0 && (

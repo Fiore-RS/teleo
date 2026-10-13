@@ -306,7 +306,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
             )}
 
             {showView && (
-              <div className="stagger-children">
+              <div>
                 {((review.content_warnings?.length ?? 0) > 0 || review.content_warnings_note) && (
                   <div className="mb-5.5">
                     <ContentWarningsCard warnings={review.content_warnings ?? []} note={review.content_warnings_note} />

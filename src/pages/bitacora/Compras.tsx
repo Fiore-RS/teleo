@@ -11,6 +11,7 @@ import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MONTH_ABBR, MONTH_NAMES } from '../../lib/months'
 import { SortMenu, type SortMenuOption } from '../../assets/components/molecules/SortMenu'
 import { DetalleLibro } from '../DetalleLibro'
+import { useStaggerOnce } from '../../lib/motion'
 
 type Filter = 'todos' | 'sin-precio' | 'gratis' | 'regalos'
 type Sort = 'precio' | 'fecha' | 'titulo' | 'autor'
@@ -86,6 +87,7 @@ interface ComprasProps {
  *  por mes de compra (al ordenar por fecha) con su precio. Los deseados no cuentan como compra: solo suman en "Completar deseados".
  *  Tocar un libro abre su detalle, donde se agrega o cambia el precio. */
 export function Compras({ userId, currency }: ComprasProps) {
+  const stagger = useStaggerOnce('bitacora-compras')
   const { books, isLoading } = usePurchases(userId)
   const [filter, setFilter] = useState<Filter>('todos')
   const [sort, setSort] = useState<Sort>('fecha')
@@ -165,7 +167,7 @@ export function Compras({ userId, currency }: ComprasProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-5 stagger-children">
+      <div className={`flex flex-col gap-5 ${stagger}`}>
         {/* Total invertido */}
         <Card tab={{ label: 'Total invertido', icon: Coins }} tone="magenta">
           <p className="font-display font-semibold text-[36px] leading-none text-text tabular-nums break-words">{money(summary.invested)}</p>

@@ -103,7 +103,7 @@ export function Tutorial() {
         subtitle="Un repaso punto por punto de todo lo que puedes hacer en cada sección de la app."
       />
 
-      <div className="flex flex-col gap-4 stagger-children">
+      <div className="flex flex-col gap-4">
         {sections.map(({ icon: Icon, title, points }) => (
           <Card key={title} tab={{ label: title, icon: Icon }}>
             <ul className="space-y-2.5">
