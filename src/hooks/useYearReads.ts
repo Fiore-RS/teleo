@@ -12,6 +12,11 @@ export interface YearRead {
   month: number // 1-12
   category: string | null
   format: string | null
+  /** Rasgos del libro (V.3.1.0), para "Géneros y ánimos" del año. */
+  genres: string[]
+  moods: string[]
+  custom_moods: string[]
+  pace: string | null
 }
 
 export interface YearReadsData {
@@ -34,6 +39,10 @@ interface HistoryRow {
     total_duration_seconds: number | null
     format: string | null
     category: string | null
+    genres: string[]
+    moods: string[]
+    custom_moods: string[]
+    pace: string | null
   } | null
 }
 
@@ -45,7 +54,7 @@ export function useYearReads(userId: string | undefined, year: number) {
     async () => {
       const { data: rows } = await supabase
         .from('reading_history')
-        .select('id, book_id, end_date, books(title, author, cover_url, total_pages, total_duration_seconds, format, category)')
+        .select('id, book_id, end_date, books(title, author, cover_url, total_pages, total_duration_seconds, format, category, genres, moods, custom_moods, pace)')
         .eq('user_id', userId!)
         .gte('end_date', `${year}-01-01`)
         .lte('end_date', `${year}-12-31`)
@@ -69,6 +78,10 @@ export function useYearReads(userId: string | undefined, year: number) {
           month: parseInt(row.end_date.slice(5, 7), 10),
           category: row.books.category,
           format: row.books.format,
+          genres: row.books.genres ?? [],
+          moods: row.books.moods ?? [],
+          custom_moods: row.books.custom_moods ?? [],
+          pace: row.books.pace,
         })
       }
       return { reads, totalPages, totalAudioSeconds }
