@@ -15,6 +15,25 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.1.0',
+    announced: true,
+    date: '13 de octubre de 2026',
+    title: 'Conocer mejor lo que lees',
+    items: [
+      'Cada libro puede tener hasta 3 géneros (también BL y GL), hasta 3 ánimos y su ritmo. Ponlos en Editar libro o al terminar un libro, en el nuevo paso "¿Cómo fue?".',
+      'Crea tus propios ánimos con "+ Otro ánimo": quedan como opción para todos tus libros.',
+      'Al agregar un libro desde la búsqueda, el género viene sugerido. Para los que ya tenías, usa "Completar géneros" en Configuración.',
+      '"Completa tu estante" te muestra tus libros leídos uno por uno para ponerles género, ánimo y ritmo.',
+      'Nuevo estado "En pausa": deja un libro a un lado sin abandonarlo. Guarda desde cuándo y por qué, y los días en pausa no cuentan para tu ritmo.',
+      'Al terminar un libro de una saga, Teleo te propone el siguiente: empezarlo o pasarlo a pendientes.',
+      'Los filtros de Estante se renovaron y suman género, ánimo, ritmo y etiquetas.',
+      'Al editar un libro aparecen las etiquetas que ya usaste; un toque y listo.',
+      '"¿Qué leo ahora?" estrena diseño y puede elegir por género, ánimo o ritmo.',
+      'En Bitácora, "Géneros y ánimos" te muestra lo que más lees, en Estadísticas y en el Resumen de cada año.',
+      'Ordena tus citas en Cuaderno por título, autor, fecha o a tu gusto, arrastrándolas.',
+    ],
+  },
+  {
     version: '3.0.1',
     date: '13 de octubre de 2026',
     title: 'A buen ritmo',
