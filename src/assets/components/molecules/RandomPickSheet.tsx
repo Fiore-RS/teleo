@@ -1,12 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
-import { BookOpen, ImageOff, Shuffle, Sparkles } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { BookOpen, ImageOff, Shuffle } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 import { queryClient } from '../../../lib/queryClient'
 import { recomputeSagaStatus } from '../../../lib/sagaStatus'
 import { prefersReducedMotion } from '../../../lib/motion'
 import { useCachedQuery } from '../../../hooks/useCachedQuery'
-import { Modal } from '../atoms/Modal'
+import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
+import { Select } from '../atoms/Select'
+import { FormActions, FormCollapsible, FormRow } from './FormLayout'
+import { genreLabel, genreOptions, moodLabel, moodOptions, paceLabel, paceOptions } from '../../../lib/bookTraits'
 import { CoverImage } from '../atoms/CoverImage'
 import { coverDisplaySrc } from '../../../lib/coverSrc'
 import { CoverSkeleton, Skeleton } from '../atoms/Skeleton'
@@ -19,6 +22,27 @@ interface PendingBook {
   cover_url: string | null
   total_pages: number | null
   saga_id: string | null
+  genres: string[] | null
+  moods: string[] | null
+  custom_moods: string[] | null
+  pace: string | null
+}
+
+/** Filtro de la ruleta (V.3.1.0). El ánimo puede ser fijo ("m:dark") o propio ("c:Cozy"). */
+interface PickFilter {
+  genre: string
+  mood: string
+  pace: string
+}
+
+const NO_FILTER: PickFilter = { genre: '', mood: '', pace: '' }
+
+function matchesPick(book: PendingBook, f: PickFilter): boolean {
+  if (f.genre && !(book.genres ?? []).includes(f.genre)) return false
+  if (f.mood.startsWith('m:') && !(book.moods ?? []).includes(f.mood.slice(2))) return false
+  if (f.mood.startsWith('c:') && !(book.custom_moods ?? []).includes(f.mood.slice(2))) return false
+  if (f.pace && book.pace !== f.pace) return false
+  return true
 }
 
 const EMPTY: PendingBook[] = []
@@ -71,7 +95,9 @@ interface RandomPickSheetProps {
   onClose: () => void
 }
 
-/** "¿Qué leo ahora?" (fase 2): elige al azar uno de los libros pendientes. "Otra vez" pasa
+/** "¿Qué leo ahora?" (fase 2): elige al azar uno de los libros pendientes. V.3.1.0: hoja con
+ *  los botones abajo y "Filtrar" por género, ánimo o ritmo (solo con los valores que tienen
+ *  los pendientes, así nunca queda vacío por un filtro imposible). "Otra vez" pasa
  *  título, autor y portada como una ruleta que frena y cae en otro (nunca repite el que se
  *  estaba mostrando; el elegido sale de todos los pendientes), "Ahora no"
  *  cierra sin cambiar nada y "Empezar a leer" lo pasa a Leyendo, preguntando antes si hoy es
@@ -79,12 +105,12 @@ interface RandomPickSheetProps {
  *
  *  Se monta al abrirse, así cada vez arranca con una elección nueva. */
 export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
-  const { data: books, isLoading } = useCachedQuery(
+  const { data: allBooks, isLoading } = useCachedQuery(
     ['pendingBooks', userId],
     async () => {
       const { data } = await supabase
         .from('books')
-        .select('id, title, author, cover_url, total_pages, saga_id')
+        .select('id, title, author, cover_url, total_pages, saga_id, genres, moods, custom_moods, pace')
         .eq('user_id', userId!)
         .eq('status', 'pendiente')
       return (data ?? []) as PendingBook[]
@@ -92,6 +118,36 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
     EMPTY,
     { enabled: !!userId }
   )
+
+  const [filter, setFilter] = useState<PickFilter>(NO_FILTER)
+  const books = useMemo(() => allBooks.filter((b) => matchesPick(b, filter)), [allBooks, filter])
+  const isFiltered = filter.genre !== '' || filter.mood !== '' || filter.pace !== ''
+
+  // Opciones del filtro: solo lo que aparece en los pendientes.
+  const filterOptions = useMemo(() => {
+    const genres = new Set(allBooks.flatMap((b) => b.genres ?? []))
+    const moods = new Set(allBooks.flatMap((b) => b.moods ?? []))
+    const ownMoods = [...new Set(allBooks.flatMap((b) => b.custom_moods ?? []))].sort((a, b) => a.localeCompare(b, 'es'))
+    const paces = new Set(allBooks.map((b) => b.pace).filter(Boolean))
+    return {
+      genres: genreOptions.filter((o) => genres.has(o.key)).map((o) => ({ value: o.key, label: o.label })),
+      moods: [
+        ...moodOptions.filter((o) => moods.has(o.key)).map((o) => ({ value: `m:${o.key}`, label: o.label })),
+        ...ownMoods.map((m) => ({ value: `c:${m}`, label: m })),
+      ],
+      paces: paceOptions.filter((o) => paces.has(o.key)).map((o) => ({ value: o.key, label: o.label })),
+    }
+  }, [allBooks])
+  const hasFilterOptions = filterOptions.genres.length + filterOptions.moods.length + filterOptions.paces.length > 0
+
+  const filterSummary =
+    [
+      filter.genre ? genreLabel(filter.genre) : null,
+      filter.mood ? (filter.mood.startsWith('m:') ? moodLabel(filter.mood.slice(2)) : filter.mood.slice(2)) : null,
+      filter.pace ? paceLabel(filter.pace) : null,
+    ]
+      .filter(Boolean)
+      .join(' · ') || 'Cualquiera'
 
   // Primera elección: un número al azar fijado al abrir, así no hace falta un efecto.
   const [seed] = useState(() => Math.random())
@@ -115,6 +171,16 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
   }, [pool, books])
 
   useEffect(() => () => window.clearTimeout(timerRef.current), [])
+
+  // Cambiar el filtro vuelve a elegir entre los que coinciden (V.3.1.0).
+  function changeFilter(patch: Partial<PickFilter>) {
+    window.clearTimeout(timerRef.current)
+    setFlashId(null)
+    setPickedId(null)
+    setPool(null)
+    seenRef.current.clear()
+    setFilter((prev) => ({ ...prev, ...patch }))
+  }
 
   const current = books.find((b) => b.id === pickedId) ?? (books.length > 0 ? books[Math.floor(seed * books.length)] : null)
   const shown = (flashId && books.find((b) => b.id === flashId)) || current
@@ -175,7 +241,30 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
     onClose()
   }
 
+  const filterCard = hasFilterOptions && (
+    <FormCollapsible title="Filtrar" summary={filterSummary} className="mb-5">
+      <div className="border-t border-border divide-y divide-border">
+        {filterOptions.genres.length > 0 && (
+          <FormRow label="Género">
+            <Select bare options={[{ value: '', label: 'Cualquiera' }, ...filterOptions.genres]} value={filter.genre} onChange={(e) => changeFilter({ genre: e.target.value })} />
+          </FormRow>
+        )}
+        {filterOptions.moods.length > 0 && (
+          <FormRow label="Ánimo">
+            <Select bare options={[{ value: '', label: 'Cualquiera' }, ...filterOptions.moods]} value={filter.mood} onChange={(e) => changeFilter({ mood: e.target.value })} />
+          </FormRow>
+        )}
+        {filterOptions.paces.length > 0 && (
+          <FormRow label="Ritmo">
+            <Select bare options={[{ value: '', label: 'Cualquiera' }, ...filterOptions.paces]} value={filter.pace} onChange={(e) => changeFilter({ pace: e.target.value })} />
+          </FormRow>
+        )}
+      </div>
+    </FormCollapsible>
+  )
+
   let content
+  let footer = null
   if (isLoading) {
     content = (
       <div className="flex flex-col items-center" aria-label="Cargando">
@@ -184,24 +273,39 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
         <Skeleton className="h-3.5 w-1/3 mt-2 rounded-full" />
       </div>
     )
-  } else if (!shown) {
+  } else if (allBooks.length === 0) {
+    // Aviso sin ícono (V.3.1.0), como el resto de los avisos desde la 2.2.0.
     content = (
-      <div className="text-center">
-        <span className="mx-auto w-14 h-14 rounded-full bg-pink-soft text-pink-text flex items-center justify-center mb-3">
-          <Sparkles size={24} />
-        </span>
-        <p className="font-display font-semibold text-display-md text-text">No tienes libros pendientes</p>
-        <p className="text-body-md text-text-secondary mt-2">
+      <div className="animate-fade-in">
+        <p className="font-display font-semibold text-body-lg text-text">No tienes libros pendientes</p>
+        <p className="text-body-md text-text-secondary mt-1.5">
           Cuando agregues libros como Pendiente en tu Estante, aquí te ayudo a elegir el próximo.
         </p>
-        <Button variant="primary" className="mt-5" onClick={onClose}>Entendido</Button>
       </div>
+    )
+    footer = (
+      <FormActions>
+        <Button variant="primary" onClick={onClose}>Entendido</Button>
+      </FormActions>
+    )
+  } else if (!shown) {
+    content = (
+      <>
+        {filterCard}
+        <p className="text-body-md text-text-secondary text-center">Ningún pendiente coincide con ese filtro.</p>
+      </>
+    )
+    footer = (
+      <FormActions>
+        <Button variant="outline" onClick={() => changeFilter(NO_FILTER)}>Quitar filtro</Button>
+      </FormActions>
     )
   } else {
     content = (
       <>
+        {filterCard}
         <p className="text-center text-body-md text-text-secondary">Tu próxima lectura podría ser…</p>
-        <div className="flex flex-col items-center text-center mt-4" aria-live="polite">
+        <div className="flex flex-col items-center text-center mt-4 mb-2" aria-live="polite">
           <div className="w-32 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-card flex items-center justify-center">
             {shown.cover_url ? (
               <CoverImage src={shown.cover_url} alt="" loading="eager" className="w-full h-full object-cover" />
@@ -212,31 +316,31 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
           <p className="font-display font-semibold text-display-md text-text mt-4 text-balance">{shown.title}</p>
           {shown.author && <p className="text-body-md text-text-secondary mt-1">{shown.author}</p>}
           {shown.total_pages ? <p className="text-body-sm text-text-muted mt-1">{shown.total_pages} páginas</p> : null}
-          {books.length === 1 && <p className="text-body-sm text-text-muted mt-3">Es tu único pendiente.</p>}
+          {books.length === 1 && (
+            <p className="text-body-sm text-text-muted mt-3">{isFiltered ? 'Es el único pendiente con ese filtro.' : 'Es tu único pendiente.'}</p>
+          )}
         </div>
-
-        <Button variant="orange" className="mt-6" onClick={() => setIsAskingDate(true)} disabled={isShuffling} isLoading={isStarting}>
+      </>
+    )
+    footer = (
+      <FormActions>
+        <Button variant="outline" onClick={handleAgain} disabled={books.length < 2 || isShuffling}>
+          <Shuffle size={16} />
+          Otra vez
+        </Button>
+        <Button variant="orange" onClick={() => setIsAskingDate(true)} disabled={isShuffling} isLoading={isStarting}>
           <BookOpen size={18} />
           Empezar a leer
         </Button>
-        <div className="flex gap-2.5 mt-2.5">
-          <Button variant="outline" className="flex-1" onClick={handleAgain} disabled={books.length < 2 || isShuffling}>
-            <Shuffle size={16} />
-            Otra vez
-          </Button>
-          <Button variant="outline" className="flex-1" onClick={onClose} disabled={isShuffling}>
-            Ahora no
-          </Button>
-        </div>
-      </>
+      </FormActions>
     )
   }
 
   return (
     <>
-      <Modal variant="sheet" isOpen onClose={onClose} title="¿Qué leo ahora?">
+      <Sheet onClose={onClose} title="¿Qué leo ahora?" footer={footer ?? undefined}>
         {content}
-      </Modal>
+      </Sheet>
       <StartReadingDateModal
         isOpen={isAskingDate}
         book={current}

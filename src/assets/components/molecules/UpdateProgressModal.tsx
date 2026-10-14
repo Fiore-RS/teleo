@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageOff, Check, Flag, Quote } from 'lucide-react'
+import { ImageOff, Check, Flag, Pause, Quote } from 'lucide-react'
 import { FormActions, FormCard, FormRow } from './FormLayout'
 import { Sheet } from '../atoms/Sheet'
 import { DetailSkeleton } from '../atoms/Skeleton'
@@ -16,11 +16,17 @@ import { Button } from '../atoms/Button'
 import { AbandonarLibroModal } from './AbandonarLibroModal'
 import { MissingStartDateModal } from './MissingStartDateModal'
 import { FinishBookSheet } from './FinishBookSheet'
+import { PauseBookSheet } from './PauseBookSheet'
 import type { ReadingDates } from '../../../lib/readingDates'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { Resena } from '../../../pages/Resena'
 import { AddQuoteSheet } from './AddQuoteSheet'
 import { useQuotes } from '../../../hooks/useQuotes'
+import { useQueryClient } from '@tanstack/react-query'
+import { useUserCustomMoods } from '../../../hooks/useUserCustomMoods'
+import { traitsFromBook, traitsToColumns, type BookTraits } from '../../../lib/bookTraits'
+import { useSaga } from '../../../hooks/useSaga'
+import { advanceNextInSaga, findNextInSaga, type NextInSaga } from '../../../lib/nextInSaga'
 
 interface UpdateProgressModalProps {
   bookId: string
@@ -31,9 +37,15 @@ interface UpdateProgressModalProps {
 export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgressModalProps) {
   const { user } = useAuth()
   const { book, updateBook } = useBook(bookId)
+  const queryClient = useQueryClient()
+  const knownCustomMoods = useUserCustomMoods(user?.id)
+  const bookTraits = traitsFromBook(book)
+  // Para "Sigue en la saga" al terminar (V.3.1.0).
+  const { saga, books: sagaBooks } = useSaga(book?.saga_id ?? undefined)
   const [value, setValue] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
+  const [isPauseOpen, setIsPauseOpen] = useState(false)
   const [isFinishOpen, setIsFinishOpen] = useState(false)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
   const [isAddingQuote, setIsAddingQuote] = useState(false)
@@ -91,8 +103,9 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     onClose()
   }
 
-  // Terminar un libro: se eligen las fechas en FinishBookSheet y la reseña es opcional.
-  async function handleFinishConfirm(dates: ReadingDates, writeReview: boolean) {
+  // Terminar un libro: se eligen las fechas en FinishBookSheet, después "¿Cómo fue?" (V.3.1.0)
+  // y la reseña es opcional.
+  async function handleFinishConfirm(dates: ReadingDates) {
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
@@ -100,6 +113,19 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     // "Mis años en libros" y el Resumen la cuenten en el año de la fecha de fin.
     await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
     onUpdated()
+  }
+
+  async function handleSaveTraits(traits: BookTraits) {
+    await updateBook(traitsToColumns(traits, bookTraits))
+    void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
+  }
+
+  async function handleAdvanceNext(next: NextInSaga) {
+    await advanceNextInSaga(next)
+    void queryClient.invalidateQueries()
+  }
+
+  function handleFinishDone(writeReview: boolean) {
     setIsFinishOpen(false)
     if (writeReview) setIsReviewOpen(true)
     else onClose()
@@ -107,6 +133,14 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
   function handleReviewClose() {
     setIsReviewOpen(false)
+    onClose()
+  }
+
+  // En pausa (V.3.1.0): el progreso queda guardado y el libro sale de Leyendo ahora.
+  async function handlePauseConfirm(reason: string) {
+    await updateBook({ status: 'pausado', pause_reason: reason || null })
+    setIsPauseOpen(false)
+    onUpdated()
     onClose()
   }
 
@@ -237,7 +271,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
               </p>
             )}
 
-            <div className="flex gap-1.5 mt-3.5 mb-1">
+            {/* 2 × 2 desde la V.3.1.0 (con Pausar, cuatro botones no caben en una fila). */}
+            <div className="grid grid-cols-2 gap-1.5 mt-3.5 mb-1">
               <Button variant="soft" size="sm" className="px-2!" onClick={() => setIsAddingQuote(true)}>
                 <Quote size={14} strokeWidth={2.4} />
                 Cita
@@ -245,6 +280,10 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
               <Button variant="magenta" size="sm" className="px-2!" onClick={() => setIsFinishOpen(true)}>
                 <Check size={14} strokeWidth={2.8} />
                 Terminado
+              </Button>
+              <Button variant="outline" size="sm" className="px-2! text-text-secondary!" onClick={() => setIsPauseOpen(true)}>
+                <Pause size={13} strokeWidth={2.4} />
+                Pausar
               </Button>
               <Button variant="outline" size="sm" className="px-2! text-text-secondary!" onClick={() => setIsAbandonOpen(true)}>
                 <Flag size={13} strokeWidth={2.4} />
@@ -272,12 +311,22 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         onIgnore={() => setStartDatePromptIgnored(true)}
       />
 
+      {isPauseOpen && book && (
+        <PauseBookSheet book={book} onClose={() => setIsPauseOpen(false)} onConfirm={handlePauseConfirm} />
+      )}
+
       {isFinishOpen && book && (
         <FinishBookSheet
           book={book}
           initialStartDate={book.start_date}
+          traits={bookTraits}
+          knownCustomMoods={knownCustomMoods}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}
+          onSaveTraits={handleSaveTraits}
+          onDone={handleFinishDone}
+          nextInSaga={findNextInSaga(bookId, saga, sagaBooks)}
+          onAdvanceNext={handleAdvanceNext}
         />
       )}
 

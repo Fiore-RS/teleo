@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
 import { computeLongestStreak } from '../lib/streak'
 import { tally, formatLabel, type CountEntry } from '../lib/tally'
+import { computeTraitStats, type TraitStats } from '../lib/traitStats'
 import { languageLabel } from '../lib/languages'
 import { isReviewWritten, REVIEW_CONTENT_COLUMNS } from '../lib/reviews'
 
@@ -46,6 +47,8 @@ export interface LibraryStats {
     sagasInProgress: number
     mostRereadBook: CountEntry | null
   }
+  /** Género, ánimo y ritmo de los libros terminados (V.3.1.0). */
+  rasgos: TraitStats
   calificaciones: {
     avgRating: number | null
     bestRated: BookRef | null
@@ -71,6 +74,7 @@ const emptyStats: LibraryStats = {
   ritmo: { longestStreak: 0, sessionDates: [] },
   coleccion: { byCategory: [], byFormat: [], byLanguage: [], readByCategory: [], readByFormat: [], longestBook: null, shortestBook: null },
   autoresYSeries: { topAuthor: null, sagasCompleted: 0, sagasInProgress: 0, mostRereadBook: null },
+  rasgos: computeTraitStats([]),
   calificaciones: { avgRating: null, bestRated: null, worstRated: null, hasTie: false, quotesCount: 0 },
   historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0, porAnio: [] },
 }
@@ -91,7 +95,7 @@ export function useLibraryStats(userId: string | undefined) {
       { data: sessionsData },
     ] = await Promise.all([
       supabase.from('books')
-        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, created_at')
+        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, created_at, genres, moods, custom_moods, pace')
         .eq('user_id', userId),
       supabase.from('sagas').select('id, status').eq('user_id', userId),
       supabase.from('reviews').select(`id, book_id, ${REVIEW_CONTENT_COLUMNS}`).eq('user_id', userId),
@@ -107,7 +111,8 @@ export function useLibraryStats(userId: string | undefined) {
 
     const bookById = new Map(books.map((b) => [b.id, b]))
     const finished = books.filter((b) => b.status === 'terminado')
-    const reading = books.filter((b) => b.status === 'leyendo')
+    // "Libros en proceso" incluye los que están en pausa (V.3.1.0): se empezaron y no se dejaron.
+    const reading = books.filter((b) => b.status === 'leyendo' || b.status === 'pausado')
     const wishlist = books.filter((b) => b.status === 'deseado')
     const abandoned = books.filter((b) => b.status === 'abandonado')
 
@@ -263,6 +268,7 @@ export function useLibraryStats(userId: string | undefined) {
         sagasInProgress,
         mostRereadBook,
       },
+      rasgos: computeTraitStats(finished),
       calificaciones: { avgRating, bestRated, worstRated, hasTie, quotesCount },
       historialAnual: {
         yearsBreakdown,

@@ -30,6 +30,7 @@
   /* estados: colores icónicos, SOLO para la esquina doblada, la insignia de estado y el menú
      de estado (lib/status.ts). El resto de la interfaz usa la paleta de acentos. */
   --teleo-state-abandoned: #9B948C;
+  --teleo-state-paused: #9A7096;      /* En pausa (V.3.1.0): malva */
   --teleo-state-pending: #5B7A88;
   --teleo-accent-wishlist: #7A2E3A;
   --teleo-accent-reading: #C68A3D;
@@ -37,6 +38,7 @@
   --teleo-finished-soft: #DFE6DD;
   --teleo-reading-soft: #F5E6CB;
   --teleo-pending-soft: #DDE7EB;
+  --teleo-paused-soft: #F0E3EF;
 
   /* Acentos (fase 0.7, inspirados en la bandera lesbiana). Dan color a las secciones sin
      tomar prestados los colores de estado. Cada uno tiene: -text (texto e íconos, pasa AA sobre
@@ -86,6 +88,7 @@
   --teleo-ornament: #7E4550;
 
   --teleo-state-abandoned: #6E6660;
+  --teleo-state-paused: #C59BC6;
   --teleo-state-pending: #89ADBA;
   --teleo-accent-wishlist: #A8465A;
   --teleo-accent-reading: #E3A857;
@@ -93,6 +96,7 @@
   --teleo-finished-soft: #26302A;
   --teleo-reading-soft: #3E3020;
   --teleo-pending-soft: #22313A;
+  --teleo-paused-soft: #352634;
 
   --teleo-orange-text: #F5A874;
   --teleo-orange: #EE8A4E;
@@ -135,6 +139,7 @@
   --color-ornament: var(--teleo-ornament);
 
   --color-state-abandoned: var(--teleo-state-abandoned);
+  --color-state-paused: var(--teleo-state-paused);
   --color-state-pending: var(--teleo-state-pending);
   --color-accent-wishlist: var(--teleo-accent-wishlist);
   --color-accent-reading: var(--teleo-accent-reading);
@@ -142,6 +147,7 @@
   --color-finished-soft: var(--teleo-finished-soft);
   --color-reading-soft: var(--teleo-reading-soft);
   --color-pending-soft: var(--teleo-pending-soft);
+  --color-paused-soft: var(--teleo-paused-soft);
 
   --color-orange-text: var(--teleo-orange-text);
   --color-orange: var(--teleo-orange);

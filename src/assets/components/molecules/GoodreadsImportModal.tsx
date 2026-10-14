@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { FileUp, BookCheck, BookOpen, Bookmark, Heart, BookX, CheckCircle2 } from 'lucide-react'
+import { FileUp, BookCheck, BookOpen, Bookmark, Heart, BookX, CheckCircle2, Pause } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Modal } from '../atoms/Modal'
 import { Button } from '../atoms/Button'
@@ -28,6 +28,7 @@ type Step =
 const STATUS_ROWS: { status: GoodreadsStatus; label: string; icon: LucideIcon }[] = [
   { status: 'terminado', label: 'Terminados', icon: BookCheck },
   { status: 'leyendo', label: 'Leyendo', icon: BookOpen },
+  { status: 'pausado', label: 'En pausa', icon: Pause },
   { status: 'pendiente', label: 'Pendientes', icon: Bookmark },
   { status: 'deseado', label: 'Deseados', icon: Heart },
   { status: 'abandonado', label: 'Abandonados', icon: BookX },

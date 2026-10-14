@@ -29,6 +29,7 @@ import { getReadingPace, paceSentence } from '../lib/readingPace'
 import { useStaggerOnce } from '../lib/motion'
 import { queryClient } from '../lib/queryClient'
 import { DetalleLibro } from './DetalleLibro'
+import { GenreSuggestSheet } from '../assets/components/molecules/GenreSuggestSheet'
 export function Mesa() {
   const staggerMesa = useStaggerOnce("mesa");
   const staggerLeyendo = useStaggerOnce("mesa-leyendo");
@@ -42,6 +43,7 @@ export function Mesa() {
   const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  const [isGenreSuggestOpen, setIsGenreSuggestOpen] = useState(false)
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   // La cinta de la racha baja con rebote cuando la sesión de hoy pasa de sin marcar a
@@ -290,11 +292,16 @@ export function Mesa() {
       {showAnnouncement && (
         <AnnouncementSheet
           onDone={handleAnnouncementDone}
+          onCompleteGenres={() => {
+            handleAnnouncementDone()
+            setIsGenreSuggestOpen(true)
+          }}
           missed={missedVersions}
           lastSeen={seenAtEntry}
           onSeeAll={handleSeeAllNews}
         />
       )}
+      {isGenreSuggestOpen && <GenreSuggestSheet userId={user?.id} onClose={() => setIsGenreSuggestOpen(false)} />}
       {isCalendarOpen && <ReadingCalendarSheet userId={user?.id} onClose={() => setIsCalendarOpen(false)} />}
       {isRandomPickOpen && <RandomPickSheet userId={user?.id} onClose={() => setIsRandomPickOpen(false)} />}
 

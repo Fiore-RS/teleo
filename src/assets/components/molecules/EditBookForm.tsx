@@ -8,6 +8,7 @@ import { PriceInput } from '../atoms/PriceInput'
 import { DateInput } from '../atoms/DateInput'
 import { DurationMaskInput } from '../atoms/DurationMaskInput'
 import { TagInput } from './TagInput'
+import { BookTraitsFields } from './BookTraitsFields'
 import { StatusMenu } from './StatusMenu'
 import { ReadingDatesFields } from './ReadingDatesFields'
 import { FormCard, FormCollapsible, FormRow, FormSection, FormSwitchRow } from './FormLayout'
@@ -15,6 +16,7 @@ import { categoryOptions, type BookFormat } from '../../../lib/options'
 import { formatCurrency } from '../../../lib/currencies'
 import { formatShortDate, todayLocalDate } from '../../../lib/date'
 import type { ReadingStatus } from '../../../lib/status'
+import type { BookTraits } from '../../../lib/bookTraits'
 
 /** Borrador de Editar libro. Todo se guarda junto al tocar "Guardar cambios" (desde la
  *  V.2.2.0 también Favorito y Esta temporada, que antes se guardaban al tocarlos). */
@@ -37,6 +39,8 @@ export interface BookDraft {
   abandonReason: string
   isFavorite: boolean
   isPriority: boolean
+  /** Género, ánimo y ritmo (V.3.1.0). */
+  traits: BookTraits
 }
 
 const formatChoices: { value: BookFormat; label: string; icon: LucideIcon }[] = [
@@ -96,10 +100,15 @@ interface EditBookFormProps {
   currency: string | null | undefined
   onCoverFile: (file: File) => void
   isUploadingCover: boolean
+  /** Ánimos propios que la persona ya usó (useUserCustomMoods). */
+  knownCustomMoods: string[]
+  /** Etiquetas que la persona ya usó en otros libros (useUserTags). */
+  knownTags: string[]
 }
 
 /** Cuerpo de la hoja Editar libro (V.2.2.0): ficha arriba (portada, título, autor, estado) y
- *  secciones Tu lectura, El libro, Etiquetas y Compra. Los botones van en el pie de la hoja. */
+ *  secciones Tu lectura, El libro, Género / Ánimo / Ritmo (V.3.1.0), Etiquetas y Compra. Los
+ *  botones van en el pie de la hoja. */
 export function EditBookForm({
   coverUrl,
   savedStatus,
@@ -112,6 +121,8 @@ export function EditBookForm({
   currency,
   onCoverFile,
   isUploadingCover,
+  knownCustomMoods,
+  knownTags,
 }: EditBookFormProps) {
   const coverInputRef = useRef<HTMLInputElement>(null)
 
@@ -265,13 +276,20 @@ export function EditBookForm({
         </FormCard>
       </FormSection>
 
+      <BookTraitsFields
+        className="mb-5.5"
+        value={draft.traits}
+        onChange={(traits) => onChange({ traits })}
+        knownCustomMoods={knownCustomMoods}
+      />
+
       <FormSection label="Etiquetas">
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {tags.map((tag) => <Tag key={tag} label={tag} onRemove={() => onRemoveTag(tag)} />)}
           </div>
         )}
-        <TagInput onAdd={onAddTag} />
+        <TagInput onAdd={onAddTag} suggestions={knownTags} current={tags} />
       </FormSection>
 
       <FormSection label="Compra" className="mb-2">

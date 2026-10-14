@@ -69,6 +69,7 @@ export type Database = {
           category: string | null
           cover_url: string | null
           created_at: string | null
+          custom_moods: string[]
           current_duration_seconds: number | null
           current_page: number | null
           end_date: string | null
@@ -78,10 +79,17 @@ export type Database = {
           is_favorite: boolean | null
           is_gift: boolean
           gift_from: string | null
+          genres: string[]
+          genres_source: string | null
           is_priority: boolean
           is_recommended: boolean
           isbn: string | null
           language: string | null
+          moods: string[]
+          pace: string | null
+          pause_reason: string | null
+          paused_at: string | null
+          paused_days: number
           price: number | null
           priority_sort_order: number | null
           progress_percent: number | null
@@ -101,6 +109,7 @@ export type Database = {
           category?: string | null
           cover_url?: string | null
           created_at?: string | null
+          custom_moods?: string[]
           current_duration_seconds?: number | null
           current_page?: number | null
           end_date?: string | null
@@ -110,10 +119,17 @@ export type Database = {
           is_favorite?: boolean | null
           is_gift?: boolean
           gift_from?: string | null
+          genres?: string[]
+          genres_source?: string | null
           is_priority?: boolean
           is_recommended?: boolean
           isbn?: string | null
           language?: string | null
+          moods?: string[]
+          pace?: string | null
+          pause_reason?: string | null
+          paused_at?: string | null
+          paused_days?: number
           price?: number | null
           priority_sort_order?: number | null
           progress_percent?: number | null
@@ -133,6 +149,7 @@ export type Database = {
           category?: string | null
           cover_url?: string | null
           created_at?: string | null
+          custom_moods?: string[]
           current_duration_seconds?: number | null
           current_page?: number | null
           end_date?: string | null
@@ -142,10 +159,17 @@ export type Database = {
           is_favorite?: boolean | null
           is_gift?: boolean
           gift_from?: string | null
+          genres?: string[]
+          genres_source?: string | null
           is_priority?: boolean
           is_recommended?: boolean
           isbn?: string | null
           language?: string | null
+          moods?: string[]
+          pace?: string | null
+          pause_reason?: string | null
+          paused_at?: string | null
+          paused_days?: number
           price?: number | null
           priority_sort_order?: number | null
           progress_percent?: number | null
@@ -204,6 +228,7 @@ export type Database = {
       favorite_quotes: {
         Row: {
           created_at: string
+          cuaderno_sort_order: number | null
           id: string
           page: number | null
           quote_text: string
@@ -212,6 +237,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          cuaderno_sort_order?: number | null
           id?: string
           page?: number | null
           quote_text: string
@@ -220,6 +246,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          cuaderno_sort_order?: number | null
           id?: string
           page?: number | null
           quote_text?: string

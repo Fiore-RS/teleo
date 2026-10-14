@@ -1,6 +1,7 @@
-export type ReadingStatus = 'leyendo' | 'pendiente' | 'terminado' | 'abandonado' | 'deseado'
+export type ReadingStatus = 'leyendo' | 'pendiente' | 'terminado' | 'abandonado' | 'deseado' | 'pausado'
 
-/** Colores icónicos de cada estado (ámbar, azul pizarra, verde, vino, gris). Se usan SOLO
+/** Colores icónicos de cada estado (ámbar, azul pizarra, verde, vino, gris y, desde la
+ *  V.3.1.0, malva para En pausa). Se usan SOLO
  *  donde aparece el estado mismo: la esquina doblada (DogEar), la insignia de estado y el
  *  menú para cambiarlo, así siempre coinciden. El resto de la app usa la paleta. */
 export const statusColorVar: Record<ReadingStatus, string> = {
@@ -9,6 +10,7 @@ export const statusColorVar: Record<ReadingStatus, string> = {
   terminado: 'var(--color-accent-finished)',
   deseado: 'var(--color-accent-wishlist)',
   abandonado: 'var(--color-state-abandoned)',
+  pausado: 'var(--color-state-paused)',
 }
 
 export const statusLabel: Record<ReadingStatus, string> = {
@@ -17,4 +19,5 @@ export const statusLabel: Record<ReadingStatus, string> = {
   terminado: 'Terminado',
   deseado: 'Deseado',
   abandonado: 'Abandonado',
+  pausado: 'En pausa',
 }

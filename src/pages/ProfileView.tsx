@@ -13,11 +13,12 @@ import { useStaggerOnce } from '../lib/motion'
 type Book = Pick<Database['public']['Tables']['books']['Row'], 'id' | 'title' | 'cover_url' | 'status'>
 
 /** Filtro de Estante al que lleva cada número o "Ver todos". */
-export type ProfileFilter = 'leyendo' | 'favoritos' | 'recomendados' | 'deseado' | 'terminado' | 'pendiente' | 'abandonado'
+export type ProfileFilter = 'leyendo' | 'favoritos' | 'recomendados' | 'deseado' | 'terminado' | 'pendiente' | 'abandonado' | 'pausado'
 
 /** "Tu biblioteca": cada estado con su color de doblez; tocarlo abre Estante con ese filtro. */
 const libraryParts: { key: keyof ProfileCounts | 'reading'; label: string; filter: ProfileFilter; color: string }[] = [
   { key: 'reading', label: 'Leyendo', filter: 'leyendo', color: 'var(--color-accent-reading)' },
+  { key: 'paused', label: 'En pausa', filter: 'pausado', color: 'var(--color-state-paused)' },
   { key: 'finished', label: 'Leídos', filter: 'terminado', color: 'var(--color-accent-finished)' },
   { key: 'pending', label: 'Pendientes', filter: 'pendiente', color: 'var(--color-state-pending)' },
   { key: 'wishlist', label: 'Deseados', filter: 'deseado', color: 'var(--color-accent-wishlist)' },

@@ -13,6 +13,7 @@ import { SelectReviewBookModal } from '../assets/components/molecules/SelectRevi
 import { SortMenu, type SortMenuOption } from '../assets/components/molecules/SortMenu'
 import { SortableItem } from '../assets/components/atoms/SortableItem'
 import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from '../lib/librarySort'
+import { sortQuotes } from '../lib/quoteOrder'
 import { Resena } from './Resena'
 import { Citas } from './cuaderno/Citas'
 import { AddQuoteSheet } from '../assets/components/molecules/AddQuoteSheet'
@@ -86,7 +87,7 @@ export function Cuaderno() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { reviews, isLoading, refetch, reorderReview } = useReviews(user?.id)
-  const { quotes, isLoading: isLoadingQuotes, refetch: refetchQuotes, addQuote, updateQuote, removeQuote } = useQuotes(user?.id)
+  const { quotes, isLoading: isLoadingQuotes, refetch: refetchQuotes, addQuote, updateQuote, removeQuote, reorderQuote } = useQuotes(user?.id)
 
   // Pestaña en la URL (?vista=citas), igual que Bitácora, para que al volver se conserve.
   const [searchParams, setSearchParams] = useSearchParams()
@@ -122,6 +123,16 @@ export function Cuaderno() {
     setStoredSortMode('cuaderno-resenas', mode)
   }
 
+  // Orden de Citas (V.3.1.0): su propio modo guardado; por defecto "Fecha agregada" (la más
+  // reciente arriba), como era antes.
+  const [quoteSortMode, setQuoteSortModeState] = useState<LibrarySortMode>(() => getStoredSortMode('cuaderno-citas', 'fecha'))
+  const [isReorderingQuotes, setIsReorderingQuotes] = useState(false)
+
+  function setQuoteSortMode(mode: LibrarySortMode) {
+    setQuoteSortModeState(mode)
+    setStoredSortMode('cuaderno-citas', mode)
+  }
+
   // Mismo mecanismo de activación por "mantener presionado" que ya se usa en Estante y Mesa.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
@@ -145,6 +156,7 @@ export function Cuaderno() {
     if (next === tab) return
     setSearch('')
     setIsReordering(false)
+    setIsReorderingQuotes(false)
     const params = new URLSearchParams(searchParams)
     if (next === 'citas') params.set('vista', 'citas')
     else params.delete('vista')
@@ -160,6 +172,30 @@ export function Cuaderno() {
       }),
     [filtered, sortMode]
   )
+
+  const sortedQuotes = useMemo(() => sortQuotes(filteredQuotes, quoteSortMode), [filteredQuotes, quoteSortMode])
+
+  const quoteSortOptions: SortMenuOption<LibrarySortMode>[] = [
+    { key: 'titulo', label: 'Título', icon: ArrowDownAZ },
+    { key: 'autor', label: 'Autor', icon: User },
+    { key: 'fecha', label: 'Fecha agregada', icon: CalendarDays },
+    { key: 'libre', label: isReorderingQuotes ? 'Listo' : 'Libre (arrastrar)', icon: Move },
+  ]
+
+  // Igual que en Reseñas: "Libre" activa el arrastre y, si ya estaba, lo apaga ("Listo").
+  function handleQuoteSortSelect(mode: LibrarySortMode) {
+    if (mode === 'libre') {
+      if (quoteSortMode === 'libre') {
+        setIsReorderingQuotes((v) => !v)
+      } else {
+        setQuoteSortMode('libre')
+        setIsReorderingQuotes(true)
+      }
+    } else {
+      setQuoteSortMode(mode)
+      setIsReorderingQuotes(false)
+    }
+  }
 
   const sortOptions: SortMenuOption<LibrarySortMode>[] = [
     { key: 'titulo', label: 'Título', icon: ArrowDownAZ },
@@ -219,13 +255,17 @@ export function Cuaderno() {
           actions:
             tab === 'resenas' ? (
               <SortMenu variant="bar" options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
-            ) : undefined,
+            ) : (
+              <SortMenu variant="bar" options={quoteSortOptions} activeKey={quoteSortMode} onSelect={handleQuoteSortSelect} />
+            ),
         }}
       />
 
       {tab === 'citas' ? (
         <Citas
-          quotes={filteredQuotes}
+          quotes={sortedQuotes}
+          isReordering={isReorderingQuotes}
+          onReorder={reorderQuote}
           isFiltered={search.trim().length > 0}
           isLoading={isLoadingQuotes}
           onShare={setSharingQuote}

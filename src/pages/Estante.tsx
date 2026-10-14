@@ -9,7 +9,12 @@ import { getPriorityListName } from "../lib/priorityList";
 import { ScreenHeader, HeaderBarButton } from "../assets/components/molecules/ScreenHeader";
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
-import { defaultAdvancedFilters, type AdvancedFilters } from "../lib/advancedFilters";
+import { defaultAdvancedFilters, hasActiveFilters, matchesTraitFilters, type AdvancedFilters } from "../lib/advancedFilters";
+import { useTagsByBook } from "../hooks/useTagsByBook";
+import { useUserTags } from "../hooks/useUserTags";
+import { useUserCustomMoods } from "../hooks/useUserCustomMoods";
+import { GenreSuggestSheet } from "../assets/components/molecules/GenreSuggestSheet";
+import { CompleteShelfSheet } from "../assets/components/molecules/CompleteShelfSheet";
 import { BookCover } from "../assets/components/molecules/BookCover";
 import { SagaCover } from "../assets/components/molecules/SagaCover";
 import { Shelf } from "../assets/components/molecules/Shelf";
@@ -93,6 +98,8 @@ export function Estante() {
   );
   const [quickFlag, setQuickFlag] = useState<"favoritos" | "recomendados" | "temporada" | null>(initialQuickFlag);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  // Completar géneros / Completa tu estante, desde el aviso de los filtros (V.3.1.0).
+  const [completeSheet, setCompleteSheet] = useState<"genres" | "shelf" | null>(null);
   const [search, setSearch] = useState("");
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false);
@@ -142,11 +149,21 @@ export function Estante() {
     useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
-  const hasActiveAdvFilters =
-    advFilters.status !== "todos" ||
-    advFilters.language !== "todos" ||
-    advFilters.category !== "todos" ||
-    advFilters.format !== "todos";
+  const hasActiveAdvFilters = hasActiveFilters(advFilters);
+  // Género, ánimo, ritmo y etiquetas (V.3.1.0).
+  const tagsByBook = useTagsByBook(user?.id);
+  const knownTags = useUserTags(user?.id);
+  const knownCustomMoods = useUserCustomMoods(user?.id);
+  const booksWithoutGenre = useMemo(() => books.filter((b) => (b.genres ?? []).length === 0).length, [books]);
+  const booksWithoutMoodOrPace = useMemo(
+    () =>
+      books.filter(
+        (b) =>
+          ["terminado", "abandonado", "pausado", "leyendo"].includes(b.status) &&
+          ((b.moods ?? []).length + (b.custom_moods ?? []).length === 0 || !b.pace),
+      ).length,
+    [books],
+  );
 
   // Menú de idioma del filtro: Español, Inglés y los idiomas que ya tengan los libros.
   const languageOptions = useMemo(() => languageOptionsFrom(books.map((b) => b.language)), [books]);
@@ -158,6 +175,7 @@ export function Estante() {
         advFilters.language === "todos" || normalizeLanguage(book.language) === advFilters.language;
       const matchesCategory = advFilters.category === "todos" || book.category === advFilters.category;
       const matchesFormat = advFilters.format === "todos" || book.format === advFilters.format;
+      const matchesTraits = matchesTraitFilters(book, tagsByBook[book.id] ?? [], advFilters);
       const matchesQuickFlag =
         !quickFlag ||
         (quickFlag === "favoritos"
@@ -170,10 +188,10 @@ export function Estante() {
         book.title.toLowerCase().includes(search.toLowerCase()) ||
         (book.author ?? "").toLowerCase().includes(search.toLowerCase());
       return (
-        matchesFilter && matchesLanguage && matchesCategory && matchesFormat && matchesQuickFlag && matchesSearch
+        matchesFilter && matchesLanguage && matchesCategory && matchesFormat && matchesTraits && matchesQuickFlag && matchesSearch
       );
     });
-  }, [books, advFilters, quickFlag, search]);
+  }, [books, advFilters, quickFlag, search, tagsByBook]);
 
   const filteredSagas = useMemo(() => {
     return sagas.filter((saga) => {
@@ -544,7 +562,23 @@ export function Estante() {
           setAdvFilters(filters);
           setQuickFlag(null);
         }}
+        resultCount={tab === "libros" ? filteredBooks.length : filteredSagas.length}
+        knownTags={knownTags}
+        knownCustomMoods={knownCustomMoods}
+        booksWithoutGenre={booksWithoutGenre}
+        booksWithoutMoodOrPace={booksWithoutMoodOrPace}
+        onCompleteGenres={() => {
+          setIsFilterModalOpen(false);
+          setCompleteSheet("genres");
+        }}
+        onCompleteShelf={() => {
+          setIsFilterModalOpen(false);
+          setCompleteSheet("shelf");
+        }}
       />
+
+      {completeSheet === "genres" && <GenreSuggestSheet userId={user?.id} onClose={() => setCompleteSheet(null)} />}
+      {completeSheet === "shelf" && <CompleteShelfSheet userId={user?.id} onClose={() => setCompleteSheet(null)} />}
     </div>
   );
 }

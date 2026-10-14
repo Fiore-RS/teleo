@@ -2,6 +2,8 @@ import { supabase } from '../lib/supabase'
 import { queryClient } from '../lib/queryClient'
 import type { Database } from '../types/database'
 import { useCachedQuery } from './useCachedQuery'
+import { computeMidpointOrder } from '../lib/reorder'
+import { topQuoteOrder } from '../lib/quoteOrder'
 
 type QuoteRow = Database['public']['Tables']['favorite_quotes']['Row']
 type Book = Database['public']['Tables']['books']['Row']
@@ -58,9 +60,11 @@ export function useQuotes(userId: string | undefined) {
 
     const { count } = await supabase
       .from('favorite_quotes').select('id', { count: 'exact', head: true }).eq('review_id', reviewId)
+    // Una cita nueva va arriba del orden libre de Citas (V.3.1.0).
+    const cuadernoOrder = await topQuoteOrder(userId)
     const { data: quote, error } = await supabase
       .from('favorite_quotes')
-      .insert({ review_id: reviewId, quote_text: quoteText, page, sort_order: count ?? 0 })
+      .insert({ review_id: reviewId, quote_text: quoteText, page, sort_order: count ?? 0, cuaderno_sort_order: cuadernoOrder })
       .select()
       .single()
     if (error || !quote) {
@@ -99,5 +103,14 @@ export function useQuotes(userId: string | undefined) {
     return true
   }
 
-  return { quotes, isLoading, refetch, addQuote, updateQuote, removeQuote }
+  /** Mueve una cita en el orden libre de Citas (V.3.1.0): queda entre las de `beforeId` y
+   *  `afterId`, con el mismo cálculo por punto medio que Estante y Reseñas. */
+  async function reorderQuote(quoteId: string, beforeId: string | null, afterId: string | null) {
+    const orderOf = (id: string | null) => (id ? quotes.find((q) => q.id === id)?.cuaderno_sort_order ?? null : null)
+    const newOrder = computeMidpointOrder(orderOf(beforeId), orderOf(afterId))
+    setQuotes((prev) => prev.map((q) => (q.id === quoteId ? { ...q, cuaderno_sort_order: newOrder } : q)))
+    await supabase.from('favorite_quotes').update({ cuaderno_sort_order: newOrder }).eq('id', quoteId)
+  }
+
+  return { quotes, isLoading, refetch, addQuote, updateQuote, removeQuote, reorderQuote }
 }

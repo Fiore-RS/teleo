@@ -34,6 +34,19 @@ import { ReleaseRow } from '../assets/components/molecules/ReleaseRow'
 import { ReleaseFormSheet } from '../assets/components/molecules/ReleaseFormSheet'
 import { useSaga } from '../hooks/useSaga'
 import { DetalleSaga } from './DetalleSaga'
+import { PauseBookSheet } from '../assets/components/molecules/PauseBookSheet'
+import { formatPausedSince } from '../lib/pause'
+import { advanceNextInSaga, findNextInSaga, type NextInSaga } from '../lib/nextInSaga'
+import { useQueryClient } from '@tanstack/react-query'
+import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
+import { useUserTags } from '../hooks/useUserTags'
+import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
+
+/** Orden inicial al final de la lista de temporada (fuera del componente: el lint de React
+ *  marca Date.now() dentro de él aunque solo se use al guardar). */
+function newPriorityOrder() {
+  return Date.now()
+}
 
 interface DetalleLibroProps {
   bookId: string
@@ -56,6 +69,27 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   // Otro libro de la misma saga abierto desde Detalles de la saga, encima de todo.
   const [nestedBookId, setNestedBookId] = useState<string | null>(null)
   const [sagaRefresh, setSagaRefresh] = useState(0)
+  // Género, ánimo y ritmo (V.3.1.0).
+  const queryClient = useQueryClient()
+  const knownCustomMoods = useUserCustomMoods(user?.id)
+  const knownTags = useUserTags(user?.id)
+  // Una etiqueta nueva pasa a ser opción en todos los libros (V.3.1.0).
+  async function handleAddTag(tag: string) {
+    await addTag(tag)
+    void queryClient.invalidateQueries({ queryKey: ['userTags'] })
+    void queryClient.invalidateQueries({ queryKey: ['tagsByBook'] })
+  }
+  async function handleRemoveTag(tag: string) {
+    await removeTag(tag)
+    void queryClient.invalidateQueries({ queryKey: ['userTags'] })
+    void queryClient.invalidateQueries({ queryKey: ['tagsByBook'] })
+  }
+  const bookTraits = traitsFromBook(book)
+  async function saveTraits(traits: BookTraits) {
+    await updateBook(traitsToColumns(traits, bookTraits))
+    // Un ánimo propio nuevo pasa a ser opción en todos los libros.
+    void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
+  }
   const bookLanguages = useBookLanguages(user?.id)
   // Lanzamientos enlazados a este libro (fase 7). null = formulario cerrado.
   const { releases } = useReleases(user?.id)
@@ -71,6 +105,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const [isEditing, setIsEditing] = useState(false)
   const [isResenaOpen, setIsResenaOpen] = useState(false)
   const [isAbandonOpen, setIsAbandonOpen] = useState(false)
+  const [isPauseOpen, setIsPauseOpen] = useState(false)
   const [isFinishOpen, setIsFinishOpen] = useState(false)
   const [deleteState, setDeleteState] = useState<'closed' | 'confirm' | 'success' | 'error'>('closed')
   // Actualización de estado pendiente de confirmar: cuando se marca un libro como "leyendo"
@@ -101,6 +136,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       abandonReason: book.abandon_reason ?? '',
       isFavorite: book.is_favorite ?? false,
       isPriority: book.is_priority ?? false,
+      traits: bookTraits,
     })
     setIsEditing(true)
   }
@@ -118,7 +154,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     // Esta temporada solo se muestra en Pendiente; en otro estado se deja como estaba. Si
     // recién se marca, se le da un orden inicial al final de la lista.
     const priorityUpdate = draft.status === 'pendiente' && draft.isPriority !== (book.is_priority ?? false)
-      ? { is_priority: draft.isPriority, ...(draft.isPriority ? { priority_sort_order: Date.now() } : {}) }
+      ? { is_priority: draft.isPriority, ...(draft.isPriority ? { priority_sort_order: newPriorityOrder() } : {}) }
       : {}
 
     const updates = {
@@ -134,11 +170,13 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       gift_from: draft.isGift ? draft.giftFrom.trim().slice(0, 60) || null : null,
       is_favorite: draft.isFavorite,
       ...priorityUpdate,
+      ...traitsToColumns(draft.traits, bookTraits),
     }
 
     // Si se está marcando el libro como "leyendo" (y no lo estaba ya), se pregunta primero
     // si hoy debe quedar como fecha de inicio antes de guardar — ver applyPendingLeyendoUpdate.
-    if (draft.status === 'leyendo' && book.status !== 'leyendo') {
+    // Al retomar un libro en pausa no se pregunta la fecha: ya tiene la de inicio.
+    if (draft.status === 'leyendo' && book.status !== 'leyendo' && book.status !== 'pausado') {
       setPendingLeyendoUpdate(updates)
       return
     }
@@ -168,6 +206,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       await updateBook(updates)
     }
 
+    void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
     setIsSaving(false)
     setIsEditing(false)
   }
@@ -201,8 +240,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   // necesidad de entrar a "Editar Libro" — cada destino conserva el mismo flujo/datos
   // adicionales que ya se le pedían al usuario en el resto de la app para ese estado.
   async function handleStatusChange(newStatus: ReadingStatus) {
-    if (newStatus === 'leyendo') {
+    if (newStatus === 'leyendo' && book?.status === 'pausado') {
+      await resumeReading()
+    } else if (newStatus === 'leyendo') {
       setPendingLeyendoUpdate({ status: 'leyendo' })
+    } else if (newStatus === 'pausado') {
+      setIsPauseOpen(true)
     } else if (newStatus === 'terminado') {
       setIsFinishOpen(true)
     } else if (newStatus === 'abandonado') {
@@ -212,23 +255,45 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     }
   }
 
+  // En pausa (V.3.1.0). useBook.updateBook guarda la fecha de pausa al pausar y, al retomar,
+  // suma los días en pausa y borra la fecha y el motivo.
+  async function handlePauseConfirm(reason: string) {
+    await updateBook({ status: 'pausado', pause_reason: reason || null })
+    setIsPauseOpen(false)
+  }
+
+  async function resumeReading() {
+    await updateBook({ status: 'leyendo' })
+  }
+
   async function handleAbandonConfirm(data: { abandon_reason: string; start_date: string; end_date: string }) {
     await updateBook({ status: 'abandonado', ...data })
     setIsAbandonOpen(false)
   }
 
-  // Terminar desde el menú de estado: fechas en FinishBookSheet, reseña opcional.
-  async function handleFinishConfirm(dates: ReadingDates, writeReview: boolean) {
+  // Terminar desde el menú de estado: fechas en FinishBookSheet, después "¿Cómo fue?" (V.3.1.0)
+  // y la reseña opcional.
+  async function handleFinishConfirm(dates: ReadingDates) {
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
     await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
     refetchReadCount()
+  }
+
+  // Sigue en la saga (V.3.1.0): se refresca todo porque el siguiente libro cambia de estado.
+  async function handleAdvanceNext(next: NextInSaga) {
+    await advanceNextInSaga(next)
+    void queryClient.invalidateQueries()
+  }
+
+  function handleFinishDone(writeReview: boolean) {
     setIsFinishOpen(false)
     if (writeReview) setIsResenaOpen(true)
   }
 
   const sagaPosition = book && saga ? sagaBooks.findIndex((b) => b.id === book.id) + 1 : 0
+  const traitTexts = traitsSummary(bookTraits)
   const infoRows: { label: string; value: string; onClick?: () => void }[] = book
     ? [
         ...(book.total_pages ? [{ label: 'Páginas', value: String(book.total_pages) }] : []),
@@ -242,6 +307,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               onClick: () => setIsSagaOpen(true),
             }]
           : []),
+        ...(traitTexts.genres ? [{ label: 'Género', value: traitTexts.genres }] : []),
+        ...(traitTexts.moods ? [{ label: 'Ánimo', value: traitTexts.moods }] : []),
+        ...(traitTexts.pace ? [{ label: 'Ritmo', value: traitTexts.pace }] : []),
         ...(readCount > 1 ? [{ label: 'Lecturas', value: `${readCount} veces` }] : []),
         ...(book.is_gift ? [{ label: 'Regalo', value: book.gift_from ? `De ${book.gift_from}` : 'Sí' }] : []),
       ]
@@ -277,12 +345,14 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               draft={draft}
               onChange={(patch) => setDraft({ ...draft, ...patch })}
               tags={tags}
-              onAddTag={addTag}
-              onRemoveTag={removeTag}
+              onAddTag={handleAddTag}
+              onRemoveTag={handleRemoveTag}
               languageOptions={languageOptionsFrom(bookLanguages)}
               currency={profile?.currency}
               onCoverFile={handleCoverFile}
               isUploadingCover={isUploading}
+              knownCustomMoods={knownCustomMoods}
+              knownTags={knownTags}
             />
           </div>
         ) : (
@@ -309,6 +379,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 <div className="mt-3">
                   <StatusMenu status={book.status as ReadingStatus} onChange={handleStatusChange} align="left" />
                 </div>
+                {book.status === 'pausado' && book.paused_at && (
+                  <p className="text-body-sm text-text-secondary mt-2">En pausa desde el {formatPausedSince(book.paused_at)}</p>
+                )}
                 {tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2.5">
                     {tags.map((tag) => <Tag key={tag} label={tag} />)}
@@ -318,7 +391,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
             </div>
 
             {/* Acciones del estado actual, justo debajo de la ficha (V.2.2.0). */}
-            {(book.status === 'terminado' || book.status === 'leyendo' || book.status === 'abandonado' ||
+            {(book.status === 'terminado' || book.status === 'leyendo' || book.status === 'abandonado' || book.status === 'pausado' ||
               (book.status === 'deseado' && bookReleases.length === 0)) && (
               <div className="flex gap-2 mb-5.5">
                 {book.status === 'terminado' && (
@@ -339,6 +412,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                     Anotar una cita
                   </Button>
                 )}
+                {book.status === 'pausado' && (
+                  <Button variant="orange" onClick={resumeReading}>
+                    <Play size={16} />
+                    Retomar lectura
+                  </Button>
+                )}
                 {book.status === 'abandonado' && (
                   <Button variant="orange" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
                     <Play size={16} />
@@ -352,6 +431,17 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                   </Button>
                 )}
               </div>
+            )}
+
+            {book.status === 'pausado' && book.pause_reason && (
+              <FormSection label="Motivo de la pausa">
+                <div className="relative bg-surface-2 border border-border rounded-[18px] px-4 pt-4.5 pb-3.5">
+                  <span aria-hidden="true" className="absolute left-3 -top-2.5 font-display font-semibold text-[40px] leading-none text-ornament select-none">
+                    “
+                  </span>
+                  <p className="font-display italic text-body-lg leading-relaxed text-text">{book.pause_reason}</p>
+                </div>
+              </FormSection>
             )}
 
             {book.status === 'abandonado' && book.abandon_reason && (
@@ -456,12 +546,22 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
         />
       )}
 
+      {isPauseOpen && book && (
+        <PauseBookSheet book={book} onClose={() => setIsPauseOpen(false)} onConfirm={handlePauseConfirm} />
+      )}
+
       {isFinishOpen && book && (
         <FinishBookSheet
           book={book}
           initialStartDate={book.start_date}
+          traits={bookTraits}
+          knownCustomMoods={knownCustomMoods}
           onClose={() => setIsFinishOpen(false)}
           onConfirm={handleFinishConfirm}
+          onSaveTraits={saveTraits}
+          onDone={handleFinishDone}
+          nextInSaga={findNextInSaga(bookId, saga, sagaBooks)}
+          onAdvanceNext={handleAdvanceNext}
         />
       )}
 

@@ -111,6 +111,7 @@ export function Compras({ userId, currency }: ComprasProps) {
       wishlist: sumPrices(inStatus('deseado')),
       wishlistWithPrice: inStatus('deseado').length,
       abandoned: sumPrices(inStatus('abandonado')),
+      paused: sumPrices(inStatus('pausado')),
       mostExpensive,
       cheapest,
     }
@@ -119,6 +120,7 @@ export function Compras({ userId, currency }: ComprasProps) {
   const byStatus = [
     { label: 'en terminados', amount: summary.finished, color: 'var(--color-accent-finished)' },
     { label: 'en pendientes', amount: summary.pending, color: 'var(--color-state-pending)' },
+    { label: 'en pausa', amount: summary.paused, color: 'var(--color-state-paused)' },
     { label: 'en abandonados', amount: summary.abandoned, color: 'var(--color-state-abandoned)' },
   ]
 

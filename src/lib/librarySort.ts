@@ -46,14 +46,14 @@ function isLibrarySortMode(value: string | null): value is LibrarySortMode {
  *  guarda en localStorage para que sobreviva a un refresh de la página — antes se reiniciaba
  *  siempre a "libre" porque el estado vivía solo en memoria de React. `key` identifica cada
  *  lista de forma independiente (ej. "estante-libros"). */
-export function getStoredSortMode(key: string): LibrarySortMode {
+export function getStoredSortMode(key: string, fallback: LibrarySortMode = 'libre'): LibrarySortMode {
   try {
     const stored = localStorage.getItem(SORT_MODE_STORAGE_PREFIX + key)
     if (isLibrarySortMode(stored)) return stored
   } catch {
     // localStorage no disponible (ej. modo privado) — se usa el valor por defecto.
   }
-  return 'libre'
+  return fallback
 }
 
 export function setStoredSortMode(key: string, mode: LibrarySortMode) {
