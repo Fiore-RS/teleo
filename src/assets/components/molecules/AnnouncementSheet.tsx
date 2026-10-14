@@ -13,6 +13,8 @@ interface AnnouncementSheetProps {
   lastSeen?: string | null
   /** Botón "Ver todas las novedades" del aviso de novedades acumuladas. */
   onSeeAll?: () => void
+  /** V.3.1.0: abre "Completar géneros" para los libros que ya están en el estante. */
+  onCompleteGenres?: () => void
 }
 
 /** Aviso de novedades acumuladas (V.2.1.2): si la persona se perdió varias versiones con
@@ -51,7 +53,7 @@ function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[];
 
 /** "Novedades de Teleo": aparece una sola vez por cuenta al entrar a La mesa después de un
  *  lanzamiento grande (V.2.0.0). Una tarjeta por novedad con su ícono y una línea. */
-export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeAll }: AnnouncementSheetProps) {
+export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeAll, onCompleteGenres }: AnnouncementSheetProps) {
   const showCatchUp = missed.length >= CATCH_UP_MIN && !!onSeeAll
   const announcedTitle = changelog.find((e) => e.version === ANNOUNCEMENT_VERSION)?.title
   return (
@@ -82,8 +84,20 @@ export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeA
         ))}
       </ul>
 
+      {onCompleteGenres && (
+        <section className="bg-surface-2 border border-border rounded-2xl p-4 mt-4">
+          <p className="font-display font-semibold text-body-md text-text">¿Y los libros que ya tienes?</p>
+          <p className="text-body-sm text-text-secondary mt-1">
+            Teleo puede buscar el género de tu biblioteca y proponértelo. Lo revisas antes de guardar.
+          </p>
+          <Button variant="soft" className="mt-3" onClick={onCompleteGenres}>
+            Sugerir géneros para mi biblioteca
+          </Button>
+        </section>
+      )}
+
       <p className="text-body-sm text-text-muted text-center mt-4">
-        Puedes volver a verlo cuando quieras en Configuración, en Novedades.
+        Puedes volver a verlo cuando quieras en Configuración, en Novedades. Completar géneros también está ahí.
       </p>
       <Button variant="primary" className="mt-4" onClick={onDone}>
         Empezar

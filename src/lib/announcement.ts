@@ -1,9 +1,9 @@
-import { BookOpen, Bookmark, NotebookPen, type LucideIcon } from 'lucide-react'
+import { Compass, Filter, Pause, Tags, type LucideIcon } from 'lucide-react'
 import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '3.0.0'
+export const ANNOUNCEMENT_VERSION = '3.1.0'
 
 export interface AnnouncementItem {
   icon: LucideIcon
@@ -12,9 +12,10 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { icon: NotebookPen, title: 'Un cuaderno nuevo', text: 'Cada sección es como una hoja con pestañas de separador, y los títulos estrenan tipografía.' },
-  { icon: Bookmark, title: 'Tu racha, en una cinta', text: 'Marca tu sesión del día y la cinta de La mesa se llena. Tócala para ver tu calendario.' },
-  { icon: BookOpen, title: 'Libros en repisas', text: 'Tu estante, tu año en Resumen y tus favoritos se acomodan en repisas. Elige cómo se ve tu estante desde el botón de vista.' },
+  { icon: Tags, title: 'Género, ánimo y ritmo', text: 'Cuenta cómo es cada libro: hasta 3 géneros, hasta 3 ánimos (también los tuyos) y su ritmo. Al terminar uno, Teleo te lo pregunta.' },
+  { icon: Filter, title: 'Encuentra lo que buscas', text: 'Filtra tu estante y "¿Qué leo ahora?" por género, ánimo, ritmo o etiqueta, y mira qué es lo que más lees en Bitácora.' },
+  { icon: Pause, title: 'En pausa', text: 'Deja un libro a un lado sin abandonarlo. Tu progreso se guarda y lo retomas cuando quieras.' },
+  { icon: Compass, title: 'Sigue en la saga', text: 'Al terminar un libro de una saga, Teleo te propone el siguiente.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */
