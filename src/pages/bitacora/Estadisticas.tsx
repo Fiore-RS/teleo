@@ -27,6 +27,8 @@ import { formatDuration } from '../../lib/progress'
 import { MONTH_NAMES } from '../../lib/months'
 import { categoryPlural } from '../../lib/options'
 import { useStaggerOnce } from '../../lib/motion'
+import { TraitStatsRow } from '../../assets/components/molecules/TraitStatsRow'
+import { CompleteShelfSheet } from '../../assets/components/molecules/CompleteShelfSheet'
 
 // "8.940" y no "8940": en español el separador de miles normalmente se omite con 4 cifras.
 const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' } as Intl.NumberFormatOptions)
@@ -66,7 +68,7 @@ interface EstadisticasProps {
   onOpenYear: (year: number) => void
 }
 
-type RowKey = 'ritmo' | 'coleccion' | 'autores' | 'calificaciones' | 'leido'
+type RowKey = 'ritmo' | 'coleccion' | 'autores' | 'calificaciones' | 'leido' | 'rasgos'
 
 /** Bitácora > Estadísticas (V.3.0.0, "que no abrume"): arriba solo la tarjeta del año, con
  *  una frase y tres números, y flechas para ver años anteriores. Todo lo demás va en "Más de
@@ -94,6 +96,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   )
   const [year, setYear] = useState(currentYear)
   const [openRow, setOpenRow] = useState<RowKey | null>(null)
+  const [isCompleteShelfOpen, setIsCompleteShelfOpen] = useState(false)
 
   // Ritmo: un solo mes grande; 0 = el mes actual. No se puede ir al futuro ni antes de la
   // primera sesión marcada.
@@ -203,7 +206,8 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   const showAutores = !!autoresYSeries.topAuthor || resumen.sagaCount > 0 || !!autoresYSeries.mostRereadBook
   const showCalificaciones = calificaciones.avgRating != null
   const showLeido = coleccion.readByCategory.length > 0 || coleccion.readByFormat.length > 0
-  const hasRows = showRitmo || showColeccion || showAutores || showCalificaciones || showLeido
+  const showRasgos = stats.rasgos.total > 0
+  const hasRows = showRitmo || showColeccion || showAutores || showCalificaciones || showLeido || showRasgos
 
   const memberSinceLabel = resumen.memberSince
     ? new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(new Date(resumen.memberSince))
@@ -469,9 +473,20 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
               <Footnote>Cuenta cada libro que terminaste, relecturas incluidas.</Footnote>
             </MoreRow>
           )}
+
+          {showRasgos && (
+            <TraitStatsRow
+              id="rasgos"
+              stats={stats.rasgos}
+              isOpen={openRow === 'rasgos'}
+              onToggle={() => toggle('rasgos')}
+              onCompleteShelf={() => setIsCompleteShelfOpen(true)}
+            />
+          )}
           </div>
         </Card>
       )}
+      {isCompleteShelfOpen && <CompleteShelfSheet userId={userId} onClose={() => setIsCompleteShelfOpen(false)} />}
     </div>
   )
 }

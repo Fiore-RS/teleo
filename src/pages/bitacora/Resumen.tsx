@@ -19,6 +19,9 @@ import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { tally, formatLabel } from '../../lib/tally'
 import { categoryPlural } from '../../lib/options'
 import { useStaggerOnce } from '../../lib/motion'
+import { TraitStatsRow } from '../../assets/components/molecules/TraitStatsRow'
+import { CompleteShelfSheet } from '../../assets/components/molecules/CompleteShelfSheet'
+import { computeTraitStats } from '../../lib/traitStats'
 
 export type ResumenView = 'mes' | 'anio' | 'favoritos'
 
@@ -274,7 +277,10 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
   const stagger = useStaggerOnce('resumen-anio')
   const now = new Date()
   const { favorites } = usePeriodFavorites(userId, year)
-  const [openRow, setOpenRow] = useState<'leido' | 'favoritos' | null>(null)
+  const [openRow, setOpenRow] = useState<'leido' | 'rasgos' | 'favoritos' | null>(null)
+  const [isCompleteShelfOpen, setIsCompleteShelfOpen] = useState(false)
+  // Géneros y ánimos del año (V.3.1.0): cada libro una vez, aunque se haya releído.
+  const traitStats = useMemo(() => computeTraitStats(reads.map((r) => ({ ...r, id: r.bookId }))), [reads])
   const counts = useMemo(() => {
     const c = Array.from({ length: 12 }, () => 0)
     for (const r of reads) c[r.month - 1] += 1
@@ -403,6 +409,13 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
                 </div>
               </MoreRow>
             )}
+            <TraitStatsRow
+              id="anio-rasgos"
+              stats={traitStats}
+              isOpen={openRow === 'rasgos'}
+              onToggle={() => setOpenRow((r) => (r === 'rasgos' ? null : 'rasgos'))}
+              onCompleteShelf={() => setIsCompleteShelfOpen(true)}
+            />
             <MoreRow
               id="anio-favoritos"
               tone="magenta"
@@ -427,6 +440,7 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
           </div>
         </Card>
       )}
+      {isCompleteShelfOpen && <CompleteShelfSheet userId={userId} onClose={() => setIsCompleteShelfOpen(false)} />}
     </div>
   )
 }
