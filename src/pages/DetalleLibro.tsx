@@ -77,10 +77,12 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   async function handleAddTag(tag: string) {
     await addTag(tag)
     void queryClient.invalidateQueries({ queryKey: ['userTags'] })
+    void queryClient.invalidateQueries({ queryKey: ['tagsByBook'] })
   }
   async function handleRemoveTag(tag: string) {
     await removeTag(tag)
     void queryClient.invalidateQueries({ queryKey: ['userTags'] })
+    void queryClient.invalidateQueries({ queryKey: ['tagsByBook'] })
   }
   const bookTraits = traitsFromBook(book)
   async function saveTraits(traits: BookTraits) {
