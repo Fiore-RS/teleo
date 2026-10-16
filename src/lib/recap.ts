@@ -40,6 +40,8 @@ export interface RecapBook {
   title: string
   author: string | null
   coverUrl: string | null
+  /** Fecha en que se terminó (la primera vez dentro del periodo). `YYYY-MM-DD`. */
+  endDate: string
 }
 
 export interface RecapReread extends RecapBook {
@@ -115,7 +117,7 @@ function daysBetween(from: string, to: string) {
   return Math.round((new Date(y2, m2 - 1, d2).getTime() - new Date(y1, m1 - 1, d1).getTime()) / 86400000) + 1
 }
 
-const toBook = (r: YearRead): RecapBook => ({ bookId: r.bookId, title: r.title, author: r.author, coverUrl: r.coverUrl })
+const toBook = (r: YearRead): RecapBook => ({ bookId: r.bookId, title: r.title, author: r.author, coverUrl: r.coverUrl, endDate: r.endDate })
 
 export function buildRecap({ period, reads, sessionDates, priorCompletions, favoriteBookId, today }: BuildRecapInput): RecapData {
   const { start, last } = periodBounds(period)
