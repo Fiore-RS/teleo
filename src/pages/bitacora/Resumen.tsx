@@ -22,6 +22,9 @@ import { useStaggerOnce } from '../../lib/motion'
 import { TraitStatsRow } from '../../assets/components/molecules/TraitStatsRow'
 import { CompleteShelfSheet } from '../../assets/components/molecules/CompleteShelfSheet'
 import { computeTraitStats } from '../../lib/traitStats'
+import type { RecapPeriod } from '../../lib/recap'
+import { RecapEntryRow } from '../../assets/components/recap/RecapEntryRow'
+import { RecapViewer } from '../../assets/components/recap/RecapViewer'
 
 export type ResumenView = 'mes' | 'anio' | 'favoritos'
 
@@ -99,6 +102,8 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
   const currentMonth = now.getMonth() + 1
   const [month, setMonth] = useState(year === currentYear ? currentMonth : 12)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  // "Tu lectura en Teleo" (V.3.2.0): el periodo abierto en el visor.
+  const [recapPeriod, setRecapPeriod] = useState<RecapPeriod | null>(null)
 
   const { reads, totalPages, totalAudioSeconds, isLoading } = useYearReads(userId, year)
 
@@ -126,6 +131,7 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
           onPrev={() => (month === 1 ? goToMonth(year - 1, 12) : setMonth(month - 1))}
           onNext={() => (month === 12 ? goToMonth(year + 1, 1) : setMonth(month + 1))}
           onBookClick={setSelectedBookId}
+          onOpenRecap={() => setRecapPeriod({ kind: 'mes', year, month })}
         />
       )}
 
@@ -147,6 +153,7 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
             onViewChange('mes')
           }}
           onBookClick={setSelectedBookId}
+          onOpenRecap={() => setRecapPeriod({ kind: 'anio', year })}
         />
       )}
 
@@ -163,6 +170,8 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
           onNext={() => changeYear(year + 1)}
         />
       )}
+
+      {recapPeriod && <RecapViewer userId={userId} period={recapPeriod} onClose={() => setRecapPeriod(null)} />}
 
       {selectedBookId && (
         <DetalleLibro
@@ -197,10 +206,11 @@ interface MonthViewProps extends SheetViewProps {
   onPrev: () => void
   onNext: () => void
   onBookClick: (bookId: string) => void
+  onOpenRecap: () => void
 }
 
 /** Mes: los libros terminados ese mes, en repisas. */
-function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNext, onPrev, onNext, onBookClick }: MonthViewProps) {
+function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNext, onPrev, onNext, onBookClick, onOpenRecap }: MonthViewProps) {
   // La hoja entra con la misma animación que las tarjetas de Estadísticas y Compras (solo la
   // primera vez en la sesión).
   const stagger = useStaggerOnce('resumen-mes')
@@ -239,6 +249,10 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
                 cover: <BookCover title={read.title} coverUrl={read.coverUrl ?? undefined} status="terminado" />,
               }))}
             />
+            {/* Compartir va al final: primero se ve el mes, después la invitación. */}
+            <div className="mt-5">
+              <RecapEntryRow label="Compartir mi mes" onClick={onOpenRecap} />
+            </div>
           </>
         )}
       </PeriodTransition>
@@ -261,6 +275,7 @@ interface YearViewProps extends SheetViewProps {
   onNext: () => void
   onMonthClick: (month: number) => void
   onBookClick: (bookId: string) => void
+  onOpenRecap: () => void
 }
 
 /** Colores de los lomos, en el orden de los meses: los cuatro de la paleta del tema. */
@@ -273,7 +288,7 @@ const SPINE_TONES = [
 
 /** Año: una frase con lo esencial dentro de la hoja; debajo "Tu año en un estante" (un lomo
  *  por mes, más alto mientras más libros; tocarlo abre el mes) y "Más de tu año", plegado. */
-function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoading, canGoNext, onPrev, onNext, onMonthClick }: YearViewProps) {
+function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoading, canGoNext, onPrev, onNext, onMonthClick, onOpenRecap }: YearViewProps) {
   const stagger = useStaggerOnce('resumen-anio')
   const now = new Date()
   const { favorites } = usePeriodFavorites(userId, year)
@@ -340,7 +355,14 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
               <Skeleton className="h-5 w-3/5 rounded-full mt-2" />
             </div>
           ) : (
-            <p className="font-display text-[20px] leading-[1.4] text-text mt-3">{sentence}</p>
+            <>
+              <p className="font-display text-[20px] leading-[1.4] text-text mt-3">{sentence}</p>
+              {n > 0 && (
+                <div className="mt-5">
+                  <RecapEntryRow label="Compartir mi año" onClick={onOpenRecap} />
+                </div>
+              )}
+            </>
           )}
         </PeriodTransition>
       </ResumenSheet>

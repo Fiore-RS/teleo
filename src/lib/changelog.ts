@@ -15,6 +15,19 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.2.0',
+    announced: true,
+    date: '15 de octubre de 2026',
+    title: 'Tu lectura en Teleo',
+    items: [
+      'Comparte tu mes o tu año en tarjetas tipo historia: tus libros y páginas, tu mes más lector, tus géneros y ánimos, tu autor del año, tu racha más larga, tus relecturas, tu favorito y un ticket con todo junto.',
+      'En Bitácora, en Resumen › Mes, toca "Compartir mi mes". En Resumen › Año, "Compartir mi año". Durante el mes o el año en curso, las tarjetas dicen "Hasta hoy" o "Hasta ahora".',
+      'Pasa las tarjetas con un toque (a la derecha avanza, a la izquierda vuelve) y comparte la que estás viendo o todas juntas.',
+      'Las tarjetas toman los colores de tu tema y se saltan solas lo que no aplica: si un mes tiene un solo libro, no verás tarjetas vacías.',
+      'En diciembre, La mesa te avisa cuando tu año esté listo para compartir.',
+    ],
+  },
+  {
     version: '3.1.0',
     announced: true,
     date: '13 de octubre de 2026',

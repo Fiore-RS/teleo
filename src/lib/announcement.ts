@@ -1,9 +1,9 @@
-import { Compass, Filter, Pause, Tags, type LucideIcon } from 'lucide-react'
+import { CalendarDays, Gift, Share2, Sparkles, type LucideIcon } from 'lucide-react'
 import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '3.1.0'
+export const ANNOUNCEMENT_VERSION = '3.2.0'
 
 export interface AnnouncementItem {
   icon: LucideIcon
@@ -12,10 +12,10 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { icon: Tags, title: 'Género, ánimo y ritmo', text: 'Cuenta cómo es cada libro: hasta 3 géneros, hasta 3 ánimos (también los tuyos) y su ritmo. Al terminar uno, Teleo te lo pregunta.' },
-  { icon: Filter, title: 'Encuentra lo que buscas', text: 'Filtra tu estante y "¿Qué leo ahora?" por género, ánimo, ritmo o etiqueta, y mira qué es lo que más lees en Bitácora.' },
-  { icon: Pause, title: 'En pausa', text: 'Deja un libro a un lado sin abandonarlo. Tu progreso se guarda y lo retomas cuando quieras.' },
-  { icon: Compass, title: 'Sigue en la saga', text: 'Al terminar un libro de una saga, Teleo te propone el siguiente.' },
+  { icon: Sparkles, title: 'Tu lectura en Teleo', text: 'Tu mes y tu año en tarjetas para compartir: tus libros, tus páginas, tus géneros, tu racha y tu favorito.' },
+  { icon: CalendarDays, title: 'Comparte tu mes', text: 'En Bitácora, en Resumen › Mes, toca "Compartir mi mes" en cualquier mes con libros terminados.' },
+  { icon: Share2, title: 'Una tarjeta o todas', text: 'Pasa las tarjetas con un toque y comparte la que estás viendo o todas juntas, listas para tus historias.' },
+  { icon: Gift, title: 'Tu año, en diciembre', text: 'Tu año ya está en Resumen › Año. En diciembre te avisamos cuando esté completo para compartir.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */
