@@ -2,6 +2,7 @@ import { forwardRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { MONTH_ABBR, MONTH_NAMES } from '../../../lib/months'
 import { formatStackHeight, type RecapBook, type RecapCardId, type RecapData } from '../../../lib/recap'
 import { shareSafeImageUrl } from '../../../lib/shareImage'
+import { upgradedSrc } from '../../../lib/coverSrc'
 import type { RecapTone } from '../../../lib/recapTones'
 import './recapCards.css'
 
@@ -41,16 +42,23 @@ function Spark({ x, y, size }: { x: number; y: number; size: number }) {
 }
 
 /** Portada: la imagen si hay (por el intermediario con CORS, para poder exportarla) o un bloque
- *  de color con el título. */
-function Cover({ book, showTitle = true, style }: { book: RecapBook; showTitle?: boolean; style?: CSSProperties }) {
-  const src = shareSafeImageUrl(book.coverUrl, 300)
-  const [failed, setFailed] = useState(false)
+ *  de color con el título. Se pide primero la versión de mayor resolución de Google Books
+ *  (zoom=3) y, si ese libro no la tiene, la original: la tarjeta se exporta a 3,6 veces su
+ *  tamaño y una miniatura chica se ve pixelada, sobre todo en la del favorito. `width` es el
+ *  ancho en píxeles que se le pide al intermediario. */
+function Cover({ book, showTitle = true, style, width = 360 }: { book: RecapBook; showTitle?: boolean; style?: CSSProperties; width?: number }) {
+  const candidates = [book.coverUrl ? upgradedSrc(book.coverUrl) : null, book.coverUrl]
+    .filter((url): url is string => !!url)
+    .map((url) => shareSafeImageUrl(url, width))
+    .filter((url): url is string => !!url)
+  const [attempt, setAttempt] = useState(0)
   const color = PLAIN_COVERS[hash(book.bookId) % PLAIN_COVERS.length]
-  const hasImage = src && !failed
+  const src = candidates[attempt]
+  const hasImage = !!src
   return (
     <div className={`rc-cv${hasImage ? '' : ' plain'}${showTitle ? '' : ' notitle'}`} style={{ ['--c' as string]: color, ...style }}>
       {hasImage ? (
-        <img src={src} alt={book.title} crossOrigin="anonymous" onError={() => setFailed(true)} />
+        <img src={src} alt={book.title} crossOrigin="anonymous" onError={() => setAttempt((a) => a + 1)} />
       ) : (
         <span>{book.title}</span>
       )}
@@ -428,7 +436,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
           <span className="rc-kicker">Tu favorito</span>
           <p className="rc-favh">{isYear ? `de ${recap.period.year}` : `de ${monthName.toLowerCase()}`}</p>
           <div className="rc-favwrap">
-            <Cover book={fav} />
+            <Cover book={fav} width={720} />
             <Rosette label={isYear ? String(recap.period.year) : MONTH_ABBR[(recap.period.kind === 'mes' ? recap.period.month : 1) - 1].toUpperCase()} />
           </div>
           <div className="rc-favtitle">{fav.title}</div>
