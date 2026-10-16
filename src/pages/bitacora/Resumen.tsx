@@ -240,13 +240,6 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
             <p className="text-body-md text-text-secondary text-center mt-1 mb-3">
               {reads.length} {reads.length === 1 ? 'libro terminado' : 'libros terminados'}
             </p>
-            <div className="mb-4">
-              <RecapEntryRow
-                title="Compartir mi mes"
-                subtitle={`Tu ${MONTH_NAMES[month - 1].toLowerCase()} en tarjetas para compartir`}
-                onClick={onOpenRecap}
-              />
-            </div>
             <Shelf
               className={staggerLibros}
               items={reads.map((read) => ({
@@ -256,6 +249,10 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
                 cover: <BookCover title={read.title} coverUrl={read.coverUrl ?? undefined} status="terminado" />,
               }))}
             />
+            {/* Compartir va al final: primero se ve el mes, después la invitación. */}
+            <div className="mt-5">
+              <RecapEntryRow label="Compartir mi mes" onClick={onOpenRecap} />
+            </div>
           </>
         )}
       </PeriodTransition>
@@ -361,12 +358,8 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
             <>
               <p className="font-display text-[20px] leading-[1.4] text-text mt-3">{sentence}</p>
               {n > 0 && (
-                <div className="mt-4">
-                  <RecapEntryRow
-                    title={`Tu ${year} en Teleo`}
-                    subtitle={isCurrentYear ? 'Hasta ahora, en tarjetas para compartir' : 'Tu año en tarjetas para compartir'}
-                    onClick={onOpenRecap}
-                  />
+                <div className="mt-5">
+                  <RecapEntryRow label="Compartir mi año" onClick={onOpenRecap} />
                 </div>
               )}
             </>

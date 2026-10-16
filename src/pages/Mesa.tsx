@@ -29,7 +29,10 @@ import { getReadingPace, paceSentence } from '../lib/readingPace'
 import { useStaggerOnce } from '../lib/motion'
 import { queryClient } from '../lib/queryClient'
 import { DetalleLibro } from './DetalleLibro'
-import { GenreSuggestSheet } from '../assets/components/molecules/GenreSuggestSheet'
+import { RecapYearAnnouncement } from '../assets/components/recap/RecapYearAnnouncement'
+import { RecapViewer } from '../assets/components/recap/RecapViewer'
+import { isYearRecapAnnouncementDue, markYearRecapAnnouncementSeen } from '../lib/recapAnnouncement'
+import { useYearReads } from '../hooks/useYearReads'
 export function Mesa() {
   const staggerMesa = useStaggerOnce("mesa");
   const staggerLeyendo = useStaggerOnce("mesa-leyendo");
@@ -43,7 +46,9 @@ export function Mesa() {
   const { goal, completedCount, updateGoal, isLoading: goalLoading } = useAnnualGoal(user?.id);
   const [updatingBookId, setUpdatingBookId] = useState<string | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
-  const [isGenreSuggestOpen, setIsGenreSuggestOpen] = useState(false)
+  // Anuncio de diciembre de "Tu lectura en Teleo" (V.3.2.0) y el visor del año que abre.
+  const [yearRecapDismissed, setYearRecapDismissed] = useState(false)
+  const [isYearRecapOpen, setIsYearRecapOpen] = useState(false)
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   // La cinta de la racha baja con rebote cuando la sesión de hoy pasa de sin marcar a
@@ -73,6 +78,20 @@ export function Mesa() {
     if (needsVersionUpdate) updateProfile({ last_seen_version: LATEST_VERSION })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [needsVersionUpdate])
+
+  // Solo en diciembre, después del anuncio de versión (nunca los dos a la vez) y si hay libros
+  // terminados en el año.
+  const recapYear = new Date().getFullYear()
+  const yearRecapDue = isYearRecapAnnouncementDue(user?.id)
+  const { reads: yearReads, isLoading: yearReadsLoading } = useYearReads(yearRecapDue ? user?.id : undefined, recapYear)
+  const showYearRecap =
+    yearRecapDue && !yearRecapDismissed && !!profile?.has_seen_intro && !showAnnouncement && !yearReadsLoading && yearReads.length > 0
+
+  function closeYearRecapAnnouncement(open: boolean) {
+    markYearRecapAnnouncementSeen(user?.id, recapYear)
+    setYearRecapDismissed(true)
+    if (open) setIsYearRecapOpen(true)
+  }
 
   function handleAnnouncementDone() {
     setAnnouncementDismissed(true)
@@ -292,16 +311,26 @@ export function Mesa() {
       {showAnnouncement && (
         <AnnouncementSheet
           onDone={handleAnnouncementDone}
-          onCompleteGenres={() => {
+          onOpenRecap={() => {
             handleAnnouncementDone()
-            setIsGenreSuggestOpen(true)
+            navigate('/bitacora?vista=resumen')
           }}
           missed={missedVersions}
           lastSeen={seenAtEntry}
           onSeeAll={handleSeeAllNews}
         />
       )}
-      {isGenreSuggestOpen && <GenreSuggestSheet userId={user?.id} onClose={() => setIsGenreSuggestOpen(false)} />}
+      {showYearRecap && (
+        <RecapYearAnnouncement
+          userId={user?.id}
+          year={recapYear}
+          onOpen={() => closeYearRecapAnnouncement(true)}
+          onDismiss={() => closeYearRecapAnnouncement(false)}
+        />
+      )}
+      {isYearRecapOpen && (
+        <RecapViewer userId={user?.id} period={{ kind: 'anio', year: recapYear }} onClose={() => setIsYearRecapOpen(false)} />
+      )}
       {isCalendarOpen && <ReadingCalendarSheet userId={user?.id} onClose={() => setIsCalendarOpen(false)} />}
       {isRandomPickOpen && <RandomPickSheet userId={user?.id} onClose={() => setIsRandomPickOpen(false)} />}
 

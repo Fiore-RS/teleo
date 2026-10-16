@@ -56,6 +56,7 @@ const sections: TutorialSection[] = [
     points: [
       'En Estadísticas: tu año en una tarjeta (usa las flechas para ver años anteriores) y, en "Más de tu bitácora", tu ritmo y tu racha, tu colección, tus autores y sagas, tus calificaciones, lo que leíste y tus géneros y ánimos. Toca cada fila para abrirla.',
       'En Resumen: los libros que terminaste cada mes, tu año en un estante (toca un lomo para ver ese mes) y, en Favoritos, tu favorito de cada mes y del año.',
+      'Comparte tu lectura: en Resumen › Mes toca "Compartir mi mes", y en Resumen › Año, "Compartir mi año". Pasa las tarjetas con un toque y comparte una o todas.',
       'En Compras: cuánto has invertido en tu biblioteca por estado y la lista de tus libros agrupada por mes de compra. Filtra los que no tienen precio y tócalos para agregarlo.',
     ],
   },
