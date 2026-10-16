@@ -86,6 +86,12 @@ function Rosette({ label }: { label: string }) {
   )
 }
 
+/** Tamaño de letra para que un nombre de mes largo ("septiembre") entre en el ancho de la
+ *  tarjeta: la cursiva de Fraunces mide cerca de medio em por letra. */
+function fitSize(text: string, max: number, width: number) {
+  return Math.min(max, Math.floor(width / (text.length * 0.5)))
+}
+
 const dayOf = (date: string) => parseInt(date.slice(8, 10), 10)
 const monthOf = (date: string) => parseInt(date.slice(5, 7), 10)
 
@@ -136,8 +142,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       ))
       body = (
         <>
-          <Spark x={70} y={30} size={22} />
-          <Spark x={84} y={40} size={12} />
           <Spark x={12} y={64} size={14} />
           <div className="rc-top">{recap.isOngoing && <span className="rc-stamp">{sofar}</span>}</div>
           <div className="rc-ptitle">
@@ -146,7 +150,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
               <span className="yr">{recap.period.year}</span>
             ) : (
               <>
-                <span className="yr mes">{monthName.toLowerCase()}</span>
+                <span className="yr mes" style={{ fontSize: fitSize(monthName, 62, 252) }}>{monthName.toLowerCase()}</span>
                 <span className="yrsmall">{recap.period.year}</span>
               </>
             )}
@@ -220,11 +224,12 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       body = (
         <>
           <span className="rc-kicker">Tu mes más lector</span>
-          <div className="rc-monthname">{MONTH_NAMES[best.month - 1]}</div>
+          <div className="rc-monthname" style={{ fontSize: fitSize(MONTH_NAMES[best.month - 1], 58, 252) }}>{MONTH_NAMES[best.month - 1]}</div>
           {best.tiedWith.length > 0 && (
             <div className="rc-tied">Empatado con {best.tiedWith.map((m) => MONTH_NAMES[m - 1].toLowerCase()).join(' y ')}</div>
           )}
-          <div className="rc-sticker">
+          {/* Con un mes de nombre largo, la etiqueta baja para no tapar el nombre. */}
+          <div className="rc-sticker" style={MONTH_NAMES[best.month - 1].length > 6 ? { top: 104 } : undefined}>
             <div>
               <b>{best.count}</b>
               <span>{best.count === 1 ? 'libro' : 'libros'}</span>
