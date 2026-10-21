@@ -11,6 +11,7 @@ import { useProfile } from '../../../hooks/useProfile'
 import { useAccountSettings } from '../../../hooks/useAccountSettings'
 import { emailInputProps } from '../../../lib/emailInput'
 import { getUsernameCooldownInfo, USERNAME_COOLDOWN_DAYS } from '../../../lib/usernameCooldown'
+import { cleanUsernameInput, getUsernameIssue, usernameIssueMessage } from '../../../lib/username'
 
 // Hojas de Configuración › Cuenta (V.2.2.0). Antes eran pantallas aparte que se veían vacías;
 // ahora bajan desde arriba sobre Configuración, como el resto de los formularios.
@@ -41,9 +42,12 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
   const [newUsername, setNewUsername] = useState('')
   const [error, setError] = useState<string | null>(null)
   const { canChange, daysRemaining } = getUsernameCooldownInfo(profile?.username_changed_at ?? null)
+  // Reglas del @ (0035). "Muy corto" no se marca mientras se escribe, solo deja "Guardar" apagado.
+  const issue = newUsername ? getUsernameIssue(newUsername) : null
+  const liveIssue = issue && issue !== 'short' ? issue : null
 
   async function handleSave() {
-    if (!newUsername.trim() || !canChange) return
+    if (!newUsername.trim() || !canChange || issue) return
     const { error } = await updateUsername(newUsername.trim())
     if (error) { setError(error); return }
     onClose()
@@ -56,7 +60,7 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
       footer={
         <FormActions>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button variant="primary" onClick={handleSave} isLoading={isSaving} disabled={!newUsername.trim() || !canChange}>Guardar</Button>
+          <Button variant="primary" onClick={handleSave} isLoading={isSaving} disabled={!newUsername.trim() || !canChange || issue !== null}>Guardar</Button>
         </FormActions>
       }
     >
@@ -79,7 +83,7 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
                   autoCorrect="off"
                   spellCheck={false}
                   value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value.replace(/^@/, ''))}
+                  onChange={(e) => setNewUsername(cleanUsernameInput(e.target.value))}
                   disabled={!canChange}
                   className="text-left text-body-lg w-auto! flex-1 max-w-48 disabled:opacity-50"
                 />
@@ -92,6 +96,7 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
             ? `Solo puedes cambiarlo una vez cada ${USERNAME_COOLDOWN_DAYS} días. Para cambiar cómo te saluda Teleo, edita tu nickname.`
             : `Ya cambiaste tu usuario hace poco. Podrás volver a hacerlo en ${daysRemaining} día${daysRemaining === 1 ? '' : 's'}.`}
         />
+        {liveIssue && <Hint text={usernameIssueMessage(liveIssue)} tone="error" />}
         {error && <Hint text={error} tone="error" />}
       </div>
     </Sheet>

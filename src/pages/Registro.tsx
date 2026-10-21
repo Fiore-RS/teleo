@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { User, Mail, MailCheck } from 'lucide-react'
+import { AtSign, Mail, MailCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { Input } from '../assets/components/atoms/Input'
@@ -8,6 +8,7 @@ import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { emailInputProps } from '../lib/emailInput'
 import { Button } from '../assets/components/atoms/Button'
 import { AuthHeader } from '../assets/components/molecules/AuthHeader'
+import { cleanUsernameInput, getUsernameIssue, usernameIssueMessage, usernameTakenMessage } from '../lib/username'
 
 export function Registro() {
   const [username, setUsername] = useState('')
@@ -17,10 +18,29 @@ export function Registro() {
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
+  // El @ se revisa mientras se escribe (reglas de 0035: minúsculas, números, punto y guion
+  // bajo, de 3 a 30). "Muy corto" se avisa recién al intentar crear la cuenta, para no
+  // marcar error desde la primera letra.
+  const usernameIssue = getUsernameIssue(username)
+  const liveIssue = usernameIssue && usernameIssue !== 'short' ? usernameIssue : null
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    if (usernameIssue) {
+      setError(usernameIssueMessage(usernameIssue))
+      return
+    }
     setIsLoading(true)
+
+    // Si el @ ya existe, se avisa con ese motivo en vez del error genérico de Supabase. Si la
+    // consulta falla, se sigue igual: el índice de la base lo frena de todos modos.
+    const { data: isAvailable } = await supabase.rpc('username_available', { name: username })
+    if (isAvailable === false) {
+      setIsLoading(false)
+      setError(usernameTakenMessage(username))
+      return
+    }
 
     const { error: signUpError } = await supabase.auth.signUp({
       email: email.trim(),
@@ -73,14 +93,26 @@ export function Registro() {
         />
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            icon={User}
-            type="text"
-            placeholder="Nombre o seudónimo..."
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+          <div>
+            <Input
+              icon={AtSign}
+              type="text"
+              placeholder="nombre.de.usuario"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(cleanUsernameInput(e.target.value))}
+              aria-invalid={liveIssue ? true : undefined}
+              required
+            />
+            <p className={`text-body-sm mt-1.5 px-1 ${liveIssue ? 'text-primary-text' : 'text-text-muted'}`}>
+              {liveIssue
+                ? usernameIssueMessage(liveIssue)
+                : 'Tu @usuario: minúsculas, números, punto y guion bajo. El nombre con el que Teleo te saluda lo eliges después.'}
+            </p>
+          </div>
           <Input
             icon={Mail}
             {...emailInputProps}
