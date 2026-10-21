@@ -478,14 +478,16 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                             <button
                               type="button"
                               onClick={row.onClick}
-                              className="flex items-center gap-1 text-body-md font-bold text-primary-text text-right after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-primary-text rounded-sm"
+                              className="flex items-center gap-1 min-w-0 max-w-full text-body-md font-bold text-primary-text text-right after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-primary-text rounded-sm"
                             >
-                              <span className="truncate">{row.value}</span>
+                              {/* V.3.2.1: hasta 2 líneas. Sin límite de ancho en el botón, un nombre de
+                                  saga largo se salía de la pantalla. */}
+                              <span className="min-w-0 line-clamp-2 wrap-anywhere">{row.value}</span>
                               <ChevronRight size={16} className="shrink-0" aria-hidden="true" />
                             </button>
                           </dd>
                         ) : (
-                          <dd className="text-body-md font-bold text-text text-right">{row.value}</dd>
+                          <dd className="min-w-0 text-body-md font-bold text-text text-right wrap-anywhere">{row.value}</dd>
                         )}
                       </div>
                     ))}
