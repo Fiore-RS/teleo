@@ -15,6 +15,18 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.2.1',
+    date: '20 de octubre de 2026',
+    title: 'La lista de temporada',
+    items: [
+      'En tu lista de la temporada, el menú de opciones suma "Elegir uno al azar": "¿Qué leo ahora?" elige solo entre los libros de tu lista.',
+      '"¿Qué leo ahora?" también tiene "Elegir de", para cambiar entre todos tus pendientes y tu lista de la temporada cuando la abres desde La mesa o Estante.',
+      'El botón de opciones de tu lista de la temporada ya no tapa la esquina de la tarjeta.',
+      'Las tarjetas para compartir tu mes y tu año se ven más limpias, sin destellos que choquen con lo demás.',
+      'Los nombres largos de saga ya no se salen de la pantalla en los detalles de un libro: se ven en dos líneas.',
+    ],
+  },
+  {
     version: '3.2.0',
     announced: true,
     date: '15 de octubre de 2026',
