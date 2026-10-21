@@ -22,6 +22,7 @@ import { BookCardPriority } from './BookCardPriority'
 import { PriorityListMenu } from './PriorityListMenu'
 import { EditListNameModal } from './EditListNameModal'
 import { StartReadingDateModal } from './StartReadingDateModal'
+import { RandomPickSheet } from './RandomPickSheet'
 
 interface PriorityListCardProps {
   userId: string | undefined
@@ -30,7 +31,7 @@ interface PriorityListCardProps {
 }
 
 /** "Mi lista de esta temporada" como tarjeta completa: portadas en orden, menú (editar
- *  nombre, organizar, ver en Estante), reordenamiento con mantener presionado y "Empezar a
+ *  nombre, elegir uno al azar, organizar, ver en Estante), reordenamiento con mantener presionado y "Empezar a
  *  leer". Vivía en La mesa; en la fase 4 se mudó a Tu rincón (Perfil). Todo su estado va
  *  adentro para poder ubicarla en cualquier pantalla. */
 export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) {
@@ -40,6 +41,7 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
   const [isReordering, setIsReordering] = useState(false)
   const [isEditNameOpen, setIsEditNameOpen] = useState(false)
   const [pendingStartId, setPendingStartId] = useState<string | null>(null)
+  const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
 
   const listName = getPriorityListName(profile?.priority_list_name)
 
@@ -99,7 +101,9 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
                 isReordering={isReordering}
                 canReorder={books.length > 1}
                 canViewInEstante={books.length > 0}
+                canPickRandom={books.length > 1}
                 onEditName={() => setIsEditNameOpen(true)}
+                onPickRandom={() => setIsRandomPickOpen(true)}
                 onToggleReorder={() => setIsReordering(true)}
                 onViewInEstante={() => navigate('/estante?filtro=temporada')}
               />
@@ -159,6 +163,10 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
           await updateProfile({ priority_list_name: name })
         }}
       />
+
+      {isRandomPickOpen && (
+        <RandomPickSheet userId={userId} initialSource="temporada" onClose={() => setIsRandomPickOpen(false)} />
+      )}
 
       <StartReadingDateModal
         isOpen={pendingStartId !== null}

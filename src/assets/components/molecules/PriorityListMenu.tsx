@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { MoreHorizontal, Pencil, ArrowUpDown, BookOpen } from 'lucide-react'
+import { MoreHorizontal, Pencil, ArrowUpDown, BookOpen, Shuffle } from 'lucide-react'
 
 interface PriorityListMenuProps {
   isReordering: boolean
   canReorder: boolean
   canViewInEstante: boolean
+  /** "Elegir uno al azar" (V.3.2.1): solo con 2 libros o más en la lista. */
+  canPickRandom: boolean
   onEditName: () => void
   onToggleReorder: () => void
   onViewInEstante: () => void
+  onPickRandom: () => void
 }
 
 /** Menú de opciones de "Mi lista de esta temporada" (Perfil), con el mismo patrón que `StatusMenu`
@@ -18,9 +21,11 @@ export function PriorityListMenu({
   isReordering,
   canReorder,
   canViewInEstante,
+  canPickRandom,
   onEditName,
   onToggleReorder,
   onViewInEstante,
+  onPickRandom,
 }: PriorityListMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -69,6 +74,18 @@ export function PriorityListMenu({
             <Pencil size={16} className="text-text-secondary shrink-0" />
             Editar nombre
           </button>
+
+          {canPickRandom && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => handleSelect(onPickRandom)}
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left text-text hover:bg-surface-2 transition-colors"
+            >
+              <Shuffle size={16} className="text-text-secondary shrink-0" />
+              Elegir uno al azar
+            </button>
+          )}
 
           {canReorder && (
             <button
