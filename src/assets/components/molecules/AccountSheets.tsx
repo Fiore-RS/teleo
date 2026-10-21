@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { PasswordInput } from '../atoms/PasswordInput'
 import { Button } from '../atoms/Button'
-import { FormActions, FormCard, FormRow, FormSection } from './FormLayout'
+import { FormActions, FormCard, FormHint, FormRow, FormSection } from './FormLayout'
 import { ConfirmSheet } from './ConfirmSheet'
 import { useAuth } from '../../../hooks/useAuth'
 import { useProfile } from '../../../hooks/useProfile'
@@ -25,15 +24,9 @@ export function AccountSheet({ sheet, onClose }: { sheet: AccountSheetKey; onClo
   return <ChangePasswordSheet onClose={onClose} />
 }
 
-function Hint({ text, tone = 'muted' }: { text: string; tone?: 'muted' | 'error' | 'ok' }) {
-  const color = tone === 'error' ? 'text-primary-text' : tone === 'ok' ? 'text-accent-finished' : 'text-text-muted'
-  return (
-    <p className={`flex items-center gap-1.5 text-body-sm mt-2 mb-1 px-0.5 animate-fade-in ${color}`}>
-      {tone === 'ok' && <Check size={14} strokeWidth={2.6} aria-hidden="true" />}
-      {text}
-    </p>
-  )
-}
+// El aviso de siempre de estas hojas; desde la V.3.3.0 vive en FormLayout para usarlo también
+// en las pantallas de cuenta.
+const Hint = FormHint
 
 function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth()
