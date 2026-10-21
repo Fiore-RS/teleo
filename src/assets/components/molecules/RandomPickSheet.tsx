@@ -5,10 +5,12 @@ import { queryClient } from '../../../lib/queryClient'
 import { recomputeSagaStatus } from '../../../lib/sagaStatus'
 import { prefersReducedMotion } from '../../../lib/motion'
 import { useCachedQuery } from '../../../hooks/useCachedQuery'
+import { useProfile } from '../../../hooks/useProfile'
+import { getPriorityListName } from '../../../lib/priorityList'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
 import { Select } from '../atoms/Select'
-import { FormActions, FormCollapsible, FormRow } from './FormLayout'
+import { FormActions, FormCard, FormCollapsible, FormRow } from './FormLayout'
 import { genreLabel, genreOptions, moodLabel, moodOptions, paceLabel, paceOptions } from '../../../lib/bookTraits'
 import { CoverImage } from '../atoms/CoverImage'
 import { coverDisplaySrc } from '../../../lib/coverSrc'
@@ -26,7 +28,11 @@ interface PendingBook {
   moods: string[] | null
   custom_moods: string[] | null
   pace: string | null
+  is_priority: boolean
 }
+
+/** De dónde elige la ruleta (V.3.2.1): todos los pendientes o solo la lista de temporada. */
+export type PickSource = 'todos' | 'temporada'
 
 /** Filtro de la ruleta (V.3.1.0). El ánimo puede ser fijo ("m:dark") o propio ("c:Cozy"). */
 interface PickFilter {
@@ -93,6 +99,8 @@ function refillPool(pool: string[], shownIds: Set<string>, books: PendingBook[],
 interface RandomPickSheetProps {
   userId: string | undefined
   onClose: () => void
+  /** Desde la tarjeta de la lista de temporada abre ya en "temporada". Por defecto, todos. */
+  initialSource?: PickSource
 }
 
 /** "¿Qué leo ahora?" (fase 2): elige al azar uno de los libros pendientes. V.3.1.0: hoja con
@@ -103,14 +111,21 @@ interface RandomPickSheetProps {
  *  cierra sin cambiar nada y "Empezar a leer" lo pasa a Leyendo, preguntando antes si hoy es
  *  la fecha de inicio (mismo aviso que en el resto de la app).
  *
+ *  V.3.2.1: "Elegir de" permite que elija solo de la lista de temporada (aparece si la lista
+ *  tiene 2 libros o más); el menú de la lista abre la hoja ya en ese modo.
+ *
  *  Se monta al abrirse, así cada vez arranca con una elección nueva. */
-export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
-  const { data: allBooks, isLoading } = useCachedQuery(
-    ['pendingBooks', userId],
+export function RandomPickSheet({ userId, onClose, initialSource = 'todos' }: RandomPickSheetProps) {
+  const { profile } = useProfile(userId)
+  const listName = getPriorityListName(profile?.priority_list_name)
+  // La clave suma 'lista' porque desde la 3.2.1 la consulta trae is_priority: así no se usa
+  // una copia guardada de antes que no lo tenga.
+  const { data: pendingBooks, isLoading } = useCachedQuery(
+    ['pendingBooks', userId, 'lista'],
     async () => {
       const { data } = await supabase
         .from('books')
-        .select('id, title, author, cover_url, total_pages, saga_id, genres, moods, custom_moods, pace')
+        .select('id, title, author, cover_url, total_pages, saga_id, genres, moods, custom_moods, pace, is_priority')
         .eq('user_id', userId!)
         .eq('status', 'pendiente')
       return (data ?? []) as PendingBook[]
@@ -119,11 +134,21 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
     { enabled: !!userId }
   )
 
+  const [source, setSource] = useState<PickSource>(initialSource)
+  const priorityCount = useMemo(() => pendingBooks.filter((b) => b.is_priority).length, [pendingBooks])
+  const canPickFromList = priorityCount >= 2
+  // Si la lista ya no tiene 2 libros o más, vuelve a todos los pendientes.
+  const fromList = source === 'temporada' && canPickFromList
+  const allBooks = useMemo(
+    () => (fromList ? pendingBooks.filter((b) => b.is_priority) : pendingBooks),
+    [pendingBooks, fromList]
+  )
+
   const [filter, setFilter] = useState<PickFilter>(NO_FILTER)
   const books = useMemo(() => allBooks.filter((b) => matchesPick(b, filter)), [allBooks, filter])
   const isFiltered = filter.genre !== '' || filter.mood !== '' || filter.pace !== ''
 
-  // Opciones del filtro: solo lo que aparece en los pendientes.
+  // Opciones del filtro: solo lo que aparece en los libros de donde se elige.
   const filterOptions = useMemo(() => {
     const genres = new Set(allBooks.flatMap((b) => b.genres ?? []))
     const moods = new Set(allBooks.flatMap((b) => b.moods ?? []))
@@ -180,6 +205,14 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
     setPool(null)
     seenRef.current.clear()
     setFilter((prev) => ({ ...prev, ...patch }))
+  }
+
+  // Cambiar de dónde se elige vuelve a elegir y quita el filtro: lo elegido podría no
+  // existir entre los libros nuevos.
+  function changeSource(next: PickSource) {
+    if (next === source) return
+    changeFilter(NO_FILTER)
+    setSource(next)
   }
 
   const current = books.find((b) => b.id === pickedId) ?? (books.length > 0 ? books[Math.floor(seed * books.length)] : null)
@@ -241,6 +274,22 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
     onClose()
   }
 
+  const sourceCard = canPickFromList && (
+    <FormCard className="mb-3">
+      <FormRow label="Elegir de">
+        <Select
+          bare
+          options={[
+            { value: 'todos', label: 'Todos mis pendientes' },
+            { value: 'temporada', label: listName },
+          ]}
+          value={fromList ? 'temporada' : 'todos'}
+          onChange={(e) => changeSource(e.target.value as PickSource)}
+        />
+      </FormRow>
+    </FormCard>
+  )
+
   const filterCard = hasFilterOptions && (
     <FormCollapsible title="Filtrar" summary={filterSummary} className="mb-5">
       <div className="border-t border-border divide-y divide-border">
@@ -273,7 +322,7 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
         <Skeleton className="h-3.5 w-1/3 mt-2 rounded-full" />
       </div>
     )
-  } else if (allBooks.length === 0) {
+  } else if (pendingBooks.length === 0) {
     // Aviso sin ícono (V.3.1.0), como el resto de los avisos desde la 2.2.0.
     content = (
       <div className="animate-fade-in">
@@ -291,8 +340,11 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
   } else if (!shown) {
     content = (
       <>
+        {sourceCard}
         {filterCard}
-        <p className="text-body-md text-text-secondary text-center">Ningún pendiente coincide con ese filtro.</p>
+        <p className="text-body-md text-text-secondary text-center">
+          {fromList ? 'Ningún libro de tu lista coincide con ese filtro.' : 'Ningún pendiente coincide con ese filtro.'}
+        </p>
       </>
     )
     footer = (
@@ -303,6 +355,7 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
   } else {
     content = (
       <>
+        {sourceCard}
         {filterCard}
         <p className="text-center text-body-md text-text-secondary">Tu próxima lectura podría ser…</p>
         <div className="flex flex-col items-center text-center mt-4 mb-2" aria-live="polite">
@@ -317,7 +370,13 @@ export function RandomPickSheet({ userId, onClose }: RandomPickSheetProps) {
           {shown.author && <p className="text-body-md text-text-secondary mt-1">{shown.author}</p>}
           {shown.total_pages ? <p className="text-body-sm text-text-muted mt-1">{shown.total_pages} páginas</p> : null}
           {books.length === 1 && (
-            <p className="text-body-sm text-text-muted mt-3">{isFiltered ? 'Es el único pendiente con ese filtro.' : 'Es tu único pendiente.'}</p>
+            <p className="text-body-sm text-text-muted mt-3">
+              {fromList
+                ? 'Es el único libro de tu lista con ese filtro.'
+                : isFiltered
+                  ? 'Es el único pendiente con ese filtro.'
+                  : 'Es tu único pendiente.'}
+            </p>
           )}
         </div>
       </>
