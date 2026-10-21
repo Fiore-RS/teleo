@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.2.2',
+    date: '20 de octubre de 2026',
+    title: 'Tu @usuario',
+    items: [
+      'Los @usuario nuevos usan solo minúsculas, números, punto y guion bajo, entre 3 y 30 caracteres. Si ya tienes tu @, no cambia nada.',
+      'Al crear tu cuenta o cambiar tu @, Teleo te avisa mientras escribes si algún carácter no se puede usar.',
+      'Ya no se pueden tener dos @ iguales que solo cambien en mayúsculas.',
+    ],
+  },
+  {
     version: '3.2.1',
     date: '20 de octubre de 2026',
     title: 'La lista de temporada',
