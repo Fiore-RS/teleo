@@ -1,49 +1,88 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { AtSign, Mail, MailCheck } from 'lucide-react'
+import { Check, Loader2, UserPlus, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { Input } from '../assets/components/atoms/Input'
 import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { emailInputProps } from '../lib/emailInput'
 import { Button } from '../assets/components/atoms/Button'
-import { AuthHeader } from '../assets/components/molecules/AuthHeader'
-import { cleanUsernameInput, getUsernameIssue, usernameIssueMessage, usernameTakenMessage } from '../lib/username'
+import { FormHint, FormRow, type FormHintTone } from '../assets/components/molecules/FormLayout'
+import { AuthCard, AuthFootnote, AuthLayout } from '../assets/components/molecules/AuthLayout'
+import {
+  cleanUsernameInput,
+  getUsernameIssue,
+  usernameFreeMessage,
+  usernameIssueMessage,
+  usernameTakenMessage,
+} from '../lib/username'
+
+const PASSWORD_MIN = 6
+/** Espera después de la última letra antes de preguntar si el @ está libre. */
+const USERNAME_CHECK_DELAY_MS = 400
+
+type Availability = 'idle' | 'checking' | 'free' | 'taken' | 'unknown'
 
 export function Registro() {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [submittedTo, setSubmittedTo] = useState<string | null>(null)
+  // Última respuesta de username_available, con el @ al que corresponde: si se siguió
+  // escribiendo, no sirve y se muestra "Comprobando…" hasta la siguiente.
+  const [checked, setChecked] = useState<{ name: string; free: boolean | null } | null>(null)
 
-  // El @ se revisa mientras se escribe (reglas de 0035: minúsculas, números, punto y guion
-  // bajo, de 3 a 30). "Muy corto" se avisa recién al intentar crear la cuenta, para no
-  // marcar error desde la primera letra.
-  const usernameIssue = getUsernameIssue(username)
+  // Reglas del @ (0035). "Muy corto" no se marca mientras se escribe, para no mostrar un
+  // error desde la primera letra; solo deja el botón apagado.
+  const usernameIssue = username ? getUsernameIssue(username) : null
   const liveIssue = usernameIssue && usernameIssue !== 'short' ? usernameIssue : null
+
+  useEffect(() => {
+    if (!username || usernameIssue) return
+    const timer = window.setTimeout(async () => {
+      const { data, error: rpcError } = await supabase.rpc('username_available', { name: username })
+      setChecked({ name: username, free: rpcError ? null : data })
+    }, USERNAME_CHECK_DELAY_MS)
+    return () => window.clearTimeout(timer)
+  }, [username, usernameIssue])
+
+  let availability: Availability = 'idle'
+  if (username && !usernameIssue) {
+    if (checked?.name !== username) availability = 'checking'
+    else availability = checked.free === null ? 'unknown' : checked.free ? 'free' : 'taken'
+  }
+
+  const isLongEnough = password.length >= PASSWORD_MIN
+  const matches = confirmPassword.length > 0 && password === confirmPassword
+  const emailLooksValid = /^\S+@\S+\.\S+$/.test(email.trim())
+  // Si no se pudo comprobar el @ ('unknown'), se deja intentar: el índice de la base lo frena.
+  const canSubmit =
+    username !== '' && !usernameIssue && availability !== 'taken' && availability !== 'checking' &&
+    emailLooksValid && isLongEnough && matches
+
+  let usernameHint: { text: string; tone: FormHintTone } | null = null
+  if (liveIssue) usernameHint = { text: usernameIssueMessage(liveIssue), tone: 'error' }
+  else if (availability === 'checking') usernameHint = { text: 'Comprobando…', tone: 'loading' }
+  else if (availability === 'taken') usernameHint = { text: usernameTakenMessage(username), tone: 'error' }
+  else if (availability === 'free') usernameHint = { text: usernameFreeMessage(username), tone: 'ok' }
+
+  let passwordHint: { text: string; tone: FormHintTone } | null = null
+  if (password && !isLongEnough) passwordHint = { text: `Al menos ${PASSWORD_MIN} caracteres.`, tone: 'error' }
+  else if (confirmPassword && !matches) passwordHint = { text: 'Las contraseñas no coinciden.', tone: 'error' }
+  else if (isLongEnough && matches) passwordHint = { text: `Coinciden y tienen al menos ${PASSWORD_MIN} caracteres.`, tone: 'ok' }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!canSubmit) return
     setError(null)
-    if (usernameIssue) {
-      setError(usernameIssueMessage(usernameIssue))
-      return
-    }
     setIsLoading(true)
 
-    // Si el @ ya existe, se avisa con ese motivo en vez del error genérico de Supabase. Si la
-    // consulta falla, se sigue igual: el índice de la base lo frena de todos modos.
-    const { data: isAvailable } = await supabase.rpc('username_available', { name: username })
-    if (isAvailable === false) {
-      setIsLoading(false)
-      setError(usernameTakenMessage(username))
-      return
-    }
-
+    const cleanEmail = email.trim()
     const { error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
+      email: cleanEmail,
       password,
       options: {
         data: { username },
@@ -58,92 +97,124 @@ export function Registro() {
       return
     }
 
-    setSubmitted(true)
+    setSubmittedTo(cleanEmail)
   }
 
-  if (submitted) {
+  if (submittedTo) {
     return (
-      <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
-        <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6 text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary-soft flex items-center justify-center mb-4">
-            <MailCheck size={28} strokeWidth={1.75} className="text-primary-text" />
-          </div>
-          <h1 className="font-title text-[28px] leading-[1.1] text-text">
-            Revisa tu bandeja de entrada
-          </h1>
-          <p className="font-body text-body-md text-text-secondary mt-2">
-            Te enviamos un enlace de verificación a {email.trim()}. Haz clic en él para activar tu cuenta.
-          </p>
+      <AuthLayout
+        centered
+        title="Revisa tu correo"
+        subtitle={
+          <>
+            Te enviamos un enlace a <span className="font-semibold text-text">{submittedTo}</span>. Tócalo para
+            activar tu cuenta y vuelve aquí para entrar.
+          </>
+        }
+        footer={
           <Link to="/login">
-            <Button variant="primary" className="mt-6">
-              Volver a iniciar sesión
-            </Button>
+            <Button variant="primary">Ir a iniciar sesión</Button>
           </Link>
-        </div>
-      </div>
+        }
+      >
+        <p className="text-body-sm text-text-muted">Si no te llega en unos minutos, revisa la carpeta de spam o de promociones.</p>
+      </AuthLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
-      <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6">
-        <AuthHeader
-          title="Crea tu rincón de lectura"
-          subtitle="Tu espacio personal para registrar, valorar y recordar cada libro en tu vida."
-        />
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+    <AuthLayout
+      title="Crea tu rincón de lectura"
+      subtitle="Tu espacio personal para registrar, valorar y recordar cada libro en tu vida."
+      onSubmit={handleSubmit}
+      footer={
+        <>
+          <Button type="submit" variant="primary" isLoading={isLoading} disabled={!canSubmit}>
+            Crear cuenta
+          </Button>
+          <AuthFootnote>
+            ¿Ya tienes cuenta?{' '}
+            <Link to="/login" className="text-primary-text font-bold">
+              Inicia sesión aquí.
+            </Link>
+          </AuthFootnote>
+        </>
+      }
+    >
+      <AuthCard label="Tu cuenta" icon={UserPlus}>
+        <FormRow label="Usuario" htmlFor="signup-username">
+          <span className="flex items-center justify-end min-w-0 w-full">
+            {/* La @ va dentro del texto (y no como prefijo aparte) para que la fila quede
+                alineada a la derecha como Correo y Contraseña. cleanUsernameInput la quita. */}
             <Input
-              icon={AtSign}
-              type="text"
-              placeholder="nombre.de.usuario"
+              bare
+              id="signup-username"
+              placeholder="@tu.usuario"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
               autoComplete="username"
-              value={username}
+              value={username ? `@${username}` : ''}
               onChange={(e) => setUsername(cleanUsernameInput(e.target.value))}
-              aria-invalid={liveIssue ? true : undefined}
-              required
+              aria-invalid={liveIssue || availability === 'taken' ? true : undefined}
+              className="text-right text-body-lg"
             />
-            <p className={`text-body-sm mt-1.5 px-1 ${liveIssue ? 'text-primary-text' : 'text-text-muted'}`}>
-              {liveIssue
-                ? usernameIssueMessage(liveIssue)
-                : 'Tu @usuario: minúsculas, números, punto y guion bajo. El nombre con el que Teleo te saluda lo eliges después.'}
-            </p>
-          </div>
+            <UsernameStatus availability={availability} hasIssue={liveIssue !== null} />
+          </span>
+        </FormRow>
+        <FormRow label="Correo" htmlFor="signup-email">
           <Input
-            icon={Mail}
             {...emailInputProps}
-            placeholder="Correo electrónico..."
+            bare
+            id="signup-email"
+            placeholder="tu@correo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            className="text-right text-body-lg"
           />
+        </FormRow>
+        <FormRow label="Contraseña" htmlFor="signup-password">
           <PasswordInput
-            placeholder="Contraseña..."
+            bare
+            id="signup-password"
+            placeholder="••••••"
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
           />
+        </FormRow>
+        <FormRow label="Confirmar" htmlFor="signup-confirm">
+          <PasswordInput
+            bare
+            id="signup-confirm"
+            placeholder="••••••"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </FormRow>
+      </AuthCard>
 
-          {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
-
-          <Button type="submit" variant="primary" isLoading={isLoading}>
-            Crear cuenta
-          </Button>
-        </form>
-
-        <p className="text-center text-body-sm text-text-secondary mt-4">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-primary-text font-bold">
-            Inicia sesión aquí.
-          </Link>
-        </p>
-      </div>
-    </div>
+      {usernameHint && <FormHint text={usernameHint.text} tone={usernameHint.tone} />}
+      {(availability === 'idle' || availability === 'free') && !liveIssue && (
+        <FormHint text="Tu @usuario aparece en tu perfil y en tu tarjeta. El nombre con el que Teleo te saluda lo eliges después." />
+      )}
+      {passwordHint && <FormHint text={passwordHint.text} tone={passwordHint.tone} />}
+      {error && <FormHint text={error} tone="error" />}
+    </AuthLayout>
   )
+}
+
+/** Marca al final de la fila del @: girando mientras se comprueba, ✓ si está libre y ✕ si no. */
+function UsernameStatus({ availability, hasIssue }: { availability: Availability; hasIssue: boolean }) {
+  if (hasIssue || availability === 'taken') {
+    return <X size={16} strokeWidth={2.4} className="ml-1.5 shrink-0 text-primary-text" aria-hidden="true" />
+  }
+  if (availability === 'free') {
+    return <Check size={16} strokeWidth={2.6} className="ml-1.5 shrink-0 text-accent-finished" aria-hidden="true" />
+  }
+  if (availability === 'checking') {
+    return <Loader2 size={15} strokeWidth={2.4} className="ml-1.5 shrink-0 text-text-muted animate-spin motion-reduce:animate-none" aria-hidden="true" />
+  }
+  return null
 }

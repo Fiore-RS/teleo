@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ChevronDown, type LucideIcon } from 'lucide-react'
+import { Check, ChevronDown, Loader2, type LucideIcon } from 'lucide-react'
 import { Toggle } from '../atoms/Toggle'
 
 // Piezas compartidas de los formularios rediseñados en la V.2.2.0 (Editar libro, saga,
@@ -137,4 +137,20 @@ export function FormCollapsible({ title, summary, defaultOpen = false, children,
 /** Botones del pie (Cancelar / Guardar), pensados para el `footer` de `Sheet`. */
 export function FormActions({ children }: { children: ReactNode }) {
   return <div className="flex gap-2.5">{children}</div>
+}
+
+export type FormHintTone = 'muted' | 'error' | 'ok' | 'loading'
+
+/** Aviso corto debajo de una tarjeta de filas (V.2.2.0, Cambiar contraseña; V.3.3.0 también en
+ *  las pantallas de cuenta): gris para ayuda, vino para errores, verde con ✓ cuando algo está
+ *  bien, y con un círculo girando mientras se comprueba algo. */
+export function FormHint({ text, tone = 'muted' }: { text: string; tone?: FormHintTone }) {
+  const color = tone === 'error' ? 'text-primary-text' : tone === 'ok' ? 'text-accent-finished' : 'text-text-muted'
+  return (
+    <p role={tone === 'error' ? 'alert' : undefined} className={`flex items-center gap-1.5 text-body-sm mt-2 mb-1 px-0.5 animate-fade-in ${color}`}>
+      {tone === 'ok' && <Check size={14} strokeWidth={2.6} aria-hidden="true" className="shrink-0" />}
+      {tone === 'loading' && <Loader2 size={14} strokeWidth={2.4} aria-hidden="true" className="shrink-0 animate-spin motion-reduce:animate-none" />}
+      {text}
+    </p>
+  )
 }
