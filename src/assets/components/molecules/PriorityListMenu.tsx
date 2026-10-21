@@ -10,7 +10,7 @@ interface PriorityListMenuProps {
   onViewInEstante: () => void
 }
 
-/** Menú de opciones de "Mi lista de esta temporada" (Tu rincón) — mismo patrón que `StatusMenu`
+/** Menú de opciones de "Mi lista de esta temporada" (Perfil), con el mismo patrón que `StatusMenu`
  *  (botón + panel desplegable que se cierra al tocar afuera), pero como un menú de acciones
  *  en vez de un selector. Reemplaza los tres controles sueltos (lápiz, Organizar, Ver en
  *  Estante) que antes competían por espacio en el header de la sección. */
@@ -42,13 +42,17 @@ export function PriorityListMenu({
 
   return (
     <div className="relative inline-block" ref={containerRef}>
+      {/* V.3.2.1: solo el ícono, en el color de la pestaña y del alto de "Ver todos". El círculo
+          de 34px era más alto que el espacio de la pestaña y se comía la esquina de la tarjeta. */}
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
         aria-label="Más opciones de la lista"
-        className="w-[34px] h-[34px] rounded-full border border-border bg-surface-2 text-text-secondary flex items-center justify-center"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        className="w-9 h-7 rounded-full text-current flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
       >
-        <MoreHorizontal size={16} />
+        <MoreHorizontal size={20} strokeWidth={2.25} />
       </button>
 
       {isOpen && (
