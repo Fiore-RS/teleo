@@ -33,14 +33,6 @@ function hash(text: string) {
   return h
 }
 
-function Spark({ x, y, size }: { x: number; y: number; size: number }) {
-  return (
-    <svg className="rc-spark" style={{ left: `${x}%`, top: `${y}%`, width: size }} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 0C13 8 16 11 24 12C16 13 13 16 12 24C11 16 8 13 0 12C8 11 11 8 12 0Z" />
-    </svg>
-  )
-}
-
 /** Portada: la imagen si hay (por el intermediario con CORS, para poder exportarla) o un bloque
  *  de color con el título. Se pide primero la versión de mayor resolución de Google Books
  *  (zoom=3) y, si ese libro no la tiene, la original: la tarjeta se exporta a 3,6 veces su
@@ -150,7 +142,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       ))
       body = (
         <>
-          <Spark x={12} y={64} size={14} />
           <div className="rc-top">{recap.isOngoing && <span className="rc-stamp">{sofar}</span>}</div>
           <div className="rc-ptitle">
             <span className="tu">Tu</span>
@@ -194,8 +185,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       }
       body = (
         <>
-          <Spark x={80} y={8} size={18} />
-          <Spark x={90} y={20} size={10} />
           <span className="rc-kicker">{kicker} leíste</span>
           <div className="rc-gwrap">
             <div className={`rc-giant${recap.readCount >= 100 ? ' long' : ''}`}>{recap.readCount}</div>
@@ -270,7 +259,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const paceKeys = ['Rápido', 'Medio', 'Lento']
       body = (
         <>
-          <Spark x={88} y={6} size={14} />
           {g.length > 0 && (
             <>
               <span className="rc-kicker">Lo que más leíste</span>
@@ -330,7 +318,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const shown = author.books.slice(0, 4)
       body = (
         <>
-          <Spark x={84} y={6} size={16} />
           <span className="rc-kicker">Tu autor del año</span>
           <div className="rc-ficha">
             <div className="hd">
@@ -372,7 +359,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
             <span>días<br />seguidos</span>
             <small>Tu racha</small>
           </div>
-          <Spark x={88} y={58} size={14} />
           <span className="rc-kicker">Tu racha más larga</span>
           <h3>Sin soltar el libro</h3>
           <div className="rc-cal">
@@ -397,8 +383,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const shown = recap.rereads.slice(0, 3)
       body = (
         <>
-          <Spark x={80} y={14} size={18} />
-          <Spark x={10} y={46} size={12} />
           <span className="rc-kicker">Volviste a abrir</span>
           <div className="rc-relbig">
             <b>{recap.rereads.length}</b>
@@ -429,10 +413,6 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const fav = recap.favorite!
       body = (
         <>
-          <Spark x={12} y={20} size={20} />
-          <Spark x={84} y={62} size={16} />
-          <Spark x={18} y={70} size={10} />
-          <Spark x={76} y={12} size={10} />
           <span className="rc-kicker">Tu favorito</span>
           <p className="rc-favh">{isYear ? `de ${recap.period.year}` : `de ${monthName.toLowerCase()}`}</p>
           <div className="rc-favwrap">

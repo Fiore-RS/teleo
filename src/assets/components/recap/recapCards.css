@@ -8,7 +8,6 @@
   background:radial-gradient(120% 70% at 85% 0%,color-mix(in srgb,var(--pc) 72%,#fff 28%),transparent 60%),radial-gradient(90% 60% at 0% 100%,color-mix(in srgb,var(--pc) 75%,#000 25%),transparent 70%),var(--pc)}
 .rc::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.1;background-image:radial-gradient(circle at 1px 1px,var(--oc) .8px,transparent 1.2px);background-size:7px 7px}
 .rc>*{position:relative;z-index:1}
-.rc-spark{position:absolute;fill:var(--oc);z-index:1}
 .rc-wm{font:400 16px/1 var(--font-title);color:var(--oc)}
 .rc-foot{align-self:stretch;display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;font:600 11.5px var(--font-body);opacity:.92}
 .rc-kicker{font:700 11px var(--font-body);letter-spacing:.16em;text-transform:uppercase;opacity:.85}
