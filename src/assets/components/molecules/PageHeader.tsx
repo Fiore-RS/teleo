@@ -3,7 +3,7 @@ interface PageHeaderProps {
   subtitle?: string
 }
 
-/** Encabezado de las pantallas secundarias (Configuración, Tutorial, Novedades...): título en
+/** Encabezado de las pantallas secundarias (Configuración, Guía, Novedades...): título en
  *  la fuente caligráfica y una línea de descripción. V.3.0.0: sin flecha de regresar; esas
  *  pantallas cierran con SubpageNav (barra de pestañas o botón "Listo"). */
 export function PageHeader({ title, subtitle }: PageHeaderProps) {

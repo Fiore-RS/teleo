@@ -1,5 +1,3 @@
-import { useLocation } from 'react-router-dom'
-import { useFinishIntro } from '../hooks/useFinishIntro'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { Card } from '../assets/components/molecules/Card'
 import { SubpageNav } from '../assets/components/molecules/SubpageNav'
@@ -92,19 +90,15 @@ const sections: TutorialSection[] = [
   },
 ]
 
-/** Tutorial: se abre desde Configuración (con la barra de pestañas, Perfil marcado) o desde
- *  la bienvenida de una cuenta nueva, que pasa { from: 'bienvenida' }: ahí todavía no hay
- *  barra, así que termina con "Listo", que cierra la bienvenida y sigue a La mesa. */
+/** Guía de Teleo (antes "Tutorial"; V.3.3.0): desde que existe el recorrido sobre la app, que
+ *  ahora es el Tutorial, esta pantalla queda como explicación detallada de cada sección. Se
+ *  abre solo desde Configuración, con la barra de pestañas y Perfil marcado. */
 export function Tutorial() {
-  const location = useLocation()
-  const { finishIntro, isSaving } = useFinishIntro()
-  const fromWelcome = (location.state as { from?: string } | null)?.from === 'bienvenida'
-
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
       <PageHeader
-        title="Tutorial de Teleo"
-        subtitle="Un repaso punto por punto de todo lo que puedes hacer en cada sección de la app."
+        title="Guía de Teleo"
+        subtitle="Todo lo que puedes hacer en cada sección de la app, punto por punto."
       />
 
       <div className="flex flex-col gap-4">
@@ -122,12 +116,7 @@ export function Tutorial() {
         ))}
       </div>
 
-      <SubpageNav
-        tab="perfil"
-        parentPath="/configuracion"
-        onDone={fromWelcome ? finishIntro : undefined}
-        isDoneLoading={isSaving}
-      />
+      <SubpageNav tab="perfil" parentPath="/configuracion" />
     </div>
   )
 }

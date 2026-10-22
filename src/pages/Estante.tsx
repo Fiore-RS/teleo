@@ -486,6 +486,7 @@ export function Estante() {
       <div className="pb-24" />
       <Fab
         label={tab === "libros" ? "Agregar libro" : "Agregar saga"}
+        tourId="agregar"
         onClick={() => (tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true))}
       />
       <TabBar active="estante" onChange={handleTabBarChange} />

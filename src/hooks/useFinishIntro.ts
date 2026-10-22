@@ -4,8 +4,8 @@ import { useAuth } from './useAuth'
 import { useProfile } from './useProfile'
 import { LATEST_VERSION, markChangelogSeen } from '../lib/changelog'
 
-/** Cierra la bienvenida de una cuenta nueva y lleva a La mesa. Lo usan "Empezar a leer" en
- *  Bienvenida y "Listo" al final del Tutorial cuando se abre desde ahí. */
+/** Cierra la bienvenida de una cuenta nueva y lleva a La mesa. Lo usan los dos botones de
+ *  Bienvenida ("Empezar el tutorial" y "Ahora no"). */
 export function useFinishIntro() {
   const navigate = useNavigate()
   const { user } = useAuth()

@@ -4,9 +4,10 @@ import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
   Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
-  Settings, Archive, TriangleAlert, Tags, LibraryBig, UserPlus,
+  Settings, Archive, TriangleAlert, Tags, LibraryBig, UserPlus, Route,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useTour } from '../context/tourContextValue'
 import { useProfile } from '../hooks/useProfile'
 import { useDataExport } from '../hooks/useDataExport'
 import { useDataImport } from '../hooks/useDataImport'
@@ -39,6 +40,7 @@ const SCROLL_KEY = 'teleo-config-scroll'
 export function Configuracion() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { start: startTour } = useTour()
   const { profile, updateProfile } = useProfile(user?.id)
   const { exportData } = useDataExport(user?.id)
   const { importData } = useDataImport(user?.id)
@@ -73,7 +75,7 @@ export function Configuracion() {
   const [hasNews] = useState(hasUnseenChangelog)
 
 
-  // Al volver de una opción (Novedades, Correo, Tutorial...) se regresa a la misma altura de
+  // Al volver de una opción (Novedades, Correo, Guía...) se regresa a la misma altura de
   // la lista en vez de al inicio. La posición se guarda solo al abrir una opción, así que al
   // entrar desde Perfil la pantalla arranca arriba como siempre.
   function openSubpage(path: string) {
@@ -203,7 +205,8 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Información" icon={Info}>
-          <SettingsRow icon={Info} label="Tutorial de Teleo" description="Un recorrido por cada sección" onClick={() => openSubpage('/tutorial')} />
+          <SettingsRow icon={Route} label="Tutorial" description="Un recorrido corto por la app" onClick={startTour} />
+          <SettingsRow icon={Info} label="Guía de Teleo" description="Todo lo que puedes hacer en cada sección, con más detalle" onClick={() => openSubpage('/guia')} />
           <SettingsRow icon={ShieldCheck} label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
           <SettingsRow icon={FileText} label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
         </SettingsGroup>
