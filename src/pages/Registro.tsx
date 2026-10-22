@@ -9,6 +9,9 @@ import { emailInputProps } from '../lib/emailInput'
 import { Button } from '../assets/components/atoms/Button'
 import { FormHint, FormRow, type FormHintTone } from '../assets/components/molecules/FormLayout'
 import { AuthCard, AuthFootnote, AuthLayout } from '../assets/components/molecules/AuthLayout'
+import { InviterAvatar } from '../assets/components/molecules/InviterCard'
+import { inviterDisplayName, useInviterPreview } from '../hooks/useInviterPreview'
+import { clearInviteCode, readInviteCode } from '../lib/invite'
 import {
   cleanUsernameInput,
   getUsernameIssue,
@@ -34,6 +37,9 @@ export function Registro() {
   // Última respuesta de username_available, con el @ al que corresponde: si se siguió
   // escribiendo, no sirve y se muestra "Comprobando…" hasta la siguiente.
   const [checked, setChecked] = useState<{ name: string; free: boolean | null } | null>(null)
+  // V.3.3.0: el código que dejó la portada al llegar con una invitación.
+  const [inviteCode] = useState(readInviteCode)
+  const { inviter } = useInviterPreview(inviteCode)
 
   // Reglas del @ (0035). "Muy corto" no se marca mientras se escribe, para no mostrar un
   // error desde la primera letra; solo deja el botón apagado.
@@ -85,7 +91,8 @@ export function Registro() {
       email: cleanEmail,
       password,
       options: {
-        data: { username },
+        // Solo si el código es de alguien: handle_new_user (0035) guarda quién invitó.
+        data: inviter && inviteCode ? { username, invite_code: inviteCode } : { username },
         emailRedirectTo: `${window.location.origin}${window.location.pathname}#/login`,
       },
     })
@@ -97,6 +104,7 @@ export function Registro() {
       return
     }
 
+    clearInviteCode()
     setSubmittedTo(cleanEmail)
   }
 
@@ -142,6 +150,14 @@ export function Registro() {
       }
     >
       <AuthCard label="Tu cuenta" icon={UserPlus}>
+        {inviter && (
+          <FormRow label="Te invitó">
+            <span className="flex items-center justify-end gap-2 min-w-0">
+              <InviterAvatar inviter={inviter} size="sm" />
+              <span className="text-body-lg text-text-secondary truncate">{inviterDisplayName(inviter)}</span>
+            </span>
+          </FormRow>
+        )}
         <FormRow label="Usuario" htmlFor="signup-username">
           <span className="flex items-center justify-end min-w-0 w-full">
             {/* La @ va dentro del texto (y no como prefijo aparte) para que la fila quede

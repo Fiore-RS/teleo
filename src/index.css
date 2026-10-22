@@ -256,6 +256,11 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Tarjeta "Invitación" de la portada (V.3.3.0): flota suave de arriba hacia abajo. */
+@keyframes teleo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
 /* Pantallas secundarias: entrar "más adentro" llega desde la derecha; volver a la pantalla de
    la que se vino llega un poco desde la izquierda (ver routeTransition en lib/motion.ts). */
 @keyframes teleo-subpage-in {
@@ -282,6 +287,15 @@
   /* Silueta de carga: pulso suave. */
   .animate-skeleton { animation: teleo-skeleton 1.4s ease-in-out infinite; }
 
+  /* Tarjeta "Invitación" sobre la ilustración de la portada: entra subiendo y después flota
+     sin parar, lento, para llamar la atención sin distraer. El flotar empieza cuando ya
+     terminó la entrada, así las dos animaciones no se pisan el transform. */
+  .animate-float-in {
+    animation:
+      teleo-rise-in var(--motion-slow) var(--ease-enter) backwards,
+      teleo-float 4.5s ease-in-out 0.6s infinite;
+  }
+
   /* Cambio de pantalla (App.tsx). Cambiar de pestaña no anima: el contenido aparece al
      instante. Solo las pantallas secundarias se deslizan. Lleva transform, así que lo que
      tenga "fixed" adentro se mueve con la página mientras dura; la barra de pestañas y el
@@ -306,7 +320,7 @@
     .animate-sheet-down, .animate-sheet-out, .animate-fade-in, .animate-fade-out,
     .animate-pop-in, .animate-pop-out, .stagger-children > *, .animate-skeleton,
     .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop,
-    .animate-subpage-in, .animate-subpage-back {
+    .animate-subpage-in, .animate-subpage-back, .animate-float-in {
       animation: none;
     }
   }
