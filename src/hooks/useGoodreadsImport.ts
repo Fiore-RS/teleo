@@ -17,6 +17,8 @@ export interface GoodreadsPreview {
   newSagas: number
   /** Sagas que ya estaban en Teleo y reciben libros. */
   existingSagas: number
+  /** Libros que llegan con género porque alguna estantería coincide con uno (V.3.3.0). */
+  withGenre: number
 }
 
 interface ExistingSaga {
@@ -76,6 +78,8 @@ export type GoodreadsProgress =
 export interface GoodreadsResult {
   imported: number
   withCover: number
+  /** Libros importados que quedaron sin género, para ofrecer "Completar géneros" al final. */
+  withoutGenre: number
 }
 
 /** Cuántas portadas se buscan a la vez. Más rápido que de una en una, sin llegar al límite de
@@ -112,7 +116,7 @@ export async function analyzeGoodreadsFile(file: File, userId: string): Promise<
   const counts: Record<GoodreadsStatus, number> = { terminado: 0, leyendo: 0, pausado: 0, pendiente: 0, deseado: 0, abandonado: 0 }
   books.forEach((b) => counts[b.status]++)
   const plan = planSagas(books, await fetchSagas(userId))
-  return { books, duplicates, counts, newSagas: plan.toCreate.length, existingSagas: plan.existing.size }
+  return { books, duplicates, counts, newSagas: plan.toCreate.length, existingSagas: plan.existing.size, withGenre: books.filter((b) => b.genres.length > 0).length }
 }
 
 interface CoverInfo {
@@ -253,6 +257,9 @@ export async function importGoodreadsBooks(
     saga_id: sagaOf[i]?.sagaId ?? null,
     saga_sort_order: sagaOf[i]?.order ?? null,
     estante_sort_order: nextOrder + (i + 1) * 1000,
+    // Género sacado de las estanterías de la persona: cuenta como puesto a mano.
+    genres: book.genres,
+    genres_source: book.genres.length > 0 ? 'manual' : null,
     ...(book.addedDate ? { created_at: `${book.addedDate}T12:00:00Z` } : {}),
   }))
 
@@ -291,5 +298,9 @@ export async function importGoodreadsBooks(
   await Promise.all([...plan.existing.values()].map((saga) => recomputeSagaStatus(saga.id)))
 
   await queryClient.invalidateQueries()
-  return { imported: ids.length, withCover: covers.filter((c) => c.coverUrl).length }
+  return {
+    imported: ids.length,
+    withCover: covers.filter((c) => c.coverUrl).length,
+    withoutGenre: books.filter((b) => b.genres.length === 0).length,
+  }
 }

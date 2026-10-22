@@ -1,4 +1,6 @@
 import type { BookFormat } from './options'
+import { genreOptions, MAX_GENRES, type GenreKey } from './bookTraits'
+import { suggestGenres } from './genreSuggest'
 
 /* Lectura del archivo de exportación de Goodreads (My Books → Import and export → Export
  * Library). Es un CSV con una fila por libro y estas columnas, entre otras: Title, Author,
@@ -24,8 +26,11 @@ export interface GoodreadsBook {
   /** Calificación general de 1 a 5; null si no se calificó (Goodreads usa 0). */
   rating: number | null
   review: string | null
-  /** Estanterías personalizadas, que pasan a ser etiquetas del libro. */
+  /** Estanterías personalizadas que no son un género: pasan a ser etiquetas del libro. */
   tags: string[]
+  /** Estanterías que coinciden con un género de Teleo (V.3.3.0): quedan como género y no se
+   *  repiten como etiqueta. Hasta MAX_GENRES, en el orden de las estanterías. */
+  genres: GenreKey[]
 }
 
 /** Parte un CSV respetando comillas: comas, saltos de línea y "" dentro de un campo entre
@@ -143,6 +148,34 @@ function splitShelves(raw: string | undefined): string[] {
     .filter(Boolean)
 }
 
+function normalizeShelf(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/** Géneros de Teleo de una estantería de Goodreads (V.3.3.0); vacío si no es un género.
+ *  Primero se compara con los nombres de Teleo y sus alias ("fantasia", "young-adult", "bl");
+ *  si no, con la tabla de "Completar géneros" (lib/genreSuggest.ts), probando con y sin
+ *  guiones ("sci-fi", "non-fiction"). Se aceptan hasta 2 ("mystery-thriller"); si apunta a
+ *  más, o a ninguno ("favoritas", "2024"), sigue siendo etiqueta. */
+export function genresFromShelf(shelf: string): GenreKey[] {
+  const name = normalizeShelf(shelf)
+  if (!name) return []
+  for (const option of genreOptions) {
+    const names = [option.key.replace(/_/g, ' '), option.label, ...(option.aliases ?? [])].map(normalizeShelf)
+    if (names.includes(name)) return [option.key]
+  }
+  const withHyphens = shelf.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+  const fromName = suggestGenres([name])
+  const suggested = fromName.length > 0 ? fromName : suggestGenres([withHyphens])
+  return suggested.length <= 2 ? suggested : []
+}
+
 /** Lee el CSV completo. Devuelve null si el archivo no parece una exportación de Goodreads. */
 export function parseGoodreadsCsv(text: string): GoodreadsBook[] | null {
   const rows = parseCsv(text)
@@ -180,10 +213,23 @@ export function parseGoodreadsCsv(text: string): GoodreadsBook[] | null {
     else status = 'pendiente'
 
     // Las estanterías personalizadas pasan a etiquetas. Las de abandonados y en pausa no,
-    // porque ya se reflejan en el estado.
-    const tags = [...new Set([...shelves, exclusiveShelf])].filter(
+    // porque ya se reflejan en el estado. V.3.3.0: las que coinciden con un género quedan como
+    // género (hasta 3) y no se repiten como etiqueta.
+    const customShelves = [...new Set([...shelves, exclusiveShelf])].filter(
       (shelf) => shelf && !BUILT_IN_SHELVES.has(shelf.toLowerCase()) && !isAbandonedShelf(shelf) && !isPausedShelf(shelf)
     )
+    const genres: GenreKey[] = []
+    const tags: string[] = []
+    for (const shelf of customShelves) {
+      const shelfGenres = genresFromShelf(shelf)
+      if (shelfGenres.length === 0) {
+        tags.push(shelf)
+        continue
+      }
+      for (const genre of shelfGenres) {
+        if (!genres.includes(genre) && genres.length < MAX_GENRES) genres.push(genre)
+      }
+    }
 
     const rating = parseInt(get(row, 'My Rating') ?? '0', 10)
     const pages = parseInt(get(row, 'Number of Pages') ?? '', 10)
@@ -201,6 +247,7 @@ export function parseGoodreadsCsv(text: string): GoodreadsBook[] | null {
       rating: rating >= 1 && rating <= 5 ? rating : null,
       review: cleanReview(get(row, 'My Review')),
       tags,
+      genres,
     })
   }
   return books
