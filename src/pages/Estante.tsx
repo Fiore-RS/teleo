@@ -21,6 +21,8 @@ import { Shelf } from "../assets/components/molecules/Shelf";
 import { ShelfViewSheet } from "../assets/components/molecules/ShelfViewSheet";
 import { shelfViewFromProfile, shelfViewToProfile, type ShelfView } from "../lib/shelfView";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
+import { GoodreadsImportModal } from "../assets/components/molecules/GoodreadsImportModal";
+import { queryClient } from "../lib/queryClient";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { Fab } from "../assets/components/atoms/Fab";
 import type { ReadingStatus } from "../lib/status";
@@ -102,6 +104,7 @@ export function Estante() {
   const [completeSheet, setCompleteSheet] = useState<"genres" | "shelf" | null>(null);
   const [search, setSearch] = useState("");
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
+  const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false);
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [selectedSagaId, setSelectedSagaId] = useState<string | null>(null);
@@ -385,7 +388,24 @@ export function Estante() {
           </p>
         )}
 
-        {!isLoading && tab === "libros" && filteredBooks.length === 0 && (
+        {/* Biblioteca vacía (V.3.3.0): en vez del aviso de filtro, cómo empezar y el atajo a
+            Goodreads para quien llega con su biblioteca. Desaparece con el primer libro. */}
+        {!isLoading && tab === "libros" && books.length === 0 && (
+          <div className="text-center px-4 py-6">
+            <p className="font-title text-[22px] leading-tight text-text">Tu estante está vacío</p>
+            <p className="text-body-md text-text-secondary mt-2">
+              Toca el botón + para agregar tu primer libro.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsGoodreadsOpen(true)}
+              className="mt-3 text-body-md font-bold text-primary-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+            >
+              ¿Ya usas Goodreads? Trae tu biblioteca
+            </button>
+          </div>
+        )}
+        {!isLoading && tab === "libros" && books.length > 0 && filteredBooks.length === 0 && (
           <p className="text-body-md text-text-secondary text-center">
             No hay libros que coincidan con este filtro.
           </p>
@@ -490,6 +510,16 @@ export function Estante() {
         onClick={() => (tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true))}
       />
       <TabBar active="estante" onChange={handleTabBarChange} />
+
+      {isGoodreadsOpen && (
+        <GoodreadsImportModal
+          userId={user?.id}
+          onClose={() => {
+            setIsGoodreadsOpen(false);
+            void queryClient.invalidateQueries();
+          }}
+        />
+      )}
 
       <AddBookModal
         isOpen={isAddBookOpen}
