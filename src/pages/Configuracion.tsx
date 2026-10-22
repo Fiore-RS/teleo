@@ -4,7 +4,7 @@ import {
   User, Mail, Lock, Info, Share2, Link as LinkIcon,
   Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
   Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
-  Settings, Archive, TriangleAlert, Tags, LibraryBig,
+  Settings, Archive, TriangleAlert, Tags, LibraryBig, UserPlus,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -13,6 +13,8 @@ import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
+import { InviteSheet } from '../assets/components/molecules/InviteSheet'
+import { FriendCodeSettingsRow } from '../assets/components/molecules/FriendCode'
 import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
 import { GenreSuggestSheet } from '../assets/components/molecules/GenreSuggestSheet'
 import { CompleteShelfSheet } from '../assets/components/molecules/CompleteShelfSheet'
@@ -44,6 +46,7 @@ export function Configuracion() {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
+  const [isInviteOpen, setIsInviteOpen] = useState(false)
   const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
   const [isGenreSuggestOpen, setIsGenreSuggestOpen] = useState(false)
   const [isCompleteShelfOpen, setIsCompleteShelfOpen] = useState(false)
@@ -188,7 +191,13 @@ export function Configuracion() {
           <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Compartir" icon={Share2}>
+        <SettingsGroup
+          title="Compartir"
+          icon={Share2}
+          note="Quien se registre con tu enlace queda como invitación tuya. Más adelante, tu código servirá para agregarse en el Club."
+        >
+          <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setIsInviteOpen(true)} />
+          <FriendCodeSettingsRow code={profile?.friend_code} />
           <SettingsRow icon={Share2} label="Compartir perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setIsShareModalOpen(true)} />
           <SettingsRow icon={LinkIcon} label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
         </SettingsGroup>
@@ -221,6 +230,8 @@ export function Configuracion() {
 
       <div className="pb-28" />
       <TabBar active="perfil" onChange={(t: TabKey) => navigate(`/${t}`)} onActiveTap={() => navigate('/perfil')} />
+
+      {isInviteOpen && <InviteSheet userId={user?.id} onClose={() => setIsInviteOpen(false)} />}
 
       {isShareModalOpen && (
         <ShareProfileModal
