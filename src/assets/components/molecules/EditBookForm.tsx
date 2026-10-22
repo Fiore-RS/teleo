@@ -229,8 +229,8 @@ export function EditBookForm({
           {draft.status === 'pendiente' && (
             <FormSwitchRow
               icon={Sparkles}
-              label="Esta temporada"
-              hint="En tu lista de prioridad"
+              label="Próxima lectura"
+              hint="Súmalo a tus próximas lecturas"
               checked={draft.isPriority}
               onChange={(isPriority) => onChange({ isPriority })}
               className="animate-fade-in"
