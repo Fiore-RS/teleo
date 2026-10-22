@@ -151,7 +151,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       ? parseDurationInput(draft.totalDuration)
       : null
 
-    // Esta temporada solo se muestra en Pendiente; en otro estado se deja como estaba. Si
+    // Próxima lectura solo se muestra en Pendiente; en otro estado se deja como estaba. Si
     // recién se marca, se le da un orden inicial al final de la lista.
     const priorityUpdate = draft.status === 'pendiente' && draft.isPriority !== (book.is_priority ?? false)
       ? { is_priority: draft.isPriority, ...(draft.isPriority ? { priority_sort_order: newPriorityOrder() } : {}) }

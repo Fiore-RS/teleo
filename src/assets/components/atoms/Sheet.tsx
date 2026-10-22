@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { prefersReducedMotion, EXIT_DURATION_MS } from '../../../lib/motion'
 import { X } from 'lucide-react'
 
@@ -68,7 +69,10 @@ export function Sheet({ onClose, title, children, headerRight, footer }: SheetPr
     return unlockBodyScroll
   }, [])
 
-  return (
+  // Se monta en <body> (V.3.3.0): así ninguna animación de la pantalla de atrás (la aparición
+  // escalonada de tarjetas, el deslizamiento de las pantallas secundarias) le cambia la entrada
+  // ni la posición, y todas las hojas bajan siempre desde arriba.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center" role="dialog" aria-modal="true" aria-label={title}>
       <div className={`absolute inset-0 bg-black/50 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={requestClose} />
       <div
@@ -103,6 +107,7 @@ export function Sheet({ onClose, title, children, headerRight, footer }: SheetPr
           <span className="w-10 h-1 rounded-full bg-border" />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

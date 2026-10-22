@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MoreHorizontal, Pencil, ArrowUpDown, BookOpen, Shuffle } from 'lucide-react'
+import { MoreHorizontal, Pencil, ArrowUpDown, BookOpen, BookPlus, Shuffle } from 'lucide-react'
 
 interface PriorityListMenuProps {
   isReordering: boolean
@@ -7,13 +7,15 @@ interface PriorityListMenuProps {
   canViewInEstante: boolean
   /** "Elegir uno al azar" (V.3.2.1): solo con 2 libros o más en la lista. */
   canPickRandom: boolean
+  /** "Agregar libros" (V.3.3.0): abre la hoja para marcar y desmarcar pendientes. */
+  onAddBooks: () => void
   onEditName: () => void
   onToggleReorder: () => void
   onViewInEstante: () => void
   onPickRandom: () => void
 }
 
-/** Menú de opciones de "Mi lista de esta temporada" (Perfil), con el mismo patrón que `StatusMenu`
+/** Menú de opciones de "Mis próximas lecturas" (Perfil), con el mismo patrón que `StatusMenu`
  *  (botón + panel desplegable que se cierra al tocar afuera), pero como un menú de acciones
  *  en vez de un selector. Reemplaza los tres controles sueltos (lápiz, Organizar, Ver en
  *  Estante) que antes competían por espacio en el header de la sección. */
@@ -22,6 +24,7 @@ export function PriorityListMenu({
   canReorder,
   canViewInEstante,
   canPickRandom,
+  onAddBooks,
   onEditName,
   onToggleReorder,
   onViewInEstante,
@@ -65,6 +68,16 @@ export function PriorityListMenu({
           role="menu"
           className="absolute right-0 top-[calc(100%+6px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-48 overflow-hidden animate-pop-in"
         >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => handleSelect(onAddBooks)}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body font-semibold text-left text-primary-text hover:bg-surface-2 transition-colors"
+          >
+            <BookPlus size={16} className="text-primary-text shrink-0" />
+            Agregar libros
+          </button>
+
           <button
             type="button"
             role="menuitem"
