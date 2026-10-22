@@ -48,6 +48,7 @@ export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
               type="button"
               onClick={() => (isActive ? (onActiveTap ?? scrollToTop)() : onChange(key))}
               aria-current={isActive ? 'page' : undefined}
+              data-tour={`tab-${key}`}
               className={`flex flex-col items-center gap-0.5 flex-1 rounded-2xl focus-visible:outline-2 focus-visible:outline-primary-text ${
                 isActive ? 'text-text' : 'text-text-secondary'
               }`}

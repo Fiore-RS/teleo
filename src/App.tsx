@@ -138,7 +138,9 @@ function App() {
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/instalar" element={<Instalar />} />
           <Route path="/bienvenida" element={<Bienvenida />} />
-          <Route path="/tutorial" element={<Tutorial />} />
+          <Route path="/guia" element={<Tutorial />} />
+          {/* Dirección vieja de la Guía (antes "Tutorial"), por si quedó en algún enlace. */}
+          <Route path="/tutorial" element={<Navigate to="/guia" replace />} />
           <Route path="/mesa" element={<Mesa />} />
           <Route path="/estante" element={<Estante />} />
           <Route path="/cuaderno" element={<Cuaderno />} />

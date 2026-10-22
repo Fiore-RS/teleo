@@ -6,13 +6,15 @@ interface FabProps {
   label: string
   onClick: () => void
   icon?: LucideIcon
+  /** Marca para el recorrido (V.3.3.0), ej. "agregar" en Estante. */
+  tourId?: string
 }
 
 /** Botón flotante para agregar (V.3.0.0), sobre la barra de pestañas a la derecha. Lleva la
  *  esquina de arriba doblada, como una hoja. Se monta en <body> igual que TabBar, y el
  *  safe-area va como padding del contenedor y no dentro de `bottom` (si env() no resuelve,
  *  un calc() inválido dejaría el botón sin anclar). */
-export function Fab({ label, onClick, icon: Icon = Plus }: FabProps) {
+export function Fab({ label, onClick, icon: Icon = Plus, tourId }: FabProps) {
   return createPortal(
     <div
       className="fixed inset-x-0 bottom-0 z-30 pointer-events-none"
@@ -23,6 +25,7 @@ export function Fab({ label, onClick, icon: Icon = Plus }: FabProps) {
           type="button"
           onClick={onClick}
           aria-label={label}
+          data-tour={tourId}
           className="pointer-events-auto absolute right-[18px] bottom-[100px] w-14 h-14 rounded-[18px] bg-primary text-primary-ink shadow-float flex items-center justify-center transition-transform active:scale-95 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
         >
           <Icon size={26} strokeWidth={2.4} aria-hidden="true" />

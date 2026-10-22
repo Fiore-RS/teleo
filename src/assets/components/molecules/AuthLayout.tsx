@@ -14,20 +14,22 @@ interface AuthLayoutProps {
   onSubmit?: (e: FormEvent) => void
   /** Título y texto centrados a lo alto, para los avisos sin campos ("Revisa tu correo"). */
   centered?: boolean
-  /** Algo antes del título, como la tarjeta de invitación de la portada. */
+  /** Algo antes del título, como la ilustración de Bienvenida. */
   above?: ReactNode
+  /** Título y textos centrados a lo ancho (Bienvenida). */
+  textCenter?: boolean
 }
 
 /** Pantallas de cuenta (V.3.3.0, vista previa A): Login, Registro, Recuperar y Nueva
  *  contraseña, Correo confirmado e Instalar. Reemplaza a la tarjeta flotante con el cuadrado
  *  del logo (AuthHeader): el logo va arriba como en la portada, el título en la letra de
  *  títulos, los campos en una tarjeta con pestaña y los botones abajo. */
-export function AuthLayout({ title, subtitle, children, footer, onSubmit, centered = false, above }: AuthLayoutProps) {
+export function AuthLayout({ title, subtitle, children, footer, onSubmit, centered = false, above, textCenter = false }: AuthLayoutProps) {
   const navigate = useNavigate()
 
   const body = (
     <>
-      <div className={centered ? 'my-auto py-8' : 'mt-7'}>
+      <div className={`${centered ? 'my-auto py-8' : 'mt-7'} ${textCenter ? 'text-center' : ''}`}>
         {above}
         <h1 className="font-title text-[30px] leading-[1.1] text-text text-balance">{title}</h1>
         {subtitle && <p className="font-body text-body-md text-text-secondary mt-2 text-pretty">{subtitle}</p>}
