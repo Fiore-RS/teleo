@@ -41,7 +41,7 @@ const SUBPAGES: Record<string, { level: number; parent: string }> = {
   '/lanzamientos': { level: 1, parent: '/mesa' },
   '/configuracion/novedades': { level: 2, parent: '/configuracion' },
   '/configuracion/detras-de-teleo': { level: 2, parent: '/configuracion' },
-  '/tutorial': { level: 2, parent: '/configuracion' },
+  '/guia': { level: 2, parent: '/configuracion' },
   '/privacidad': { level: 2, parent: '/configuracion' },
   '/terminos': { level: 2, parent: '/configuracion' },
 }

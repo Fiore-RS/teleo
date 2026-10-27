@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react'
 import { Camera } from 'lucide-react'
 import { Avatar } from '../atoms/Avatar'
 import { useCharacterPhotoUpload } from '../../../hooks/useCharacterPhotoUpload'
+import { useIsDemo } from '../../../hooks/useIsDemo'
 
 interface FavoriteCharacterEditorProps {
   userId: string | undefined
@@ -21,6 +22,8 @@ export function FavoriteCharacterEditor({
 }: FavoriteCharacterEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { uploadCharacterPhoto, isUploading } = useCharacterPhotoUpload(userId)
+  // En la cuenta de visitante no se suben imágenes (V.3.3.0).
+  const isDemo = useIsDemo()
 
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -38,10 +41,10 @@ export function FavoriteCharacterEditor({
           size="md"
           src={photoUrl || undefined}
           alt={name}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={isDemo ? undefined : () => fileInputRef.current?.click()}
           className={`ring-[1.5px] ring-border ${isUploading ? 'opacity-60' : ''}`}
         />
-        {photoUrl && (
+        {photoUrl && !isDemo && (
           <span className="absolute right-0 bottom-0 w-6.5 h-6.5 rounded-full bg-surface text-primary-text flex items-center justify-center shadow-sm pointer-events-none">
             <Camera size={13} strokeWidth={2.4} />
           </span>

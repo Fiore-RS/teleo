@@ -1,4 +1,3 @@
-import { History } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
 import { ANNOUNCEMENT_VERSION, announcementItems, CATCH_UP_MIN } from '../../../lib/announcement'
@@ -13,8 +12,8 @@ interface AnnouncementSheetProps {
   lastSeen?: string | null
   /** Botón "Ver todas las novedades" del aviso de novedades acumuladas. */
   onSeeAll?: () => void
-  /** V.3.2.0: lleva a Bitácora › Resumen para ver "Compartir mi mes". */
-  onOpenRecap?: () => void
+  /** V.3.3.0: cierra la hoja y empieza el tutorial (el recorrido sobre la app). */
+  onStartTour?: () => void
 }
 
 /** Aviso de novedades acumuladas (V.2.1.2): si la persona se perdió varias versiones con
@@ -22,8 +21,7 @@ interface AnnouncementSheetProps {
 function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[]; lastSeen: string | null; onSeeAll: () => void }) {
   return (
     <section className="bg-magenta-tint border border-border rounded-2xl p-4 mb-4">
-      <h3 className="flex items-center gap-2 font-display font-semibold text-body-lg text-text">
-        <History size={18} className="text-magenta-text shrink-0" aria-hidden="true" />
+      <h3 className="font-display font-semibold text-body-lg text-text">
         ¡Cuánto tiempo!
       </h3>
       <p className="text-body-sm text-text-secondary mt-1.5 text-pretty">
@@ -52,8 +50,9 @@ function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[];
 }
 
 /** "Novedades de Teleo": aparece una sola vez por cuenta al entrar a La mesa después de un
- *  lanzamiento grande (V.2.0.0). Una tarjeta por novedad con su ícono y una línea. */
-export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeAll, onOpenRecap }: AnnouncementSheetProps) {
+ *  lanzamiento grande (V.2.0.0). Una tarjeta por novedad con su título y una línea (sin
+ *  ícono desde la V.3.3.0). */
+export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeAll, onStartTour }: AnnouncementSheetProps) {
   const showCatchUp = missed.length >= CATCH_UP_MIN && !!onSeeAll
   const announcedTitle = changelog.find((e) => e.version === ANNOUNCEMENT_VERSION)?.title
   return (
@@ -71,25 +70,20 @@ export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeA
       </p>
 
       <ul className="flex flex-col gap-2.5 stagger-children">
-        {announcementItems.map(({ icon: Icon, title, text }) => (
-          <li key={title} className="flex gap-3 bg-surface-2 border border-border rounded-2xl p-3.5">
-            <span className="w-9 h-9 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
-              <Icon size={17} />
-            </span>
-            <span className="min-w-0">
-              <span className="block font-display font-semibold text-body-md text-text">{title}</span>
-              <span className="block text-body-sm text-text-secondary mt-0.5">{text}</span>
-            </span>
+        {announcementItems.map(({ title, text }) => (
+          <li key={title} className="bg-surface-2 border border-border rounded-2xl p-3.5">
+            <span className="block font-display font-semibold text-body-md text-text">{title}</span>
+            <span className="block text-body-sm text-text-secondary mt-0.5">{text}</span>
           </li>
         ))}
       </ul>
 
-      {onOpenRecap && (
+      {onStartTour && (
         <section className="bg-surface-2 border border-border rounded-2xl p-4 mt-4">
           <p className="font-display font-semibold text-body-md text-text">¿Lo pruebas?</p>
-          <p className="text-body-sm text-text-secondary mt-1">Mira cómo quedan tus libros de este mes en tarjetas.</p>
-          <Button variant="soft" className="mt-3" onClick={onOpenRecap}>
-            Ir al resumen del mes
+          <p className="text-body-sm text-text-secondary mt-1">El tutorial te muestra cada parte de Teleo en menos de un minuto.</p>
+          <Button variant="soft" className="mt-3" onClick={onStartTour}>
+            Ver el tutorial
           </Button>
         </section>
       )}

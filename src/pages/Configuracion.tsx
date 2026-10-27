@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  User, Mail, Lock, Info, Share2, Link as LinkIcon,
-  Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
-  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
-  Settings, Archive, TriangleAlert, Tags, LibraryBig,
+  User, Mail, Lock, Info, Share2, Link as LinkIcon, Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins, Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library, Tags, LibraryBig, UserPlus, Route,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useTour } from '../context/tourContextValue'
 import { useProfile } from '../hooks/useProfile'
 import { useDataExport } from '../hooks/useDataExport'
 import { useDataImport } from '../hooks/useDataImport'
 import { useDangerZone } from '../hooks/useDangerZone'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
+import { InviteSheet } from '../assets/components/molecules/InviteSheet'
+import { FriendCodeSettingsRow } from '../assets/components/molecules/FriendCode'
 import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
 import { GenreSuggestSheet } from '../assets/components/molecules/GenreSuggestSheet'
 import { CompleteShelfSheet } from '../assets/components/molecules/CompleteShelfSheet'
@@ -37,13 +37,17 @@ const SCROLL_KEY = 'teleo-config-scroll'
 export function Configuracion() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { start: startTour } = useTour()
   const { profile, updateProfile } = useProfile(user?.id)
+  // Cuenta de visitante (V.3.3.0): sin cambios de cuenta, importaciones, invitaciones ni zona de peligro.
+  const isDemo = !!profile?.is_demo
   const { exportData } = useDataExport(user?.id)
   const { importData } = useDataImport(user?.id)
   const { clearAllData, deactivateAccount, deleteAccount, isProcessing } = useDangerZone(user?.id)
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isShareWishlistModalOpen, setIsShareWishlistModalOpen] = useState(false)
+  const [isInviteOpen, setIsInviteOpen] = useState(false)
   const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
   const [isGenreSuggestOpen, setIsGenreSuggestOpen] = useState(false)
   const [isCompleteShelfOpen, setIsCompleteShelfOpen] = useState(false)
@@ -70,7 +74,7 @@ export function Configuracion() {
   const [hasNews] = useState(hasUnseenChangelog)
 
 
-  // Al volver de una opción (Novedades, Correo, Tutorial...) se regresa a la misma altura de
+  // Al volver de una opción (Novedades, Correo, Guía...) se regresa a la misma altura de
   // la lista en vez de al inicio. La posición se guarda solo al abrir una opción, así que al
   // entrar desde Perfil la pantalla arranca arriba como siempre.
   function openSubpage(path: string) {
@@ -143,12 +147,12 @@ export function Configuracion() {
       />
 
       <div className="flex flex-col gap-5">
-        <SettingsGroup title="Teleo" icon={Heart}>
+        <SettingsGroup title="Teleo">
           <SettingsRow icon={Heart} label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
           <SettingsRow icon={Megaphone} label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Apariencia" icon={Palette}>
+        <SettingsGroup title="Apariencia">
           <SettingsField icon={Palette} label="Modo de color" description="Sistema sigue el modo de tu teléfono">
             <ThemeToggle />
           </SettingsField>
@@ -167,7 +171,7 @@ export function Configuracion() {
           />
         </SettingsGroup>
 
-        <SettingsGroup title="Sistema" icon={Settings}>
+        <SettingsGroup title="Sistema">
           <SettingsField icon={Languages} label="Idioma" description="Por ahora Teleo está solo en español">
             <Select options={[{ value: 'es', label: 'Español' }]} value="es" disabled />
           </SettingsField>
@@ -181,37 +185,45 @@ export function Configuracion() {
           </SettingsField>
         </SettingsGroup>
 
-        <SettingsGroup title="Cuenta" icon={User}>
-          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />
+        <SettingsGroup title="Cuenta">
+          {!isDemo && <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />}
           <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
-          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />
-          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />
+          {!isDemo && <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />}
+          {!isDemo && <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />}
         </SettingsGroup>
 
-        <SettingsGroup title="Compartir" icon={Share2}>
+        <SettingsGroup
+          title="Compartir"
+          note="Quien se registre con tu enlace queda como invitación tuya. Más adelante, tu código servirá para agregarse en el Club."
+        >
+          {!isDemo && <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setIsInviteOpen(true)} />}
+          {!isDemo && <FriendCodeSettingsRow code={profile?.friend_code} />}
           <SettingsRow icon={Share2} label="Compartir perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setIsShareModalOpen(true)} />
           <SettingsRow icon={LinkIcon} label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Información" icon={Info}>
-          <SettingsRow icon={Info} label="Tutorial de Teleo" description="Un recorrido por cada sección" onClick={() => openSubpage('/tutorial')} />
+        <SettingsGroup title="Información">
+          <SettingsRow icon={Route} label="Tutorial" description="Un recorrido corto por la app" onClick={startTour} />
+          <SettingsRow icon={Info} label="Guía de Teleo" description="Todo lo que puedes hacer en cada sección, con más detalle" onClick={() => openSubpage('/guia')} />
           <SettingsRow icon={ShieldCheck} label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
           <SettingsRow icon={FileText} label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Tus datos" icon={Archive}>
+        <SettingsGroup title="Tus datos">
           <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
-          <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
-          <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />
+          {!isDemo && <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />}
+          {!isDemo && <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />}
           <SettingsRow icon={Tags} label="Completar géneros" description="Sugerencias para tus libros sin género" onClick={() => setIsGenreSuggestOpen(true)} />
           <SettingsRow icon={LibraryBig} label="Completa tu estante" description="Género, ánimo y ritmo de lo que ya leíste, libro por libro" onClick={() => setIsCompleteShelfOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Zona de peligro" icon={TriangleAlert}>
+        {!isDemo && (
+        <SettingsGroup title="Zona de peligro">
           <SettingsRow danger icon={ClearIcon} label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Pause} label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Trash2} label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
         </SettingsGroup>
+        )}
 
         <Button variant="outline" onClick={() => setConfirmAction('cerrarSesion')}>
           <LogOut size={18} />
@@ -221,6 +233,8 @@ export function Configuracion() {
 
       <div className="pb-28" />
       <TabBar active="perfil" onChange={(t: TabKey) => navigate(`/${t}`)} onActiveTap={() => navigate('/perfil')} />
+
+      {isInviteOpen && <InviteSheet userId={user?.id} onClose={() => setIsInviteOpen(false)} />}
 
       {isShareModalOpen && (
         <ShareProfileModal

@@ -5,7 +5,10 @@ import { authErrorMessage } from '../lib/authErrors'
 import { useAuth } from '../hooks/useAuth'
 import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { Button } from '../assets/components/atoms/Button'
-import { AuthHeader } from '../assets/components/molecules/AuthHeader'
+import { FormHint, FormRow, type FormHintTone } from '../assets/components/molecules/FormLayout'
+import { AuthCard, AuthLayout } from '../assets/components/molecules/AuthLayout'
+
+const PASSWORD_MIN = 6
 
 /** Última parte de "¿Olvidaste tu contraseña?". Se llega desde el enlace del correo: Supabase
  *  ya abrió una sesión temporal de recuperación (ver main.tsx), así que acá solo se guarda
@@ -18,12 +21,20 @@ export function NuevaContrasena() {
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
+  // Los mismos avisos en vivo que Cambiar contraseña.
+  const isLongEnough = password.length >= PASSWORD_MIN
+  const matches = confirmPassword.length > 0 && password === confirmPassword
+  const isValid = isLongEnough && matches
+
+  let hint: { text: string; tone: FormHintTone } | null = null
+  if (password && !isLongEnough) hint = { text: `Al menos ${PASSWORD_MIN} caracteres.`, tone: 'error' }
+  else if (confirmPassword && !matches) hint = { text: 'Las contraseñas no coinciden.', tone: 'error' }
+  else if (isValid) hint = { text: `Coinciden y tienen al menos ${PASSWORD_MIN} caracteres.`, tone: 'ok' }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!isValid) return
     setError(null)
-    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return }
-    if (password !== confirmPassword) { setError('Las contraseñas no coinciden.'); return }
-
     setIsSaving(true)
     const { error: updateError } = await supabase.auth.updateUser({ password })
     setIsSaving(false)
@@ -37,56 +48,63 @@ export function NuevaContrasena() {
     navigate('/', { replace: true })
   }
 
-  if (isCheckingSession) return <div className="min-h-screen bg-glow-top" />
+  if (isCheckingSession) return <div className="min-h-dvh bg-glow-top" />
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
-        <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6">
-          <AuthHeader
-            title="Este enlace ya no sirve"
-            subtitle="Puede que haya vencido o que ya se haya usado. Pide uno nuevo para crear tu contraseña."
-          />
+      <AuthLayout
+        centered
+        title="Este enlace ya no sirve"
+        subtitle="Puede que haya vencido o que ya se haya usado. Pide uno nuevo para crear tu contraseña."
+        footer={
           <Link to="/recuperar-contrasena">
             <Button variant="primary">Pedir un enlace nuevo</Button>
           </Link>
-        </div>
-      </div>
+        }
+      />
     )
   }
 
   return (
-    <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
-      <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6">
-        <AuthHeader
-          title="Crea tu contraseña nueva"
-          subtitle={`Para la cuenta ${user.email ?? ''}. Usa al menos 6 caracteres.`}
-        />
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <AuthLayout
+      title="Crea tu contraseña nueva"
+      subtitle={
+        <>
+          Para la cuenta <span className="font-semibold text-text">{user.email ?? ''}</span>.
+        </>
+      }
+      onSubmit={handleSubmit}
+      footer={
+        <Button type="submit" variant="primary" isLoading={isSaving} disabled={!isValid}>
+          Guardar contraseña
+        </Button>
+      }
+    >
+      <AuthCard label="Contraseña nueva">
+        <FormRow label="Nueva" htmlFor="new-password">
           <PasswordInput
-            placeholder="Contraseña nueva..."
+            bare
+            id="new-password"
+            placeholder="••••••"
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
           />
+        </FormRow>
+        <FormRow label="Confirmar" htmlFor="confirm-password">
           <PasswordInput
-            placeholder="Confirmar contraseña..."
+            bare
+            id="confirm-password"
+            placeholder="••••••"
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            required
           />
+        </FormRow>
+      </AuthCard>
 
-          {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
-
-          <Button type="submit" variant="primary" isLoading={isSaving}>
-            Guardar contraseña
-          </Button>
-        </form>
-      </div>
-    </div>
+      {hint && <FormHint text={hint.text} tone={hint.tone} />}
+      {error && <FormHint text={error} tone="error" />}
+    </AuthLayout>
   )
 }

@@ -23,6 +23,7 @@ export function StreakRibbon({ streak, marked, isLoading, dropKey = 0, onClick }
       key={dropKey}
       type="button"
       onClick={onClick}
+      data-tour="racha"
       title="Ver calendario de lectura"
       aria-label={`Racha de ${streak} ${streak === 1 ? 'día' : 'días'}. Ver calendario de lectura`}
       className={`absolute top-0 right-7 z-10 w-10 flex flex-col items-center gap-0.5 leading-none origin-top transition-colors duration-300 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${

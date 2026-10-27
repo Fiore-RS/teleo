@@ -1,23 +1,15 @@
-import { useLocation } from 'react-router-dom'
-import { useFinishIntro } from '../hooks/useFinishIntro'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { Card } from '../assets/components/molecules/Card'
 import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
-import {
-  Coffee, BookOpen, NotebookPen, ScrollText, User, Settings, CalendarClock,
-  type LucideIcon,
-} from 'lucide-react'
 
 interface TutorialSection {
-  icon: LucideIcon
   title: string
   points: string[]
 }
 
 const sections: TutorialSection[] = [
   {
-    icon: Coffee,
     title: 'Mesa',
     points: [
       'Ve los libros que estás leyendo, con su avance, y actualízalos cuando quieras. Si no estás leyendo nada, Teleo puede elegir al azar uno de tus pendientes.',
@@ -27,10 +19,10 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: BookOpen,
     title: 'Estante',
     points: [
       'Toca el botón + de abajo para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
+      '¿Ya usas Goodreads? Trae tu biblioteca desde Configuración › Importar desde Goodreads (o desde el atajo del Estante vacío). Las estanterías que coinciden con un género quedan como género, y las demás como etiquetas.',
       'Al terminar un libro, guarda su fecha de inicio y de fin, y escribe la reseña solo si quieres. Todo libro con fecha de fin cuenta para la meta de ese año.',
       'Agrupa libros en sagas, agrega varios a la vez y anota cuántos tendrá en total para ver tu progreso, por ejemplo "2 de 5". Al terminar un libro de una saga, Teleo te propone el siguiente.',
       'Cuenta cómo es cada libro: hasta 3 géneros, hasta 3 ánimos (también los tuyos) y su ritmo, desde Editar libro o al terminarlo. En Configuración, "Completar géneros" los sugiere para tu biblioteca y "Completa tu estante" te pasa tus libros leídos uno por uno.',
@@ -42,7 +34,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: NotebookPen,
     title: 'Cuaderno',
     points: [
       'Toca el botón + de abajo para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia, agrega calificaciones personalizadas (por ejemplo, romance o giros de trama) y guarda tus citas favoritas.',
@@ -51,7 +42,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: ScrollText,
     title: 'Bitácora',
     points: [
       'En Estadísticas: tu año en una tarjeta (usa las flechas para ver años anteriores) y, en "Más de tu bitácora", tu ritmo y tu racha, tu colección, tus autores y sagas, tus calificaciones, lo que leíste y tus géneros y ánimos. Toca cada fila para abrirla.',
@@ -61,7 +51,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: CalendarClock,
     title: 'Lanzamientos',
     points: [
       'Anota los libros que estás esperando con su fecha, dónde saldrán y su precio.',
@@ -70,46 +59,40 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: User,
     title: 'Perfil',
     points: [
       'Toca el lápiz de arriba para cambiar tu foto, tu nickname y tu descripción.',
       'En Tu biblioteca, toca cualquier estado (leyendo, en pausa, leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
-      'Mira tu actividad del mes y organiza tu lista de temporada desde sus tres puntos: cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
+      'Mira tu actividad del mes y organiza Mis próximas lecturas desde sus tres puntos: agrega o quita pendientes con "Agregar libros", cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
       'En Favoritos, Recomendados, Deseados y Abandonados verás cinco libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
-      'El botón de compartir te deja enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
+      'El botón de compartir muestra tu código de Teleo (tócalo para copiarlo) y te deja invitar a alguien con un enlace o una tarjeta con código QR, enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
     ],
   },
   {
-    icon: Settings,
     title: 'Configuración',
     points: [
-      'Revisa las Novedades de cada versión y conoce la historia detrás de Teleo.',
+      'Revisa las Novedades de cada versión, conoce la historia detrás de Teleo y repite el Tutorial, el recorrido corto por la app, cuando quieras.',
       'Elige el modo de color, la moneda de tu biblioteca, y cambia tu usuario, nickname, correo o contraseña.',
-      'Comparte tu tarjeta de perfil o tu lista de deseados, y consulta la política de privacidad y los términos de uso.',
-      'Exporta o importa tus datos, completa los géneros de tu biblioteca, o gestiona tu cuenta (pausarla o eliminarla) cuando lo necesites.',
+      'Invita a alguien a Teleo, copia tu código, comparte tu tarjeta de perfil o tu lista de deseados, y consulta la política de privacidad y los términos de uso.',
+      'Exporta o importa tus datos, trae tu biblioteca de Goodreads, completa los géneros de tu biblioteca, o gestiona tu cuenta (pausarla o eliminarla) cuando lo necesites.',
     ],
   },
 ]
 
-/** Tutorial: se abre desde Configuración (con la barra de pestañas, Perfil marcado) o desde
- *  la bienvenida de una cuenta nueva, que pasa { from: 'bienvenida' }: ahí todavía no hay
- *  barra, así que termina con "Listo", que cierra la bienvenida y sigue a La mesa. */
+/** Guía de Teleo (antes "Tutorial"; V.3.3.0): desde que existe el recorrido sobre la app, que
+ *  ahora es el Tutorial, esta pantalla queda como explicación detallada de cada sección. Se
+ *  abre solo desde Configuración, con la barra de pestañas y Perfil marcado. */
 export function Tutorial() {
-  const location = useLocation()
-  const { finishIntro, isSaving } = useFinishIntro()
-  const fromWelcome = (location.state as { from?: string } | null)?.from === 'bienvenida'
-
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
       <PageHeader
-        title="Tutorial de Teleo"
-        subtitle="Un repaso punto por punto de todo lo que puedes hacer en cada sección de la app."
+        title="Guía de Teleo"
+        subtitle="Todo lo que puedes hacer en cada sección de la app, punto por punto."
       />
 
       <div className="flex flex-col gap-4">
-        {sections.map(({ icon: Icon, title, points }) => (
-          <Card key={title} tab={{ label: title, icon: Icon }}>
+        {sections.map(({ title, points }) => (
+          <Card key={title} tab={{ label: title }}>
             <ul className="space-y-2.5">
               {points.map((point) => (
                 <li key={point} className="flex gap-2.5 text-body-md text-text-secondary">
@@ -122,12 +105,7 @@ export function Tutorial() {
         ))}
       </div>
 
-      <SubpageNav
-        tab="perfil"
-        parentPath="/configuracion"
-        onDone={fromWelcome ? finishIntro : undefined}
-        isDoneLoading={isSaving}
-      />
+      <SubpageNav tab="perfil" parentPath="/configuracion" />
     </div>
   )
 }

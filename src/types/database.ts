@@ -269,8 +269,11 @@ export type Database = {
           bio: string | null
           created_at: string | null
           currency: string | null
+          is_demo: boolean
+          friend_code: string
           has_seen_intro: boolean
           id: string
+          invited_by: string | null
           is_deactivated: boolean
           last_seen_version: string | null
           nickname: string | null
@@ -288,8 +291,11 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           currency?: string | null
+          is_demo?: boolean
+          friend_code?: string
           has_seen_intro?: boolean
           id: string
+          invited_by?: string | null
           is_deactivated?: boolean
           last_seen_version?: string | null
           nickname?: string | null
@@ -307,8 +313,11 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           currency?: string | null
+          is_demo?: boolean
+          friend_code?: string
           has_seen_intro?: boolean
           id?: string
+          invited_by?: string | null
           is_deactivated?: boolean
           last_seen_version?: string | null
           nickname?: string | null
@@ -585,6 +594,18 @@ export type Database = {
       get_public_profile_extras: {
         Args: { target_user_id: string }
         Returns: Json
+      }
+      inviter_preview: {
+        Args: { code: string }
+        Returns: {
+          avatar_url: string | null
+          nickname: string | null
+          username: string
+        }[]
+      }
+      username_available: {
+        Args: { name: string }
+        Returns: boolean
       }
     }
     Enums: {

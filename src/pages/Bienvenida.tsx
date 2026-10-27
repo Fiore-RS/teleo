@@ -1,82 +1,84 @@
-import { useNavigate } from 'react-router-dom'
-import { Coffee, BookOpen, NotebookPen, ScrollText, User, type LucideIcon } from 'lucide-react'
+import { useState } from 'react'
+import logoFullCream from '../assets/images/logo/logo-full-dark.svg'
+import { useAuth } from '../hooks/useAuth'
+import { useProfile } from '../hooks/useProfile'
 import { useFinishIntro } from '../hooks/useFinishIntro'
-import logoIconDark from '../assets/images/logo/logo-icon-dark.svg'
+import { useTour } from '../context/tourContextValue'
+import { TOUR_STEPS } from '../lib/tour'
+import { DEFAULT_BANNER, isBannerId } from '../lib/banners'
 import { Button } from '../assets/components/atoms/Button'
+import { BannerArt } from '../assets/components/atoms/BannerArt'
 
-interface Step {
-  icon: LucideIcon
-  title: string
-  description: string
-}
-
-const steps: Step[] = [
-  {
-    icon: Coffee,
-    title: 'Mesa',
-    description: 'Tu punto de partida diario: lo que estás leyendo, tu racha, tu meta del año y el próximo libro que esperas.',
-  },
-  {
-    icon: BookOpen,
-    title: 'Estante',
-    description: 'Tu librería privada, en repisas. Agrega libros y sagas, organízalos y, si no sabes qué leer, deja que Teleo elija un pendiente.',
-  },
-  {
-    icon: NotebookPen,
-    title: 'Cuaderno',
-    description: 'Tu diario de lectura: escribe reseñas, califica tus lecturas a tu manera y guarda tus citas favoritas.',
-  },
-  {
-    icon: ScrollText,
-    title: 'Bitácora',
-    description: 'Tu historia con la lectura: tus estadísticas, un resumen de cada mes y año con tus favoritos, y tus compras.',
-  },
-  {
-    icon: User,
-    title: 'Perfil',
-    description: 'Tu rincón personal: tus números, tu actividad, tu lista de temporada y tus estantes, y una tarjeta para compartirlo.',
-  },
-]
-
+/** Bienvenida de una cuenta nueva. V.3.3.0 (propuesta C, "saludo personal", con la foto
+ *  centrada): el banner de marca y la foto (o la inicial) ladeada como en Perfil, "¡Hola,
+ *  nombre!" y la invitación al Tutorial, que ahora es el recorrido sobre la app. El detalle de
+ *  cada sección vive en la Guía de Teleo. Los dos botones marcan has_seen_intro. */
 export function Bienvenida() {
-  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { profile } = useProfile(user?.id)
   const { finishIntro, isSaving } = useFinishIntro()
+  const { start } = useTour()
+  const [choice, setChoice] = useState<'tour' | 'skip' | null>(null)
+
+  const displayName = profile?.nickname?.trim() || profile?.username || ''
+  const initial = displayName.charAt(0).toUpperCase()
+  const banner = isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER
+
+  async function handleStart(withTour: boolean) {
+    setChoice(withTour ? 'tour' : 'skip')
+    await finishIntro()
+    if (withTour) start()
+  }
 
   return (
-    <div className="min-h-screen bg-glow-top flex flex-col px-4 pt-8 pb-10">
-      <div className="text-center px-2">
-        <div className="mx-auto w-16 h-16 rounded-[20px] bg-linear-to-br from-primary to-rose shadow-card flex items-center justify-center">
-          <img src={logoIconDark} alt="Teleo" className="w-8 h-8" />
-        </div>
-        <h1 className="font-title text-[clamp(30px,8.5vw,40px)] leading-[1.05] text-text mt-5 text-balance">
-          ¡Teleo te da la bienvenida!
-        </h1>
-        <p className="font-body text-body-md text-text-secondary mt-2">
-          Un vistazo rápido antes de empezar a construir tu rincón de lectura.
-        </p>
-      </div>
-
-      <div className="flex-1 flex flex-col gap-3 mt-8 stagger-children">
-        {steps.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="flex gap-3.5 bg-surface border border-border rounded-card shadow-card p-4">
-            <span className="w-10 h-10 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
-              <Icon size={19} />
-            </span>
-            <div className="min-w-0">
-              <h3 className="font-display font-semibold text-body-lg text-text">{title}</h3>
-              <p className="text-body-sm text-text-secondary mt-0.5">{description}</p>
-            </div>
+    <div className="min-h-dvh bg-glow-top">
+      <div className="mx-auto w-full max-w-120 min-h-dvh flex flex-col">
+        {/* Banner con el dibujo completo (360 × 140) y el logo claro encima. */}
+        <div className="relative shrink-0 rounded-b-[30px] overflow-hidden bg-linear-to-br from-primary to-rose">
+          <div className="relative aspect-18/7">
+            <BannerArt banner={banner} />
           </div>
-        ))}
-      </div>
+          <div className="h-10" />
+          <img
+            src={logoFullCream}
+            alt="Teleo"
+            className="absolute left-5 h-7 w-auto"
+            style={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
+          />
+        </div>
 
-      <div className="flex flex-col gap-2.5 mt-8">
-        <Button variant="primary" onClick={finishIntro} isLoading={isSaving}>
-          Empezar a leer
-        </Button>
-        <Button variant="outline" onClick={() => navigate('/tutorial', { state: { from: 'bienvenida' } })}>
-          Ver el tutorial
-        </Button>
+        {/* Foto centrada, montada sobre el borde del banner. */}
+        <div className="relative z-[2] -mt-16 mx-auto w-[120px] h-[120px] rounded-[34px] border-4 border-bg bg-linear-to-br from-primary to-rose rotate-[4deg] shadow-[0_14px_26px_-14px_rgba(40,20,10,0.6)] flex items-center justify-center overflow-hidden">
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="font-title text-[56px] leading-none text-primary-ink">{initial}</span>
+          )}
+        </div>
+
+        <div
+          className="flex flex-col px-6 pt-5 text-center"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
+        >
+          <h1 className="font-title text-[36px] leading-[1.05] text-text text-balance">
+            {displayName ? `¡Hola, ${displayName}!` : '¡Hola!'}
+          </h1>
+          {profile?.username && <p className="text-body-md text-text-secondary mt-1">@{profile.username}</p>}
+          <p className="font-body text-body-lg text-text-secondary mt-4 text-pretty">
+            Tu rincón de lectura está listo. ¿Te mostramos cómo funciona Teleo? Es un tutorial corto, de {TOUR_STEPS.length}{' '}
+            pasos, sobre la misma app.
+          </p>
+
+          <div className="mt-14 flex flex-col gap-2.5">
+            <p className="text-body-sm text-text-muted mb-0.5">Puedes verlo cuando quieras desde Configuración.</p>
+            <Button variant="primary" onClick={() => handleStart(true)} isLoading={isSaving && choice === 'tour'} disabled={isSaving}>
+              Empezar el tutorial
+            </Button>
+            <Button variant="outline" onClick={() => handleStart(false)} isLoading={isSaving && choice === 'skip'} disabled={isSaving}>
+              Ahora no
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

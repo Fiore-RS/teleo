@@ -18,6 +18,7 @@ import type { ReadingStatus } from '../../../lib/status'
 import { categoryOptions, type BookFormat } from '../../../lib/options'
 import { languageLabel, languageOptionsFrom } from '../../../lib/languages'
 import { useCoverUpload } from '../../../hooks/useCoverUpload'
+import { useIsDemo } from '../../../hooks/useIsDemo'
 import { useBookLanguages } from '../../../hooks/useBookLanguages'
 import { parseDurationInput } from '../../../lib/duration'
 import { BookTraitsFields } from './BookTraitsFields'
@@ -40,6 +41,8 @@ interface AddBookModalProps {
   sagaId?: string
   userId?: string
   initialStatus?: 'pendiente' | 'deseado'
+  /** Abre con "Próxima lectura" ya marcado (desde la hoja de Mis próximas lecturas, V.3.3.0). */
+  initialPriority?: boolean
   onAdd: (book: NewBookPayload) => Promise<{ error: unknown }>
 }
 
@@ -63,7 +66,7 @@ function emptyManualDraft(status: ReadingStatus): ManualDraft {
   }
 }
 
-export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 'pendiente', onAdd }: AddBookModalProps) {
+export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 'pendiente', initialPriority = false, onAdd }: AddBookModalProps) {
   const [query, setQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [results, setResults] = useState<BookSearchResult[]>([])
@@ -81,11 +84,13 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   // Fechas para un libro que se agrega ya terminado (por ejemplo, uno leído hace tiempo).
   // Empiezan vacías: sin fecha de fin el libro se guarda igual, pero no cuenta para el reto.
   const [finishDates, setFinishDates] = useState<ReadingDates>({ startDate: '', endDate: '' })
-  const [isPriority, setIsPriority] = useState(false)
+  const [isPriority, setIsPriority] = useState(initialPriority)
   // Género (V.3.1.0): al elegir un resultado de la búsqueda viene sugerido y se puede cambiar.
   const [traits, setTraits] = useState<BookTraits>(EMPTY_TRAITS)
   const [suggestedGenres, setSuggestedGenres] = useState<GenreKey[]>([])
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
+  // En la cuenta de visitante no se suben imágenes (V.3.3.0).
+  const isDemo = useIsDemo()
   const bookLanguages = useBookLanguages(userId)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
@@ -111,7 +116,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setFormat('fisico')
     setIsManual(false)
     setManualDraft(emptyManualDraft(initialStatus))
-    setIsPriority(false)
+    setIsPriority(initialPriority)
     setFinishDates({ startDate: '', endDate: '' })
     setTraits(EMPTY_TRAITS)
     setSuggestedGenres([])
@@ -245,7 +250,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     <Badge status={initialStatus} />
   )
 
-  // Tu lectura: fechas si se agrega ya terminado; Esta temporada si queda pendiente.
+  // Tu lectura: fechas si se agrega ya terminado; Próxima lectura si queda pendiente.
   const readingSection = canPickStatus && (activeStatus === 'terminado' || activeStatus === 'pendiente') ? (
     <FormSection label="Tu lectura" className="mb-2">
       <div key={activeStatus} className="animate-fade-in">
@@ -255,8 +260,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
           <FormCard>
             <FormSwitchRow
               icon={Sparkles}
-              label="Esta temporada"
-              hint="En tu lista de prioridad"
+              label="Próxima lectura"
+              hint="Súmalo a tus próximas lecturas"
               checked={isPriority}
               onChange={setIsPriority}
             />
@@ -314,6 +319,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     body = (
       <div key="manual" className="animate-fade-in">
         <div className="relative z-10 flex gap-3.5 items-end mb-5.5">
+          {!isDemo && (
+          <>
           <button
             type="button"
             onClick={() => coverInputRef.current?.click()}
@@ -340,6 +347,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             )}
           </button>
           <input ref={coverInputRef} type="file" accept="image/*" onChange={handleManualCoverChange} className="hidden" />
+          </>
+          )}
 
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <Input

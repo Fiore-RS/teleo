@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PenLine, Settings, Share2, Link as LinkIcon } from 'lucide-react'
+import { PenLine, Settings, Share2, Link as LinkIcon, UserPlus } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
@@ -14,6 +14,8 @@ import { PriorityListCard } from '../assets/components/molecules/PriorityListCar
 import { ReadingCalendarSheet } from '../assets/components/molecules/ReadingCalendarSheet'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
+import { InviteSheet } from '../assets/components/molecules/InviteSheet'
+import { FriendCodeBox } from '../assets/components/molecules/FriendCode'
 import { SettingsRow } from '../assets/components/molecules/SettingsList'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetalleLibro } from './DetalleLibro'
@@ -48,7 +50,7 @@ export function Perfil() {
   // Nueva semilla en cada visita: si una lista tiene más de 5 libros, se eligen otros 5.
   const [shelfSeed] = useState(() => Math.floor(Math.random() * 1e9))
   // Hoja de compartir y, al elegir, el modal de esa opción.
-  const [shareStep, setShareStep] = useState<'menu' | 'perfil' | 'deseados' | null>(null)
+  const [shareStep, setShareStep] = useState<'menu' | 'invitar' | 'perfil' | 'deseados' | null>(null)
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -154,12 +156,18 @@ export function Perfil() {
 
       {shareStep === 'menu' && (
         <Sheet title="Compartir" onClose={() => setShareStep(null)}>
-          <div className="bg-surface border border-border rounded-card shadow-card divide-y divide-border">
+          {/* V.3.3.0: el código de amistad arriba y la invitación como primera opción. */}
+          {/* En la cuenta de visitante no hay código ni invitación. */}
+          {!profile?.is_demo && <FriendCodeBox code={profile?.friend_code} />}
+          <div className={`${profile?.is_demo ? '' : 'mt-3 '}bg-surface border border-border rounded-card shadow-card divide-y divide-border`}>
+            {!profile?.is_demo && <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setShareStep('invitar')} />}
             <SettingsRow icon={Share2} label="Perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setShareStep('perfil')} />
             <SettingsRow icon={LinkIcon} label="Lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setShareStep('deseados')} />
           </div>
         </Sheet>
       )}
+
+      {shareStep === 'invitar' && <InviteSheet userId={user?.id} onClose={() => setShareStep(null)} />}
 
       {shareStep === 'perfil' && (
         <ShareProfileModal

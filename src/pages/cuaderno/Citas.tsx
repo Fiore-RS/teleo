@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageOff, Shuffle } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
 import { CoverImage } from '../../assets/components/atoms/CoverImage'
 import { Skeleton } from '../../assets/components/atoms/Skeleton'
 import { Card, CardAction } from '../../assets/components/molecules/Card'
@@ -159,7 +159,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
     <div className="flex flex-col gap-3">
       {showRandom && (
         <Card
-          tab={{ label: 'Cita al azar', icon: Shuffle }}
+          tab={{ label: 'Cita al azar' }}
           tone="magenta"
           action={<CardAction onClick={nextRandom}>Otra</CardAction>}
           className={isRandomMenuOpen ? 'z-20' : ''}

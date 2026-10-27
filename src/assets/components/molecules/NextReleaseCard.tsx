@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { CalendarClock } from 'lucide-react'
 import { useReleases } from '../../../hooks/useReleases'
 import { daysUntil, formatReleaseDate } from '../../../lib/releases'
 import { Skeleton } from '../atoms/Skeleton'
@@ -20,7 +19,7 @@ export function NextReleaseCard({ userId }: NextReleaseCardProps) {
 
   return (
     <Card
-      tab={{ label: 'Próximo lanzamiento', icon: CalendarClock }}
+      tab={{ label: 'Próximo lanzamiento' }}
       tone="magenta"
       action={
         next && (

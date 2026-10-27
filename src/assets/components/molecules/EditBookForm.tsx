@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { BookOpen, Camera, Gift, Headphones, Heart, ImageOff, Sparkles, Tablet, type LucideIcon } from 'lucide-react'
+import { BookOpen, Camera, Headphones, ImageOff, Sparkles, Tablet, type LucideIcon } from 'lucide-react'
 import { CoverImage } from '../atoms/CoverImage'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -17,6 +17,7 @@ import { formatCurrency } from '../../../lib/currencies'
 import { formatShortDate, todayLocalDate } from '../../../lib/date'
 import type { ReadingStatus } from '../../../lib/status'
 import type { BookTraits } from '../../../lib/bookTraits'
+import { useIsDemo } from '../../../hooks/useIsDemo'
 
 /** Borrador de Editar libro. Todo se guarda junto al tocar "Guardar cambios" (desde la
  *  V.2.2.0 también Favorito y Esta temporada, que antes se guardaban al tocarlos). */
@@ -124,6 +125,7 @@ export function EditBookForm({
   knownCustomMoods,
   knownTags,
 }: EditBookFormProps) {
+  const isDemo = useIsDemo()
   const coverInputRef = useRef<HTMLInputElement>(null)
 
   function handleStatusChange(status: ReadingStatus) {
@@ -145,6 +147,7 @@ export function EditBookForm({
               <ImageOff size={22} className="text-text-secondary" />
             </div>
           )}
+          {!isDemo && (
           <button
             type="button"
             onClick={() => coverInputRef.current?.click()}
@@ -154,6 +157,7 @@ export function EditBookForm({
           >
             <Camera size={14} strokeWidth={2.2} />
           </button>
+          )}
           {isUploadingCover && (
             <span className="absolute inset-x-0 bottom-0 py-1 bg-surface/90 text-center text-body-sm text-text-secondary animate-fade-in">
               Subiendo...
@@ -225,12 +229,12 @@ export function EditBookForm({
           </div>
         )}
         <FormCard>
-          <FormSwitchRow icon={Heart} label="Favorito" checked={draft.isFavorite} onChange={(isFavorite) => onChange({ isFavorite })} />
+          <FormSwitchRow label="Favorito" checked={draft.isFavorite} onChange={(isFavorite) => onChange({ isFavorite })} />
           {draft.status === 'pendiente' && (
             <FormSwitchRow
               icon={Sparkles}
-              label="Esta temporada"
-              hint="En tu lista de prioridad"
+              label="Próxima lectura"
+              hint="Súmalo a tus próximas lecturas"
               checked={draft.isPriority}
               onChange={(isPriority) => onChange({ isPriority })}
               className="animate-fade-in"
@@ -294,7 +298,7 @@ export function EditBookForm({
 
       <FormSection label="Compra" className="mb-2">
         <FormCollapsible title="Precio y regalo" summary={purchaseSummary(draft, currency)}>
-          <FormSwitchRow icon={Gift} label="Fue un regalo" checked={draft.isGift} onChange={(isGift) => onChange({ isGift })} />
+          <FormSwitchRow label="Fue un regalo" checked={draft.isGift} onChange={(isGift) => onChange({ isGift })} />
           {draft.isGift ? (
             <FormRow label="¿Quién te lo regaló?" htmlFor="edit-gift-from" className="animate-fade-in">
               <Input

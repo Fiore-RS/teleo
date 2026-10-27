@@ -6,6 +6,7 @@ import { queryClient } from './lib/queryClient'
 import { supabase } from './lib/supabase'
 import App from './App.tsx'
 import { ThemeProvider } from './context/ThemeContext.tsx'
+import { TourProvider } from './context/TourContext'
 import './index.css'
 // Empieza a escuchar el aviso de instalación desde que carga la app (ver lib/installPrompt.ts).
 import './lib/installPrompt'
@@ -51,7 +52,9 @@ createRoot(document.getElementById('root')!).render(
     <HashRouter>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <App />
+          <TourProvider>
+            <App />
+          </TourProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </HashRouter>

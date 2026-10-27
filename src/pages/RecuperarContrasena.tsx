@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Mail, MailCheck } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { emailInputProps } from '../lib/emailInput'
 import { Input } from '../assets/components/atoms/Input'
 import { Button } from '../assets/components/atoms/Button'
-import { AuthHeader } from '../assets/components/molecules/AuthHeader'
+import { FormHint, FormRow } from '../assets/components/molecules/FormLayout'
+import { AuthCard, AuthFootnote, AuthLayout } from '../assets/components/molecules/AuthLayout'
 
 /** "¿Olvidaste tu contraseña?": pide el correo y Supabase manda un enlace. Ese enlace vuelve
  *  a la raíz de Teleo con los datos de recuperación, y main.tsx lleva a /nueva-contrasena.
@@ -19,8 +19,11 @@ export function RecuperarContrasena() {
   const [isLoading, setIsLoading] = useState(false)
   const [sentTo, setSentTo] = useState<string | null>(null)
 
+  const canSubmit = /^\S+@\S+\.\S+$/.test(email.trim())
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!canSubmit) return
     setError(null)
     setIsLoading(true)
 
@@ -43,64 +46,61 @@ export function RecuperarContrasena() {
 
   if (sentTo) {
     return (
-      <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
-        <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6 text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-primary-soft flex items-center justify-center mb-4">
-            <MailCheck size={28} strokeWidth={1.75} className="text-primary-text" />
-          </div>
-          <h1 className="font-title text-[28px] leading-[1.1] text-text">Revisa tu correo</h1>
-          <p className="font-body text-body-md text-text-secondary mt-2">
-            Si hay una cuenta con {sentTo}, te llegará un enlace para crear una contraseña nueva. Puede
-            tardar unos minutos; revisa también la carpeta de spam.
-          </p>
+      <AuthLayout
+        centered
+        title="Revisa tu correo"
+        subtitle={
+          <>
+            Si hay una cuenta con <span className="font-semibold text-text">{sentTo}</span>, te llegará un enlace para
+            crear una contraseña nueva.
+          </>
+        }
+        footer={
           <Link to="/login">
-            <Button variant="primary" className="mt-6">
-              Volver a iniciar sesión
-            </Button>
+            <Button variant="primary">Volver a iniciar sesión</Button>
           </Link>
-        </div>
-      </div>
+        }
+      >
+        <p className="text-body-sm text-text-muted">Puede tardar unos minutos. Revisa también la carpeta de spam o de promociones.</p>
+      </AuthLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
-      <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6">
-        <AuthHeader
-          title="¿Olvidaste tu contraseña?"
-          subtitle="Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva."
-        />
-
-        {linkExpired && (
-          <p className="text-body-sm text-primary-text text-center bg-primary-soft rounded-2xl px-3.5 py-2.5 mb-4">
-            Ese enlace ya venció o ya se usó. Pide uno nuevo aquí.
-          </p>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            icon={Mail}
-            {...emailInputProps}
-            placeholder="Correo electrónico..."
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
-
-          <Button type="submit" variant="primary" isLoading={isLoading}>
+    <AuthLayout
+      title="¿Olvidaste tu contraseña?"
+      subtitle="Escribe el correo de tu cuenta y te enviaremos un enlace para crear una nueva."
+      onSubmit={handleSubmit}
+      footer={
+        <>
+          <Button type="submit" variant="primary" isLoading={isLoading} disabled={!canSubmit}>
             Enviar enlace
           </Button>
-        </form>
+          <AuthFootnote>
+            ¿La recordaste?{' '}
+            <Link to="/login" className="text-primary-text font-bold">
+              Inicia sesión aquí.
+            </Link>
+          </AuthFootnote>
+        </>
+      }
+    >
+      <AuthCard label="Recuperar contraseña">
+        <FormRow label="Correo" htmlFor="reset-email">
+          <Input
+            {...emailInputProps}
+            bare
+            id="reset-email"
+            placeholder="tu@correo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="text-right text-body-lg"
+          />
+        </FormRow>
+      </AuthCard>
 
-        <p className="text-center text-body-sm text-text-secondary mt-4">
-          ¿La recordaste?{' '}
-          <Link to="/login" className="text-primary-text font-bold">
-            Inicia sesión aquí.
-          </Link>
-        </p>
-      </div>
-    </div>
+      {linkExpired && <FormHint text="Ese enlace ya venció o ya se usó. Pide uno nuevo aquí." tone="error" />}
+      {error && <FormHint text={error} tone="error" />}
+    </AuthLayout>
   )
 }

@@ -1,16 +1,16 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { PasswordInput } from '../atoms/PasswordInput'
 import { Button } from '../atoms/Button'
-import { FormActions, FormCard, FormRow, FormSection } from './FormLayout'
+import { FormActions, FormCard, FormHint, FormRow, FormSection } from './FormLayout'
 import { ConfirmSheet } from './ConfirmSheet'
 import { useAuth } from '../../../hooks/useAuth'
 import { useProfile } from '../../../hooks/useProfile'
 import { useAccountSettings } from '../../../hooks/useAccountSettings'
 import { emailInputProps } from '../../../lib/emailInput'
 import { getUsernameCooldownInfo, USERNAME_COOLDOWN_DAYS } from '../../../lib/usernameCooldown'
+import { cleanUsernameInput, getUsernameIssue, usernameIssueMessage } from '../../../lib/username'
 
 // Hojas de Configuración › Cuenta (V.2.2.0). Antes eran pantallas aparte que se veían vacías;
 // ahora bajan desde arriba sobre Configuración, como el resto de los formularios.
@@ -24,15 +24,9 @@ export function AccountSheet({ sheet, onClose }: { sheet: AccountSheetKey; onClo
   return <ChangePasswordSheet onClose={onClose} />
 }
 
-function Hint({ text, tone = 'muted' }: { text: string; tone?: 'muted' | 'error' | 'ok' }) {
-  const color = tone === 'error' ? 'text-primary-text' : tone === 'ok' ? 'text-accent-finished' : 'text-text-muted'
-  return (
-    <p className={`flex items-center gap-1.5 text-body-sm mt-2 mb-1 px-0.5 animate-fade-in ${color}`}>
-      {tone === 'ok' && <Check size={14} strokeWidth={2.6} aria-hidden="true" />}
-      {text}
-    </p>
-  )
-}
+// El aviso de siempre de estas hojas; desde la V.3.3.0 vive en FormLayout para usarlo también
+// en las pantallas de cuenta.
+const Hint = FormHint
 
 function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth()
@@ -41,9 +35,12 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
   const [newUsername, setNewUsername] = useState('')
   const [error, setError] = useState<string | null>(null)
   const { canChange, daysRemaining } = getUsernameCooldownInfo(profile?.username_changed_at ?? null)
+  // Reglas del @ (0035). "Muy corto" no se marca mientras se escribe, solo deja "Guardar" apagado.
+  const issue = newUsername ? getUsernameIssue(newUsername) : null
+  const liveIssue = issue && issue !== 'short' ? issue : null
 
   async function handleSave() {
-    if (!newUsername.trim() || !canChange) return
+    if (!newUsername.trim() || !canChange || issue) return
     const { error } = await updateUsername(newUsername.trim())
     if (error) { setError(error); return }
     onClose()
@@ -56,7 +53,7 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
       footer={
         <FormActions>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button variant="primary" onClick={handleSave} isLoading={isSaving} disabled={!newUsername.trim() || !canChange}>Guardar</Button>
+          <Button variant="primary" onClick={handleSave} isLoading={isSaving} disabled={!newUsername.trim() || !canChange || issue !== null}>Guardar</Button>
         </FormActions>
       }
     >
@@ -79,7 +76,7 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
                   autoCorrect="off"
                   spellCheck={false}
                   value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value.replace(/^@/, ''))}
+                  onChange={(e) => setNewUsername(cleanUsernameInput(e.target.value))}
                   disabled={!canChange}
                   className="text-left text-body-lg w-auto! flex-1 max-w-48 disabled:opacity-50"
                 />
@@ -92,6 +89,7 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
             ? `Solo puedes cambiarlo una vez cada ${USERNAME_COOLDOWN_DAYS} días. Para cambiar cómo te saluda Teleo, edita tu nickname.`
             : `Ya cambiaste tu usuario hace poco. Podrás volver a hacerlo en ${daysRemaining} día${daysRemaining === 1 ? '' : 's'}.`}
         />
+        {liveIssue && <Hint text={usernameIssueMessage(liveIssue)} tone="error" />}
         {error && <Hint text={error} tone="error" />}
       </div>
     </Sheet>

@@ -1,4 +1,3 @@
-import { CalendarDays } from 'lucide-react'
 import { useReadingStreak } from '../../../hooks/useReadingStreak'
 import { MonthCalendar } from '../atoms/MonthCalendar'
 import { Skeleton } from '../atoms/Skeleton'
@@ -21,7 +20,7 @@ export function ActivityCard({ userId, onOpenCalendar }: ActivityCardProps) {
 
   return (
     <Card
-      tab={{ label: 'Actividad', icon: CalendarDays }}
+      tab={{ label: 'Actividad' }}
       tone="orange"
       action={<CardAction onClick={onOpenCalendar}>Calendario</CardAction>}
     >

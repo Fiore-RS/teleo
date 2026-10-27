@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Star } from 'lucide-react'
+import { BookPlus, Check } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -23,6 +23,8 @@ import { PriorityListMenu } from './PriorityListMenu'
 import { EditListNameModal } from './EditListNameModal'
 import { StartReadingDateModal } from './StartReadingDateModal'
 import { RandomPickSheet } from './RandomPickSheet'
+import { NextReadsSheet } from './NextReadsSheet'
+import { Button } from '../atoms/Button'
 
 interface PriorityListCardProps {
   userId: string | undefined
@@ -30,18 +32,19 @@ interface PriorityListCardProps {
   onOpenBook?: (bookId: string) => void
 }
 
-/** "Mi lista de esta temporada" como tarjeta completa: portadas en orden, menú (editar
+/** "Mis próximas lecturas" (antes "Mi lista de esta temporada") como tarjeta completa: portadas en orden, menú (editar
  *  nombre, elegir uno al azar, organizar, ver en Estante), reordenamiento con mantener presionado y "Empezar a
  *  leer". Vivía en La mesa; en la fase 4 se mudó a Tu rincón (Perfil). Todo su estado va
  *  adentro para poder ubicarla en cualquier pantalla. */
 export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) {
   const navigate = useNavigate()
-  const { books, isLoading, reorderBook, startReading } = usePriorityBooks(userId)
+  const { books, isLoading, reorderBook, startReading, saveListBooks } = usePriorityBooks(userId)
   const { profile, updateProfile } = useProfile(userId)
   const [isReordering, setIsReordering] = useState(false)
   const [isEditNameOpen, setIsEditNameOpen] = useState(false)
   const [pendingStartId, setPendingStartId] = useState<string | null>(null)
   const [isRandomPickOpen, setIsRandomPickOpen] = useState(false)
+  const [isAddBooksOpen, setIsAddBooksOpen] = useState(false)
 
   const listName = getPriorityListName(profile?.priority_list_name)
 
@@ -82,7 +85,7 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
   return (
     <>
       <Card
-        tab={{ label: listName, icon: Star }}
+        tab={{ label: listName }}
         tone="magenta"
         action={
           isReordering ? (
@@ -102,6 +105,7 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
                 canReorder={books.length > 1}
                 canViewInEstante={books.length > 0}
                 canPickRandom={books.length > 1}
+                onAddBooks={() => setIsAddBooksOpen(true)}
                 onEditName={() => setIsEditNameOpen(true)}
                 onPickRandom={() => setIsRandomPickOpen(true)}
                 onToggleReorder={() => setIsReordering(true)}
@@ -120,9 +124,15 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
             ))}
           </div>
         ) : books.length === 0 ? (
-          <p className="text-body-md text-text-secondary">
-            Aún no has agregado libros a {listName}. Márcalos desde Detalle del Libro.
-          </p>
+          <>
+            <p className="text-body-md text-text-secondary">
+              Elige los pendientes que quieres leer pronto y ordénalos a tu manera.
+            </p>
+            <Button variant="soft" className="mt-3.5" onClick={() => setIsAddBooksOpen(true)}>
+              <BookPlus size={16} />
+              Agregar libros
+            </Button>
+          </>
         ) : isReordering ? (
           <>
             <p className="text-body-sm text-text-secondary text-center mb-3">
@@ -163,6 +173,10 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
           await updateProfile({ priority_list_name: name })
         }}
       />
+
+      {isAddBooksOpen && (
+        <NextReadsSheet userId={userId} onClose={() => setIsAddBooksOpen(false)} onSave={saveListBooks} />
+      )}
 
       {isRandomPickOpen && (
         <RandomPickSheet userId={userId} initialSource="temporada" onClose={() => setIsRandomPickOpen(false)} />

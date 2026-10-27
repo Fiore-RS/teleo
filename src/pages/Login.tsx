@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Mail } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { Input } from '../assets/components/atoms/Input'
 import { PasswordInput } from '../assets/components/atoms/PasswordInput'
 import { emailInputProps } from '../lib/emailInput'
 import { Button } from '../assets/components/atoms/Button'
-import { AuthHeader } from '../assets/components/molecules/AuthHeader'
+import { FormHint, FormRow } from '../assets/components/molecules/FormLayout'
+import { AuthCard, AuthFootnote, AuthLayout } from '../assets/components/molecules/AuthLayout'
 
 export function Login() {
   const navigate = useNavigate()
@@ -16,8 +16,11 @@ export function Login() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  const canSubmit = email.trim() !== '' && password !== ''
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (!canSubmit) return
     setError(null)
     setIsLoading(true)
 
@@ -45,49 +48,54 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-glow-top flex items-center justify-center p-6">
-      <div className="w-full max-w-sm bg-surface border border-border rounded-[28px] shadow-card p-6">
-        <AuthHeader
-          title="¡Qué gusto verte de nuevo!"
-          subtitle="Inicia sesión nuevamente para volver a tu rincón de lectura."
-        />
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <AuthLayout
+      title="¡Qué gusto verte de nuevo!"
+      subtitle="Inicia sesión para volver a tu rincón de lectura."
+      onSubmit={handleSubmit}
+      footer={
+        <>
+          <Button type="submit" variant="primary" isLoading={isLoading} disabled={!canSubmit}>
+            Iniciar sesión
+          </Button>
+          <AuthFootnote>
+            ¿Primera vez en Teleo?{' '}
+            <Link to="/registro" className="text-primary-text font-bold">
+              Regístrate aquí.
+            </Link>
+          </AuthFootnote>
+        </>
+      }
+    >
+      <AuthCard label="Iniciar sesión">
+        <FormRow label="Correo" htmlFor="login-email">
           <Input
-            icon={Mail}
             {...emailInputProps}
-            placeholder="Correo electrónico..."
+            bare
+            id="login-email"
+            placeholder="tu@correo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            className="text-right text-body-lg"
           />
+        </FormRow>
+        <FormRow label="Contraseña" htmlFor="login-password">
           <PasswordInput
-            placeholder="Contraseña..."
+            bare
+            id="login-password"
+            placeholder="••••••"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
-          <div className="flex justify-end -mt-2">
-            <Link to="/recuperar-contrasena" className="text-body-sm text-primary-text font-semibold">
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
+        </FormRow>
+      </AuthCard>
 
-          {error && <p className="text-body-sm text-primary-text text-center">{error}</p>}
-
-          <Button type="submit" variant="primary" isLoading={isLoading}>
-            Iniciar sesión
-          </Button>
-        </form>
-
-        <p className="text-center text-body-sm text-text-secondary mt-4">
-          ¿Primera vez en Teleo?{' '}
-          <Link to="/registro" className="text-primary-text font-bold">
-            Regístrate aquí.
-          </Link>
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">{error && <FormHint text={error} tone="error" />}</div>
+        <Link to="/recuperar-contrasena" className="shrink-0 mt-2 text-body-sm text-primary-text font-bold">
+          ¿Olvidaste tu contraseña?
+        </Link>
       </div>
-    </div>
+    </AuthLayout>
   )
 }

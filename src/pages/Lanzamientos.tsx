@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CalendarDays, CalendarHeart, CalendarPlus, Plus } from 'lucide-react'
+import { CalendarPlus, Plus } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useReleases, type Release } from '../hooks/useReleases'
@@ -72,7 +72,7 @@ export function Lanzamientos() {
 
         {tab === 'calendario' ? (
           <>
-            <Card tab={{ label: 'Calendario', icon: CalendarDays }} tone="magenta">
+            <Card tab={{ label: 'Calendario' }} tone="magenta">
               <PeriodNav
                 label={`${MONTH_NAMES[month - 1]} ${year}`}
                 onPrev={() => changeMonth(-1)}
@@ -101,7 +101,7 @@ export function Lanzamientos() {
               </div>
             </Card>
 
-            <Card tab={{ label: formatReleaseDate(selectedDate), icon: CalendarHeart }}>
+            <Card tab={{ label: formatReleaseDate(selectedDate) }}>
               {isLoading ? (
                 <Skeleton className="h-20 w-full rounded-2xl" />
               ) : dayReleases.length === 0 ? (
