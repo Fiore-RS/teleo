@@ -4,19 +4,18 @@ import { Card } from './Card'
 
 interface SettingsGroupProps {
   title: string
-  /** Ícono de la pestaña de la sección. */
-  icon?: LucideIcon
   children: ReactNode
   /** Texto de ayuda debajo de la tarjeta. */
   note?: string
 }
 
-/** Grupo de Configuración. V.3.0.0: cada sección es una tarjeta con pestaña de separador
- *  (ícono y nombre) y las filas separadas por líneas finas. */
-export function SettingsGroup({ title, icon, children, note }: SettingsGroupProps) {
+/** Grupo de Configuración. V.3.0.0: cada sección es una tarjeta con pestaña de separador y las
+ *  filas separadas por líneas finas. Desde el 26 oct 2026 la pestaña es solo texto: cada fila
+ *  ya lleva su ícono. */
+export function SettingsGroup({ title, children, note }: SettingsGroupProps) {
   return (
     <div>
-      <Card tab={{ label: title, icon }} padding="py-1">
+      <Card tab={{ label: title }} padding="py-1">
         <div className="divide-y divide-border">{children}</div>
       </Card>
       {note && <p className="text-body-sm text-text-secondary mt-2 px-1">{note}</p>}

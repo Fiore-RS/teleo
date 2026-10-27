@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from 'react'
-import { ChevronRight, type LucideIcon } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 /** Fondo de la tarjeta: el de siempre, o un tinte casi imperceptible de un acento. */
 export type CardTint = 'none' | 'orange' | 'pink' | 'magenta'
@@ -29,9 +29,10 @@ const toneTint: Record<CardTone, CardTint> = {
   magenta: 'magenta',
 }
 
+/** Pestaña de separador. Solo texto desde el 26 oct 2026: ícono + texto en cada título se veía
+ *  genérico; la pestaña sola ya es la marca del estilo Cuaderno. */
 export interface CardTab {
   label: string
-  icon?: LucideIcon
 }
 
 interface CardProps {
@@ -41,7 +42,7 @@ interface CardProps {
   labelledBy?: string
   /** Tinte del fondo. Con pestaña, por defecto es el del tono. */
   tint?: CardTint
-  /** Pestaña de separador arriba a la izquierda, con ícono y nombre. */
+  /** Pestaña de separador arriba a la izquierda, con el nombre. */
   tab?: CardTab
   /** Color de la pestaña. Por defecto el vino de marca. */
   tone?: CardTone
@@ -80,8 +81,6 @@ export function Card({
     )
   }
 
-  const Icon = tab.icon
-
   // El espacio de la pestaña va como padding de un contenedor y no como margen de la
   // tarjeta: así no se junta con el margen de la tarjeta de arriba (space-y) y la pestaña
   // nunca queda pegada a ella.
@@ -92,7 +91,6 @@ export function Card({
           id={tabId}
           className={`absolute -top-[31px] -left-px h-[31px] max-w-[calc(100%-6rem)] px-4 flex items-center gap-[7px] ${bg} border border-border border-b-0 rounded-t-[14px] font-body font-bold text-body-md ${toneText[tone]}`}
         >
-          {Icon && <Icon size={16} strokeWidth={2} aria-hidden="true" className="shrink-0" />}
           <span className="truncate">{tab.label}</span>
           {/* Tapa la línea de arriba de la tarjeta bajo la pestaña. */}
           <span aria-hidden="true" className={`absolute -bottom-0.5 inset-x-0 h-[3px] ${bg}`} />

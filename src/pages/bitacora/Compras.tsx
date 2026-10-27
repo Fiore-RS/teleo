@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Coins, ShoppingBag, CalendarDays, Type, User, Banknote, Library, TrendingUp } from 'lucide-react'
+import { CalendarDays, Type, User, Banknote, TrendingUp } from 'lucide-react'
 import { usePurchases, type PurchaseBook } from '../../hooks/usePurchases'
 import { queryClient } from '../../lib/queryClient'
 import { formatCurrency } from '../../lib/currencies'
@@ -171,7 +171,7 @@ export function Compras({ userId, currency }: ComprasProps) {
     <>
       <div className={`flex flex-col gap-5 ${stagger}`}>
         {/* Total invertido */}
-        <Card tab={{ label: 'Total invertido', icon: Coins }} tone="magenta">
+        <Card tab={{ label: 'Total invertido' }} tone="magenta">
           <p className="font-display font-semibold text-[36px] leading-none text-text tabular-nums break-words">{money(summary.invested)}</p>
           <p className="text-body-md text-text-secondary mt-2">
             en {summary.withPrice.length} de {summary.owned.length} {summary.owned.length === 1 ? 'libro' : 'libros'} con precio
@@ -207,7 +207,7 @@ export function Compras({ userId, currency }: ComprasProps) {
 
         {/* Dato curioso, plegado */}
         {summary.mostExpensive && summary.cheapest && (
-          <Card tab={{ label: 'Dato curioso', icon: Library }} padding="px-4 py-1">
+          <Card tab={{ label: 'Dato curioso' }} padding="px-4 py-1">
             <div>
               <MoreRow
                 id="compras-curioso"
@@ -229,7 +229,7 @@ export function Compras({ userId, currency }: ComprasProps) {
 
         {/* Lista */}
         <Card
-          tab={{ label: 'Tus libros', icon: ShoppingBag }}
+          tab={{ label: 'Tus libros' }}
           tone="pink"
           action={<SortMenu variant="bar" className="-mt-1" options={sortOptions} activeKey={sort} onSelect={setSort} />}
         >

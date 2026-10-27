@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookPlus, Check, Star } from 'lucide-react'
+import { BookPlus, Check } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -85,7 +85,7 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
   return (
     <>
       <Card
-        tab={{ label: listName, icon: Star }}
+        tab={{ label: listName }}
         tone="magenta"
         action={
           isReordering ? (

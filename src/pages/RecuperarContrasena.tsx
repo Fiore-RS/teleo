@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { KeyRound } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { emailInputProps } from '../lib/emailInput'
@@ -86,7 +85,7 @@ export function RecuperarContrasena() {
         </>
       }
     >
-      <AuthCard label="Recuperar contraseña" icon={KeyRound}>
+      <AuthCard label="Recuperar contraseña">
         <FormRow label="Correo" htmlFor="reset-email">
           <Input
             {...emailInputProps}

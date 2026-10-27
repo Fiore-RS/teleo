@@ -1,4 +1,4 @@
-import { ImageOff, type LucideIcon } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
 import { HorizontalScroller } from '../atoms/HorizontalScroller'
 import { DogEar } from '../atoms/DogEar'
 import { CoverImage } from '../atoms/CoverImage'
@@ -15,7 +15,6 @@ interface ProfileBookShelfProps {
   books: Book[]
   /** Primera carga: siluetas de portada en vez de "Nada por aquí todavía". */
   isLoading?: boolean
-  icon?: LucideIcon
   /** Color de la etiqueta. Por defecto el vino de marca. */
   tone?: CardTone
   onBookClick?: (bookId: string) => void
@@ -25,14 +24,14 @@ interface ProfileBookShelfProps {
 /** Fila de portadas de Perfil (Leyendo ahora, Favoritos, etc.). V.3.0.0: cada fila es una
  *  tarjeta con pestaña de separador y "Ver todos ›" a la altura de la pestaña; las
  *  portadas llegan hasta los bordes de la tarjeta al desplazarse. */
-export function ProfileBookShelf({ title, books, isLoading = false, icon, tone, onBookClick, onSeeAll }: ProfileBookShelfProps) {
+export function ProfileBookShelf({ title, books, isLoading = false, tone, onBookClick, onSeeAll }: ProfileBookShelfProps) {
   const stagger = useStaggerOnce(`perfil-${title}`)
   const coverClasses =
     'relative w-24 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]'
 
   return (
     <Card
-      tab={{ label: title, icon }}
+      tab={{ label: title }}
       tone={tone}
       action={onSeeAll && books.length > 0 ? <CardAction onClick={onSeeAll}>Ver todos</CardAction> : undefined}
     >

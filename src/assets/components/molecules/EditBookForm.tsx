@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { BookOpen, Camera, Gift, Headphones, Heart, ImageOff, Sparkles, Tablet, type LucideIcon } from 'lucide-react'
+import { BookOpen, Camera, Headphones, ImageOff, Sparkles, Tablet, type LucideIcon } from 'lucide-react'
 import { CoverImage } from '../atoms/CoverImage'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -225,7 +225,7 @@ export function EditBookForm({
           </div>
         )}
         <FormCard>
-          <FormSwitchRow icon={Heart} label="Favorito" checked={draft.isFavorite} onChange={(isFavorite) => onChange({ isFavorite })} />
+          <FormSwitchRow label="Favorito" checked={draft.isFavorite} onChange={(isFavorite) => onChange({ isFavorite })} />
           {draft.status === 'pendiente' && (
             <FormSwitchRow
               icon={Sparkles}
@@ -294,7 +294,7 @@ export function EditBookForm({
 
       <FormSection label="Compra" className="mb-2">
         <FormCollapsible title="Precio y regalo" summary={purchaseSummary(draft, currency)}>
-          <FormSwitchRow icon={Gift} label="Fue un regalo" checked={draft.isGift} onChange={(isGift) => onChange({ isGift })} />
+          <FormSwitchRow label="Fue un regalo" checked={draft.isGift} onChange={(isGift) => onChange({ isGift })} />
           {draft.isGift ? (
             <FormRow label="¿Quién te lo regaló?" htmlFor="edit-gift-from" className="animate-fade-in">
               <Input

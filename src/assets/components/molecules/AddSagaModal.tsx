@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Heart, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -139,7 +139,7 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
               </FormRow>
               <p className="px-3.5 pb-2.5 text-body-sm text-text-muted">Déjalo vacío si todavía no sabes cuántos tendrá.</p>
             </div>
-            <FormSwitchRow icon={Heart} label="Favorita" checked={isFavorite} onChange={setIsFavorite} />
+            <FormSwitchRow label="Favorita" checked={isFavorite} onChange={setIsFavorite} />
           </FormCard>
         </FormSection>
       </div>

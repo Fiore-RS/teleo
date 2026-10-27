@@ -140,7 +140,6 @@ function TourOverlay({ step, index, onNext, onSkip }: { step: TourStep; index: n
     arrow = { x: Math.min(Math.max(centerX - 8, 24), tipWidth - 40), below }
   }
 
-  const Icon = step.icon
   const titleId = `tour-title-${index}`
 
   return createPortal(
@@ -168,7 +167,7 @@ function TourOverlay({ step, index, onNext, onSkip }: { step: TourStep; index: n
             style={arrow.below ? { top: 24, left: arrow.x } : { bottom: -7, left: arrow.x }}
           />
         )}
-        <Card tab={{ label: step.tab, icon: Icon }} as="div" padding="pt-3.5 px-4 pb-3" className="drop-shadow-[0_18px_30px_rgba(0,0,0,0.35)]">
+        <Card tab={{ label: step.tab }} as="div" padding="pt-3.5 px-4 pb-3" className="drop-shadow-[0_18px_30px_rgba(0,0,0,0.35)]">
           <h2 id={titleId} className="font-title text-[20px] leading-[1.15] text-text">{step.title}</h2>
           <p className="text-body-md text-text-secondary mt-1.5">{step.text}</p>
           <div className="flex items-center justify-between gap-3 mt-3">

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, Loader2, UserPlus, X } from 'lucide-react'
+import { Check, Loader2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { Input } from '../assets/components/atoms/Input'
@@ -172,7 +172,7 @@ export function Registro() {
         </>
       }
     >
-      <AuthCard label="Tu cuenta" icon={UserPlus}>
+      <AuthCard label="Tu cuenta">
         {inviter && (
           <FormRow label="Te invitó">
             <span className="flex items-center justify-end gap-2 min-w-0">

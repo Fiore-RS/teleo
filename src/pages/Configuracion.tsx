@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  User, Mail, Lock, Info, Share2, Link as LinkIcon,
-  Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins,
-  Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library,
-  Settings, Archive, TriangleAlert, Tags, LibraryBig, UserPlus, Route,
+  User, Mail, Lock, Info, Share2, Link as LinkIcon, Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins, Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library, Tags, LibraryBig, UserPlus, Route,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useTour } from '../context/tourContextValue'
@@ -148,12 +145,12 @@ export function Configuracion() {
       />
 
       <div className="flex flex-col gap-5">
-        <SettingsGroup title="Teleo" icon={Heart}>
+        <SettingsGroup title="Teleo">
           <SettingsRow icon={Heart} label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
           <SettingsRow icon={Megaphone} label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Apariencia" icon={Palette}>
+        <SettingsGroup title="Apariencia">
           <SettingsField icon={Palette} label="Modo de color" description="Sistema sigue el modo de tu teléfono">
             <ThemeToggle />
           </SettingsField>
@@ -172,7 +169,7 @@ export function Configuracion() {
           />
         </SettingsGroup>
 
-        <SettingsGroup title="Sistema" icon={Settings}>
+        <SettingsGroup title="Sistema">
           <SettingsField icon={Languages} label="Idioma" description="Por ahora Teleo está solo en español">
             <Select options={[{ value: 'es', label: 'Español' }]} value="es" disabled />
           </SettingsField>
@@ -186,7 +183,7 @@ export function Configuracion() {
           </SettingsField>
         </SettingsGroup>
 
-        <SettingsGroup title="Cuenta" icon={User}>
+        <SettingsGroup title="Cuenta">
           <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />
           <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
           <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />
@@ -195,7 +192,6 @@ export function Configuracion() {
 
         <SettingsGroup
           title="Compartir"
-          icon={Share2}
           note="Quien se registre con tu enlace queda como invitación tuya. Más adelante, tu código servirá para agregarse en el Club."
         >
           <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setIsInviteOpen(true)} />
@@ -204,14 +200,14 @@ export function Configuracion() {
           <SettingsRow icon={LinkIcon} label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Información" icon={Info}>
+        <SettingsGroup title="Información">
           <SettingsRow icon={Route} label="Tutorial" description="Un recorrido corto por la app" onClick={startTour} />
           <SettingsRow icon={Info} label="Guía de Teleo" description="Todo lo que puedes hacer en cada sección, con más detalle" onClick={() => openSubpage('/guia')} />
           <SettingsRow icon={ShieldCheck} label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
           <SettingsRow icon={FileText} label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Tus datos" icon={Archive}>
+        <SettingsGroup title="Tus datos">
           <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
           <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
           <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />
@@ -219,7 +215,7 @@ export function Configuracion() {
           <SettingsRow icon={LibraryBig} label="Completa tu estante" description="Género, ánimo y ritmo de lo que ya leíste, libro por libro" onClick={() => setIsCompleteShelfOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Zona de peligro" icon={TriangleAlert}>
+        <SettingsGroup title="Zona de peligro">
           <SettingsRow danger icon={ClearIcon} label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Pause} label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Trash2} label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { UserRound, Target, BookOpen, Heart, ThumbsUp, Bookmark, BookX, Library } from 'lucide-react'
+import { UserRound } from 'lucide-react'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
 import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { BannerArt } from '../assets/components/atoms/BannerArt'
@@ -183,7 +183,7 @@ export function ProfileView({
 
         <div className={`flex flex-col gap-5 mt-5 ${stagger}`}>
           {/* Tu biblioteca: total, barra por estado y leyenda; cada estado abre Estante. */}
-          <Card tab={{ label: 'Tu biblioteca', icon: Library }}>
+          <Card tab={{ label: 'Tu biblioteca' }}>
             {areListsLoading ? (
               <div aria-label="Cargando">
                 <Skeleton className="h-7 w-2/5 rounded-full" />
@@ -237,7 +237,7 @@ export function ProfileView({
 
           {/* Meta anual */}
           {annualGoal > 0 && (
-            <Card tab={{ label: 'Meta anual de lectura', icon: Target }} tone="pink">
+            <Card tab={{ label: 'Meta anual de lectura' }} tone="pink">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="font-display font-semibold text-[28px] leading-none text-text">
                   {annualCompletedCount}{' '}
@@ -253,7 +253,6 @@ export function ProfileView({
 
           <ProfileBookShelf
             title="Leyendo ahora"
-            icon={BookOpen}
             tone="orange"
             books={currentlyReading}
             isLoading={areListsLoading}
@@ -266,7 +265,6 @@ export function ProfileView({
 
           <ProfileBookShelf
             title="Favoritos"
-            icon={Heart}
             books={favorites}
             isLoading={areListsLoading}
             onBookClick={onBookClick}
@@ -275,7 +273,6 @@ export function ProfileView({
 
           <ProfileBookShelf
             title="Recomendados"
-            icon={ThumbsUp}
             tone="pink"
             books={recommended}
             isLoading={areListsLoading}
@@ -285,7 +282,6 @@ export function ProfileView({
 
           <ProfileBookShelf
             title="Lista de deseados"
-            icon={Bookmark}
             books={wishlist}
             isLoading={areListsLoading}
             onBookClick={onBookClick}
@@ -294,7 +290,6 @@ export function ProfileView({
 
           <ProfileBookShelf
             title="Abandonados"
-            icon={BookX}
             books={abandoned}
             isLoading={areListsLoading}
             onBookClick={onBookClick}

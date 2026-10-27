@@ -1,4 +1,4 @@
-import { Flag, Check, Flame, BookOpen, Target, Shuffle } from "lucide-react";
+import { Check, Flame, Shuffle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
@@ -140,7 +140,7 @@ export function Mesa() {
 
       <div className={`flex flex-col gap-5 ${staggerMesa}`}>
         {/* Leyendo ahora */}
-        <Card tab={{ label: "Leyendo ahora", icon: BookOpen }}>
+        <Card tab={{ label: "Leyendo ahora" }}>
 
           {booksLoading && (
             <div className="flex gap-3.5" aria-label="Cargando">
@@ -192,7 +192,7 @@ export function Mesa() {
 
         {/* Racha diaria */}
         <Card
-          tab={{ label: "Racha diaria de lectura", icon: Flag }}
+          tab={{ label: "Racha diaria de lectura" }}
           tone="orange"
           action={<CardAction onClick={() => setIsCalendarOpen(true)}>Calendario</CardAction>}
         >
@@ -259,7 +259,7 @@ export function Mesa() {
         </Card>
 
         {/* Meta anual */}
-        <Card tab={{ label: "Meta anual de lectura", icon: Target }} tone="pink">
+        <Card tab={{ label: "Meta anual de lectura" }} tone="pink">
           {goalLoading ? (
             <div aria-label="Cargando">
               <Skeleton className="h-7 w-3/5 rounded-full" />
