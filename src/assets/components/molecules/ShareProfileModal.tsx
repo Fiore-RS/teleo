@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
-import { Share2, Download } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
-import { Button } from '../atoms/Button'
+import { Sheet } from '../atoms/Sheet'
+import { ShareActions } from './ShareActions'
 import { ShareProfileCard, SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from './ShareProfileCard'
 import { ShareBookPickerSheet } from './ShareBookPickerSheet'
 import { useAnnualGoal } from '../../../hooks/useAnnualGoal'
@@ -10,6 +9,8 @@ import { useProfile } from '../../../hooks/useProfile'
 import { useShareCardExtras } from '../../../hooks/useShareCardExtras'
 import { getProgressInfo } from '../../../lib/progress'
 import { isBannerId } from '../../../lib/banners'
+
+const DOWNLOADED_TEXT = 'Imagen descargada. Revisa tu carpeta de descargas.'
 
 // La vista previa se muestra al 80% para que entre en la hoja junto con los botones.
 const PREVIEW_SCALE = 0.8
@@ -35,7 +36,6 @@ interface ShareProfileModalProps {
  *
  *  Solo se monta mientras el modal está abierto, así que los datos se piden al abrirlo. */
 export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [downloaded, setDownloaded] = useState(false)
   // undefined = elección automática; null = "No mostrar"; string = libro elegido.
@@ -87,7 +87,6 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
   }
 
   async function handleShare() {
-    setIsGenerating(true)
     setError(null)
     try {
       const blob = await generateBlob()
@@ -110,13 +109,10 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
       if (err instanceof Error && err.name === 'AbortError') return
       console.error('[ShareProfileModal] Error al compartir:', err)
       setError('No se pudo compartir la imagen. Intenta de nuevo o usa "Descargar imagen".')
-    } finally {
-      setIsGenerating(false)
     }
   }
 
   async function handleDownload() {
-    setIsGenerating(true)
     setError(null)
     setDownloaded(false)
     try {
@@ -130,14 +126,20 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
     } catch (err) {
       console.error('[ShareProfileModal] Error al descargar:', err)
       setError('No se pudo generar la imagen. Intenta de nuevo.')
-    } finally {
-      setIsGenerating(false)
     }
   }
 
   return (
     <>
-      <Modal variant="sheet" isOpen onClose={onClose} title="Compartir mi perfil">
+      <Sheet onClose={onClose} title="Compartir mi perfil" footer={
+          <ShareActions
+            shareLabel="Compartir imagen"
+            onShare={handleShare}
+            onDownload={handleDownload}
+            disabled={false}
+            notice={error ? { text: error, tone: 'error' as const } : downloaded ? { text: DOWNLOADED_TEXT, tone: 'ok' as const } : null}
+          />
+        }>
         <>
             {/* Vista previa achicada; la captura usa la tarjeta a su tamaño real. */}
             <div className="mx-auto" style={{ width: SHARE_CARD_WIDTH * PREVIEW_SCALE, height: SHARE_CARD_HEIGHT * PREVIEW_SCALE }}>
@@ -165,22 +167,8 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
             <p className="text-body-sm text-text-secondary text-center mt-3">
               Toca Actual o Próxima para elegir otro libro.
             </p>
-            <div className="flex flex-col gap-2 mt-5">
-              <Button variant="primary" onClick={handleShare} isLoading={isGenerating}>
-                <Share2 size={18} /> Compartir
-              </Button>
-              <Button variant="outline" onClick={handleDownload} isLoading={isGenerating}>
-                <Download size={18} /> Descargar imagen
-              </Button>
-              {error && <p className="text-body-sm text-primary-text text-center mt-1">{error}</p>}
-              {downloaded && !error && (
-                <p className="text-body-sm text-text-secondary text-center mt-1">
-                  Imagen descargada. Revisa tu carpeta de descargas.
-                </p>
-              )}
-            </div>
         </>
-      </Modal>
+      </Sheet>
 
       {picking === 'actual' && (
         <ShareBookPickerSheet

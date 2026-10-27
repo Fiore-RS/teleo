@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
-import { Share2, Download, Check } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
-import { Button } from '../atoms/Button'
+import { Check } from 'lucide-react'
+import { Sheet } from '../atoms/Sheet'
+import { ShareActions } from './ShareActions'
 import { ShareQuoteCard, SHARE_QUOTE_WIDTH, SHARE_QUOTE_HEIGHT } from './ShareQuoteCard'
 import { BannerArt } from '../atoms/BannerArt'
 import { HorizontalScroller } from '../atoms/HorizontalScroller'
@@ -10,6 +10,8 @@ import { useAuth } from '../../../hooks/useAuth'
 import { useProfile } from '../../../hooks/useProfile'
 import { banners, isBannerId, type BannerId } from '../../../lib/banners'
 import { QUOTE_CARD_COLORS, getQuoteCardColor, type QuoteCardColor } from '../../../lib/quoteCardStyles'
+
+const DOWNLOADED_TEXT = 'Imagen descargada. Revisa tu carpeta de descargas.'
 
 // Más chica que la del perfil para que entren la vista previa y las opciones.
 const PREVIEW_SCALE = 0.7
@@ -26,7 +28,6 @@ interface ShareQuoteModalProps {
 /** Compartir una cita como imagen (Mis citas, V.2.1.0). Mismo flujo que la tarjeta del
  *  perfil: Web Share API con la imagen y, si el navegador no puede, descarga. */
 export function ShareQuoteModal({ quote, onClose }: ShareQuoteModalProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [downloaded, setDownloaded] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -60,7 +61,6 @@ export function ShareQuoteModal({ quote, onClose }: ShareQuoteModalProps) {
   }
 
   async function handleShare() {
-    setIsGenerating(true)
     setError(null)
     try {
       const blob = await generateBlob()
@@ -82,13 +82,10 @@ export function ShareQuoteModal({ quote, onClose }: ShareQuoteModalProps) {
       if (err instanceof Error && err.name === 'AbortError') return
       console.error('[ShareQuoteModal] Error al compartir:', err)
       setError('No se pudo compartir la imagen. Intenta de nuevo o usa "Descargar imagen".')
-    } finally {
-      setIsGenerating(false)
     }
   }
 
   async function handleDownload() {
-    setIsGenerating(true)
     setError(null)
     setDownloaded(false)
     try {
@@ -102,13 +99,19 @@ export function ShareQuoteModal({ quote, onClose }: ShareQuoteModalProps) {
     } catch (err) {
       console.error('[ShareQuoteModal] Error al descargar:', err)
       setError('No se pudo generar la imagen. Intenta de nuevo.')
-    } finally {
-      setIsGenerating(false)
     }
   }
 
   return (
-    <Modal variant="sheet" isOpen onClose={onClose} title="Compartir cita">
+    <Sheet onClose={onClose} title="Compartir cita" footer={
+          <ShareActions
+            shareLabel="Compartir imagen"
+            onShare={handleShare}
+            onDownload={handleDownload}
+            disabled={false}
+            notice={error ? { text: error, tone: 'error' as const } : downloaded ? { text: DOWNLOADED_TEXT, tone: 'ok' as const } : null}
+          />
+        }>
       <div className="mx-auto" style={{ width: SHARE_QUOTE_WIDTH * PREVIEW_SCALE, height: SHARE_QUOTE_HEIGHT * PREVIEW_SCALE }}>
         <div style={{ transform: `scale(${PREVIEW_SCALE})`, transformOrigin: 'top left' }} className="shadow-float rounded-[22px]">
           <ShareQuoteCard ref={cardRef} quote={quote} banner={banner} color={color} />
@@ -167,18 +170,6 @@ export function ShareQuoteModal({ quote, onClose }: ShareQuoteModalProps) {
           })}
         </div>
       </HorizontalScroller>
-      <div className="flex flex-col gap-2 mt-5">
-        <Button variant="primary" onClick={handleShare} isLoading={isGenerating}>
-          <Share2 size={18} /> Compartir
-        </Button>
-        <Button variant="outline" onClick={handleDownload} isLoading={isGenerating}>
-          <Download size={18} /> Descargar imagen
-        </Button>
-        {error && <p className="text-body-sm text-primary-text text-center mt-1">{error}</p>}
-        {downloaded && !error && (
-          <p className="text-body-sm text-text-secondary text-center mt-1">Imagen descargada. Revisa tu carpeta de descargas.</p>
-        )}
-      </div>
-    </Modal>
+    </Sheet>
   )
 }
