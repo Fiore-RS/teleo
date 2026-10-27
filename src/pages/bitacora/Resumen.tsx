@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { BookCheck, CalendarDays, CalendarRange, Crown, Heart, Check, Shapes, Library, Sparkles } from 'lucide-react'
+import { BookCheck, CalendarRange, Crown, Heart, Check, Shapes } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
 import { queryClient } from '../../lib/queryClient'
@@ -367,7 +367,7 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
         </PeriodTransition>
       </ResumenSheet>
 
-      <Card tab={{ label: 'Tu año en un estante', icon: Library }}>
+      <Card tab={{ label: 'Tu año en un estante' }}>
         <PeriodTransition order={year}>
           <div className="flex items-end gap-1 h-[150px] px-0.5">
             {counts.map((c, i) => {
@@ -413,7 +413,7 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
       </Card>
 
       {!isLoading && n > 0 && (
-        <Card tab={{ label: `Más de tu ${year}`, icon: Sparkles }} padding="px-4 py-1">
+        <Card tab={{ label: `Más de tu ${year}` }} padding="px-4 py-1">
           <div>
             {(byCategory.length > 0 || byFormat.length > 0) && (
               <MoreRow
@@ -567,7 +567,7 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
         </PeriodTransition>
       </ResumenSheet>
 
-      <Card tab={{ label: 'Uno por mes', icon: CalendarDays }}>
+      <Card tab={{ label: 'Uno por mes' }}>
         <PeriodTransition order={year}>
           {isLoading ? (
             <div className="grid grid-cols-4 gap-x-2 gap-y-3" aria-label="Cargando">

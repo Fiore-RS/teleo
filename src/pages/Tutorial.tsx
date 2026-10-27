@@ -2,20 +2,14 @@ import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { Card } from '../assets/components/molecules/Card'
 import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
-import {
-  Coffee, BookOpen, NotebookPen, ScrollText, User, Settings, CalendarClock,
-  type LucideIcon,
-} from 'lucide-react'
 
 interface TutorialSection {
-  icon: LucideIcon
   title: string
   points: string[]
 }
 
 const sections: TutorialSection[] = [
   {
-    icon: Coffee,
     title: 'Mesa',
     points: [
       'Ve los libros que estás leyendo, con su avance, y actualízalos cuando quieras. Si no estás leyendo nada, Teleo puede elegir al azar uno de tus pendientes.',
@@ -25,7 +19,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: BookOpen,
     title: 'Estante',
     points: [
       'Toca el botón + de abajo para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
@@ -40,7 +33,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: NotebookPen,
     title: 'Cuaderno',
     points: [
       'Toca el botón + de abajo para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia, agrega calificaciones personalizadas (por ejemplo, romance o giros de trama) y guarda tus citas favoritas.',
@@ -49,7 +41,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: ScrollText,
     title: 'Bitácora',
     points: [
       'En Estadísticas: tu año en una tarjeta (usa las flechas para ver años anteriores) y, en "Más de tu bitácora", tu ritmo y tu racha, tu colección, tus autores y sagas, tus calificaciones, lo que leíste y tus géneros y ánimos. Toca cada fila para abrirla.',
@@ -59,7 +50,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: CalendarClock,
     title: 'Lanzamientos',
     points: [
       'Anota los libros que estás esperando con su fecha, dónde saldrán y su precio.',
@@ -68,7 +58,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: User,
     title: 'Perfil',
     points: [
       'Toca el lápiz de arriba para cambiar tu foto, tu nickname y tu descripción.',
@@ -79,7 +68,6 @@ const sections: TutorialSection[] = [
     ],
   },
   {
-    icon: Settings,
     title: 'Configuración',
     points: [
       'Revisa las Novedades de cada versión y conoce la historia detrás de Teleo.',
@@ -102,8 +90,8 @@ export function Tutorial() {
       />
 
       <div className="flex flex-col gap-4">
-        {sections.map(({ icon: Icon, title, points }) => (
-          <Card key={title} tab={{ label: title, icon: Icon }}>
+        {sections.map(({ title, points }) => (
+          <Card key={title} tab={{ label: title }}>
             <ul className="space-y-2.5">
               {points.map((point) => (
                 <li key={point} className="flex gap-2.5 text-body-md text-text-secondary">

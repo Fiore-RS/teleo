@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Lock } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { useAuth } from '../hooks/useAuth'
@@ -81,7 +80,7 @@ export function NuevaContrasena() {
         </Button>
       }
     >
-      <AuthCard label="Contraseña nueva" icon={Lock}>
+      <AuthCard label="Contraseña nueva">
         <FormRow label="Nueva" htmlFor="new-password">
           <PasswordInput
             bare

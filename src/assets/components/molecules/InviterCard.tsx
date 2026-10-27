@@ -1,4 +1,3 @@
-import { MailOpen } from 'lucide-react'
 import { Card } from './Card'
 import { inviterDisplayName, type InviterPreview } from '../../../hooks/useInviterPreview'
 
@@ -30,7 +29,7 @@ export function InviterAvatar({ inviter, size = 'md' }: { inviter: InviterPrevie
 export function InviterCard({ inviter }: { inviter: InviterPreview }) {
   const name = inviterDisplayName(inviter)
   return (
-    <Card tab={{ label: 'Invitación', icon: MailOpen }} as="div" padding="py-4 pl-3.5 pr-4">
+    <Card tab={{ label: 'Invitación' }} as="div" padding="py-4 pl-3.5 pr-4">
       <div className="flex items-center gap-3.5">
         <InviterAvatar inviter={inviter} />
         <div className="min-w-0">

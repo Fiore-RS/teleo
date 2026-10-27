@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Copy, Download, EllipsisVertical, ListOrdered, Share, SquarePlus, type LucideIcon } from 'lucide-react'
+import { Check, Copy, Download, EllipsisVertical, Share, SquarePlus, type LucideIcon } from 'lucide-react'
 import { Button } from '../assets/components/atoms/Button'
 import { FormHint } from '../assets/components/molecules/FormLayout'
 import { AuthCard, AuthLayout } from '../assets/components/molecules/AuthLayout'
@@ -182,7 +182,7 @@ interface Step {
 
 function Steps({ steps }: { steps: Step[] }) {
   return (
-    <AuthCard label="Cómo instalarla" icon={ListOrdered}>
+    <AuthCard label="Cómo instalarla">
       <ol className="divide-y divide-border">
         {steps.map(({ icon: Icon, title, detail }, index) => (
           <li key={title} className="flex gap-3 items-start px-3.5 py-3">

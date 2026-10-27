@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { LogIn } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { authErrorMessage } from '../lib/authErrors'
 import { Input } from '../assets/components/atoms/Input'
@@ -67,7 +66,7 @@ export function Login() {
         </>
       }
     >
-      <AuthCard label="Iniciar sesión" icon={LogIn}>
+      <AuthCard label="Iniciar sesión">
         <FormRow label="Correo" htmlFor="login-email">
           <Input
             {...emailInputProps}

@@ -1,16 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import {
-  BookCheck,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Flag,
-  Library,
-  ScrollText,
-  Star,
-  TrendingUp,
-  Users,
-} from 'lucide-react'
+import { BookCheck, Check, ChevronLeft, ChevronRight, Flag, Library, ScrollText, Star, Users } from 'lucide-react'
 import { useLibraryStats } from '../../hooks/useLibraryStats'
 import { useGoalHistory } from '../../hooks/useGoalHistory'
 import { useReadingStreak } from '../../hooks/useReadingStreak'
@@ -223,7 +212,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
     <div className={`flex flex-col gap-5 ${stagger}`}>
       {hasFinished ? (
         <Card
-          tab={{ label: String(year), icon: TrendingUp }}
+          tab={{ label: String(year) }}
           tone="pink"
           action={
             <div className="flex items-center gap-1.5">
@@ -257,7 +246,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           </button>
         </Card>
       ) : (
-        <Card tab={{ label: 'Tu bitácora', icon: TrendingUp }}>
+        <Card tab={{ label: 'Tu bitácora' }}>
           <div className="text-center px-1.5 pt-2 pb-1">
             <div className="relative w-[92px] h-[92px] mx-auto mb-3" aria-hidden="true">
               <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
@@ -293,7 +282,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
       )}
 
       {hasRows && (
-        <Card tab={{ label: 'Más de tu bitácora', icon: Library }} padding="px-4 py-1">
+        <Card tab={{ label: 'Más de tu bitácora' }} padding="px-4 py-1">
           {/* Envoltorio propio: así "first:" apunta a la primera fila y no a la pestaña, y no
               queda una línea justo debajo de "Más de tu bitácora". */}
           <div>
