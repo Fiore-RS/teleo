@@ -71,6 +71,8 @@ interface BookTraitsFieldsProps {
   showGenres?: boolean
   /** false para mostrar solo Género (ej. al agregar un libro). */
   showMoodAndPace?: boolean
+  /** false para no mostrar Ritmo (ej. en una saga, V.3.4.0: el ritmo es de cada libro). */
+  showPace?: boolean
   /** Texto bajo "Género" (ej. "Sugerido por la búsqueda"). */
   genreHint?: string
   className?: string
@@ -78,7 +80,7 @@ interface BookTraitsFieldsProps {
 
 /** Secciones Género, Ánimo y Ritmo, en Editar libro y en "¿Cómo fue?" al terminar. Nada es
  *  obligatorio. Al llegar al máximo, los chips no elegidos se apagan. */
-export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres = true, showMoodAndPace = true, genreHint, className = '' }: BookTraitsFieldsProps) {
+export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres = true, showMoodAndPace = true, showPace = true, genreHint, className = '' }: BookTraitsFieldsProps) {
   const [isAddingMood, setIsAddingMood] = useState(false)
   const [newMood, setNewMood] = useState('')
 
@@ -149,7 +151,7 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
 
       {showMoodAndPace && (
       <>
-      <section className="mb-5.5">
+      <section className={showPace ? 'mb-5.5' : ''}>
         <SectionLabel label="Ánimo" count={moodCount} max={MAX_MOODS} />
         <div className="flex flex-wrap gap-2" role="group" aria-label="Ánimo">
           {moodOptions.map((o) => {
@@ -195,6 +197,7 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
         </div>
       </section>
 
+      {showPace && (
       <FormSection label="Ritmo" className="mb-0">
         <div role="radiogroup" aria-label="Ritmo" className="grid grid-cols-3 gap-1 p-1 bg-surface-2 border border-border rounded-[14px]">
           {paceOptions.map((o) => {
@@ -217,6 +220,7 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
           })}
         </div>
       </FormSection>
+      )}
       </>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, PenLine, GripVertical, Check, X, RefreshCw, ChevronRight } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
@@ -18,6 +19,21 @@ import { computeSagaCategories } from "../lib/sagaStatus";
 import { categoryOptions } from "../lib/options";
 import { FormActions, FormCard, FormRow, FormSection, FormSectionLabel, FormSwitchRow } from "../assets/components/molecules/FormLayout";
 import { SelectBookModal } from "../assets/components/molecules/SelectBookModal";
+import { BookTraitsFields } from "../assets/components/molecules/BookTraitsFields";
+import { SagaTraitConflictSheet, type ConflictBook } from "../assets/components/molecules/SagaTraitConflictSheet";
+import { useUserCustomMoods } from "../hooks/useUserCustomMoods";
+import { genreLabel, moodLabel } from "../lib/bookTraits";
+import {
+  applySagaTraits,
+  changedTraitFields,
+  findTraitConflicts,
+  hasSagaTraits,
+  planBookTraits,
+  sagaTraitsFromRow,
+  sagaTraitsToColumns,
+  type SagaTraitField,
+  type SagaTraits,
+} from "../lib/sagaTraits";
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
   type DragEndEvent,
@@ -193,15 +209,25 @@ function SagaBookRow({
 
 /** Fila compacta de un libro en Editar saga (V.2.2.0): portada chica con doblez, número y
  *  título, y una × para quitarlo de la saga (se esconde mientras se organiza). */
+/** "Con su propio género", "Con su propio ánimo" o "Con su propio género y ánimo" (V.3.4.0). */
+function ownTraitsText(fields: SagaTraitField[]): string | null {
+  if (fields.length === 0) return null;
+  if (fields.length === 2) return "Con su propio género y ánimo";
+  return fields[0] === "genre" ? "Con su propio género" : "Con su propio ánimo";
+}
+
 function SagaEditBookRow({
   book,
   index,
   isReordering,
+  ownTraits,
   onRemove,
 }: {
   book: SagaBook;
   index: number;
   isReordering: boolean;
+  /** Si el libro tiene su propio género o ánimo, distinto del de la saga (V.3.4.0). */
+  ownTraits?: string | null;
   onRemove: () => void;
 }) {
   return (
@@ -222,6 +248,7 @@ function SagaEditBookRow({
           Libro {String(index + 1).padStart(2, "0")}
         </p>
         <p className="font-body font-semibold text-body-md text-text truncate">{book.title}</p>
+        {ownTraits && <p className="text-body-sm text-text-muted">{ownTraits}</p>}
       </div>
       {!isReordering && (
         <button
@@ -245,6 +272,8 @@ export function DetalleSaga({
   refreshSignal,
 }: DetalleSagaProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const knownCustomMoods = useUserCustomMoods(user?.id);
   const {
     saga,
     books,
@@ -277,8 +306,16 @@ export function DetalleSaga({
     category: string;
     totalBooks: string;
     isFavorite: boolean;
+    traits: SagaTraits;
   } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  // V.3.4.0: libros con otro género o ánimo puesto a mano, para preguntar al guardar.
+  const [pendingConflicts, setPendingConflicts] = useState<{
+    conflicts: ConflictBook[];
+    traits: SagaTraits;
+    fields: SagaTraitField[];
+  } | null>(null);
+  const [isApplyingConflicts, setIsApplyingConflicts] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -305,6 +342,7 @@ export function DetalleSaga({
       category: saga.category ?? "Novela",
       totalBooks: saga.total_books ? String(saga.total_books) : "",
       isFavorite: saga.is_favorite ?? false,
+      traits: sagaTraitsFromRow(saga),
     });
     setIsEditing(true);
     setIsReorderingBooks(false);
@@ -313,19 +351,64 @@ export function DetalleSaga({
   const canSave = !!draft && draft.title.trim() !== "";
 
   async function handleSave() {
-    if (!draft || !canSave) return;
+    if (!draft || !canSave || !saga) return;
     setIsSaving(true);
     const total = parseInt(draft.totalBooks, 10);
+    // Solo el género o el ánimo que cambiaron se pasan a los libros (lib/sagaTraits).
+    const fields = changedTraitFields(sagaTraitsFromRow(saga), draft.traits);
     await updateSaga({
       title: draft.title.trim(),
       author: draft.author.trim() || null,
       category: draft.category,
       total_books: total > 0 ? total : null,
       is_favorite: draft.isFavorite,
+      ...sagaTraitsToColumns(draft.traits),
     });
+    if (fields.length > 0 && books.length > 0) {
+      // Los que no chocan reciben los de la saga ahora; por los que tienen otro puesto a mano
+      // se pregunta una sola vez.
+      const conflicts = findTraitConflicts(books, draft.traits, fields);
+      try {
+        await applySagaTraits(sagaId, draft.traits, { fields });
+      } catch (err) {
+        console.error("[DetalleSaga] Error al pasar género y ánimo a los libros:", err);
+      }
+      await refreshAfterTraits();
+      if (conflicts.length > 0) {
+        const covers = new Map(books.map((b) => [b.id, b.cover_url]));
+        setPendingConflicts({
+          conflicts: conflicts.map((c) => ({ ...c, coverUrl: covers.get(c.book.id) })),
+          traits: draft.traits,
+          fields,
+        });
+      }
+    }
     setIsSaving(false);
     setIsEditing(false);
     setIsReorderingBooks(false);
+  }
+
+  /** Libros, Estante, filtros y ánimos propios leen los datos de los libros: se piden de nuevo. */
+  async function refreshAfterTraits() {
+    await refetch();
+    void queryClient.invalidateQueries();
+  }
+
+  async function applySagaToConflicts() {
+    if (!pendingConflicts) return;
+    setIsApplyingConflicts(true);
+    try {
+      await applySagaTraits(sagaId, pendingConflicts.traits, {
+        fields: pendingConflicts.fields,
+        useSagaForConflicts: true,
+        bookIds: pendingConflicts.conflicts.map((c) => c.book.id),
+      });
+    } catch (err) {
+      console.error("[DetalleSaga] Error al cambiar los libros por los de la saga:", err);
+    }
+    await refreshAfterTraits();
+    setIsApplyingConflicts(false);
+    setPendingConflicts(null);
   }
 
   async function handleDelete() {
@@ -341,6 +424,9 @@ export function DetalleSaga({
 
   const sagaStatus = (saga?.status ?? "pendiente") as ReadingStatus;
   const categories = computeSagaCategories(books.map((b) => b.category), saga?.category);
+  const sagaTraits = sagaTraitsFromRow(saga);
+  const sagaGenreText = sagaTraits.genres.map(genreLabel).filter(Boolean).join(", ");
+  const sagaMoodText = [...sagaTraits.moods.map(moodLabel).filter(Boolean), ...sagaTraits.customMoods].join(", ");
 
   // Lista de libros de la saga: en modo "Organizar" se envuelve en el contexto de arrastre.
   // En Ver son tarjetas separadas; en Editar, filas compactas dentro de una sola tarjeta.
@@ -361,6 +447,7 @@ export function DetalleSaga({
           book={book}
           index={i}
           isReordering={isReorderingBooks}
+          ownTraits={ownTraitsText(planBookTraits(book, sagaTraits).conflicts)}
           onRemove={() => removeBookFromSaga(book.id)}
         />
       ),
@@ -495,6 +582,22 @@ export function DetalleSaga({
               ) : null}
             </div>
 
+            {/* Género y ánimo de la saga (V.3.4.0); sin ninguno, no aparece. */}
+            {hasSagaTraits(sagaTraits) && (
+              <FormCard className="-mt-3 mb-5.5">
+                {sagaGenreText && (
+                  <FormRow label="Género">
+                    <span className="text-body-lg text-text text-right">{sagaGenreText}</span>
+                  </FormRow>
+                )}
+                {sagaMoodText && (
+                  <FormRow label="Ánimo">
+                    <span className="text-body-lg text-text text-right">{sagaMoodText}</span>
+                  </FormRow>
+                )}
+              </FormCard>
+            )}
+
             <section className="mb-2">
               {booksSectionHeader}
               {books.length === 0 ? (
@@ -580,6 +683,16 @@ export function DetalleSaga({
               </FormCard>
             </FormSection>
 
+            {/* Género y ánimo de la saga (V.3.4.0): llegan a sus libros; el ritmo es de cada libro. */}
+            <BookTraitsFields
+              className="mb-5.5"
+              value={{ ...draft.traits, pace: null }}
+              onChange={({ genres, moods, customMoods }) => setDraft({ ...draft, traits: { genres, moods, customMoods } })}
+              knownCustomMoods={knownCustomMoods}
+              showPace={false}
+              genreHint="Llega a todos los libros de la saga. Cada libro se puede cambiar en Editar libro."
+            />
+
             <section className="mb-4">
               {booksSectionHeader}
               {books.length === 0 ? (
@@ -614,6 +727,16 @@ export function DetalleSaga({
           if (wasSuccess) onDeleted();
         }}
       />
+
+      {pendingConflicts && (
+        <SagaTraitConflictSheet
+          conflicts={pendingConflicts.conflicts}
+          othersCount={books.length - pendingConflicts.conflicts.length}
+          isLoading={isApplyingConflicts}
+          onKeep={() => setPendingConflicts(null)}
+          onUseSaga={applySagaToConflicts}
+        />
+      )}
 
       <SelectBookModal
         isOpen={isSelectBookOpen}
