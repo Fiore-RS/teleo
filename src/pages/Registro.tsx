@@ -12,6 +12,7 @@ import { AuthCard, AuthFootnote, AuthLayout } from '../assets/components/molecul
 import { InviterAvatar } from '../assets/components/molecules/InviterCard'
 import { inviterDisplayName, useInviterPreview } from '../hooks/useInviterPreview'
 import { clearInviteCode, readInviteCode } from '../lib/invite'
+import { isRunningStandalone } from '../lib/installPrompt'
 import {
   cleanUsernameInput,
   getUsernameIssue,
@@ -109,6 +110,10 @@ export function Registro() {
   }
 
   if (submittedTo) {
+    // V.3.3.0: en el navegador (no en la app instalada), mientras llega el correo se ofrece
+    // instalar Teleo. Así quien llega por una invitación se registra primero (queda guardado
+    // quién la invitó) y después instala, con un solo enlace.
+    const canInstall = !isRunningStandalone()
     return (
       <AuthLayout
         centered
@@ -116,16 +121,34 @@ export function Registro() {
         subtitle={
           <>
             Te enviamos un enlace a <span className="font-semibold text-text">{submittedTo}</span>. Tócalo para
-            activar tu cuenta y vuelve aquí para entrar.
+            activar tu cuenta{canInstall ? ' y después entra desde aquí o desde la app.' : ' y vuelve aquí para entrar.'}
           </>
         }
         footer={
-          <Link to="/login">
-            <Button variant="primary">Ir a iniciar sesión</Button>
-          </Link>
+          canInstall ? (
+            <>
+              <Link to="/instalar">
+                <Button variant="primary">Instalar Teleo mientras tanto</Button>
+              </Link>
+              <Link to="/login">
+                <Button variant="outline">Ir a iniciar sesión</Button>
+              </Link>
+            </>
+          ) : (
+            <Link to="/login">
+              <Button variant="primary">Ir a iniciar sesión</Button>
+            </Link>
+          )
         }
       >
-        <p className="text-body-sm text-text-muted">Si no te llega en unos minutos, revisa la carpeta de spam o de promociones.</p>
+        {canInstall && (
+          <p className="text-body-md text-text-secondary">
+            Mientras esperas, puedes tener Teleo en tu pantalla de inicio, como cualquier app.
+          </p>
+        )}
+        <p className={`text-body-sm text-text-muted ${canInstall ? 'mt-3' : ''}`}>
+          Si no te llega en unos minutos, revisa la carpeta de spam o de promociones.
+        </p>
       </AuthLayout>
     )
   }
