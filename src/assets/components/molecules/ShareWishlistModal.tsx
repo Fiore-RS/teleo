@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Share2, Download } from 'lucide-react'
-import { Modal } from '../atoms/Modal'
-import { Button } from '../atoms/Button'
+import { Sheet } from '../atoms/Sheet'
+import { ShareActions } from './ShareActions'
 import { useWishlistExport } from '../../../hooks/useWishlistExport'
 import { buildWishlistPdf } from '../../../lib/wishlistPdf'
+
+const DOWNLOADED_TEXT = 'PDF descargado. Revisa tu carpeta de descargas.'
 
 interface ShareWishlistModalProps {
   onClose: () => void
@@ -30,7 +31,6 @@ function downloadBlob(blob: Blob) {
  *  que useWishlistExport (sin límite, trae TODA la lista) no corre en cada visita a
  *  Configuración. */
 export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps) {
-  const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [downloaded, setDownloaded] = useState(false)
   const { books, isLoading } = useWishlistExport(userId)
@@ -40,7 +40,6 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
   }
 
   async function handleShare() {
-    setIsGenerating(true)
     setError(null)
     try {
       const blob = await generateBlob()
@@ -58,13 +57,10 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
       if (err instanceof Error && err.name === 'AbortError') return
       console.error('[ShareWishlistModal] Error al compartir:', err)
       setError('No se pudo compartir el PDF. Intenta de nuevo o usa "Descargar PDF".')
-    } finally {
-      setIsGenerating(false)
     }
   }
 
   async function handleDownload() {
-    setIsGenerating(true)
     setError(null)
     setDownloaded(false)
     try {
@@ -73,13 +69,19 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
     } catch (err) {
       console.error('[ShareWishlistModal] Error al descargar:', err)
       setError('No se pudo generar el PDF. Intenta de nuevo.')
-    } finally {
-      setIsGenerating(false)
     }
   }
 
   return (
-    <Modal variant="sheet" isOpen onClose={onClose} title="Compartir lista de deseados">
+    <Sheet onClose={onClose} title="Compartir lista de deseados" footer={
+          <ShareActions
+            shareLabel="Compartir PDF"
+            onShare={handleShare}
+            onDownload={handleDownload}
+            disabled={isLoading || books.length === 0}
+            notice={books.length === 0 && !isLoading ? { text: 'Todavía no tienes libros en tu lista de deseados.', tone: 'muted' as const } : error ? { text: error, tone: 'error' as const } : downloaded ? { text: DOWNLOADED_TEXT, tone: 'ok' as const } : null}
+          />
+        }>
       <div className="bg-surface-2 border border-border rounded-2xl p-5 text-center">
         {isLoading ? (
           <p className="text-body-md text-text-secondary">Cargando tu lista...</p>
@@ -93,26 +95,6 @@ export function ShareWishlistModal({ onClose, userId }: ShareWishlistModalProps)
           </p>
         )}
       </div>
-
-      <div className="flex flex-col gap-2 mt-5">
-        <Button variant="primary" onClick={handleShare} isLoading={isGenerating} disabled={isLoading || books.length === 0}>
-          <Share2 size={18} /> Compartir
-        </Button>
-        <Button variant="outline" onClick={handleDownload} isLoading={isGenerating} disabled={isLoading || books.length === 0}>
-          <Download size={18} /> Descargar PDF
-        </Button>
-        {books.length === 0 && !isLoading && (
-          <p className="text-body-sm text-text-secondary text-center mt-1">
-            Todavía no tienes libros en tu lista de deseados.
-          </p>
-        )}
-        {error && <p className="text-body-sm text-primary-text text-center mt-1">{error}</p>}
-        {downloaded && !error && (
-          <p className="text-body-sm text-text-secondary text-center mt-1">
-            PDF descargado. Revisa tu carpeta de descargas.
-          </p>
-        )}
-      </div>
-    </Modal>
+    </Sheet>
   )
 }
