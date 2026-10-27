@@ -12,7 +12,8 @@ interface AuthLayoutProps {
   footer?: ReactNode
   /** Si se pasa, el contenido y el pie forman un solo formulario (Enter envía). */
   onSubmit?: (e: FormEvent) => void
-  /** Título y texto centrados a lo alto, para los avisos sin campos ("Revisa tu correo"). */
+  /** Avisos sin campos ("Revisa tu correo"): un poco más de aire arriba. Desde el 26 oct 2026
+   *  ya no se centran a lo alto: todo el bloque queda arriba, como en Bienvenida. */
   centered?: boolean
   /** Algo antes del título, como la ilustración de Bienvenida. */
   above?: ReactNode
@@ -23,19 +24,21 @@ interface AuthLayoutProps {
 /** Pantallas de cuenta (V.3.3.0, vista previa A): Login, Registro, Recuperar y Nueva
  *  contraseña, Correo confirmado e Instalar. Reemplaza a la tarjeta flotante con el cuadrado
  *  del logo (AuthHeader): el logo va arriba como en la portada, el título en la letra de
- *  títulos, los campos en una tarjeta con pestaña y los botones abajo. */
+ *  títulos, los campos en una tarjeta con pestaña y los botones justo debajo. */
 export function AuthLayout({ title, subtitle, children, footer, onSubmit, centered = false, above, textCenter = false }: AuthLayoutProps) {
   const navigate = useNavigate()
 
   const body = (
     <>
-      <div className={`${centered ? 'my-auto py-8' : 'mt-7'} ${textCenter ? 'text-center' : ''}`}>
+      <div className={`${centered ? 'mt-10' : 'mt-7'} ${textCenter ? 'text-center' : ''}`}>
         {above}
         <h1 className="font-title text-[30px] leading-[1.1] text-text text-balance">{title}</h1>
         {subtitle && <p className="font-body text-body-md text-text-secondary mt-2 text-pretty">{subtitle}</p>}
         {children && <div className={centered ? 'mt-3' : 'mt-6'}>{children}</div>}
       </div>
-      {footer && <div className="mt-auto pt-8 flex flex-col gap-3">{footer}</div>}
+      {/* Los botones van justo después del contenido, con el mismo aire que en Bienvenida (56 px),
+          y no pegados al fondo: en pantallas cortas el hueco los separaba de lo que confirman. */}
+      {footer && <div className="mt-14 flex flex-col gap-3">{footer}</div>}
     </>
   )
 
