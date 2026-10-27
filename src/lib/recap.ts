@@ -12,6 +12,7 @@ export type RecapPeriod = { kind: 'anio'; year: number } | { kind: 'mes'; year: 
 export type RecapCardId =
   | 'portada'
   | 'libros'
+  | 'portadas'
   | 'meses'
   | 'generos'
   | 'autor'
@@ -184,6 +185,8 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
 
   const minTraits = RECAP_RULES.minTraitBooks[period.kind]
   const cards: RecapCardId[] = ['portada', 'libros']
+  // Portadas (V.3.3.1): cada libro una vez, aunque se haya releído en el periodo.
+  if (books.length > 0) cards.push('portadas')
   if (bestMonth) cards.push('meses')
   if (traitBooks >= minTraits) cards.push('generos')
   if (period.kind === 'anio') {
