@@ -5,8 +5,11 @@ import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
 import { FormActions, FormCard, FormRow, FormSection, FormSwitchRow } from './FormLayout'
+import { BookTraitsFields } from './BookTraitsFields'
 import { supabase } from '../../../lib/supabase'
 import { categoryOptions } from '../../../lib/options'
+import { EMPTY_SAGA_TRAITS, sagaTraitsToColumns, type SagaTraits } from '../../../lib/sagaTraits'
+import { useUserCustomMoods } from '../../../hooks/useUserCustomMoods'
 
 interface AddSagaModalProps {
   isOpen: boolean
@@ -28,7 +31,10 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
   const [category, setCategory] = useState('Novela')
   const [totalBooks, setTotalBooks] = useState('')
   const [isFavorite, setIsFavorite] = useState(false)
+  // Género y ánimo (V.3.4.0): llegan a los libros que se le agreguen.
+  const [traits, setTraits] = useState<SagaTraits>(EMPTY_SAGA_TRAITS)
   const [isSaving, setIsSaving] = useState(false)
+  const knownCustomMoods = useUserCustomMoods(userId)
 
   function reset() {
     setTitle('')
@@ -36,6 +42,7 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
     setCategory('Novela')
     setTotalBooks('')
     setIsFavorite(false)
+    setTraits(EMPTY_SAGA_TRAITS)
   }
 
   function handleClose() {
@@ -61,6 +68,7 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
         total_books: total > 0 ? total : null,
         is_favorite: isFavorite,
         estante_sort_order: maxOrder + 1000,
+        ...sagaTraitsToColumns(traits),
       })
       .select('id')
       .single()
@@ -142,6 +150,15 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
             <FormSwitchRow label="Favorita" checked={isFavorite} onChange={setIsFavorite} />
           </FormCard>
         </FormSection>
+
+        <BookTraitsFields
+          className="mt-5.5"
+          value={{ ...traits, pace: null }}
+          onChange={({ genres, moods, customMoods }) => setTraits({ genres, moods, customMoods })}
+          knownCustomMoods={knownCustomMoods}
+          showPace={false}
+          genreHint="Llega a todos los libros que agregues a la saga."
+        />
       </div>
     </Sheet>
   )

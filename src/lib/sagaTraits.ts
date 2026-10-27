@@ -114,11 +114,24 @@ function effectiveSource(hasValue: boolean, source: string | null): string | nul
   return source ?? 'manual'
 }
 
-/** Qué pasa con un libro frente al género y ánimo de su saga. Pura: no guarda nada. */
-export function planBookTraits(book: TraitBook, saga: SagaTraits): BookTraitPlan {
+export const ALL_TRAIT_FIELDS: SagaTraitField[] = ['genre', 'mood']
+
+/** Qué datos cambiaron entre dos versiones de la saga: solo esos se pasan a los libros (y solo
+ *  por esos se pregunta), así guardar la saga sin tocar el ánimo no vuelve a preguntar por él. */
+export function changedTraitFields(before: SagaTraits, after: SagaTraits): SagaTraitField[] {
+  const fields: SagaTraitField[] = []
+  if (!sameList(before.genres, after.genres)) fields.push('genre')
+  if (!sameList(moodSignature(before.moods, before.customMoods), moodSignature(after.moods, after.customMoods))) fields.push('mood')
+  return fields
+}
+
+/** Qué pasa con un libro frente al género y ánimo de su saga. Pura: no guarda nada. `fields`
+ *  limita a género o ánimo. */
+export function planBookTraits(book: TraitBook, saga: SagaTraits, fields: SagaTraitField[] = ALL_TRAIT_FIELDS): BookTraitPlan {
   const plan: BookTraitPlan = { bookId: book.id, update: {}, conflicts: [], override: {} }
 
   // Género
+  if (fields.includes('genre')) {
   const bookGenres = book.genres ?? []
   const genreSource = effectiveSource(bookGenres.length > 0, book.genres_source)
   if (saga.genres.length === 0) {
@@ -134,8 +147,10 @@ export function planBookTraits(book: TraitBook, saga: SagaTraits): BookTraitPlan
     plan.update.genres = saga.genres
     plan.update.genres_source = 'saga'
   }
+  }
 
   // Ánimo (fijos y propios juntos)
+  if (fields.includes('mood')) {
   const bookMoods = book.moods ?? []
   const bookCustom = book.custom_moods ?? []
   const bookSig = moodSignature(bookMoods, bookCustom)
@@ -153,6 +168,7 @@ export function planBookTraits(book: TraitBook, saga: SagaTraits): BookTraitPlan
   } else if (!sameList(bookSig, sagaSig) || book.moods_source !== 'saga') {
     Object.assign(plan.update, sagaMoods, { moods_source: 'saga' })
   }
+  }
 
   return plan
 }
@@ -163,9 +179,9 @@ export interface SagaTraitConflict {
 }
 
 /** Libros con otro género o ánimo puesto a mano, para preguntar antes de aplicar. */
-export function findTraitConflicts(books: TraitBook[], saga: SagaTraits): SagaTraitConflict[] {
+export function findTraitConflicts(books: TraitBook[], saga: SagaTraits, fields: SagaTraitField[] = ALL_TRAIT_FIELDS): SagaTraitConflict[] {
   return books
-    .map((book) => ({ book, fields: planBookTraits(book, saga).conflicts }))
+    .map((book) => ({ book, fields: planBookTraits(book, saga, fields).conflicts }))
     .filter((c) => c.fields.length > 0)
 }
 
@@ -179,22 +195,31 @@ async function fetchTraitBooks(sagaId: string, bookIds?: string[]): Promise<Trai
 
 /** Libros de la saga que tienen otro género o ánimo puesto a mano. `bookIds` limita la
  *  búsqueda (por ejemplo, a los libros que se acaban de sumar). */
-export async function fetchSagaTraitConflicts(sagaId: string, saga: SagaTraits, bookIds?: string[]): Promise<SagaTraitConflict[]> {
-  return findTraitConflicts(await fetchTraitBooks(sagaId, bookIds), saga)
+export async function fetchSagaTraitConflicts(
+  sagaId: string,
+  saga: SagaTraits,
+  { bookIds, fields = ALL_TRAIT_FIELDS }: { bookIds?: string[]; fields?: SagaTraitField[] } = {},
+): Promise<SagaTraitConflict[]> {
+  return findTraitConflicts(await fetchTraitBooks(sagaId, bookIds), saga, fields)
 }
 
 /** Pasa el género y ánimo de la saga a sus libros con las reglas de arriba. Con
  *  `useSagaForConflicts`, los libros con otro dato puesto a mano también toman los de la saga.
- *  `bookIds` limita a esos libros. */
+ *  `bookIds` limita a esos libros y `fields` a género o ánimo. */
 export async function applySagaTraits(
   sagaId: string,
   saga: SagaTraits,
-  { useSagaForConflicts = false, bookIds }: { useSagaForConflicts?: boolean; bookIds?: string[] } = {},
+  {
+    useSagaForConflicts = false,
+    bookIds,
+    fields = ALL_TRAIT_FIELDS,
+  }: { useSagaForConflicts?: boolean; bookIds?: string[]; fields?: SagaTraitField[] } = {},
 ): Promise<void> {
+  if (fields.length === 0) return
   const books = await fetchTraitBooks(sagaId, bookIds)
   const updates = books
     .map((book) => {
-      const plan = planBookTraits(book, saga)
+      const plan = planBookTraits(book, saga, fields)
       return { id: book.id, cols: useSagaForConflicts ? { ...plan.update, ...plan.override } : plan.update }
     })
     .filter((u) => Object.keys(u.cols).length > 0)
