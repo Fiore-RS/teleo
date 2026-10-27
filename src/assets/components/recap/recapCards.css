@@ -51,6 +51,18 @@
 .rc-days i.on{background:var(--paper);border-color:var(--paper);color:var(--pi)}
 .rc-days i.fut{opacity:.3;border-style:dashed}
 
+/* portadas (V.3.3.1): el ancho de cada portada y el espacio entre ellas salen de fitCoverGrid */
+.rc-pg-top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:28px}
+.rc-pg-title{font:italic 600 30px/1.02 var(--font-display);margin:8px 0 0;text-wrap:balance}
+.rc-pg-area{flex:1;min-height:0;margin-top:14px;display:flex;align-items:center;justify-content:center}
+.rc-pg-grid{display:flex;flex-wrap:wrap;justify-content:center;align-content:center}
+.rc-pg-grid .rc-cv{box-shadow:0 8px 16px -9px rgba(0,0,0,.6)}
+.rc-pg-grid.few .rc-cv:nth-child(odd){transform:rotate(-2.5deg)}
+.rc-pg-grid.few .rc-cv:nth-child(even){transform:rotate(2deg) translateY(3px)}
+.rc-pg-more{aspect-ratio:2/3;border-radius:3px 6px 6px 3px;background:var(--paper);color:var(--pi);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;flex-shrink:0;box-shadow:0 8px 16px -9px rgba(0,0,0,.6)}
+.rc-pg-more b{font-family:var(--font-title);font-weight:400}
+.rc-pg-more span{font-family:var(--font-body);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+
 /* mes más lector */
 .rc-monthname{font:italic 600 58px/.95 var(--font-display);letter-spacing:-.02em;margin-top:8px}
 /* max-width: el texto se queda a la izquierda de la etiqueta redonda (rc-sticker). */
