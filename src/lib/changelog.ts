@@ -15,6 +15,15 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.3.1',
+    date: '27 de octubre de 2026',
+    title: 'Todas tus portadas',
+    items: [
+      'Las tarjetas de tu mes y tu año suman una nueva, justo después de tus libros y páginas: las portadas de todo lo que terminaste, en una cuadrícula que se ajusta a cuántos libros son.',
+      'Si releíste un libro en ese tiempo, su portada aparece una sola vez. Con más de 30 libros, ves los primeros 29 y cuántos más hay.',
+    ],
+  },
+  {
     version: '3.3.0',
     announced: true,
     date: '27 de octubre de 2026',
