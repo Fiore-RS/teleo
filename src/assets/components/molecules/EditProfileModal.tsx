@@ -7,6 +7,7 @@ import { Button } from '../atoms/Button'
 import { FormActions, FormCard, FormRow, FormSection } from './FormLayout'
 import { BannerArt } from '../atoms/BannerArt'
 import type { BannerId } from '../../../lib/banners'
+import { useIsDemo } from '../../../hooks/useIsDemo'
 
 const NICKNAME_MAX = 30
 const BIO_MAX = 150
@@ -43,6 +44,8 @@ export function EditProfileModal({
   onChangeBanner,
   onSave,
 }: EditProfileModalProps) {
+  // En la cuenta de visitante no se suben imágenes (V.3.3.0): la foto no se toca, el banner sí.
+  const isDemo = useIsDemo()
   const [nickname, setNickname] = useState(currentNickname)
   const [bio, setBio] = useState(currentBio)
   const [isSaving, setIsSaving] = useState(false)
@@ -85,8 +88,8 @@ export function EditProfileModal({
         <button
           type="button"
           onClick={onChangePhoto}
-          disabled={isUploadingPhoto}
-          aria-label={avatarUrl ? 'Cambiar foto de perfil' : 'Agregar foto de perfil'}
+          disabled={isUploadingPhoto || isDemo}
+          aria-label={isDemo ? 'Foto de perfil' : avatarUrl ? 'Cambiar foto de perfil' : 'Agregar foto de perfil'}
           className="relative w-24 h-24 shrink-0 rounded-[26px] border-4 border-surface bg-linear-to-br from-primary to-rose shadow-card flex items-center justify-center overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
         >
           {avatarUrl ? (
@@ -107,7 +110,7 @@ export function EditProfileModal({
           {/* Pista en vez de botones: la foto y el banner se cambian tocándolos. */}
           <p className="flex items-center gap-1.5 mt-0.5 text-body-sm text-text-secondary">
             <Camera size={14} className="shrink-0" aria-hidden="true" />
-            {isUploadingPhoto ? 'Subiendo foto...' : 'Toca la foto o el banner para cambiarlos'}
+            {isUploadingPhoto ? 'Subiendo foto...' : isDemo ? 'Toca el banner para cambiarlo' : 'Toca la foto o el banner para cambiarlos'}
           </p>
         </div>
       </div>

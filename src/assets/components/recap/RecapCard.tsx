@@ -223,7 +223,12 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
           <span className="rc-kicker">Tu mes más lector</span>
           <div className="rc-monthname" style={{ fontSize: fitSize(MONTH_NAMES[best.month - 1], 58, 252) }}>{MONTH_NAMES[best.month - 1]}</div>
           {best.tiedWith.length > 0 && (
-            <div className="rc-tied">Empatado con {best.tiedWith.map((m) => MONTH_NAMES[m - 1].toLowerCase()).join(' y ')}</div>
+            // Hasta dos meses se nombran; con más, solo cuántos, para que no llegue hasta la etiqueta.
+            <div className="rc-tied">
+              {best.tiedWith.length <= 2
+                ? `Empatado con ${best.tiedWith.map((m) => MONTH_NAMES[m - 1].toLowerCase()).join(' y ')}`
+                : `Empatado con ${best.tiedWith.length} meses más`}
+            </div>
           )}
           {/* Con un mes de nombre largo, la etiqueta baja para no tapar el nombre. */}
           <div className="rc-sticker" style={MONTH_NAMES[best.month - 1].length > 6 ? { top: 104 } : undefined}>
@@ -275,8 +280,10 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
                     <span>{g[1].label}</span>
                   </div>
                 )}
+                {/* La tercera va centrada entre los centros de las dos de arriba (no en el medio de
+                    la tarjeta), así se ve alineada aunque la primera sea más grande. */}
                 {g[2] && (
-                  <div className="rc-bub b3" style={{ width: s[2], height: s[2], left: `calc(50% - ${s[2] / 2}px)`, top: 232 - s[2], ['--n' as string]: `${Math.round(s[2] / 3.4)}px` }}>
+                  <div className="rc-bub b3" style={{ width: s[2], height: s[2], left: `calc(50% + ${(s[0] - s[1]) / 4 - s[2] / 2}px)`, top: 232 - s[2], ['--n' as string]: `${Math.round(s[2] / 3.4)}px` }}>
                     <b>{g[2].count}</b>
                     <span>{g[2].label}</span>
                   </div>

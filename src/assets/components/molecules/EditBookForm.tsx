@@ -17,6 +17,7 @@ import { formatCurrency } from '../../../lib/currencies'
 import { formatShortDate, todayLocalDate } from '../../../lib/date'
 import type { ReadingStatus } from '../../../lib/status'
 import type { BookTraits } from '../../../lib/bookTraits'
+import { useIsDemo } from '../../../hooks/useIsDemo'
 
 /** Borrador de Editar libro. Todo se guarda junto al tocar "Guardar cambios" (desde la
  *  V.2.2.0 también Favorito y Esta temporada, que antes se guardaban al tocarlos). */
@@ -124,6 +125,7 @@ export function EditBookForm({
   knownCustomMoods,
   knownTags,
 }: EditBookFormProps) {
+  const isDemo = useIsDemo()
   const coverInputRef = useRef<HTMLInputElement>(null)
 
   function handleStatusChange(status: ReadingStatus) {
@@ -145,6 +147,7 @@ export function EditBookForm({
               <ImageOff size={22} className="text-text-secondary" />
             </div>
           )}
+          {!isDemo && (
           <button
             type="button"
             onClick={() => coverInputRef.current?.click()}
@@ -154,6 +157,7 @@ export function EditBookForm({
           >
             <Camera size={14} strokeWidth={2.2} />
           </button>
+          )}
           {isUploadingCover && (
             <span className="absolute inset-x-0 bottom-0 py-1 bg-surface/90 text-center text-body-sm text-text-secondary animate-fade-in">
               Subiendo...

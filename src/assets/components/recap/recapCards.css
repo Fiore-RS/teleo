@@ -53,7 +53,8 @@
 
 /* mes más lector */
 .rc-monthname{font:italic 600 58px/.95 var(--font-display);letter-spacing:-.02em;margin-top:8px}
-.rc-tied{font-size:12.5px;opacity:.9;margin-top:4px}
+/* max-width: el texto se queda a la izquierda de la etiqueta redonda (rc-sticker). */
+.rc-tied{font-size:12.5px;opacity:.9;margin-top:4px;max-width:165px}
 .rc-sticker{position:absolute;right:16px;top:64px;width:84px;height:84px;border-radius:50%;background:var(--paper);color:var(--pi);display:grid;place-items:center;text-align:center;transform:rotate(12deg);box-shadow:0 10px 20px -10px rgba(0,0,0,.6);z-index:2}
 .rc-sticker b{display:block;font:400 34px/.9 var(--font-title)}
 .rc-sticker span{font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase}
@@ -61,7 +62,8 @@
 .rc-mrow{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:end;gap:6px;height:22px;padding:0 6px;border-bottom:2px solid color-mix(in srgb,var(--oc) 40%,transparent)}
 .rc-mrow small{font:700 9.5px var(--font-body);letter-spacing:.06em;text-transform:uppercase;opacity:.85;align-self:center}
 .rc-mrow div{display:flex;gap:2px;align-items:flex-end;height:100%;overflow:hidden}
-.rc-mrow div i{display:block;width:9px;flex-shrink:0;border-radius:2px 2px 0 0}
+/* Borde fino: un lomo del mismo tono que el fondo de la tarjeta (ej. ciruela sobre Atardecer) no desaparece. */
+.rc-mrow div i{display:block;width:9px;flex-shrink:0;border-radius:2px 2px 0 0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oc) 45%,transparent)}
 .rc-mrow.top{background:color-mix(in srgb,var(--paper) 22%,transparent);border-radius:6px 6px 0 0;border-bottom-color:var(--paper);height:26px}
 .rc-mrow.top small{opacity:1}
 .rc-mrow.fut div{border-bottom:1.5px dashed color-mix(in srgb,var(--oc) 45%,transparent);height:50%;align-self:center}

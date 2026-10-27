@@ -157,9 +157,10 @@ export function Perfil() {
       {shareStep === 'menu' && (
         <Sheet title="Compartir" onClose={() => setShareStep(null)}>
           {/* V.3.3.0: el código de amistad arriba y la invitación como primera opción. */}
-          <FriendCodeBox code={profile?.friend_code} />
-          <div className="mt-3 bg-surface border border-border rounded-card shadow-card divide-y divide-border">
-            <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setShareStep('invitar')} />
+          {/* En la cuenta de visitante no hay código ni invitación. */}
+          {!profile?.is_demo && <FriendCodeBox code={profile?.friend_code} />}
+          <div className={`${profile?.is_demo ? '' : 'mt-3 '}bg-surface border border-border rounded-card shadow-card divide-y divide-border`}>
+            {!profile?.is_demo && <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setShareStep('invitar')} />}
             <SettingsRow icon={Share2} label="Perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setShareStep('perfil')} />
             <SettingsRow icon={LinkIcon} label="Lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setShareStep('deseados')} />
           </div>
