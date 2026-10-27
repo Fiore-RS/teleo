@@ -1,4 +1,4 @@
-import { forwardRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { forwardRef, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { MONTH_ABBR, MONTH_NAMES } from '../../../lib/months'
 import { formatStackHeight, type RecapBook, type RecapCardId, type RecapData } from '../../../lib/recap'
 import { shareSafeImageUrl } from '../../../lib/shareImage'
@@ -38,8 +38,21 @@ function hash(text: string) {
  *  (zoom=3) y, si ese libro no la tiene, la original: la tarjeta se exporta a 3,6 veces su
  *  tamaño y una miniatura chica se ve pixelada, sobre todo en la del favorito. `width` es el
  *  ancho en píxeles que se le pide al intermediario. */
-function Cover({ book, showTitle = true, style, width = 360 }: { book: RecapBook; showTitle?: boolean; style?: CSSProperties; width?: number }) {
-  const candidates = [book.coverUrl ? upgradedSrc(book.coverUrl) : null, book.coverUrl]
+function Cover({
+  book,
+  showTitle = true,
+  style,
+  width = 360,
+  upgrade = true,
+}: {
+  book: RecapBook
+  showTitle?: boolean
+  style?: CSSProperties
+  width?: number
+  /** false: no pide la versión grande de Google Books (portadas chicas, como en la cuadrícula). */
+  upgrade?: boolean
+}) {
+  const candidates = [book.coverUrl && upgrade ? upgradedSrc(book.coverUrl) : null, book.coverUrl]
     .filter((url): url is string => !!url)
     .map((url) => shareSafeImageUrl(url, width))
     .filter((url): url is string => !!url)
@@ -53,6 +66,83 @@ function Cover({ book, showTitle = true, style, width = 360 }: { book: RecapBook
         <img src={src} alt={book.title} crossOrigin="anonymous" onError={() => setAttempt((a) => a + 1)} />
       ) : (
         <span>{book.title}</span>
+      )}
+    </div>
+  )
+}
+
+/** Cuadrícula de portadas (V.3.3.1): hasta 30; con más, las primeras 29 y un cuadro "+ N más". */
+const COVER_GRID_MAX = 30
+/** Ancho máximo de una portada con pocos libros, para que no se estire de más. */
+const COVER_GRID_MAX_WIDTH = 118
+/** Debajo de este ancho el título de una portada sin imagen ya no se lee: queda solo el color. */
+const COVER_GRID_MIN_TITLE_WIDTH = 46
+
+const coverGap = (n: number) => (n <= 8 ? 10 : n <= 16 ? 7 : n <= 28 ? 6 : 5)
+
+/** Prueba todas las columnas posibles y se queda con la que deja la portada (2:3) más ancha
+ *  dentro del espacio libre. */
+function fitCoverGrid(n: number, width: number, height: number) {
+  const gap = coverGap(n)
+  let best = { cols: 1, size: 0, gap }
+  for (let cols = 1; cols <= n; cols++) {
+    const rows = Math.ceil(n / cols)
+    const size = Math.min((width - (cols - 1) * gap) / cols, ((height - (rows - 1) * gap) / rows) * (2 / 3))
+    if (size > best.size + 0.01) best = { cols, size, gap }
+  }
+  return { ...best, size: Math.max(1, Math.floor(Math.min(best.size, COVER_GRID_MAX_WIDTH))) }
+}
+
+function CoverGrid({ books }: { books: RecapBook[] }) {
+  const areaRef = useRef<HTMLDivElement>(null)
+  const [area, setArea] = useState<{ width: number; height: number } | null>(null)
+
+  // El espacio libre depende del alto del título (una o dos líneas), así que se mide; se vuelve
+  // a medir cuando cargan las fuentes. Las portadas no se piden hasta tener la medida, para no
+  // pedir cada imagen dos veces con distinto ancho.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = areaRef.current
+      if (el) setArea({ width: el.clientWidth, height: el.clientHeight })
+    }
+    measure()
+    let alive = true
+    document.fonts?.ready.then(() => alive && measure())
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const overflow = books.length > COVER_GRID_MAX
+  const shown = overflow ? books.slice(0, COVER_GRID_MAX - 1) : books
+  const cells = shown.length + (overflow ? 1 : 0)
+  const fit = area ? fitCoverGrid(cells, area.width, area.height) : null
+
+  return (
+    <div ref={areaRef} className="rc-pg-area">
+      {fit && (
+        <div className={`rc-pg-grid${cells <= 8 ? ' few' : ''}`} style={{ gap: fit.gap, width: fit.cols * fit.size + (fit.cols - 1) * fit.gap }}>
+          {shown.map((b) => (
+            <Cover
+              key={b.bookId}
+              book={b}
+              showTitle={fit.size >= COVER_GRID_MIN_TITLE_WIDTH}
+              upgrade={fit.size >= 80}
+              width={Math.max(120, Math.ceil((fit.size * RECAP_EXPORT_PIXEL_RATIO) / 60) * 60)}
+              style={{
+                width: fit.size,
+                fontSize: Math.max(7, Math.min(12, fit.size * 0.13)),
+                padding: `${fit.size * 0.07}px ${fit.size * 0.06}px ${fit.size * 0.07}px ${fit.size * 0.11}px`,
+              }}
+            />
+          ))}
+          {overflow && (
+            <div className="rc-pg-more" style={{ width: fit.size }}>
+              <b style={{ fontSize: Math.max(11, fit.size * 0.36) }}>+{books.length - shown.length}</b>
+              <span style={{ fontSize: Math.max(7, fit.size * 0.17) }}>más</span>
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
@@ -112,7 +202,7 @@ interface RecapCardProps {
 }
 
 /** Una tarjeta de "Tu lectura en Teleo" (V.3.2.0). Cada una es un objeto de lectura: estante,
- *  pila de páginas, estante por meses, burbujas de géneros, ficha de biblioteca, cinta
+ *  pila de páginas, cuadrícula de portadas (V.3.3.1), estante por meses, burbujas de géneros, ficha de biblioteca, cinta
  *  separadora, portadas releídas, escarapela del favorito y ticket. */
 export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function RecapCard({ card, recap, tone, username }, ref) {
   const style = {
@@ -208,6 +298,25 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
               </div>
             </div>
           )}
+          {foot}
+        </>
+      )
+      break
+    }
+
+    case 'portadas': {
+      const kicker = isYear ? (recap.isOngoing ? 'Este año, hasta ahora' : 'Este año') : recap.isOngoing ? 'Este mes, hasta hoy' : 'Este mes'
+      const count = recap.books.length
+      body = (
+        <>
+          <div className="rc-pg-top">
+            <span className="rc-kicker">{kicker}</span>
+            {/* "títulos" y no "libros": cada libro va una vez aunque se haya releído, y la tarjeta
+                de libros y páginas sí cuenta las relecturas. */}
+            <span className="rc-stamp">{count} {count === 1 ? 'título' : 'títulos'}</span>
+          </div>
+          <h3 className="rc-pg-title">{isYear ? `Tu ${recap.period.year} en libros` : `Tus lecturas de ${monthName.toLowerCase()}`}</h3>
+          <CoverGrid books={recap.books} />
           {foot}
         </>
       )
