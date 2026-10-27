@@ -2,7 +2,7 @@
  *  Describen cómo funciona Teleo hoy: revisarlos cada vez que algo nuevo guarde datos.
  *  Al publicar un cambio, actualizar LEGAL_LAST_UPDATED y avisarlo en Novedades. */
 
-export const LEGAL_LAST_UPDATED = '24 de septiembre de 2026'
+export const LEGAL_LAST_UPDATED = '27 de octubre de 2026'
 
 export const INSTAGRAM_HANDLE = 'only.fiito'
 export const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM_HANDLE}/`
@@ -18,6 +18,7 @@ export const privacySections: LegalSection[] = [
     title: 'Qué datos guarda Teleo',
     bullets: [
       'Tu cuenta: correo, nombre de usuario, nickname, bio y foto de perfil. La contraseña la protege Supabase y nunca se guarda ni se ve en texto.',
+      'Tu código de Teleo y, si llegaste con una invitación, quién te invitó. Ese dato no se puede cambiar ni lo ve nadie más.',
       'Tu biblioteca: los libros que agregas, sus estados, fechas, progreso, precios, etiquetas, sagas y portadas que subas, además de los lanzamientos que anotas.',
       'Lo que escribes: reseñas, citas, personajes favoritos y sus fotos.',
       'Tu hábito: los días que marcas como leídos, tus metas anuales y los favoritos que eliges de cada mes y año.',
@@ -48,7 +49,7 @@ export const privacySections: LegalSection[] = [
   {
     title: 'Quién puede ver tus datos',
     paragraphs: [
-      'Solo tú. Lo que compartes, como la tarjeta de perfil o el PDF de tu lista de deseados, lo decides tú cada vez. Como administradora tengo acceso técnico a la base de datos para mantener la app, y solo lo uso para resolver problemas, por ejemplo cuando me pides ayuda con tu cuenta.',
+      'Solo tú. Lo que compartes, como la tarjeta de perfil, una invitación o el PDF de tu lista de deseados, lo decides tú cada vez. Quien abre tu enlace de invitación ve tu foto, tu nickname y tu @usuario, y nada más de tu cuenta. Como administradora tengo acceso técnico a la base de datos para mantener la app, y solo lo uso para resolver problemas, por ejemplo cuando me pides ayuda con tu cuenta.',
     ],
   },
   {

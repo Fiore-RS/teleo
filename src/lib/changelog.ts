@@ -15,6 +15,30 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.3.0',
+    announced: true,
+    date: '27 de octubre de 2026',
+    title: 'Llegar a Teleo',
+    items: [
+      'Invita a alguien a Teleo desde Perfil › Compartir o desde Configuración: envía un enlace con un mensaje listo o una tarjeta en imagen con tu foto, un código QR y tu código.',
+      'Cada cuenta tiene su código de Teleo, como TL-K7MQ-4XRA. Lo ves en Perfil › Compartir y en Configuración; tócalo para copiarlo.',
+      'Quien abre tu invitación ve tu foto y tu @usuario en la portada, y al crear su cuenta aparece "Te invitó".',
+      'Nuevo tutorial: un recorrido corto sobre la misma app, paso por paso. Lo ofrece la Bienvenida y lo puedes repetir desde Configuración › Información › Tutorial.',
+      'El antiguo Tutorial ahora se llama Guía de Teleo: la explicación detallada de cada sección.',
+      'La Bienvenida es más sencilla: un saludo con tu nombre y la opción de empezar el tutorial.',
+      'Iniciar sesión, Crear cuenta, Recuperar contraseña e Instalar estrenan diseño. Al crear tu cuenta, Teleo te avisa mientras escribes si tu @usuario está libre, y te pide confirmar la contraseña.',
+      'Mientras esperas el correo de confirmación, puedes instalar Teleo en tu pantalla de inicio.',
+      'Tu lista de la temporada ahora se llama Mis próximas lecturas. Con "Agregar libros" eliges qué pendientes entran y cuáles salen, todos de una vez.',
+      'El importador de Goodreads se renovó: las estanterías que coinciden con un género quedan como género, y al terminar Teleo te ofrece sugerir géneros para los libros que quedaron sin uno.',
+      'Con el Estante vacío, un atajo te lleva a traer tu biblioteca de Goodreads.',
+      'Compartir tu perfil, una cita o tu lista de deseados tiene botones más claros: "Compartir imagen" o "Compartir PDF", y "Descargar".',
+      'Los títulos de las tarjetas se ven más limpios, sin íconos.',
+      'Las hojas que se abren desde Perfil ahora bajan desde arriba, como todas, en vez de aparecer de golpe.',
+      'En las tarjetas de tu año, el mes más lector ya no choca con la etiqueta de libros cuando hay muchos meses empatados, y se ven todos los lomos.',
+      'La política de privacidad suma tu código de Teleo y quién te invitó.',
+    ],
+  },
+  {
     version: '3.2.2',
     date: '20 de octubre de 2026',
     title: 'Tu @usuario',

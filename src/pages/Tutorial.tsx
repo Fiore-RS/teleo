@@ -22,6 +22,7 @@ const sections: TutorialSection[] = [
     title: 'Estante',
     points: [
       'Toca el botón + de abajo para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
+      '¿Ya usas Goodreads? Trae tu biblioteca desde Configuración › Importar desde Goodreads (o desde el atajo del Estante vacío). Las estanterías que coinciden con un género quedan como género, y las demás como etiquetas.',
       'Al terminar un libro, guarda su fecha de inicio y de fin, y escribe la reseña solo si quieres. Todo libro con fecha de fin cuenta para la meta de ese año.',
       'Agrupa libros en sagas, agrega varios a la vez y anota cuántos tendrá en total para ver tu progreso, por ejemplo "2 de 5". Al terminar un libro de una saga, Teleo te propone el siguiente.',
       'Cuenta cómo es cada libro: hasta 3 géneros, hasta 3 ánimos (también los tuyos) y su ritmo, desde Editar libro o al terminarlo. En Configuración, "Completar géneros" los sugiere para tu biblioteca y "Completa tu estante" te pasa tus libros leídos uno por uno.',
@@ -64,16 +65,16 @@ const sections: TutorialSection[] = [
       'En Tu biblioteca, toca cualquier estado (leyendo, en pausa, leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
       'Mira tu actividad del mes y organiza Mis próximas lecturas desde sus tres puntos: agrega o quita pendientes con "Agregar libros", cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
       'En Favoritos, Recomendados, Deseados y Abandonados verás cinco libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
-      'El botón de compartir te deja enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
+      'El botón de compartir muestra tu código de Teleo (tócalo para copiarlo) y te deja invitar a alguien con un enlace o una tarjeta con código QR, enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
     ],
   },
   {
     title: 'Configuración',
     points: [
-      'Revisa las Novedades de cada versión y conoce la historia detrás de Teleo.',
+      'Revisa las Novedades de cada versión, conoce la historia detrás de Teleo y repite el Tutorial, el recorrido corto por la app, cuando quieras.',
       'Elige el modo de color, la moneda de tu biblioteca, y cambia tu usuario, nickname, correo o contraseña.',
-      'Comparte tu tarjeta de perfil o tu lista de deseados, y consulta la política de privacidad y los términos de uso.',
-      'Exporta o importa tus datos, completa los géneros de tu biblioteca, o gestiona tu cuenta (pausarla o eliminarla) cuando lo necesites.',
+      'Invita a alguien a Teleo, copia tu código, comparte tu tarjeta de perfil o tu lista de deseados, y consulta la política de privacidad y los términos de uso.',
+      'Exporta o importa tus datos, trae tu biblioteca de Goodreads, completa los géneros de tu biblioteca, o gestiona tu cuenta (pausarla o eliminarla) cuando lo necesites.',
     ],
   },
 ]

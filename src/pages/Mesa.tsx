@@ -22,6 +22,7 @@ import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCale
 import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard";
 import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
 import { DemoNotice } from "../assets/components/molecules/DemoNotice";
+import { useTour } from "../context/tourContextValue";
 import { ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
 import { LATEST_VERSION, markChangelogSeen } from "../lib/changelog";
 import { getGoalMessage } from "../lib/goalMessage";
@@ -38,6 +39,7 @@ export function Mesa() {
   const staggerMesa = useStaggerOnce("mesa");
   const staggerLeyendo = useStaggerOnce("mesa-leyendo");
   const navigate = useNavigate();
+  const { start: startTour } = useTour();
   const { user } = useAuth();
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useCurrentlyReading(user?.id)
   const { streak, markedToday, markToday, unmarkToday, weekDays, isLoading: streakLoading } = useReadingStreak(user?.id);
@@ -315,9 +317,9 @@ export function Mesa() {
       {showAnnouncement && (
         <AnnouncementSheet
           onDone={handleAnnouncementDone}
-          onOpenRecap={() => {
+          onStartTour={() => {
             handleAnnouncementDone()
-            navigate('/bitacora?vista=resumen')
+            startTour()
           }}
           missed={missedVersions}
           lastSeen={seenAtEntry}
