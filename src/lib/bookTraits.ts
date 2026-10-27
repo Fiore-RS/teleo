@@ -98,6 +98,9 @@ function normalize(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
 }
 
+/** La misma limpieza, para comparar ánimos propios ("Cozy" y "cozy" son el mismo). */
+export const normalizeTraitText = normalize
+
 /** ¿La opción coincide con lo que se escribió (por etiqueta o por sinónimo)? */
 export function traitMatches<K extends string>(option: TraitOption<K>, query: string): boolean {
   const q = normalize(query)
@@ -173,16 +176,21 @@ export function traitsFromBook(book: BookTraitColumns | null | undefined): BookT
 }
 
 /** Columnas a guardar. Si el género cambió respecto de `previous`, queda marcado como puesto a
- *  mano (genres_source 'manual'), para que la sugerencia automática no lo pise. */
+ *  mano (genres_source 'manual'), para que la sugerencia automática no lo pise. Lo mismo con el
+ *  ánimo (moods_source, V.3.4.0): un ánimo cambiado a mano ya no sigue al de su saga. */
 export function traitsToColumns(traits: BookTraits, previous?: BookTraits) {
   const genresChanged = !previous || previous.genres.join() !== traits.genres.join()
   const moods = traits.moods.slice(0, MAX_MOODS)
+  const customMoods = cleanCustomMoods(traits.customMoods).slice(0, MAX_MOODS - moods.length)
+  const moodsChanged =
+    !previous || previous.moods.join() !== moods.join() || previous.customMoods.map(normalize).join() !== customMoods.map(normalize).join()
   return {
     genres: traits.genres.slice(0, MAX_GENRES),
     moods,
-    custom_moods: cleanCustomMoods(traits.customMoods).slice(0, MAX_MOODS - moods.length),
+    custom_moods: customMoods,
     pace: traits.pace,
     ...(genresChanged ? { genres_source: traits.genres.length > 0 ? 'manual' : null } : {}),
+    ...(moodsChanged ? { moods_source: moods.length + customMoods.length > 0 ? 'manual' : null } : {}),
   }
 }
 

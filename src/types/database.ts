@@ -86,6 +86,7 @@ export type Database = {
           isbn: string | null
           language: string | null
           moods: string[]
+          moods_source: string | null
           pace: string | null
           pause_reason: string | null
           paused_at: string | null
@@ -126,6 +127,7 @@ export type Database = {
           isbn?: string | null
           language?: string | null
           moods?: string[]
+          moods_source?: string | null
           pace?: string | null
           pause_reason?: string | null
           paused_at?: string | null
@@ -166,6 +168,7 @@ export type Database = {
           isbn?: string | null
           language?: string | null
           moods?: string[]
+          moods_source?: string | null
           pace?: string | null
           pause_reason?: string | null
           paused_at?: string | null
@@ -552,9 +555,12 @@ export type Database = {
           author: string | null
           category: string | null
           created_at: string | null
+          custom_moods: string[]
           estante_sort_order: number | null
+          genres: string[]
           id: string
           is_favorite: boolean | null
+          moods: string[]
           status: string | null
           title: string
           total_books: number | null
@@ -564,9 +570,12 @@ export type Database = {
           author?: string | null
           category?: string | null
           created_at?: string | null
+          custom_moods?: string[]
           estante_sort_order?: number | null
+          genres?: string[]
           id?: string
           is_favorite?: boolean | null
+          moods?: string[]
           status?: string | null
           title: string
           total_books?: number | null
@@ -576,9 +585,12 @@ export type Database = {
           author?: string | null
           category?: string | null
           created_at?: string | null
+          custom_moods?: string[]
           estante_sort_order?: number | null
+          genres?: string[]
           id?: string
           is_favorite?: boolean | null
+          moods?: string[]
           status?: string | null
           title?: string
           total_books?: number | null
