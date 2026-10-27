@@ -21,6 +21,7 @@ import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet"
 import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCalendarSheet";
 import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard";
 import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
+import { DemoNotice } from "../assets/components/molecules/DemoNotice";
 import { ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
 import { LATEST_VERSION, markChangelogSeen } from "../lib/changelog";
 import { getGoalMessage } from "../lib/goalMessage";
@@ -61,13 +62,14 @@ export function Mesa() {
   }
   // Anuncio de la V.2.0.0: una sola vez por cuenta (se guarda en el perfil). Las cuentas
   // nuevas lo marcan como visto al terminar la Bienvenida.
+  // La cuenta de visitante (V.3.3.0) no ve anuncios de versión: quien la abre viene a probar.
   const [announcementDismissed, setAnnouncementDismissed] = useState(false)
   // Última versión que la persona había visto al entrar (V.2.1.2). Se fija una sola vez,
   // porque la versión guardada en el perfil se actualiza apenas entra.
   const [seenAtEntry, setSeenAtEntry] = useState<string | null | undefined>(undefined)
   if (profile && seenAtEntry === undefined) setSeenAtEntry(profile.last_seen_version ?? null)
   const showAnnouncement =
-    !announcementDismissed && !!profile?.has_seen_intro && seenAtEntry !== undefined && isVersionBefore(seenAtEntry, ANNOUNCEMENT_VERSION)
+    !announcementDismissed && !!profile?.has_seen_intro && !profile.is_demo && seenAtEntry !== undefined && isVersionBefore(seenAtEntry, ANNOUNCEMENT_VERSION)
   const missedVersions = showAnnouncement ? missedAnnouncedVersions(seenAtEntry) : []
 
   // Se guarda la versión con la que entra, para saber exacto cuál fue la última que vio. Si
@@ -139,6 +141,8 @@ export function Mesa() {
       </header>
 
       <div className={`flex flex-col gap-5 ${staggerMesa}`}>
+        {profile?.is_demo && <DemoNotice />}
+
         {/* Leyendo ahora */}
         <Card tab={{ label: "Leyendo ahora" }}>
 

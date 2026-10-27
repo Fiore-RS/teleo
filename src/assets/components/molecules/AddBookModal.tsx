@@ -18,6 +18,7 @@ import type { ReadingStatus } from '../../../lib/status'
 import { categoryOptions, type BookFormat } from '../../../lib/options'
 import { languageLabel, languageOptionsFrom } from '../../../lib/languages'
 import { useCoverUpload } from '../../../hooks/useCoverUpload'
+import { useIsDemo } from '../../../hooks/useIsDemo'
 import { useBookLanguages } from '../../../hooks/useBookLanguages'
 import { parseDurationInput } from '../../../lib/duration'
 import { BookTraitsFields } from './BookTraitsFields'
@@ -88,6 +89,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const [traits, setTraits] = useState<BookTraits>(EMPTY_TRAITS)
   const [suggestedGenres, setSuggestedGenres] = useState<GenreKey[]>([])
   const { uploadCover, isUploading: isUploadingCover } = useCoverUpload(userId)
+  // En la cuenta de visitante no se suben imágenes (V.3.3.0).
+  const isDemo = useIsDemo()
   const bookLanguages = useBookLanguages(userId)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
@@ -316,6 +319,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     body = (
       <div key="manual" className="animate-fade-in">
         <div className="relative z-10 flex gap-3.5 items-end mb-5.5">
+          {!isDemo && (
+          <>
           <button
             type="button"
             onClick={() => coverInputRef.current?.click()}
@@ -342,6 +347,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             )}
           </button>
           <input ref={coverInputRef} type="file" accept="image/*" onChange={handleManualCoverChange} className="hidden" />
+          </>
+          )}
 
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <Input

@@ -269,7 +269,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           currency: string | null
-          first_steps_hidden: boolean
+          is_demo: boolean
           friend_code: string
           has_seen_intro: boolean
           id: string
@@ -291,7 +291,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           currency?: string | null
-          first_steps_hidden?: boolean
+          is_demo?: boolean
           friend_code?: string
           has_seen_intro?: boolean
           id: string
@@ -313,7 +313,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           currency?: string | null
-          first_steps_hidden?: boolean
+          is_demo?: boolean
           friend_code?: string
           has_seen_intro?: boolean
           id?: string

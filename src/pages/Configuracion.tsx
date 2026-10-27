@@ -39,6 +39,8 @@ export function Configuracion() {
   const { user } = useAuth()
   const { start: startTour } = useTour()
   const { profile, updateProfile } = useProfile(user?.id)
+  // Cuenta de visitante (V.3.3.0): sin cambios de cuenta, importaciones, invitaciones ni zona de peligro.
+  const isDemo = !!profile?.is_demo
   const { exportData } = useDataExport(user?.id)
   const { importData } = useDataImport(user?.id)
   const { clearAllData, deactivateAccount, deleteAccount, isProcessing } = useDangerZone(user?.id)
@@ -184,18 +186,18 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Cuenta">
-          <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />
+          {!isDemo && <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />}
           <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
-          <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />
-          <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />
+          {!isDemo && <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />}
+          {!isDemo && <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />}
         </SettingsGroup>
 
         <SettingsGroup
           title="Compartir"
           note="Quien se registre con tu enlace queda como invitación tuya. Más adelante, tu código servirá para agregarse en el Club."
         >
-          <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setIsInviteOpen(true)} />
-          <FriendCodeSettingsRow code={profile?.friend_code} />
+          {!isDemo && <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setIsInviteOpen(true)} />}
+          {!isDemo && <FriendCodeSettingsRow code={profile?.friend_code} />}
           <SettingsRow icon={Share2} label="Compartir perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setIsShareModalOpen(true)} />
           <SettingsRow icon={LinkIcon} label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
         </SettingsGroup>
@@ -209,17 +211,19 @@ export function Configuracion() {
 
         <SettingsGroup title="Tus datos">
           <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
-          <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />
-          <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />
+          {!isDemo && <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />}
+          {!isDemo && <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />}
           <SettingsRow icon={Tags} label="Completar géneros" description="Sugerencias para tus libros sin género" onClick={() => setIsGenreSuggestOpen(true)} />
           <SettingsRow icon={LibraryBig} label="Completa tu estante" description="Género, ánimo y ritmo de lo que ya leíste, libro por libro" onClick={() => setIsCompleteShelfOpen(true)} />
         </SettingsGroup>
 
+        {!isDemo && (
         <SettingsGroup title="Zona de peligro">
           <SettingsRow danger icon={ClearIcon} label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Pause} label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
           <SettingsRow danger icon={Trash2} label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
         </SettingsGroup>
+        )}
 
         <Button variant="outline" onClick={() => setConfirmAction('cerrarSesion')}>
           <LogOut size={18} />
