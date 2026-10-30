@@ -311,9 +311,13 @@ export function DetalleSaga({
   const [isSaving, setIsSaving] = useState(false);
   // V.3.4.0: libros con otro género o ánimo puesto a mano, para preguntar al guardar.
   const [pendingConflicts, setPendingConflicts] = useState<{
+    /** 'save': al guardar la saga; 'add': al sumarle libros. */
+    variant: "save" | "add";
     conflicts: ConflictBook[];
     traits: SagaTraits;
     fields: SagaTraitField[];
+    /** Libros que ya tomaron los de la saga sin preguntar. */
+    othersCount: number;
   } | null>(null);
   const [isApplyingConflicts, setIsApplyingConflicts] = useState(false);
 
@@ -377,15 +381,35 @@ export function DetalleSaga({
       if (conflicts.length > 0) {
         const covers = new Map(books.map((b) => [b.id, b.cover_url]));
         setPendingConflicts({
+          variant: "save",
           conflicts: conflicts.map((c) => ({ ...c, coverUrl: covers.get(c.book.id) })),
           traits: draft.traits,
           fields,
+          othersCount: books.length - conflicts.length,
         });
       }
     }
     setIsSaving(false);
     setIsEditing(false);
     setIsReorderingBooks(false);
+  }
+
+  /** Sumar libros desde el selector (V.3.4.0): si alguno tiene otro género o ánimo puesto a mano,
+   *  se pregunta una sola vez por todos. */
+  async function handleAssignBooks(newBooks: Parameters<typeof assignBooksToSaga>[0]) {
+    const { error, conflicts } = await assignBooksToSaga(newBooks);
+    void queryClient.invalidateQueries();
+    if (conflicts.length > 0 && saga) {
+      const byId = new Map(newBooks.map((b) => [b.id, b]));
+      setPendingConflicts({
+        variant: "add",
+        conflicts: conflicts.map((c) => ({ ...c, coverUrl: byId.get(c.book.id)?.cover_url, author: byId.get(c.book.id)?.author })),
+        traits: sagaTraitsFromRow(saga),
+        fields: ["genre", "mood"],
+        othersCount: newBooks.length - conflicts.length,
+      });
+    }
+    return { error };
   }
 
   /** Libros, Estante, filtros y ánimos propios leen los datos de los libros: se piden de nuevo. */
@@ -730,8 +754,10 @@ export function DetalleSaga({
 
       {pendingConflicts && (
         <SagaTraitConflictSheet
+          variant={pendingConflicts.variant}
           conflicts={pendingConflicts.conflicts}
-          othersCount={books.length - pendingConflicts.conflicts.length}
+          othersCount={pendingConflicts.othersCount}
+          sagaTraits={pendingConflicts.traits}
           isLoading={isApplyingConflicts}
           onKeep={() => setPendingConflicts(null)}
           onUseSaga={applySagaToConflicts}
@@ -742,7 +768,7 @@ export function DetalleSaga({
         isOpen={isSelectBookOpen}
         onClose={() => setIsSelectBookOpen(false)}
         userId={user?.id}
-        onConfirm={assignBooksToSaga}
+        onConfirm={handleAssignBooks}
       />
     </>
   );
