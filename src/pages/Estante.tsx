@@ -9,7 +9,7 @@ import { getPriorityListName } from "../lib/priorityList";
 import { ScreenHeader, HeaderBarButton } from "../assets/components/molecules/ScreenHeader";
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
-import { defaultAdvancedFilters, hasActiveFilters, matchesTraitFilters, type AdvancedFilters } from "../lib/advancedFilters";
+import { defaultAdvancedFilters, hasActiveFilters, matchesSagaTraitFilters, matchesTraitFilters, type AdvancedFilters } from "../lib/advancedFilters";
 import { useTagsByBook } from "../hooks/useTagsByBook";
 import { useUserTags } from "../hooks/useUserTags";
 import { useUserCustomMoods } from "../hooks/useUserCustomMoods";
@@ -197,19 +197,29 @@ export function Estante() {
   }, [books, advFilters, quickFlag, search, tagsByBook]);
 
   const filteredSagas = useMemo(() => {
+    const booksBySaga = new Map<string, typeof books>();
+    for (const b of books) {
+      if (!b.saga_id) continue;
+      const list = booksBySaga.get(b.saga_id);
+      if (list) list.push(b);
+      else booksBySaga.set(b.saga_id, [b]);
+    }
     return sagas.filter((saga) => {
+      const sagaBooks = booksBySaga.get(saga.id) ?? [];
       const matchesFilter = advFilters.status === "todos" || saga.status === advFilters.status;
       const matchesCategory =
         advFilters.category === "todos" ||
         computeSagaCategories(
-          books.filter((b) => b.saga_id === saga.id).map((b) => b.category),
+          sagaBooks.map((b) => b.category),
           saga.category,
         ).includes(advFilters.category);
+      // Género y ánimo (V.3.4.0): de la saga o de alguno de sus libros.
+      const matchesTraits = matchesSagaTraitFilters(saga, sagaBooks, advFilters);
       const matchesSearch =
         !search.trim() ||
         saga.title.toLowerCase().includes(search.toLowerCase()) ||
         (saga.author ?? "").toLowerCase().includes(search.toLowerCase());
-      return matchesFilter && matchesCategory && matchesSearch;
+      return matchesFilter && matchesCategory && matchesTraits && matchesSearch;
     });
   }, [sagas, books, advFilters, search]);
 
