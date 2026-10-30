@@ -2,7 +2,11 @@ import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '3.3.0'
+export const ANNOUNCEMENT_VERSION = '3.4.0'
+
+/** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
+ *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
+export const ANNOUNCEMENT_OFFERS_TOUR = false
 
 export interface AnnouncementItem {
   title: string
@@ -10,10 +14,10 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'Invita a alguien', text: 'Desde Perfil › Compartir: un enlace con un mensaje listo o una tarjeta con tu foto y un código QR.' },
-  { title: 'Tu código de Teleo', text: 'Cada cuenta tiene el suyo. Lo ves en Perfil › Compartir y en Configuración; tócalo para copiarlo.' },
-  { title: 'Un tutorial nuevo', text: 'Un recorrido corto sobre la misma app. La explicación detallada ahora se llama Guía de Teleo.' },
-  { title: 'Mis próximas lecturas', text: 'Tu lista de la temporada cambia de nombre, y con "Agregar libros" eliges qué pendientes entran.' },
+  { title: 'Género y ánimo por saga', text: 'Ponlos en Editar saga y llegan a todos sus libros. Cada libro se puede cambiar en Editar libro.' },
+  { title: 'Sin perder lo tuyo', text: 'Si un libro ya tiene otro género o ánimo, Teleo te pregunta antes de cambiarlo.' },
+  { title: 'Filtros más cómodos', text: 'Cada filtro se despliega con sus opciones, y en Sagas ya puedes filtrar por género y ánimo.' },
+  { title: 'Completar géneros por saga', text: 'Una sola sugerencia para toda la saga, en vez de una por libro.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */
