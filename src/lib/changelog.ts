@@ -15,6 +15,23 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.4.0',
+    announced: true,
+    date: '30 de octubre de 2026',
+    title: 'Toda la saga',
+    items: [
+      'Ponle género y ánimo a una saga desde Agregar saga o Editar saga, y llegan a todos sus libros. El ritmo sigue siendo de cada libro.',
+      'Cada libro se puede cambiar en Editar libro. En Editar saga verás cuáles tienen su propio género o ánimo.',
+      'Si cambias el género o el ánimo de una saga y algunos libros tienen otro puesto por ti, Teleo te pregunta una sola vez si los cambias.',
+      'Al sumar libros a una saga, los que no tienen género ni ánimo reciben los de la saga. Si alguno tiene otros, Teleo te pregunta qué hacer.',
+      'Si borras el género o el ánimo de una saga, o sacas un libro de ella, los libros conservan el suyo.',
+      'Detalles de la saga muestra su género y su ánimo.',
+      'En Estante › Sagas puedes filtrar por género y ánimo: aparecen las sagas que lo tienen, o que tienen algún libro con él.',
+      'Los filtros de Estante se despliegan con sus opciones: estado, categoría, idioma y formato ahora se eligen con un toque, como el género y el ánimo.',
+      '"Completar géneros" busca una sola vez por saga y guarda el género en la saga, en vez de uno por libro.',
+    ],
+  },
+  {
     version: '3.3.1',
     date: '27 de octubre de 2026',
     title: 'Todas tus portadas',

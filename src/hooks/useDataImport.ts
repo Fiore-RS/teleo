@@ -4,6 +4,7 @@ import { fetchAllRows } from '../lib/fetchAllRows'
 import { queryClient } from '../lib/queryClient'
 import type { Tables } from '../types/database'
 import { cleanCustomMoods, cleanTraitKeys, genreOptions, moodOptions, paceLabel, MAX_GENRES, MAX_MOODS } from '../lib/bookTraits'
+import { sagaTraitsFromRow, sagaTraitsToColumns } from '../lib/sagaTraits'
 
 /* Los respaldos pueden venir de cualquier versión del formato (ver EXPORT_VERSION en
  * useDataExport.ts), así que todos los campos se leen como opcionales: un respaldo viejo
@@ -103,6 +104,8 @@ export function useDataImport(userId: string | undefined) {
           is_favorite: s.is_favorite ?? false,
           total_books: s.total_books ?? null,
           estante_sort_order: s.estante_sort_order ?? (i + 1) * 1000,
+          // Género y ánimo de la saga (V.3.4.0); los respaldos anteriores no los traen.
+          ...sagaTraitsToColumns(sagaTraitsFromRow(s)),
           ...withCreatedAt(s.created_at),
         }))
         const ids = await insertReturningIds('sagas', rows)
@@ -143,7 +146,14 @@ export function useDataImport(userId: string | undefined) {
             return { moods, custom_moods: cleanCustomMoods(b.custom_moods).slice(0, MAX_MOODS - moods.length) }
           })(),
           pace: b.pace && paceLabel(b.pace) ? b.pace : null,
-          genres_source: b.genres_source === 'suggested' || b.genres_source === 'manual' ? b.genres_source : null,
+          genres_source: b.genres_source === 'suggested' || b.genres_source === 'manual' || b.genres_source === 'saga' ? b.genres_source : null,
+          // V.3.4.0. Un respaldo anterior con ánimo y sin marca: puesto a mano.
+          moods_source:
+            b.moods_source === 'manual' || b.moods_source === 'saga'
+              ? b.moods_source
+              : (b.moods ?? []).length + (b.custom_moods ?? []).length > 0
+                ? 'manual'
+                : null,
           paused_at: b.paused_at ?? null,
           pause_reason: b.pause_reason ?? null,
           paused_days: b.paused_days ?? 0,

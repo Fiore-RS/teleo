@@ -1,26 +1,32 @@
 import { Check } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
-import { Select } from '../atoms/Select'
 import { Button } from '../atoms/Button'
-import { FormActions, FormCard, FormCollapsible, FormRow, FormSection } from './FormLayout'
+import { FormActions, FormCollapsible, FormSection } from './FormLayout'
 import { statusLabel, type ReadingStatus } from '../../../lib/status'
 import { categoryOptions, formatOptions } from '../../../lib/options'
 import { defaultAdvancedFilters, type AdvancedFilters } from '../../../lib/advancedFilters'
 import { genreLabel, genreOptions, moodLabel, moodOptions, paceLabel, paceOptions } from '../../../lib/bookTraits'
 
-const statusSelectOptions = [
-  { value: 'todos', label: 'Todos' },
-  ...(Object.keys(statusLabel) as ReadingStatus[]).map((value) => ({ value, label: statusLabel[value] })),
-]
+const statusChoices = (Object.keys(statusLabel) as ReadingStatus[]).map((value) => ({ value, label: statusLabel[value] }))
 
-const categorySelectOptions = [{ value: 'todos', label: 'Todas' }, ...categoryOptions]
-const formatSelectOptions = [{ value: 'todos', label: 'Todos' }, ...formatOptions]
-
-function FilterChip({ label, checked, own = false, onToggle }: { label: string; checked: boolean; own?: boolean; onToggle: () => void }) {
+function FilterChip({
+  label,
+  checked,
+  own = false,
+  single = false,
+  onToggle,
+}: {
+  label: string
+  checked: boolean
+  own?: boolean
+  /** Se elige una sola opción del grupo (estado, categoría, idioma, formato). */
+  single?: boolean
+  onToggle: () => void
+}) {
   return (
     <button
       type="button"
-      role="checkbox"
+      role={single ? 'radio' : 'checkbox'}
       aria-checked={checked}
       onClick={onToggle}
       className={`inline-flex items-center gap-1.5 rounded-full border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md focus-visible:outline-2 focus-visible:outline-primary-text ${
@@ -43,6 +49,39 @@ function summaryOf(labels: (string | null)[]): string {
   return clean.length === 0 ? 'Todos' : clean.join(' · ')
 }
 
+/** Estado, categoría, idioma y formato (V.3.4.0): tarjeta plegable con una opción a la vez,
+ *  como Género y Ánimo. Tocar la elegida otra vez vuelve a "Todos". */
+function ChoiceCollapsible({
+  title,
+  options,
+  value,
+  allLabel = 'Todos',
+  onChange,
+}: {
+  title: string
+  options: { value: string; label: string }[]
+  value: string
+  allLabel?: string
+  onChange: (value: string) => void
+}) {
+  const selected = options.find((o) => o.value === value)
+  return (
+    <FormCollapsible title={title} summary={selected?.label ?? allLabel} defaultOpen={!!selected}>
+      <div className="px-3.5 pb-3.5 flex flex-wrap gap-2" role="radiogroup" aria-label={title}>
+        {options.map((o) => (
+          <FilterChip
+            key={o.value}
+            single
+            label={o.label}
+            checked={o.value === value}
+            onToggle={() => onChange(o.value === value ? 'todos' : o.value)}
+          />
+        ))}
+      </div>
+    </FormCollapsible>
+  )
+}
+
 interface FilterModalProps {
   isOpen: boolean
   onClose: () => void
@@ -63,10 +102,10 @@ interface FilterModalProps {
   onCompleteShelf: () => void
 }
 
-/** Filtros de Estante. Rediseñado en la V.3.1.0 como hoja, con las piezas de Editar libro:
- *  estado, categoría, idioma y formato en filas; género, ánimo y ritmo, y etiquetas en tarjetas
- *  plegables (con un resumen de lo elegido) para que la hoja no se haga larga. En Sagas solo
- *  aplican estado y categoría. Los cambios se ven al instante; "Ver" cierra la hoja. */
+/** Filtros de Estante. Rediseñado en la V.3.1.0 como hoja, con las piezas de Editar libro.
+ *  Desde la V.3.4.0 todo va en tarjetas plegables con chips (con un resumen de lo elegido),
+ *  también estado, categoría, idioma y formato. En Sagas aplican estado, categoría, género y
+ *  ánimo. Los cambios se ven al instante; "Ver" cierra la hoja. */
 export function FilterModal({
   isOpen,
   onClose,
@@ -104,28 +143,21 @@ export function FilterModal({
     >
       <div className="animate-fade-in">
         <FormSection label={isBooks ? 'El libro' : 'La saga'}>
-          <FormCard>
-            <FormRow label="Estado">
-              <Select bare options={statusSelectOptions} value={value.status} onChange={(e) => update({ status: e.target.value as AdvancedFilters['status'] })} />
-            </FormRow>
-            <FormRow label="Categoría">
-              <Select bare options={categorySelectOptions} value={value.category} onChange={(e) => update({ category: e.target.value })} />
-            </FormRow>
-            {isBooks && (
-              <FormRow label="Idioma">
-                <Select bare options={[{ value: 'todos', label: 'Todos' }, ...languageOptions]} value={value.language} onChange={(e) => update({ language: e.target.value })} />
-              </FormRow>
-            )}
-            {isBooks && (
-              <FormRow label="Formato">
-                <Select bare options={formatSelectOptions} value={value.format} onChange={(e) => update({ format: e.target.value })} />
-              </FormRow>
-            )}
-          </FormCard>
+          <div className="flex flex-col gap-2.5">
+            <ChoiceCollapsible
+              title="Estado"
+              options={statusChoices}
+              value={value.status}
+              onChange={(status) => update({ status: status as AdvancedFilters['status'] })}
+            />
+            <ChoiceCollapsible title="Categoría" options={categoryOptions} value={value.category} allLabel="Todas" onChange={(category) => update({ category })} />
+            {isBooks && <ChoiceCollapsible title="Idioma" options={languageOptions} value={value.language} onChange={(language) => update({ language })} />}
+            {isBooks && <ChoiceCollapsible title="Formato" options={formatOptions} value={value.format} onChange={(format) => update({ format })} />}
+          </div>
         </FormSection>
 
-        {isBooks && (
-          <FormSection label="Cómo es" className="mb-2">
+        {/* En Sagas (V.3.4.0) solo género y ánimo: el ritmo y las etiquetas son de cada libro. */}
+        <FormSection label="Cómo es" className="mb-2">
             <div className="flex flex-col gap-2.5">
               <FormCollapsible title="Género" summary={summaryOf(value.genres.map(genreLabel))} defaultOpen={value.genres.length > 0}>
                 <div className="px-3.5 pb-3.5">
@@ -134,7 +166,7 @@ export function FilterModal({
                       <FilterChip key={o.key} label={o.label} checked={value.genres.includes(o.key)} onToggle={() => update({ genres: toggle(value.genres, o.key) })} />
                     ))}
                   </div>
-                  {booksWithoutGenre > 0 && (
+                  {isBooks && booksWithoutGenre > 0 && (
                     <p className="text-body-sm text-text-muted mt-3">
                       {booksWithoutGenre === 1 ? '1 libro todavía no tiene género.' : `${booksWithoutGenre} libros todavía no tienen género.`}{' '}
                       <button type="button" onClick={onCompleteGenres} className="font-bold text-primary-text">Completar</button>
@@ -144,9 +176,9 @@ export function FilterModal({
               </FormCollapsible>
 
               <FormCollapsible
-                title="Ánimo y ritmo"
-                summary={summaryOf([...value.moods.map(moodLabel), ...value.customMoods, value.pace ? paceLabel(value.pace) : null])}
-                defaultOpen={value.moods.length + value.customMoods.length > 0 || value.pace !== null}
+                title={isBooks ? 'Ánimo y ritmo' : 'Ánimo'}
+                summary={summaryOf([...value.moods.map(moodLabel), ...value.customMoods, isBooks && value.pace ? paceLabel(value.pace) : null])}
+                defaultOpen={value.moods.length + value.customMoods.length > 0 || (isBooks && value.pace !== null)}
               >
                 <div className="px-3.5 pb-3.5">
                   <div className="flex flex-wrap gap-2">
@@ -157,12 +189,14 @@ export function FilterModal({
                       <FilterChip key={`own-${m}`} own label={m} checked={value.customMoods.includes(m)} onToggle={() => update({ customMoods: toggle(value.customMoods, m) })} />
                     ))}
                   </div>
-                  <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label="Ritmo">
-                    {paceOptions.map((o) => (
-                      <FilterChip key={o.key} label={o.label} checked={value.pace === o.key} onToggle={() => update({ pace: value.pace === o.key ? null : o.key })} />
-                    ))}
-                  </div>
-                  {booksWithoutMoodOrPace > 0 && (
+                  {isBooks && (
+                    <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label="Ritmo">
+                      {paceOptions.map((o) => (
+                        <FilterChip key={o.key} label={o.label} checked={value.pace === o.key} onToggle={() => update({ pace: value.pace === o.key ? null : o.key })} />
+                      ))}
+                    </div>
+                  )}
+                  {isBooks && booksWithoutMoodOrPace > 0 && (
                     <p className="text-body-sm text-text-muted mt-3">
                       {booksWithoutMoodOrPace === 1 ? '1 libro leído todavía no tiene ánimo o ritmo.' : `${booksWithoutMoodOrPace} libros leídos todavía no tienen ánimo o ritmo.`}{' '}
                       <button type="button" onClick={onCompleteShelf} className="font-bold text-primary-text">Completar</button>
@@ -171,7 +205,7 @@ export function FilterModal({
                 </div>
               </FormCollapsible>
 
-              {knownTags.length > 0 && (
+              {isBooks && knownTags.length > 0 && (
                 <FormCollapsible title="Etiquetas" summary={summaryOf(value.tags)} defaultOpen={value.tags.length > 0}>
                   <div className="px-3.5 pb-3.5 flex flex-wrap gap-2">
                     {knownTags.map((t) => (
@@ -182,7 +216,6 @@ export function FilterModal({
               )}
             </div>
           </FormSection>
-        )}
       </div>
     </Sheet>
   )
