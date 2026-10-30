@@ -23,7 +23,7 @@ import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard"
 import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
 import { DemoNotice } from "../assets/components/molecules/DemoNotice";
 import { useTour } from "../context/tourContextValue";
-import { ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
+import { ANNOUNCEMENT_OFFERS_TOUR, ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
 import { LATEST_VERSION, markChangelogSeen } from "../lib/changelog";
 import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
@@ -317,10 +317,14 @@ export function Mesa() {
       {showAnnouncement && (
         <AnnouncementSheet
           onDone={handleAnnouncementDone}
-          onStartTour={() => {
-            handleAnnouncementDone()
-            startTour()
-          }}
+          onStartTour={
+            ANNOUNCEMENT_OFFERS_TOUR
+              ? () => {
+                  handleAnnouncementDone()
+                  startTour()
+                }
+              : undefined
+          }
           missed={missedVersions}
           lastSeen={seenAtEntry}
           onSeeAll={handleSeeAllNews}
