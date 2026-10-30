@@ -3,6 +3,14 @@ import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
 import { recomputeSagaStatus } from '../lib/sagaStatus'
+import {
+  applySagaTraits,
+  fetchSagaTraitConflicts,
+  hasSagaTraits,
+  releaseBookTraits,
+  sagaTraitsFromRow,
+  type SagaTraitConflict,
+} from '../lib/sagaTraits'
 import { useCachedQuery, fieldSetter } from './useCachedQuery'
 
 type Saga = Database['public']['Tables']['sagas']['Row']
@@ -63,8 +71,8 @@ export function useSaga(sagaId: string | undefined) {
   /** Agrega varios libros de una vez (feedback de beta-testers: antes había que abrir el
    *  selector una vez por libro). Quedan al final de la saga en el orden recibido. Las
    *  actualizaciones salen en paralelo y el estado de la saga se recalcula una sola vez. */
-  async function assignBooksToSaga(newBooks: Book[]) {
-    if (newBooks.length === 0) return { error: null }
+  async function assignBooksToSaga(newBooks: Book[]): Promise<{ error: unknown; conflicts: SagaTraitConflict[] }> {
+    if (newBooks.length === 0) return { error: null, conflicts: [] }
     const maxOrder = books.length > 0 ? Math.max(...books.map((b) => b.saga_sort_order ?? 0)) : 0
     const withOrder = newBooks.map((book, i) => ({ book, order: maxOrder + (i + 1) * 1000 }))
 
@@ -75,12 +83,28 @@ export function useSaga(sagaId: string | undefined) {
     )
     const error = results.find((r) => r.error)?.error ?? null
 
+    // Género y ánimo de la saga (V.3.4.0): los libros nuevos sin lo suyo los reciben ahora; los
+    // que tienen otro puesto a mano se devuelven para preguntar una sola vez por todos.
+    let conflicts: SagaTraitConflict[] = []
+    const traits = sagaTraitsFromRow(saga)
+    if (sagaId && hasSagaTraits(traits)) {
+      const bookIds = newBooks.map((b) => b.id)
+      try {
+        conflicts = await fetchSagaTraitConflicts(sagaId, traits, { bookIds })
+        await applySagaTraits(sagaId, traits, { bookIds })
+      } catch (err) {
+        console.error('[useSaga] Error al pasar género y ánimo a los libros nuevos:', err)
+      }
+    }
+
     await recomputeSagaStatus(sagaId)
     await refetch()
-    return { error }
+    return { error, conflicts }
   }
 
   async function removeBookFromSaga(bookId: string) {
+    // Conserva su género y ánimo, ahora como puestos a mano (V.3.4.0).
+    await releaseBookTraits([bookId]).catch((err) => console.error('[useSaga] Error al soltar género y ánimo:', err))
     const { error } = await supabase.from('books').update({ saga_id: null }).eq('id', bookId)
     if (!error) {
       setBooks((prev) => prev.filter((b) => b.id !== bookId))
@@ -105,6 +129,8 @@ export function useSaga(sagaId: string | undefined) {
 
   async function deleteSaga() {
     if (!sagaId) return false
+    // Los libros quedan sin saga y conservan su género y ánimo, como puestos a mano (V.3.4.0).
+    await releaseBookTraits(books.map((b) => b.id)).catch((err) => console.error('[useSaga] Error al soltar género y ánimo:', err))
     const { error } = await supabase.from('sagas').delete().eq('id', sagaId)
     if (!error) queryClient.removeQueries({ queryKey: ['saga', sagaId] })
     return !error
