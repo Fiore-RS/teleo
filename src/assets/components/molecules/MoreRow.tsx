@@ -1,21 +1,12 @@
 import type { ReactNode } from 'react'
-import { ChevronRight, type LucideIcon } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
-export type RowTone = 'brand' | 'orange' | 'pink' | 'magenta'
-const rowToneStyles: Record<RowTone, string> = {
-  brand: 'bg-primary-soft text-primary-text',
-  orange: 'bg-orange-soft text-orange-text',
-  pink: 'bg-pink-soft text-pink-text',
-  magenta: 'bg-magenta-soft text-magenta-text',
-}
-
-/** Fila plegable de las tarjetas "Más de…" de Bitácora (Estadísticas y Resumen): ícono,
- *  nombre, una línea de resumen y una flecha que gira al abrir. Las filas deben ir dentro
+/** Fila plegable de las tarjetas "Más de…" de Bitácora (Estadísticas y Resumen): nombre en
+ *  Fraunces, una línea de resumen y una flecha que gira al abrir. Sin ícono ni color desde la
+ *  V.3.5.0 (rediseño editorial): la jerarquía la da la tipografía. Las filas deben ir dentro
  *  de un mismo envoltorio para que la primera no lleve línea arriba. */
-export function MoreRow({ id, tone, icon: Icon, title, summary, isOpen, onToggle, children }: {
+export function MoreRow({ id, title, summary, isOpen, onToggle, children }: {
   id: string
-  tone: RowTone
-  icon: LucideIcon
   title: string
   summary: string
   isOpen: boolean
@@ -31,12 +22,9 @@ export function MoreRow({ id, tone, icon: Icon, title, summary, isOpen, onToggle
         aria-controls={`mas-${id}`}
         className="w-full flex items-center gap-3 py-[13px] text-left rounded-xl focus-visible:outline-2 focus-visible:outline-primary-text"
       >
-        <span className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center ${rowToneStyles[tone]}`}>
-          <Icon size={17} aria-hidden="true" />
-        </span>
         <span className="flex-1 min-w-0">
-          <span className="block font-body font-bold text-[15px] text-text">{title}</span>
-          <span className="block font-body text-[13px] text-text-secondary truncate">{summary}</span>
+          <span className="block font-display font-semibold text-[17px] leading-tight text-text">{title}</span>
+          <span className="block font-body text-[13px] text-text-secondary truncate mt-0.5">{summary}</span>
         </span>
         <ChevronRight
           size={18}

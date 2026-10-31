@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { BookCheck, Check, ChevronLeft, ChevronRight, Flag, Library, ScrollText, Star, Users } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLibraryStats } from '../../hooks/useLibraryStats'
 import { useGoalHistory } from '../../hooks/useGoalHistory'
 import { useReadingStreak } from '../../hooks/useReadingStreak'
@@ -248,12 +248,6 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
       ) : (
         <Card tab={{ label: 'Tu bitácora' }}>
           <div className="text-center px-1.5 pt-2 pb-1">
-            <div className="relative w-[92px] h-[92px] mx-auto mb-3" aria-hidden="true">
-              <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
-              <span className="absolute inset-3.5 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
-                <ScrollText size={30} />
-              </span>
-            </div>
             <h3 className="font-title text-[22px] leading-tight text-text">Aquí irá tu historia lectora</h3>
             <p className="text-[14.5px] leading-normal text-text-secondary mt-1.5">
               Cuando registres tus lecturas, esta pestaña se va llenando sola. Por ahora, tres pasos para empezar:
@@ -289,8 +283,6 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           {showRitmo && (
             <MoreRow
               id="ritmo"
-              tone="orange"
-              icon={Flag}
               title="Ritmo y hábito"
               summary={
                 stats.ritmo.longestStreak > 1
@@ -350,8 +342,6 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           {showColeccion && (
             <MoreRow
               id="coleccion"
-              tone="magenta"
-              icon={Library}
               title="Tu colección"
               summary={coleccionSummary}
               isOpen={openRow === 'coleccion'}
@@ -391,8 +381,6 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           {showAutores && (
             <MoreRow
               id="autores"
-              tone="pink"
-              icon={Users}
               title="Autores y sagas"
               summary={
                 autoresYSeries.topAuthor
@@ -420,8 +408,6 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           {showCalificaciones && avgRatingRounded != null && (
             <MoreRow
               id="calificaciones"
-              tone="orange"
-              icon={Star}
               title="Calificaciones"
               summary={`Tu promedio: ${oneDecimal(avgRatingRounded)} estrellas`}
               isOpen={openRow === 'calificaciones'}
@@ -448,8 +434,6 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           {showLeido && (
             <MoreRow
               id="leido"
-              tone="brand"
-              icon={BookCheck}
               title="Lo que leíste"
               summary={leidoSummary}
               isOpen={openRow === 'leido'}

@@ -1,4 +1,3 @@
-import { Compass } from 'lucide-react'
 import { MoreRow } from './MoreRow'
 import { BreakdownList } from './BreakdownList'
 import { Button } from '../atoms/Button'
@@ -41,7 +40,7 @@ export function TraitStatsRow({ id, stats, isOpen, onToggle, onCompleteShelf }: 
   const missing = stats.total - Math.min(stats.withGenre, stats.withMood, stats.withPace)
 
   return (
-    <MoreRow id={id} tone="pink" icon={Compass} title="Géneros y ánimos" summary={summary} isOpen={isOpen} onToggle={onToggle}>
+    <MoreRow id={id} title="Géneros y ánimos" summary={summary} isOpen={isOpen} onToggle={onToggle}>
       {enough ? (
         <div className="space-y-5">
           <Part title="Géneros" entries={stats.genres} count={stats.withGenre} total={stats.total} />
