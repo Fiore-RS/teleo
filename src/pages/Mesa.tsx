@@ -205,7 +205,6 @@ export function Mesa() {
           <div className="flex items-center gap-4">
             <div className="relative w-[74px] h-[74px] shrink-0 flex items-center justify-center">
               <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
-              <span className="absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full bg-rose" />
               <span className="w-[50px] h-[50px] rounded-full bg-orange-soft text-orange flex items-center justify-center">
                 <Flame size={24} fill="currentColor" />
               </span>

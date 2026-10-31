@@ -1,4 +1,3 @@
-import { Rows3, Type } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Shelf, type ShelfItem } from './Shelf'
 import { FormCard, FormRow, FormSection, FormSwitchRow } from './FormLayout'
@@ -66,14 +65,12 @@ export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps)
             </div>
           </FormRow>
           <FormSwitchRow
-            icon={Type}
             label="Título y autor"
             hint="Sin ellos se ven solo las portadas"
             checked={view.showNames}
             onChange={(showNames) => onChange({ ...view, showNames })}
           />
           <FormSwitchRow
-            icon={Rows3}
             label="Repisa"
             hint="Un tablón bajo cada fila de libros"
             checked={view.planks}

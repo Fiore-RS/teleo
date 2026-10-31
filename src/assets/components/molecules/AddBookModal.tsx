@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ScanBarcode, Search, ImageOff, PenLine, Camera, ChevronRight, Sparkles } from 'lucide-react'
+import { ScanBarcode, Search, ImageOff, PenLine, Camera, ChevronRight } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -259,7 +259,6 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         ) : (
           <FormCard>
             <FormSwitchRow
-              icon={Sparkles}
               label="Próxima lectura"
               hint="Súmalo a tus próximas lecturas"
               checked={isPriority}

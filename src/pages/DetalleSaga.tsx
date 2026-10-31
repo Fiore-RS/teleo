@@ -699,7 +699,6 @@ export function DetalleSaga({
                   <p className="px-3.5 pb-2.5 text-body-sm text-text-muted">Déjalo vacío si todavía no sabes cuántos tendrá.</p>
                 </div>
                 <FormSwitchRow
-                  icon={Heart}
                   label="Favorita"
                   checked={draft.isFavorite}
                   onChange={(isFavorite) => setDraft({ ...draft, isFavorite })}
