@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { BookOpen, Camera, Headphones, ImageOff, Sparkles, Tablet, type LucideIcon } from 'lucide-react'
+import { BookOpen, Camera, Headphones, ImageOff, Tablet, type LucideIcon } from 'lucide-react'
 import { CoverImage } from '../atoms/CoverImage'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -232,7 +232,6 @@ export function EditBookForm({
           <FormSwitchRow label="Favorito" checked={draft.isFavorite} onChange={(isFavorite) => onChange({ isFavorite })} />
           {draft.status === 'pendiente' && (
             <FormSwitchRow
-              icon={Sparkles}
               label="Próxima lectura"
               hint="Súmalo a tus próximas lecturas"
               checked={draft.isPriority}

@@ -455,7 +455,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       Agregar calificación
                     </button>
                     <FormSwitchRow
-                      icon={ThumbsUp}
                       label="Lo recomiendo"
                       checked={draft.recommends}
                       onChange={(recommends) => setDraft({ ...draft, recommends })}

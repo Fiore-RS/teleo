@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Check, ChevronDown, Loader2, type LucideIcon } from 'lucide-react'
+import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import { Toggle } from '../atoms/Toggle'
 
 // Piezas compartidas de los formularios rediseñados en la V.2.2.0 (Editar libro, saga,
@@ -72,22 +72,18 @@ interface FormSwitchRowProps {
   label: string
   /** Texto chico debajo del nombre. */
   hint?: string
-  icon?: LucideIcon
   checked: boolean
   onChange: (checked: boolean) => void
   className?: string
 }
 
-/** Fila con un interruptor a la derecha (Favorito, Fue un regalo...). */
-export function FormSwitchRow({ label, hint, icon: Icon, checked, onChange, className = '' }: FormSwitchRowProps) {
+/** Fila con un interruptor a la derecha (Favorito, Fue un regalo...). Sin ícono desde la V.3.5.0. */
+export function FormSwitchRow({ label, hint, checked, onChange, className = '' }: FormSwitchRowProps) {
   return (
     <div className={`flex items-center justify-between gap-3 px-3.5 py-2.5 min-h-12 ${className}`}>
-      <span className="flex items-center gap-2.5 min-w-0">
-        {Icon && <Icon size={18} strokeWidth={2} className="text-primary-text shrink-0" aria-hidden="true" />}
-        <span className="min-w-0">
-          <span className="block font-body font-semibold text-body-lg text-text">{label}</span>
-          {hint && <span className="block text-body-sm text-text-muted">{hint}</span>}
-        </span>
+      <span className="min-w-0">
+        <span className="block font-body font-semibold text-body-lg text-text">{label}</span>
+        {hint && <span className="block text-body-sm text-text-muted">{hint}</span>}
       </span>
       <Toggle checked={checked} onChange={onChange} ariaLabel={label} />
     </div>
