@@ -72,7 +72,7 @@ export const ShareQuoteCard = forwardRef<HTMLDivElement, ShareQuoteCardProps>(fu
 
       <div className="relative h-full flex flex-col px-6 pt-7 pb-7">
         <div className="flex justify-center">
-          <span className="inline-flex rounded-full bg-surface px-4 py-2 shadow-[0_8px_18px_-10px_rgba(40,20,10,0.6)]">
+          <span className="inline-flex rounded-chip bg-surface px-4 py-2 shadow-[0_8px_18px_-10px_rgba(40,20,10,0.6)]">
             <Logo className="h-[22px] w-auto" />
           </span>
         </div>

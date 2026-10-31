@@ -131,7 +131,7 @@ function HeaderSearch({ value, onChange, placeholder, actions }: ScreenHeaderSea
   const inputRef = useRef<HTMLInputElement>(null)
 
   return (
-    <div className="flex items-center gap-1 h-[46px] pl-4 pr-1.5 rounded-full bg-surface border border-border shadow-card focus-within:border-primary-text transition-colors">
+    <div className="flex items-center gap-1 h-[46px] pl-4 pr-1.5 rounded-field bg-surface border border-border shadow-card focus-within:border-primary-text transition-colors">
       <Search size={18} aria-hidden="true" className="shrink-0 text-text-secondary" />
       <input
         ref={inputRef}
@@ -177,7 +177,7 @@ export function HeaderBarButton({ label, onClick, children, dot }: HeaderBarButt
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="relative w-9 h-9 shrink-0 rounded-full text-text flex items-center justify-center hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-primary-text"
+      className="relative w-9 h-9 shrink-0 rounded-button text-text flex items-center justify-center hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-primary-text"
     >
       {children}
       {dot && (

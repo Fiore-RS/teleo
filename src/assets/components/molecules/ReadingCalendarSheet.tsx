@@ -56,7 +56,7 @@ export function ReadingCalendarSheet({ userId, onClose }: ReadingCalendarSheetPr
           type="button"
           onClick={() => setMonthsBack((m) => m + 1)}
           aria-label="Mes anterior"
-          className="w-9 h-9 rounded-full border border-border bg-surface-2 text-primary-text flex items-center justify-center"
+          className="w-9 h-9 rounded-button border border-border bg-surface-2 text-primary-text flex items-center justify-center"
         >
           <ChevronLeft size={18} strokeWidth={2} />
         </button>
@@ -68,7 +68,7 @@ export function ReadingCalendarSheet({ userId, onClose }: ReadingCalendarSheetPr
           onClick={() => setMonthsBack((m) => Math.max(0, m - 1))}
           disabled={monthsBack === 0}
           aria-label="Mes siguiente"
-          className="w-9 h-9 rounded-full border border-border bg-surface-2 text-primary-text flex items-center justify-center disabled:opacity-30"
+          className="w-9 h-9 rounded-button border border-border bg-surface-2 text-primary-text flex items-center justify-center disabled:opacity-30"
         >
           <ChevronRight size={18} strokeWidth={2} />
         </button>

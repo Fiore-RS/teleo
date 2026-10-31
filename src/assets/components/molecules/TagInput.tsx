@@ -60,7 +60,7 @@ export function TagInput({ onAdd, placeholder = 'Agregar etiqueta...', suggestio
               key={tag}
               type="button"
               onClick={() => add(tag)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-dashed border-border bg-surface-2 text-body-sm font-body font-semibold text-text-secondary focus-visible:outline-2 focus-visible:outline-primary-text"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-chip border border-dashed border-border bg-surface-2 text-body-sm font-body font-semibold text-text-secondary focus-visible:outline-2 focus-visible:outline-primary-text"
             >
               <Plus size={12} strokeWidth={2.6} aria-hidden="true" />
               {tag}

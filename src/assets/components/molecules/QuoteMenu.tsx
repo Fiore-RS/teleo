@@ -70,7 +70,7 @@ export function QuoteMenu({ align = 'right', size = 'sm', onOpenChange, onShare,
         aria-label="Opciones de la cita"
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className={`${size === 'md' ? 'w-9 h-9' : 'w-8 h-8'} rounded-full bg-primary-soft text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text`}
+        className={`${size === 'md' ? 'w-9 h-9' : 'w-8 h-8'} rounded-button bg-primary-soft text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text`}
       >
         <MoreHorizontal size={size === 'md' ? 18 : 16} />
       </button>

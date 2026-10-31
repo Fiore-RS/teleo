@@ -29,7 +29,7 @@ function FilterChip({
       role={single ? 'radio' : 'checkbox'}
       aria-checked={checked}
       onClick={onToggle}
-      className={`inline-flex items-center gap-1.5 rounded-full border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md focus-visible:outline-2 focus-visible:outline-primary-text ${
+      className={`inline-flex items-center gap-1.5 rounded-chip border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md focus-visible:outline-2 focus-visible:outline-primary-text ${
         checked ? 'border-primary-text bg-primary-soft text-primary-text' : `${own ? 'border-dashed' : ''} border-border bg-surface text-text-secondary`
       }`}
     >

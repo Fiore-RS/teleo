@@ -174,7 +174,7 @@ function TourOverlay({ step, index, onNext, onSkip }: { step: TourStep; index: n
             <button
               type="button"
               onClick={onSkip}
-              className="py-1.5 font-body font-bold text-body-md text-text-secondary rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+              className="py-1.5 font-body font-bold text-body-md text-text-secondary rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
             >
               Omitir
             </button>
@@ -185,7 +185,7 @@ function TourOverlay({ step, index, onNext, onSkip }: { step: TourStep; index: n
               ref={nextRef}
               type="button"
               onClick={onNext}
-              className="inline-flex items-center gap-1 rounded-full bg-primary text-primary-ink px-4 py-2 font-body font-bold text-body-md active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+              className="inline-flex items-center gap-1 rounded-button bg-primary text-primary-ink px-4 py-2 font-body font-bold text-body-md active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
             >
               {isLast ? 'Listo' : 'Siguiente'}
               {!isLast && <ChevronRight size={16} strokeWidth={2.4} aria-hidden="true" />}

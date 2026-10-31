@@ -37,7 +37,7 @@ function TraitChip({ label, checked, disabled = false, own = false, onToggle }: 
       aria-checked={checked}
       aria-disabled={disabled}
       onClick={() => !disabled && onToggle()}
-      className={`inline-flex items-center gap-1.5 rounded-full border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
+      className={`inline-flex items-center gap-1.5 rounded-chip border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
         checked
           ? 'border-primary-text bg-primary-soft text-primary-text'
           : `${own ? 'border-dashed' : ''} border-border bg-surface-2 text-text-secondary ${disabled ? 'opacity-45' : ''}`
@@ -173,13 +173,13 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
                 onChange={(e) => setNewMood(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onBlur={() => !newMood.trim() && setIsAddingMood(false)}
-                className="w-36 rounded-full border-[1.5px] border-primary-text bg-surface px-3 py-1.5 font-body font-semibold text-body-md text-text placeholder:text-text-muted focus:outline-none"
+                className="w-36 rounded-chip border-[1.5px] border-primary-text bg-surface px-3 py-1.5 font-body font-semibold text-body-md text-text placeholder:text-text-muted focus:outline-none"
               />
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={addMood}
-                className="rounded-full bg-primary-soft text-primary-text px-3 py-1.5 font-body font-bold text-body-md focus-visible:outline-2 focus-visible:outline-primary-text"
+                className="rounded-chip bg-primary-soft text-primary-text px-3 py-1.5 font-body font-bold text-body-md focus-visible:outline-2 focus-visible:outline-primary-text"
               >
                 Agregar
               </button>
@@ -189,7 +189,7 @@ export function BookTraitsFields({ value, onChange, knownCustomMoods, showGenres
               type="button"
               aria-disabled={moodsFull}
               onClick={() => !moodsFull && setIsAddingMood(true)}
-              className={`inline-flex items-center rounded-full border-[1.5px] border-dashed border-border px-3 py-1.5 font-body font-semibold text-body-md text-primary-text focus-visible:outline-2 focus-visible:outline-primary-text ${moodsFull ? 'opacity-45' : ''}`}
+              className={`inline-flex items-center rounded-chip border-[1.5px] border-dashed border-border px-3 py-1.5 font-body font-semibold text-body-md text-primary-text focus-visible:outline-2 focus-visible:outline-primary-text ${moodsFull ? 'opacity-45' : ''}`}
             >
               + Otro ánimo
             </button>

@@ -70,7 +70,7 @@ export function QuotesEditor({ quotes, onAdd, onRemove }: QuotesEditorProps) {
           onClick={handleAdd}
           aria-label="Agregar cita"
           disabled={!value.trim()}
-          className="w-8 h-8 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center disabled:opacity-50 transition-opacity focus-visible:outline-2 focus-visible:outline-primary-text"
+          className="w-8 h-8 shrink-0 rounded-button bg-primary-soft text-primary-text flex items-center justify-center disabled:opacity-50 transition-opacity focus-visible:outline-2 focus-visible:outline-primary-text"
         >
           <Plus size={17} strokeWidth={2.4} />
         </button>

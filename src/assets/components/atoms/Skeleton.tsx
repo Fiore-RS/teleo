@@ -49,7 +49,7 @@ export function DetailSkeleton() {
         </div>
       </div>
       <Skeleton className="h-36 w-full mt-6 rounded-2xl" />
-      <Skeleton className="h-11 w-full mt-6 rounded-full" />
+      <Skeleton className="h-11 w-full mt-6 rounded-button" />
     </div>
   )
 }

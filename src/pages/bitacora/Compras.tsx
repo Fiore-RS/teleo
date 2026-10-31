@@ -246,7 +246,7 @@ export function Compras({ userId, currency }: ComprasProps) {
                   role="radio"
                   aria-checked={isActive}
                   onClick={() => setFilter(key)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-body border transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
+                  className={`shrink-0 px-3 py-1.5 rounded-chip text-[13px] font-body border transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
                     isActive ? 'bg-primary border-primary text-primary-ink font-bold' : 'bg-surface-2 border-border text-text-secondary font-semibold'
                   }`}
                 >

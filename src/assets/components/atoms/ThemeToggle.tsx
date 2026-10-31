@@ -15,7 +15,7 @@ export function ThemeToggle() {
     <div
       role="radiogroup"
       aria-label="Tema de la aplicación"
-      className="flex items-center gap-1 p-1 rounded-full bg-surface-2 border border-border"
+      className="flex items-center gap-1 p-1 rounded-field bg-surface-2 border border-border"
     >
       {options.map(({ value, label }) => {
         const isActive = theme === value
@@ -25,7 +25,7 @@ export function ThemeToggle() {
             role="radio"
             aria-checked={isActive}
             onClick={() => setTheme(value)}
-            className={`flex-1 flex items-center justify-center py-2 rounded-full text-body-md font-body transition-colors ${
+            className={`flex-1 flex items-center justify-center py-2 rounded-[6px] text-body-md font-body transition-colors ${
               isActive ? 'bg-primary text-primary-ink font-bold' : 'text-text-secondary font-medium'
             }`}
           >
