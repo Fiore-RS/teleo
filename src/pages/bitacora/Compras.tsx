@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CalendarDays, Type, User, Banknote, TrendingUp } from 'lucide-react'
+import { CalendarDays, Type, User, Banknote } from 'lucide-react'
 import { usePurchases, type PurchaseBook } from '../../hooks/usePurchases'
 import { queryClient } from '../../lib/queryClient'
 import { formatCurrency } from '../../lib/currencies'
@@ -211,8 +211,6 @@ export function Compras({ userId, currency }: ComprasProps) {
             <div>
               <MoreRow
                 id="compras-curioso"
-                tone="orange"
-                icon={TrendingUp}
                 title="El más caro y el más barato"
                 summary={`De ${money(summary.mostExpensive.price!)} a ${money(summary.cheapest.price!)}`}
                 isOpen={isCuriousOpen}

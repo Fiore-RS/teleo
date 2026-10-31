@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { BookCheck, CalendarRange, Crown, Heart, Check, Shapes } from 'lucide-react'
+import { BookCheck, CalendarRange, Crown, Heart, Check } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
 import { queryClient } from '../../lib/queryClient'
@@ -418,8 +418,6 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
             {(byCategory.length > 0 || byFormat.length > 0) && (
               <MoreRow
                 id="anio-leido"
-                tone="orange"
-                icon={Shapes}
                 title="Qué leíste"
                 summary={leidoSummary}
                 isOpen={openRow === 'leido'}
@@ -440,8 +438,6 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
             />
             <MoreRow
               id="anio-favoritos"
-              tone="magenta"
-              icon={Crown}
               title="Tus favoritos"
               summary={
                 monthsWithReads === 0
