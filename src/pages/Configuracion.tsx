@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LogOut } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useTour } from '../context/tourContextValue'
 import { useProfile } from '../hooks/useProfile'
@@ -223,7 +222,6 @@ export function Configuracion() {
         )}
 
         <Button variant="outline" onClick={() => setConfirmAction('cerrarSesion')}>
-          <LogOut size={18} />
           Cerrar sesión
         </Button>
       </div>

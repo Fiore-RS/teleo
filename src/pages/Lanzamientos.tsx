@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CalendarPlus, Plus } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useReleases, type Release } from '../hooks/useReleases'
@@ -114,7 +113,6 @@ export function Lanzamientos() {
                 </div>
               )}
               <Button variant="magenta" onClick={() => setForm({ date: selectedDate })}>
-                <CalendarPlus size={17} />
                 Agregar lanzamiento
               </Button>
             </Card>
@@ -140,7 +138,6 @@ export function Lanzamientos() {
             )}
 
             <Button variant="magenta" onClick={() => setForm({})}>
-              <Plus size={18} />
               Agregar lanzamiento
             </Button>
 

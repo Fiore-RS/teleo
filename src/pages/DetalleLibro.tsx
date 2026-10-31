@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageOff, Heart, PenLine, Trash2, RotateCcw, Play, NotebookPen, CalendarPlus, Quote, ChevronRight } from 'lucide-react'
+import { ImageOff, Heart, Trash2, ChevronRight } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useBook } from '../hooks/useBook'
@@ -326,7 +326,6 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               <Trash2 size={18} />
             </Button>
             <Button variant="soft" onClick={startEditing}>
-              <PenLine size={17} />
               Editar libro
             </Button>
           </FormActions>
@@ -397,36 +396,30 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
                 {book.status === 'terminado' && (
                   <>
                     <Button variant={hasReview ? 'soft' : 'primary'} className="flex-[1.5] px-3!" onClick={() => setIsResenaOpen(true)}>
-                      <NotebookPen size={16} />
                       {hasReview ? 'Ver reseña' : 'Crear reseña'}
                     </Button>
                     <Button variant="outline" className="flex-1 px-3!" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
-                      <RotateCcw size={15} />
                       Leer de nuevo
                     </Button>
                   </>
                 )}
                 {book.status === 'leyendo' && (
                   <Button variant="soft" onClick={() => setIsAddingQuote(true)}>
-                    <Quote size={16} />
                     Anotar una cita
                   </Button>
                 )}
                 {book.status === 'pausado' && (
                   <Button variant="orange" onClick={resumeReading}>
-                    <Play size={16} />
                     Retomar lectura
                   </Button>
                 )}
                 {book.status === 'abandonado' && (
                   <Button variant="orange" onClick={() => setPendingLeyendoUpdate({ status: 'leyendo' })}>
-                    <Play size={16} />
                     Retomar lectura
                   </Button>
                 )}
                 {book.status === 'deseado' && (
                   <Button variant="soft" onClick={() => setReleaseForm({})}>
-                    <CalendarPlus size={16} />
                     Agregar lanzamiento
                   </Button>
                 )}

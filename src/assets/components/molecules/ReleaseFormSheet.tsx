@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Bookmark, Search, Trash2, X, Plus, ChevronRight } from 'lucide-react'
+import { Bookmark, Search, Trash2, X, ChevronRight } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 import { useCachedQuery } from '../../../hooks/useCachedQuery'
 import { useReleases, type Release } from '../../../hooks/useReleases'
@@ -192,7 +192,7 @@ export function ReleaseFormSheet({ userId, release, initialDate, initialBookId, 
                 onClick={() => setIsPickingBook((v) => !v)}
                 className="self-start inline-flex items-center gap-1.5 mt-0.5 px-3 py-1 rounded-chip bg-primary-soft text-primary-text font-body font-bold text-body-sm"
               >
-                {isPickingBook ? 'Cancelar búsqueda' : (<><Plus size={13} strokeWidth={2.4} />Elegir de tus deseados</>)}
+                {isPickingBook ? 'Cancelar búsqueda' : 'Elegir de tus deseados'}
               </button>
             )}
           </div>

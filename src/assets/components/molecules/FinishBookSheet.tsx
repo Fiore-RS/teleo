@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, PenLine } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
 import { todayLocalDate } from '../../../lib/date'
@@ -167,7 +167,6 @@ export function FinishBookSheet({
       footer={
         <FormActions>
           <Button variant="soft" onClick={() => handleConfirm(true)} isLoading={savingAction === 'review'} disabled={!isValid || savingAction !== null}>
-            <PenLine size={16} />
             Escribir reseña
           </Button>
           <Button variant="primary" onClick={() => handleConfirm(false)} isLoading={savingAction === 'done'} disabled={!isValid || savingAction !== null}>

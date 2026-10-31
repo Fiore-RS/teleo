@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { BookCheck, CalendarRange, Crown, Heart, Check } from 'lucide-react'
+import { Crown, Check } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
 import { queryClient } from '../../lib/queryClient'
@@ -451,7 +451,6 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
                 Elige tu libro favorito de cada mes y, entre ellos, el favorito del año.
               </p>
               <Button variant="soft" className="mt-3" onClick={() => onViewChange('favoritos')}>
-                <Heart size={16} />
                 Ir a favoritos
               </Button>
             </MoreRow>
@@ -554,7 +553,6 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
                   {yearFavorite ? 'Dejaste vacío el favorito del año.' : `Elige el favorito del año entre tus ${monthlyFavoriteBooks.length} favoritos de cada mes.`}
                 </p>
                 <Button variant="magenta" className="mt-3" onClick={() => setPicking(0)}>
-                  <Crown size={17} />
                   Elegir favorito del año
                 </Button>
               </>
@@ -646,7 +644,6 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
               setPicking(null)
             }}
           >
-            {picking === 0 ? <CalendarRange size={17} /> : <BookCheck size={17} />}
             Dejar vacío
           </Button>
         </Sheet>

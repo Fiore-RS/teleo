@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BookOpen, ImageOff, Shuffle } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 import { queryClient } from '../../../lib/queryClient'
 import { recomputeSagaStatus } from '../../../lib/sagaStatus'
@@ -384,11 +384,9 @@ export function RandomPickSheet({ userId, onClose, initialSource = 'todos' }: Ra
     footer = (
       <FormActions>
         <Button variant="outline" onClick={handleAgain} disabled={books.length < 2 || isShuffling}>
-          <Shuffle size={16} />
           Otra vez
         </Button>
         <Button variant="orange" onClick={() => setIsAskingDate(true)} disabled={isShuffling} isLoading={isStarting}>
-          <BookOpen size={18} />
           Empezar a leer
         </Button>
       </FormActions>
