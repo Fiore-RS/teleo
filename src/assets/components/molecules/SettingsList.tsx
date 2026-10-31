@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ChevronRight, type LucideIcon } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { Card } from './Card'
 
 interface SettingsGroupProps {
@@ -10,8 +10,8 @@ interface SettingsGroupProps {
 }
 
 /** Grupo de Configuración. V.3.0.0: cada sección es una tarjeta con pestaña de separador y las
- *  filas separadas por líneas finas. Desde el 26 oct 2026 la pestaña es solo texto: cada fila
- *  ya lleva su ícono. */
+ *  filas separadas por líneas finas. Desde el 26 oct 2026 la pestaña es solo texto y desde la
+ *  V.3.5.0 las filas también: nombre, descripción y flecha, sin ícono. */
 export function SettingsGroup({ title, children, note }: SettingsGroupProps) {
   return (
     <div>
@@ -24,7 +24,6 @@ export function SettingsGroup({ title, children, note }: SettingsGroupProps) {
 }
 
 interface SettingsRowProps {
-  icon: LucideIcon
   label: string
   description?: string
   onClick: () => void
@@ -37,7 +36,7 @@ interface SettingsRowProps {
   trailing?: ReactNode
 }
 
-export function SettingsRow({ icon: Icon, label, description, onClick, disabled = false, danger = false, dot = false, trailing }: SettingsRowProps) {
+export function SettingsRow({ label, description, onClick, disabled = false, danger = false, dot = false, trailing }: SettingsRowProps) {
   return (
     <button
       type="button"
@@ -47,9 +46,6 @@ export function SettingsRow({ icon: Icon, label, description, onClick, disabled 
         disabled ? 'opacity-50 cursor-not-allowed' : 'active:bg-surface-2'
       }`}
     >
-      <span className="w-9 h-9 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
-        <Icon size={17} />
-      </span>
       <span className="flex-1 min-w-0">
         <span className={`flex items-center gap-2 font-body font-semibold text-body-md ${danger ? 'text-primary-text' : 'text-text'}`}>
           {label}
@@ -64,24 +60,18 @@ export function SettingsRow({ icon: Icon, label, description, onClick, disabled 
 }
 
 interface SettingsFieldProps {
-  icon: LucideIcon
   label: string
   description?: string
   children: ReactNode
 }
 
 /** Fila con un control debajo (segmentado, selector), en vez de navegar a otra pantalla. */
-export function SettingsField({ icon: Icon, label, description, children }: SettingsFieldProps) {
+export function SettingsField({ label, description, children }: SettingsFieldProps) {
   return (
     <div className="px-4 py-3.5">
-      <div className="flex items-center gap-3 mb-3">
-        <span className="w-9 h-9 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center">
-          <Icon size={17} />
-        </span>
-        <span className="min-w-0">
-          <span className="block font-body font-semibold text-body-md text-text">{label}</span>
-          {description && <span className="block text-body-sm text-text-secondary mt-0.5">{description}</span>}
-        </span>
+      <div className="mb-3">
+        <span className="block font-body font-semibold text-body-md text-text">{label}</span>
+        {description && <span className="block text-body-sm text-text-secondary mt-0.5">{description}</span>}
       </div>
       {children}
     </div>

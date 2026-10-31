@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PenLine, Settings, Share2, Link as LinkIcon, UserPlus } from 'lucide-react'
+import { PenLine, Settings, Share2 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
@@ -160,9 +160,9 @@ export function Perfil() {
           {/* En la cuenta de visitante no hay código ni invitación. */}
           {!profile?.is_demo && <FriendCodeBox code={profile?.friend_code} />}
           <div className={`${profile?.is_demo ? '' : 'mt-3 '}bg-surface border border-border rounded-card shadow-card divide-y divide-border`}>
-            {!profile?.is_demo && <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setShareStep('invitar')} />}
-            <SettingsRow icon={Share2} label="Perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setShareStep('perfil')} />
-            <SettingsRow icon={LinkIcon} label="Lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setShareStep('deseados')} />
+            {!profile?.is_demo && <SettingsRow label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setShareStep('invitar')} />}
+            <SettingsRow label="Perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setShareStep('perfil')} />
+            <SettingsRow label="Lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setShareStep('deseados')} />
           </div>
         </Sheet>
       )}
