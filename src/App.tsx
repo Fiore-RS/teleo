@@ -126,13 +126,17 @@ function App() {
       {/* overflow-x-clip: mientras una pantalla secundaria entra desde el costado no aparece
           desplazamiento horizontal (clip, y no hidden, para no romper los elementos sticky). */}
       <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl overflow-x-clip">
+        {/* Suspense va por fuera del contenedor con key (V.3.5.0). El router cambia de
+            pantalla dentro de una transición de React: si el archivo de la pantalla nueva
+            todavía no llegó, React deja la pantalla anterior a la vista hasta que esté lista.
+            Antes Suspense iba adentro del contenedor con key, así que cada cambio de pantalla
+            creaba un Suspense nuevo y se veía vacío (solo el fondo) mientras se descargaba.
+            fallback={null} queda solo para la primera carga de la app. */}
+        <Suspense fallback={null}>
         {/* key = ruta: al cambiar de pantalla el contenedor se vuelve a montar. Cambiar de
             pestaña no anima (el contenido aparece al instante); las pantallas secundarias
             entran desde el costado (routeTransition en lib/motion.ts). */}
         <div key={location.pathname} className={transition.className}>
-        {/* Mientras llega el archivo de una pantalla que todavía no se abrió, no se muestra
-            nada (suele ser un instante); cada pantalla ya trae sus siluetas de carga. */}
-        <Suspense fallback={null}>
         <Routes location={location}>
           <Route path="/" element={<LoadingScreen />} />
           <Route path="/inicio" element={<Inicio />} />
@@ -163,8 +167,8 @@ function App() {
           <Route path="/correo-confirmado" element={<CorreoConfirmado />} />
           <Route path="*" element={<RutaDesconocida />} />
         </Routes>
-        </Suspense>
         </div>
+        </Suspense>
       </div>
     </div>
   );
