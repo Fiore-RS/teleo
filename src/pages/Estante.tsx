@@ -362,7 +362,7 @@ export function Estante() {
             <button
               type="button"
               onClick={() => setIsRandomPickOpen(true)}
-              className="inline-flex items-center gap-1.5 font-body text-[13px] font-bold text-primary-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+              className="inline-flex items-center gap-1.5 font-body text-[13px] font-bold text-primary-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
             >
               <Shuffle size={14} aria-hidden="true" />
               ¿Qué leo ahora?
@@ -374,7 +374,7 @@ export function Estante() {
       <div className="space-y-5">
         {quickFlag && (
           <div className="flex">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft text-primary-text pl-3.5 pr-2 py-1.5 text-body-sm font-body font-semibold">
+            <span className="inline-flex items-center gap-2 rounded-chip bg-primary-soft text-primary-text pl-3.5 pr-2 py-1.5 text-body-sm font-body font-semibold">
               Mostrando:{" "}
               {quickFlag === "favoritos"
                 ? "Favoritos"
@@ -409,7 +409,7 @@ export function Estante() {
             <button
               type="button"
               onClick={() => setIsGoodreadsOpen(true)}
-              className="mt-3 text-body-md font-bold text-primary-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+              className="mt-3 text-body-md font-bold text-primary-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
             >
               ¿Ya usas Goodreads? Trae tu biblioteca
             </button>

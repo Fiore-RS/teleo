@@ -167,7 +167,7 @@ export function RecapViewer({ userId, period, onClose }: RecapViewerProps) {
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 shrink-0 rounded-full bg-surface-2 border border-border text-text-secondary flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
+            className="w-9 h-9 shrink-0 rounded-button bg-surface-2 border border-border text-text-secondary flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
           >
             <X size={18} />
           </button>

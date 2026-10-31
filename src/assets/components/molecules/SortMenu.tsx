@@ -49,7 +49,7 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
           onClick={() => setIsOpen((o) => !o)}
           aria-label="Organizar"
           aria-expanded={isOpen}
-          className="w-9 h-9 shrink-0 rounded-full text-text flex items-center justify-center hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-primary-text"
+          className="w-9 h-9 shrink-0 rounded-button text-text flex items-center justify-center hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-primary-text"
         >
           <ArrowUpDown size={18} />
         </button>
@@ -59,7 +59,7 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
           onClick={() => setIsOpen((o) => !o)}
           aria-label="Organizar"
           aria-expanded={isOpen}
-          className="w-9 h-9 min-[400px]:w-10 min-[400px]:h-10 shrink-0 rounded-full bg-surface border border-border shadow-card text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
+          className="w-9 h-9 min-[400px]:w-10 min-[400px]:h-10 shrink-0 rounded-button bg-surface border border-border shadow-card text-primary-text flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
         >
           <ArrowUpDown size={17} />
         </button>
@@ -68,7 +68,7 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
           type="button"
           onClick={() => setIsOpen((o) => !o)}
           aria-label="Organizar"
-          className="w-full inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-3 text-body-sm font-body font-bold bg-primary-soft text-primary-text"
+          className="w-full inline-flex items-center justify-center gap-1.5 rounded-button px-4 py-3 text-body-sm font-body font-bold bg-primary-soft text-primary-text"
         >
           <ArrowUpDown size={15} />
           Organizar

@@ -72,7 +72,7 @@ function ContentWarningsCard({ warnings, note }: { warnings: string[]; note: str
             {items.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {items.map((w) => (
-                  <span key={w.key} className="px-3 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
+                  <span key={w.key} className="px-3 py-1 rounded-chip bg-orange-soft text-orange-text text-body-sm font-semibold">
                     {w.label}
                   </span>
                 ))}
@@ -291,7 +291,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={20} />
                     </div>
                     {review.recommends && (
-                      <span className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-magenta-soft text-magenta-text text-body-sm font-bold">
+                      <span className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-chip bg-magenta-soft text-magenta-text text-body-sm font-bold">
                         <ThumbsUp size={13} strokeWidth={2.2} />
                         Lo recomiendas
                       </span>
@@ -389,7 +389,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                         <p className="font-display font-semibold text-body-lg text-text">{dateOrDash(book.end_date)}</p>
                       </div>
                       {days && (
-                        <span className="ml-auto shrink-0 px-2.5 py-1 rounded-full bg-primary-soft text-primary-text text-body-sm font-bold">{days}</span>
+                        <span className="ml-auto shrink-0 px-2.5 py-1 rounded-chip bg-primary-soft text-primary-text text-body-sm font-bold">{days}</span>
                       )}
                     </div>
                     {pastReads.length > 0 && (
@@ -397,7 +397,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                         <p className="text-body-sm font-semibold text-text-secondary mb-1.5">Lecturas anteriores</p>
                         <div className="flex flex-wrap gap-1.5">
                           {pastReads.map((h) => (
-                            <span key={h.id} className="inline-flex px-2.5 py-1 rounded-full bg-surface border border-border text-text text-body-sm font-semibold">
+                            <span key={h.id} className="inline-flex px-2.5 py-1 rounded-chip bg-surface border border-border text-text text-body-sm font-semibold">
                               {h.start_date
                                 ? `Del ${dateOrDash(h.start_date)} al ${dateOrDash(h.end_date)}`
                                 : dateOrDash(h.end_date)}
@@ -496,7 +496,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                         {draft.content_warnings.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {sortedWarnings(draft.content_warnings).map((w) => (
-                              <span key={w.key} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
+                              <span key={w.key} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-chip bg-orange-soft text-orange-text text-body-sm font-semibold">
                                 {w.label}
                                 <button
                                   type="button"

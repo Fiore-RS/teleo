@@ -113,7 +113,7 @@ export function CardAction({ children, onClick }: CardActionProps) {
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-0.5 py-1 font-body font-bold text-body-md whitespace-nowrap rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+      className="inline-flex items-center gap-0.5 py-1 font-body font-bold text-body-md whitespace-nowrap rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
     >
       {children}
       <ChevronRight size={16} aria-hidden="true" />

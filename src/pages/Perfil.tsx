@@ -30,7 +30,7 @@ const SHELF_SIZE = 5
 
 // Botones redondos translúcidos sobre la portada (Compartir, Editar perfil, Configuración).
 const headerButtonClass =
-  'w-10 h-10 shrink-0 rounded-full bg-black/22 border border-white/25 text-[#FFF8EE] backdrop-blur-[4px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[#FFF8EE]'
+  'w-10 h-10 shrink-0 rounded-button bg-black/22 border border-white/25 text-[#FFF8EE] backdrop-blur-[4px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[#FFF8EE]'
 
 export function Perfil() {
   const navigate = useNavigate()

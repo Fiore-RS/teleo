@@ -41,7 +41,7 @@ export function DetrasDeTeleo() {
           href={INSTAGRAM_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-body-lg font-body font-bold bg-primary-soft text-primary-text active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+          className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-button px-6 py-3 text-body-lg font-body font-bold bg-primary-soft text-primary-text active:scale-[0.98] transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
         >
           <AtSign size={18} />
           {INSTAGRAM_HANDLE} en Instagram

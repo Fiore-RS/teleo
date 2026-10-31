@@ -97,7 +97,7 @@ export function AddQuoteSheet({ userId, onClose, onSave, initialBook, initialPag
         footer={<FormActions><Button variant="outline" onClick={onClose}>Cancelar</Button></FormActions>}
       >
         <div key="pick" className="animate-fade-in">
-          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-full px-4 py-2.5 mb-5 focus-within:border-primary-text transition-colors">
+          <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-field px-4 py-2.5 mb-5 focus-within:border-primary-text transition-colors">
             <Search size={17} className="text-text-muted shrink-0" aria-hidden="true" />
             <input
               aria-label="Buscar en tus libros"
@@ -135,7 +135,7 @@ export function AddQuoteSheet({ userId, onClose, onSave, initialBook, initialPag
             <button
               type="button"
               onClick={() => setBook(null)}
-              className="shrink-0 px-3 py-1.5 rounded-full bg-primary-soft text-primary-text font-body font-bold text-body-sm focus-visible:outline-2 focus-visible:outline-primary-text"
+              className="shrink-0 px-3 py-1.5 rounded-chip bg-primary-soft text-primary-text font-body font-bold text-body-sm focus-visible:outline-2 focus-visible:outline-primary-text"
             >
               Cambiar
             </button>

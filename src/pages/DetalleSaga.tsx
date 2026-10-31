@@ -502,7 +502,7 @@ export function DetalleSaga({
             type="button"
             onClick={() => setIsReorderingBooks((v) => !v)}
             aria-label={isReorderingBooks ? "Terminar de organizar" : "Organizar libros"}
-            className={`w-9 h-9 rounded-full border flex items-center justify-center ${
+            className={`w-9 h-9 rounded-button border flex items-center justify-center ${
               isReorderingBooks
                 ? "bg-primary text-primary-ink border-primary"
                 : "bg-surface-2 border-border text-primary-text"
@@ -515,7 +515,7 @@ export function DetalleSaga({
           type="button"
           onClick={() => setIsSelectBookOpen(true)}
           aria-label="Agregar libros a la saga"
-          className="w-9 h-9 rounded-full bg-primary text-primary-ink flex items-center justify-center"
+          className="w-9 h-9 rounded-button bg-primary text-primary-ink flex items-center justify-center"
         >
           <Plus size={18} strokeWidth={2.4} />
         </button>
@@ -585,7 +585,7 @@ export function DetalleSaga({
                 {categories.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2.5">
                     {categories.map((c) => (
-                      <span key={c} className="inline-flex items-center px-2.5 py-1 rounded-full text-body-sm font-bold bg-primary-soft text-primary-text">
+                      <span key={c} className="inline-flex items-center px-2.5 py-1 rounded-chip text-body-sm font-bold bg-primary-soft text-primary-text">
                         {c}
                       </span>
                     ))}

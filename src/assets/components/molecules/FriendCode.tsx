@@ -7,7 +7,7 @@ function CopyPill({ copied }: { copied: boolean }) {
       Copiado
     </span>
   ) : (
-    <span className="inline-flex items-center shrink-0 rounded-full bg-primary-soft text-primary-text px-3 py-1.5 text-body-sm font-bold">
+    <span className="inline-flex items-center shrink-0 rounded-chip bg-primary-soft text-primary-text px-3 py-1.5 text-body-sm font-bold">
       Copiar
     </span>
   )

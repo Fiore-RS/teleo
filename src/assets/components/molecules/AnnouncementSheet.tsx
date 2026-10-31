@@ -35,7 +35,7 @@ function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[];
       <ul className="flex flex-col gap-1.5 mt-2.5">
         {missed.map((entry) => (
           <li key={entry.version} className="flex items-center gap-2 text-body-sm text-text">
-            <span className="shrink-0 px-2 py-0.5 rounded-full bg-magenta-soft text-magenta-text text-[12px] font-bold tabular-nums">
+            <span className="shrink-0 px-2 py-0.5 rounded-chip bg-magenta-soft text-magenta-text text-[12px] font-bold tabular-nums">
               V.{entry.version}
             </span>
             <span className="min-w-0 truncate">{entry.title}</span>
@@ -60,7 +60,7 @@ export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeA
       {showCatchUp && <CatchUpCard missed={missed} lastSeen={lastSeen} onSeeAll={onSeeAll} />}
 
       <div className="flex items-center gap-2">
-        <span className="px-2.5 py-1 rounded-full bg-primary text-primary-ink text-body-sm font-bold tabular-nums">
+        <span className="px-2.5 py-1 rounded-chip bg-primary text-primary-ink text-body-sm font-bold tabular-nums">
           V.{ANNOUNCEMENT_VERSION}
         </span>
         {announcedTitle && <h3 className="font-title text-[22px] leading-tight text-text">{announcedTitle}</h3>}

@@ -40,7 +40,7 @@ export function Novedades() {
             action={<span className="block py-1 font-body text-body-sm text-text-muted">{entry.date}</span>}
           >
             {isNew(entry.version) && (
-              <span className="inline-block mb-2 px-2 py-0.5 rounded-full bg-magenta-soft text-magenta-text text-[12px] font-bold">Nueva</span>
+              <span className="inline-block mb-2 px-2 py-0.5 rounded-chip bg-magenta-soft text-magenta-text text-[12px] font-bold">Nueva</span>
             )}
             <h3 className="font-display font-semibold text-display-md text-text">{entry.title}</h3>
             <ul className="mt-3 space-y-2.5">

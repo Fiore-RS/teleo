@@ -44,7 +44,7 @@ function NavButton({ label, onClick, disabled, children, className = '' }: {
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className={`rounded-full flex items-center justify-center disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-primary-text ${className}`}
+      className={`rounded-button flex items-center justify-center disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-primary-text ${className}`}
     >
       {children}
     </button>
@@ -239,7 +239,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           <button
             type="button"
             onClick={() => onOpenYear(year)}
-            className="mt-3.5 mx-auto flex items-center gap-0.5 font-body font-bold text-body-md text-pink-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+            className="mt-3.5 mx-auto flex items-center gap-0.5 font-body font-bold text-body-md text-pink-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
           >
             Ver tu {year} en Resumen
             <ChevronRight size={16} aria-hidden="true" />

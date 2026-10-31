@@ -55,7 +55,7 @@ export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps)
                   role="radio"
                   aria-checked={view.columns === n}
                   onClick={() => onChange({ ...view, columns: n })}
-                  className={`w-11 h-9 rounded-full font-body font-bold text-body-md tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
+                  className={`w-11 h-9 rounded-chip font-body font-bold text-body-md tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
                     view.columns === n ? 'bg-primary text-primary-ink' : 'bg-surface border border-border text-text-secondary'
                   }`}
                 >

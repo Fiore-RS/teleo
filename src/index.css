@@ -172,6 +172,12 @@
   --shadow-float: var(--teleo-shadow-float);
 
   --radius-card: 24px;
+  /* Formas (V.3.5.0, "Firme"): lo que antes era píldora pasa a rectángulo con esquinas
+     redondeadas, para ir con las tarjetas. Lo que es un círculo de verdad (foto, puntitos,
+     interruptores, barras de progreso) sigue con rounded-full. */
+  --radius-button: 10px; /* botones y botones de solo ícono con fondo o borde */
+  --radius-chip: 7px;    /* etiquetas, filtros, insignias, estado */
+  --radius-field: 9px;   /* buscadores y selectores segmentados */
 
   --font-title: "Young Serif", Georgia, serif;
   --font-display: "Fraunces", serif;

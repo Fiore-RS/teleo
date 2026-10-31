@@ -13,7 +13,7 @@ interface PeriodNavProps {
  *  V.3.0.0: el periodo en Young Serif y flechas de 30px. */
 export function PeriodNav({ label, onPrev, onNext, canGoNext, prevLabel, nextLabel }: PeriodNavProps) {
   const arrowClass =
-    'w-[30px] h-[30px] shrink-0 rounded-full border border-border bg-surface-2 text-primary-text flex items-center justify-center disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-primary-text'
+    'w-[30px] h-[30px] shrink-0 rounded-button border border-border bg-surface-2 text-primary-text flex items-center justify-center disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-primary-text'
   return (
     <div className="flex items-center justify-between gap-3">
       <button type="button" onClick={onPrev} aria-label={prevLabel} className={arrowClass}>

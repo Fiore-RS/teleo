@@ -42,7 +42,7 @@ export function Instalar() {
     <button
       type="button"
       onClick={() => navigate('/')}
-      className="mx-auto py-1 text-body-md text-primary-text font-bold rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+      className="mx-auto py-1 text-body-md text-primary-text font-bold rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
     >
       Prefiero usarla en el navegador
     </button>
