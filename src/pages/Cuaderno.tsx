@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ImageOff, ArrowDownAZ, User, CalendarDays, Move } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews, type ReviewWithBook } from '../hooks/useReviews'
@@ -176,10 +176,10 @@ export function Cuaderno() {
   const sortedQuotes = useMemo(() => sortQuotes(filteredQuotes, quoteSortMode), [filteredQuotes, quoteSortMode])
 
   const quoteSortOptions: SortMenuOption<LibrarySortMode>[] = [
-    { key: 'titulo', label: 'Título', icon: ArrowDownAZ },
-    { key: 'autor', label: 'Autor', icon: User },
-    { key: 'fecha', label: 'Fecha agregada', icon: CalendarDays },
-    { key: 'libre', label: isReorderingQuotes ? 'Listo' : 'Libre (arrastrar)', icon: Move },
+    { key: 'titulo', label: 'Título' },
+    { key: 'autor', label: 'Autor' },
+    { key: 'fecha', label: 'Fecha agregada' },
+    { key: 'libre', label: isReorderingQuotes ? 'Listo' : 'Libre (arrastrar)' },
   ]
 
   // Igual que en Reseñas: "Libre" activa el arrastre y, si ya estaba, lo apaga ("Listo").
@@ -198,10 +198,10 @@ export function Cuaderno() {
   }
 
   const sortOptions: SortMenuOption<LibrarySortMode>[] = [
-    { key: 'titulo', label: 'Título', icon: ArrowDownAZ },
-    { key: 'autor', label: 'Autor', icon: User },
-    { key: 'fecha', label: 'Fecha agregado', icon: CalendarDays },
-    { key: 'libre', label: isReordering ? 'Listo' : 'Libre (arrastrar)', icon: Move },
+    { key: 'titulo', label: 'Título' },
+    { key: 'autor', label: 'Autor' },
+    { key: 'fecha', label: 'Fecha agregado' },
+    { key: 'libre', label: isReordering ? 'Listo' : 'Libre (arrastrar)' },
   ]
 
   // Mismo criterio que en Estante: elegir "Libre" activa el arrastre; si ya se estaba en

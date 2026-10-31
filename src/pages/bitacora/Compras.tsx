@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { CalendarDays, Type, User, Banknote } from 'lucide-react'
 import { usePurchases, type PurchaseBook } from '../../hooks/usePurchases'
 import { queryClient } from '../../lib/queryClient'
 import { formatCurrency } from '../../lib/currencies'
@@ -17,10 +16,10 @@ type Filter = 'todos' | 'sin-precio' | 'gratis' | 'regalos'
 type Sort = 'precio' | 'fecha' | 'titulo' | 'autor'
 
 const sortOptions: SortMenuOption<Sort>[] = [
-  { key: 'precio', label: 'Precio', icon: Banknote },
-  { key: 'fecha', label: 'Fecha de compra', icon: CalendarDays },
-  { key: 'titulo', label: 'Título', icon: Type },
-  { key: 'autor', label: 'Autor', icon: User },
+  { key: 'precio', label: 'Precio' },
+  { key: 'fecha', label: 'Fecha de compra' },
+  { key: 'titulo', label: 'Título' },
+  { key: 'autor', label: 'Autor' },
 ]
 
 const dateFormat = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' })

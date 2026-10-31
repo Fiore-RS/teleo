@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUpDown, Check, type LucideIcon } from 'lucide-react'
+import { ArrowUpDown, Check } from 'lucide-react'
 
 export interface SortMenuOption<T extends string> {
   key: T
   label: string
-  icon: LucideIcon
 }
 
 interface SortMenuProps<T extends string> {
@@ -68,9 +67,8 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
           type="button"
           onClick={() => setIsOpen((o) => !o)}
           aria-label="Organizar"
-          className="w-full inline-flex items-center justify-center gap-1.5 rounded-button px-4 py-3 text-body-sm font-body font-bold bg-primary-soft text-primary-text"
+          className="w-full inline-flex items-center justify-center rounded-button px-4 py-3 text-body-sm font-body font-bold bg-primary-soft text-primary-text"
         >
-          <ArrowUpDown size={15} />
           Organizar
         </button>
       )}
@@ -78,22 +76,20 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
       {isOpen && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-20 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-52 overflow-hidden animate-pop-in"
+          className="absolute right-0 top-[calc(100%+8px)] z-20 bg-surface border border-border divide-y divide-dotted divide-ornament/60 rounded-2xl shadow-float py-1.5 min-w-52 overflow-hidden animate-pop-in"
         >
           {options.map((opt) => {
             const isActive = opt.key === activeKey
-            const Icon = opt.icon
             return (
               <button
                 key={opt.key}
                 type="button"
                 role="menuitem"
                 onClick={() => handleSelect(opt.key)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left transition-colors ${
+                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 text-body-md font-body text-left transition-colors ${
                   isActive ? 'bg-primary-soft/60' : 'hover:bg-surface-2'
                 }`}
               >
-                <Icon size={16} className="text-text-secondary shrink-0" />
                 <span className={`flex-1 truncate ${isActive ? 'text-primary-text font-semibold' : 'text-text'}`}>{opt.label}</span>
                 {isActive && <Check size={14} className="text-primary-text shrink-0" />}
               </button>

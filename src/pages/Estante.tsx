@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, LayoutGrid } from "lucide-react";
+import { SlidersHorizontal, X, LayoutGrid } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
@@ -245,16 +245,16 @@ export function Estante() {
   );
 
   const bookSortOptions: SortMenuOption<LibrarySortMode>[] = [
-    { key: "titulo", label: "Título", icon: ArrowDownAZ },
-    { key: "autor", label: "Autor", icon: User },
-    { key: "fecha", label: "Fecha agregado", icon: CalendarDays },
-    { key: "libre", label: isReorderingBooks ? "Listo" : "Libre (arrastrar)", icon: Move },
+    { key: "titulo", label: "Título" },
+    { key: "autor", label: "Autor" },
+    { key: "fecha", label: "Fecha agregado" },
+    { key: "libre", label: isReorderingBooks ? "Listo" : "Libre (arrastrar)" },
   ];
   const sagaSortOptions: SortMenuOption<LibrarySortMode>[] = [
-    { key: "titulo", label: "Título", icon: ArrowDownAZ },
-    { key: "autor", label: "Autor", icon: User },
-    { key: "fecha", label: "Fecha agregado", icon: CalendarDays },
-    { key: "libre", label: isReorderingSagas ? "Listo" : "Libre (arrastrar)", icon: Move },
+    { key: "titulo", label: "Título" },
+    { key: "autor", label: "Autor" },
+    { key: "fecha", label: "Fecha agregado" },
+    { key: "libre", label: isReorderingSagas ? "Listo" : "Libre (arrastrar)" },
   ];
 
   // Elegir "Libre" activa el modo de arrastrar de una vez (si no se estaba ya en ese modo);

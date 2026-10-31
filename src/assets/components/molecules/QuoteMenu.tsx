@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MoreHorizontal, Share2, BookOpen, Pencil, Trash2, type LucideIcon } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 
 interface QuoteMenuProps {
   /** Hacia dónde se abre el panel: en la columna izquierda de Mis citas se abre hacia la
@@ -55,11 +55,11 @@ export function QuoteMenu({ align = 'right', size = 'sm', onOpenChange, onShare,
     action()
   }
 
-  const items: { label: string; icon: LucideIcon; action: () => void; danger?: boolean }[] = [
-    { label: 'Compartir', icon: Share2, action: onShare },
-    { label: 'Ver reseña', icon: BookOpen, action: onOpenReview },
-    { label: 'Editar', icon: Pencil, action: onEdit },
-    { label: 'Eliminar', icon: Trash2, action: onDelete, danger: true },
+  const items: { label: string; action: () => void; danger?: boolean }[] = [
+    { label: 'Compartir', action: onShare },
+    { label: 'Ver reseña', action: onOpenReview },
+    { label: 'Editar', action: onEdit },
+    { label: 'Eliminar', action: onDelete, danger: true },
   ]
 
   return (
@@ -78,17 +78,16 @@ export function QuoteMenu({ align = 'right', size = 'sm', onOpenChange, onShare,
       {isOpen && (
         <div
           role="menu"
-          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} ${opensUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'} z-30 bg-surface border border-border rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden animate-pop-in`}
+          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} ${opensUp ? 'bottom-[calc(100%+6px)]' : 'top-[calc(100%+6px)]'} z-30 bg-surface border border-border divide-y divide-dotted divide-ornament/60 rounded-2xl shadow-float py-1.5 min-w-40 overflow-hidden animate-pop-in`}
         >
-          {items.map(({ label, icon: Icon, action, danger }) => (
+          {items.map(({ label, action, danger }) => (
             <button
               key={label}
               type="button"
               role="menuitem"
               onClick={() => handleSelect(action)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-body-md font-body text-left hover:bg-surface-2 transition-colors ${danger ? 'text-primary-text' : 'text-text'}`}
+              className={`w-full flex items-center px-3.5 py-2.5 text-body-md font-body text-left hover:bg-surface-2 transition-colors ${danger ? 'text-primary-text' : 'text-text'}`}
             >
-              <Icon size={16} className={`shrink-0 ${danger ? 'text-primary-text' : 'text-text-secondary'}`} />
               {label}
             </button>
           ))}
