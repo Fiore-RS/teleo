@@ -1,4 +1,4 @@
-import { Check, Flame, Shuffle } from "lucide-react";
+import { Check, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
@@ -165,7 +165,6 @@ export function Mesa() {
                 No tienes libros en progreso todavía.
               </p>
               <Button variant="soft" className="mt-3.5" onClick={() => setIsRandomPickOpen(true)}>
-                <Shuffle size={16} />
                 Elegir un pendiente al azar
               </Button>
             </>

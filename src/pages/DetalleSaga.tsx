@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, PenLine, GripVertical, Check, X, RefreshCw, ChevronRight } from "lucide-react";
+import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, GripVertical, Check, X, RefreshCw, ChevronRight } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
 import { DogEar } from "../assets/components/atoms/DogEar";
@@ -546,7 +546,6 @@ export function DetalleSaga({
               <Trash2 size={18} />
             </Button>
             <Button variant="soft" onClick={startEditing}>
-              <PenLine size={17} />
               Editar saga
             </Button>
           </FormActions>
@@ -731,7 +730,6 @@ export function DetalleSaga({
               onClick={() => setDeleteState("confirm")}
               className="w-full flex items-center justify-center gap-2 py-2.5 font-body font-bold text-body-md text-primary-text"
             >
-              <Trash2 size={16} />
               Eliminar saga
             </button>
           </div>

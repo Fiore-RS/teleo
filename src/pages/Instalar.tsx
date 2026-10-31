@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Copy, Download } from 'lucide-react'
 import { Button } from '../assets/components/atoms/Button'
 import { FormHint } from '../assets/components/molecules/FormLayout'
 import { AuthCard, AuthLayout } from '../assets/components/molecules/AuthLayout'
@@ -87,7 +86,6 @@ export function Instalar() {
     subtitle = 'Tenla en tu pantalla de inicio y ábrela como cualquier app, sin tiendas ni descargas pesadas.'
     action = (
       <Button onClick={handleInstall} isLoading={isPrompting}>
-        <Download size={18} strokeWidth={2.2} />
         Instalar Teleo
       </Button>
     )
@@ -214,7 +212,6 @@ function CopyLink() {
   return (
     <div>
       <Button variant="soft" onClick={handleCopy}>
-        {status === 'copied' ? <Check size={18} strokeWidth={2.2} /> : <Copy size={18} strokeWidth={2} />}
         {status === 'copied' ? 'Enlace copiado' : 'Copiar enlace'}
       </Button>
       {status === 'failed' && (

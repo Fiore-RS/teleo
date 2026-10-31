@@ -1,5 +1,4 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { FileUp } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
 import { ProgressBar } from '../atoms/ProgressBar'
@@ -98,7 +97,7 @@ export function GoodreadsImportModal({ onClose, userId }: GoodreadsImportModalPr
   if (step.kind === 'inicio') {
     footer = (
       <Button variant="primary" onClick={() => inputRef.current?.click()} disabled={!userId}>
-        <FileUp size={18} /> Elegir archivo
+        Elegir archivo
       </Button>
     )
   } else if (step.kind === 'vista') {

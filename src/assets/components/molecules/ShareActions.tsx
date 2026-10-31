@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Download, Share2 } from 'lucide-react'
 import { Button } from '../atoms/Button'
 import { FormHint, type FormHintTone } from './FormLayout'
 
@@ -31,11 +30,9 @@ export function ShareActions({ shareLabel, onShare, onDownload, disabled = false
   return (
     <div className="flex flex-col gap-2 pb-1">
       <Button variant="primary" onClick={() => run('share', onShare)} isLoading={busy === 'share'} disabled={disabled || busy !== null}>
-        {busy !== 'share' && <Share2 size={18} />}
         {shareLabel}
       </Button>
       <Button variant="outline" onClick={() => run('download', onDownload)} isLoading={busy === 'download'} disabled={disabled || busy !== null}>
-        {busy !== 'download' && <Download size={18} />}
         Descargar
       </Button>
       {notice && <FormHint text={notice.text} tone={notice.tone} />}

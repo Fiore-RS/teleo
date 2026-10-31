@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Shuffle, LayoutGrid } from "lucide-react";
+import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, LayoutGrid } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
@@ -364,7 +364,6 @@ export function Estante() {
               onClick={() => setIsRandomPickOpen(true)}
               className="inline-flex items-center gap-1.5 font-body text-[13px] font-bold text-primary-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
             >
-              <Shuffle size={14} aria-hidden="true" />
               ¿Qué leo ahora?
             </button>
           )

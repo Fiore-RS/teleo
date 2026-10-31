@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ImageOff, ThumbsUp, Plus, PenLine, Trash2, Quote, AlertTriangle, X } from 'lucide-react'
+import { ImageOff, ThumbsUp, Trash2, Quote, AlertTriangle, X } from 'lucide-react'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetailSkeleton } from '../assets/components/atoms/Skeleton'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
@@ -254,7 +254,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
           <Trash2 size={18} />
         </Button>
         <Button variant="soft" onClick={startEditing}>
-          <PenLine size={17} />
           Editar reseña
         </Button>
       </FormActions>
@@ -309,7 +308,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                     : 'Aún no has escrito una reseña para este libro.'}
                 </p>
                 <Button variant="primary" onClick={startEditing}>
-                  <PenLine size={17} />
                   Crear reseña de lectura
                 </Button>
               </div>
@@ -451,7 +449,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       onClick={() => setIsPickerOpen(true)}
                       className="w-full flex items-center gap-2 px-3.5 py-3 font-body font-bold text-body-md text-primary-text"
                     >
-                      <Plus size={16} strokeWidth={2.4} />
                       Agregar calificación
                     </button>
                     <FormSwitchRow
@@ -522,7 +519,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       onClick={() => setIsWarningsPickerOpen(true)}
                       className="w-full flex items-center gap-2 px-3.5 py-3 font-body font-bold text-body-md text-primary-text"
                     >
-                      {hasWarnings ? <PenLine size={16} /> : <Plus size={16} strokeWidth={2.4} />}
                       {hasWarnings ? 'Editar avisos' : 'Agregar avisos de contenido'}
                     </button>
                   </FormCollapsible>
