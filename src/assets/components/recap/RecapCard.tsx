@@ -372,7 +372,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
     case 'generos': {
       const g = recap.topGenres
       const max = g[0]?.count ?? 1
-      const size = (v: number) => Math.round(72 + 66 * Math.sqrt(v / max))
+      const size = (v: number) => Math.round(60 + 54 * Math.sqrt(v / max))
       const s = g.map((e) => size(e.count))
       const paceKeys = ['Rápido', 'Medio', 'Lento']
       body = (
@@ -396,7 +396,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
                 {/* La tercera va centrada entre los centros de las dos de arriba (no en el medio de
                     la tarjeta), así se ve alineada aunque la primera sea más grande. */}
                 {g[2] && (
-                  <div className="rc-bub b3" style={{ width: s[2], height: s[2], left: `calc(50% + ${(s[0] - s[1]) / 4 - s[2] / 2}px)`, top: 232 - s[2], ['--n' as string]: `${Math.round(s[2] / 3.4)}px` }}>
+                  <div className="rc-bub b3" style={{ width: s[2], height: s[2], left: `calc(50% + ${(s[0] - s[1]) / 4 - s[2] / 2}px)`, top: 190 - s[2], ['--n' as string]: `${Math.round(s[2] / 3.4)}px` }}>
                     <b>{g[2].count}</b>
                     <span>{g[2].label}</span>
                   </div>

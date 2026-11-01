@@ -12,7 +12,7 @@
 .rc{width:300px;height:533.333px;border-radius:20px;position:relative;overflow:hidden;color:var(--oc);display:flex;flex-direction:column;justify-content:center;justify-content:safe center;padding:56px 24px 84px;font-family:var(--font-body);text-align:left;
   background:radial-gradient(120% 70% at 85% 0%,color-mix(in srgb,var(--pc) 72%,#fff 28%),transparent 60%),radial-gradient(90% 60% at 0% 100%,color-mix(in srgb,var(--pc) 75%,#000 25%),transparent 70%),var(--pc)}
 .rc::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.1;background-image:radial-gradient(circle at 1px 1px,var(--oc) .8px,transparent 1.2px);background-size:7px 7px}
-.rc>*{position:relative;z-index:1}
+.rc>*{position:relative;z-index:1;flex-shrink:0}
 .rc-wm{font:400 16px/1 var(--font-title);color:var(--oc)}
 /* Pie fijo (V.3.5.1): "Teleo" y el @ siempre en el mismo lugar, por encima del campo de responder. */
 .rc-foot{position:absolute;left:30px;right:30px;bottom:54px;display:flex;justify-content:space-between;align-items:center;font:600 11.5px var(--font-body);opacity:.92}
@@ -91,22 +91,22 @@
 .rc-mrow.fut div{border-bottom:1.5px dashed color-mix(in srgb,var(--oc) 45%,transparent);height:50%;align-self:center}
 
 /* géneros y ánimos */
-.rc-bubbles{position:relative;height:232px;margin-top:12px}
+.rc-bubbles{position:relative;height:190px;margin-top:10px}
 .rc-bub{position:absolute;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.05;box-shadow:0 12px 24px -14px rgba(0,0,0,.6)}
 .rc-bub b{font:400 var(--n,30px)/.9 var(--font-title)}
 .rc-bub span{font:600 13px var(--font-display);margin-top:3px;padding:0 8px}
 .rc-bub.b1{background:var(--paper);color:var(--pi)}
 .rc-bub.b2{background:color-mix(in srgb,var(--paper) 30%,var(--pc));border:1.5px solid color-mix(in srgb,var(--oc) 50%,transparent)}
 .rc-bub.b3{border:2px dashed color-mix(in srgb,var(--oc) 70%,transparent)}
-.rc-moods{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 8px;margin-top:10px}
+.rc-moods{display:flex;flex-wrap:wrap;justify-content:center;gap:9px 8px;margin-top:9px}
 .rc-tape{position:relative;background:var(--paper);color:var(--paper-ink);font:italic 600 15px var(--font-display);padding:6px 12px 5px;box-shadow:0 6px 12px -8px rgba(0,0,0,.6)}
 .rc-tape::before{content:"";position:absolute;left:50%;top:-6px;width:28px;height:11px;margin-left:-14px;background:color-mix(in srgb,var(--oc) 45%,transparent);transform:rotate(-4deg)}
-.rc-pace{margin-top:14px}
+.rc-pace{margin-top:10px}
 .rc-track{position:relative;display:grid;grid-template-columns:repeat(3,1fr);margin-top:6px;border-top:2px solid color-mix(in srgb,var(--oc) 45%,transparent);padding-top:8px}
 .rc-track span{font:600 12px var(--font-body);opacity:.7;text-align:center}
 .rc-track span.on{opacity:1;font-weight:700}
 .rc-track span.on::before{content:"";position:absolute;top:-7px;width:12px;height:12px;border-radius:50%;background:var(--paper);margin-left:-6px;left:calc(var(--x) * 100%)}
-.rc-note{font-size:10.5px;opacity:.85;margin-top:8px}
+.rc-note{font-size:10.5px;opacity:.85;margin-top:6px}
 
 /* autor: ficha de biblioteca */
 .rc-ficha{margin-top:16px;background:var(--paper);color:var(--paper-ink);border-radius:4px;padding:12px 14px 10px;transform:rotate(-2.5deg);box-shadow:0 16px 28px -14px rgba(0,0,0,.65);font-family:"Courier Prime","Courier New",monospace;position:relative}
