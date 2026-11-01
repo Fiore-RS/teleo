@@ -21,6 +21,7 @@ export const changelog: ChangelogEntry[] = [
     items: [
       'Las tarjetas de tu mes y tu año se ven mejor en historias: todo va centrado, con margen arriba y abajo para que la barra de Instagram y el campo de responder no tapen nada.',
       '"Teleo" y tu @ quedan siempre en el mismo lugar, en las esquinas de abajo, y las portadas de tu autor del año van justo debajo de su ficha.',
+      'El Tutorial vuelve a funcionar: a veces la pantalla se oscurecía y se quedaba trabada sin mostrar el primer paso.',
     ],
   },
   {

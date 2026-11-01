@@ -67,7 +67,12 @@ function TourOverlay({ step, index, onNext, onSkip }: { step: TourStep; index: n
   // desplaza o cambia de tamaño.
   useEffect(() => {
     let el: Element | null = null
-    let frame = 0
+    // Dos cuadros aparte: la búsqueda y la medición. Antes compartían uno, y si la página se
+    // desplazaba antes de encontrar el elemento (al cambiar de pantalla desde Configuración ya
+    // bajada, por ejemplo), onChange cancelaba la búsqueda y el recorrido quedaba trabado con
+    // la pantalla oscura y sin globito.
+    let findFrame = 0
+    let measureFrame = 0
     let tries = 0
 
     function measure() {
@@ -78,27 +83,31 @@ function TourOverlay({ step, index, onNext, onSkip }: { step: TourStep; index: n
     }
 
     function find() {
-      el = document.querySelector(`[data-tour="${step.target}"]`)
-      const r = el?.getBoundingClientRect()
-      if (el && r && r.width > 0) {
+      const found = document.querySelector(`[data-tour="${step.target}"]`)
+      const r = found?.getBoundingClientRect()
+      if (found && r && r.width > 0) {
+        el = found
         if (r.top < 0 || r.bottom > window.innerHeight) el.scrollIntoView({ block: 'center' })
         measure()
         return
       }
-      if (++tries < MAX_FIND_FRAMES) frame = requestAnimationFrame(find)
+      if (++tries < MAX_FIND_FRAMES) findFrame = requestAnimationFrame(find)
       else onNext() // Si el elemento no aparece, se salta el paso en vez de quedar trabado.
     }
 
     function onChange() {
-      cancelAnimationFrame(frame)
-      frame = requestAnimationFrame(measure)
+      // Mientras se busca, la búsqueda sigue sola; solo se vuelve a medir lo ya encontrado.
+      if (!el) return
+      cancelAnimationFrame(measureFrame)
+      measureFrame = requestAnimationFrame(measure)
     }
 
-    frame = requestAnimationFrame(find)
+    findFrame = requestAnimationFrame(find)
     window.addEventListener('resize', onChange)
     window.addEventListener('scroll', onChange, true)
     return () => {
-      cancelAnimationFrame(frame)
+      cancelAnimationFrame(findFrame)
+      cancelAnimationFrame(measureFrame)
       window.removeEventListener('resize', onChange)
       window.removeEventListener('scroll', onChange, true)
     }
