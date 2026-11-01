@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { RefreshCw } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -119,8 +118,7 @@ export function AddSagaModal({ isOpen, onClose, userId, existingSagas, onAdded }
               onChange={(e) => setAuthor(e.target.value)}
               className="border-b-[1.5px] border-border focus:border-primary-text py-1 text-body-lg text-text-secondary"
             />
-            <span className="inline-flex items-center gap-1 mt-1 text-body-sm text-text-muted">
-              <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+            <span className="mt-1 font-display italic text-body-sm text-text-muted">
               El estado se calcula con sus libros
             </span>
           </div>

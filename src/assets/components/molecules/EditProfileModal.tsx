@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Loader2, UserRound, ChevronRight } from 'lucide-react'
+import { Loader2, UserRound, ChevronRight } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Button } from '../atoms/Button'
@@ -108,8 +108,7 @@ export function EditProfileModal({
           {/* Se actualiza mientras se escribe el nickname, como vista previa. */}
           <p className="font-display font-semibold text-body-lg leading-normal text-text truncate">{nickname.trim() || username}</p>
           {/* Pista en vez de botones: la foto y el banner se cambian tocándolos. */}
-          <p className="flex items-center gap-1.5 mt-0.5 text-body-sm text-text-secondary">
-            <Camera size={14} className="shrink-0" aria-hidden="true" />
+          <p className="mt-0.5 text-body-sm text-text-secondary">
             {isUploadingPhoto ? 'Subiendo foto...' : isDemo ? 'Toca el banner para cambiarlo' : 'Toca la foto o el banner para cambiarlos'}
           </p>
         </div>

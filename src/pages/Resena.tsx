@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ImageOff, ThumbsUp, Trash2, Quote, AlertTriangle, X } from 'lucide-react'
+import { ImageOff, Trash2, X } from 'lucide-react'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetailSkeleton } from '../assets/components/atoms/Skeleton'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
@@ -52,10 +52,10 @@ function ContentWarningsCard({ warnings, note }: { warnings: string[]; note: str
   const [isOpen, setIsOpen] = useState(false)
   const items = sortedWarnings(warnings)
   return (
-    <section className="bg-orange-tint border border-border rounded-2xl px-4 py-3">
+    <section className="bg-orange-tint border border-border border-l-[3px] border-l-orange rounded-2xl px-4 py-3">
       <div className="flex items-center gap-2">
-        <AlertTriangle size={16} className="text-orange-text shrink-0" aria-hidden="true" />
-        <h4 className="text-body-md font-bold text-orange-text">Este libro tiene avisos de contenido</h4>
+        {/* V.3.5.0: versalitas y la línea naranja de la izquierda en lugar del triángulo. */}
+        <h4 className="smallcaps text-orange-text">Avisos de contenido</h4>
         <button
           type="button"
           onClick={() => setIsOpen((o) => !o)}
@@ -290,10 +290,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={20} />
                     </div>
                     {review.recommends && (
-                      <span className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-chip bg-magenta-soft text-magenta-text text-body-sm font-bold">
-                        <ThumbsUp size={13} strokeWidth={2.2} />
-                        Lo recomiendas
-                      </span>
+                      <span className="seal mt-3 text-primary-text">Lo recomiendas</span>
                     )}
                   </>
                 )}
@@ -363,7 +360,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                     <FormCard>
                       {quotes.map((q) => (
                         <div key={q.id} className="flex gap-2.5 px-3.5 py-3">
-                          <Quote size={16} className="text-ornament shrink-0 mt-0.5" aria-hidden="true" />
+                          <span aria-hidden="true" className="font-display font-semibold text-[34px] leading-[0.8] text-primary-text shrink-0 -mt-0.5 w-4">“</span>
                           <div className="min-w-0">
                             <p className="font-display italic text-body-md text-text">{q.quote_text}</p>
                             {q.page != null && <p className="text-body-sm text-text-muted mt-0.5">Pág. {q.page}</p>}
