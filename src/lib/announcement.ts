@@ -2,7 +2,7 @@ import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '3.4.0'
+export const ANNOUNCEMENT_VERSION = '3.5.0'
 
 /** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
  *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
@@ -14,10 +14,10 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'Género y ánimo por saga', text: 'Ponlos en Editar saga y llegan a todos sus libros. Cada libro se puede cambiar en Editar libro.' },
-  { title: 'Sin perder lo tuyo', text: 'Si un libro ya tiene otro género o ánimo, Teleo te pregunta antes de cambiarlo.' },
-  { title: 'Filtros más cómodos', text: 'Cada filtro se despliega con sus opciones, y en Sagas ya puedes filtrar por género y ánimo.' },
-  { title: 'Completar géneros por saga', text: 'Una sola sugerencia para toda la saga, en vez de una por libro.' },
+  { title: 'Más letra, menos íconos', text: 'Configuración, Bitácora, los menús y los botones se leen más limpios.' },
+  { title: 'Formas nuevas', text: 'Botones, etiquetas y buscadores ahora son rectángulos con esquinas suaves, como las tarjetas.' },
+  { title: 'La mesa renovada', text: 'El próximo lanzamiento como hoja de calendario, la semana de tu racha en cuadros y "Editar" en tu meta.' },
+  { title: 'Un Perfil nuevo', text: 'Tu biblioteca en cifras, lo que estás leyendo ahora y tus estanterías en una sola tarjeta.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */

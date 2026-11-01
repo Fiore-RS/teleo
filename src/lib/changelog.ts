@@ -15,6 +15,21 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.5.0',
+    announced: true,
+    date: '2 de noviembre de 2026',
+    title: 'Hoja limpia',
+    items: [
+      'Teleo estrena un estilo más editorial: menos íconos y más letra. Configuración, Bitácora, los menús, los botones y las etiquetas se leen más limpios.',
+      'Botones, etiquetas, buscadores y selectores pasan de ovalados a rectángulos con esquinas suaves, como las tarjetas. La pestaña elegida en la barra de abajo también.',
+      'En La mesa, el próximo lanzamiento se ve como una hoja de calendario, con su fecha y cuánto falta. La racha muestra la semana en cuadros, y la meta se edita desde "Editar", arriba de su tarjeta.',
+      'Perfil cambia: Tu biblioteca muestra cuántos libros tienes, cuántos leíste este año y tu racha; Ahora mismo junta lo que estás leyendo, el último libro que terminaste y una de tus citas; y tus estanterías están en una sola tarjeta, con hasta diez libros de cada una.',
+      'En Bitácora y en el calendario de lectura, tu racha actual y tu racha más larga se ven en números grandes.',
+      '"Lo recomiendas" y "Favorito del año" ahora son un sello, y las citas llevan una comilla grande.',
+      'Arreglado: al cambiar de pantalla por primera vez después de abrir Teleo, a veces se veía todo en negro un momento.',
+    ],
+  },
+  {
     version: '3.4.1',
     date: '1 de noviembre de 2026',
     title: 'Tu ticket, completo',
