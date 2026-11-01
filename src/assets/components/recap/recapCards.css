@@ -168,8 +168,8 @@
 .rc-ticket .li{display:flex;align-items:baseline;gap:4px;line-height:1.75}
 .rc-ticket .li i{flex:1;border-bottom:1.5px dotted color-mix(in srgb,var(--paper-ink) 45%,transparent);transform:translateY(-3px)}
 .rc-ticket .li b{font-weight:700;max-width:58%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc-ticket .tot{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:15px;color:var(--pi)}
-.rc-ticket .tot span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Favorito o último (V.3.4.1): el título no se corta; baja de renglón alineado a la derecha. */
+.rc-ticket .li-wrap b{white-space:normal;overflow:visible;text-align:right;line-height:1.35;max-width:62%;text-wrap:balance;overflow-wrap:anywhere}
 .rc-barcode{height:34px;margin:10px 8px 4px;background:repeating-linear-gradient(90deg,var(--paper-ink) 0 2px,transparent 2px 4px,var(--paper-ink) 4px 5px,transparent 5px 8px,var(--paper-ink) 8px 11px,transparent 11px 12px,var(--paper-ink) 12px 13px,transparent 13px 16px)}
 .rc-ticket .thanks{font-size:10px;letter-spacing:.14em;text-transform:uppercase;text-align:center}
 
