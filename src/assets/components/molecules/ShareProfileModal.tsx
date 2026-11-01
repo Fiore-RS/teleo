@@ -73,6 +73,9 @@ export function ShareProfileModal({ onClose, userId }: ShareProfileModalProps) {
       return await toBlob(cardRef.current, {
         pixelRatio: 3,
         imagePlaceholder: TRANSPARENT_PIXEL,
+        // Las portadas pasan por images.weserv.nl/?url=…: sin esto, html-to-image las guarda en
+        // memoria por la dirección sin lo que va después del "?" y repite la misma portada (3.4.1).
+        includeQueryParams: true,
         // Defensa extra: si por lo que sea una imagen (incluyendo el propio placeholder)
         // dispara `onerror` durante el renderizado, no tronamos toda la captura — la
         // dejamos en blanco y seguimos. Sin esto, un solo error de imagen aborta la tarjeta.

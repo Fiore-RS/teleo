@@ -21,6 +21,9 @@ async function cardToBlob(node: HTMLElement) {
   return toBlob(node, {
     pixelRatio: RECAP_EXPORT_PIXEL_RATIO,
     imagePlaceholder: TRANSPARENT_PIXEL,
+    // Las portadas pasan por images.weserv.nl/?url=…: sin esto, html-to-image las guarda en
+    // memoria por la dirección sin lo que va después del "?" y repite la misma portada (3.4.1).
+    includeQueryParams: true,
     onImageErrorHandler: (event) => console.warn('[RecapViewer] Imagen no se pudo incrustar, se omite:', event),
   })
 }
