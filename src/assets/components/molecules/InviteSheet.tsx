@@ -43,6 +43,9 @@ export function InviteSheet({ userId, onClose }: InviteSheetProps) {
     const blob = await toBlob(cardRef.current, {
       pixelRatio: 3,
       imagePlaceholder: TRANSPARENT_PIXEL,
+      // Las portadas pasan por images.weserv.nl/?url=…: sin esto, html-to-image las guarda en
+      // memoria por la dirección sin lo que va después del "?" y repite la misma portada (3.4.1).
+      includeQueryParams: true,
       onImageErrorHandler: (event) => console.warn('[InviteSheet] Imagen no se pudo incrustar, se omite:', event),
     })
     return blob ? new File([blob], FILE_NAME, { type: 'image/png' }) : null
