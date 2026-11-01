@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.4.1',
+    date: '1 de noviembre de 2026',
+    title: 'Tu ticket, completo',
+    items: [
+      'En el ticket de tu mes y tu año, tu favorito (o el último libro que terminaste) va como una línea más, igual que el autor, y su título se ve completo aunque sea largo.',
+      'Al pie del ticket queda solo tu @usuario.',
+      'Las tarjetas de tu mes y tu año hablan en primera persona ("Mis lecturas de octubre", "Mi racha"), para que se sientan tuyas al compartirlas en historias.',
+    ],
+  },
+  {
     version: '3.4.0',
     announced: true,
     date: '30 de octubre de 2026',
