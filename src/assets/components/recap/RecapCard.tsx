@@ -201,7 +201,8 @@ interface RecapCardProps {
   username: string | null
 }
 
-/** Una tarjeta de "Tu lectura en Teleo" (V.3.2.0). Cada una es un objeto de lectura: estante,
+/** Una tarjeta de "Tu lectura en Teleo" (V.3.2.0). Desde la V.3.4.1 los textos de las tarjetas
+ *  hablan en primera persona ("Mis lecturas", "Mi racha"), porque se comparten en historias. Cada una es un objeto de lectura: estante,
  *  pila de páginas, cuadrícula de portadas (V.3.3.1), estante por meses, burbujas de géneros, ficha de biblioteca, cinta
  *  separadora, portadas releídas, escarapela del favorito y ticket. */
 export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function RecapCard({ card, recap, tone, username }, ref) {
@@ -234,7 +235,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
         <>
           <div className="rc-top">{recap.isOngoing && <span className="rc-stamp">{sofar}</span>}</div>
           <div className="rc-ptitle">
-            <span className="tu">Tu</span>
+            <span className="tu">Mi</span>
             {isYear ? (
               <span className="yr">{recap.period.year}</span>
             ) : (
@@ -275,7 +276,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       }
       body = (
         <>
-          <span className="rc-kicker">{kicker} leíste</span>
+          <span className="rc-kicker">{kicker} leí</span>
           <div className="rc-gwrap">
             <div className={`rc-giant${recap.readCount >= 100 ? ' long' : ''}`}>{recap.readCount}</div>
             <div className="rc-giant-l">{recap.readCount === 1 ? 'libro' : 'libros'}</div>
@@ -293,7 +294,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
                 <p>
                   {isYear
                     ? `Apiladas, medirían ${formatStackHeight(recap.stackCm)}.`
-                    : `Leíste ${recap.readDays.length} de ${recap.elapsedDays} ${recap.elapsedDays === 1 ? 'día' : 'días'}.`}
+                    : `Leí ${recap.readDays.length} de ${recap.elapsedDays} ${recap.elapsedDays === 1 ? 'día' : 'días'}.`}
                 </p>
               </div>
             </div>
@@ -315,7 +316,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
                 de libros y páginas sí cuenta las relecturas. */}
             <span className="rc-stamp">{count} {count === 1 ? 'título' : 'títulos'}</span>
           </div>
-          <h3 className="rc-pg-title">{isYear ? `Tu ${recap.period.year} en libros` : `Tus lecturas de ${monthName.toLowerCase()}`}</h3>
+          <h3 className="rc-pg-title">{isYear ? `Mi ${recap.period.year} en libros` : `Mis lecturas de ${monthName.toLowerCase()}`}</h3>
           <CoverGrid books={recap.books} />
           {foot}
         </>
@@ -329,7 +330,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const rand = seeded(recap.period.year)
       body = (
         <>
-          <span className="rc-kicker">Tu mes más lector</span>
+          <span className="rc-kicker">Mi mes más lector</span>
           <div className="rc-monthname" style={{ fontSize: fitSize(MONTH_NAMES[best.month - 1], 58, 252) }}>{MONTH_NAMES[best.month - 1]}</div>
           {best.tiedWith.length > 0 && (
             // Hasta dos meses se nombran; con más, solo cuántos, para que no llegue hasta la etiqueta.
@@ -375,7 +376,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
         <>
           {g.length > 0 && (
             <>
-              <span className="rc-kicker">Lo que más leíste</span>
+              <span className="rc-kicker">Lo que más leí</span>
               <div className="rc-bubbles" style={g.length < 3 ? { height: Math.max(...s) + 16 } : undefined}>
                 {g[0] && (
                   <div className="rc-bub b1" style={{ width: s[0], height: s[0], left: 0, top: 0, ['--n' as string]: `${Math.round(s[0] / 3.4)}px` }}>
@@ -402,7 +403,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
           )}
           {recap.topMoods.length > 0 && (
             <>
-              <span className="rc-kicker" style={{ marginTop: 8 }}>Cómo te hicieron sentir</span>
+              <span className="rc-kicker" style={{ marginTop: 8 }}>Cómo me hicieron sentir</span>
               <div className="rc-moods">
                 {recap.topMoods.map((m, k) => (
                   <span key={m.label} className="rc-tape" style={{ transform: `rotate(${[-4, 3, -2][k]}deg)` }}>{m.label}</span>
@@ -412,7 +413,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
           )}
           {recap.topPace && (
             <div className="rc-pace">
-              <span className="rc-kicker">Tu ritmo</span>
+              <span className="rc-kicker">Mi ritmo</span>
               <div className="rc-track">
                 {paceKeys.map((p, k) => (
                   <span key={p} className={p === recap.topPace ? 'on' : undefined} style={{ ['--x' as string]: (k * 2 + 1) / 6 }}>{p}</span>
@@ -421,7 +422,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
             </div>
           )}
           <p className="rc-note">
-            Según {recap.traitBooks} de tus {recap.traits.total} libros {isYear ? 'este año' : 'este mes'}
+            Según {recap.traitBooks} de mis {recap.traits.total} libros {isYear ? 'este año' : 'este mes'}
           </p>
           {foot}
         </>
@@ -434,7 +435,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const shown = author.books.slice(0, 4)
       body = (
         <>
-          <span className="rc-kicker">Tu autor del año</span>
+          <span className="rc-kicker">Mi autor del año</span>
           <div className="rc-ficha">
             <div className="hd">
               <span>Ficha de lectura</span>
@@ -473,9 +474,9 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
           <div className="rc-cinta">
             <b className={streak.days >= 100 ? 'long' : undefined}>{streak.days}</b>
             <span>días<br />seguidos</span>
-            <small>Tu racha</small>
+            <small>Mi racha</small>
           </div>
-          <span className="rc-kicker">Tu racha más larga</span>
+          <span className="rc-kicker">Mi racha más larga</span>
           <h3>Sin soltar el libro</h3>
           <div className="rc-cal">
             <div className="mt">{MONTH_NAMES[month - 1]} {year}</div>
@@ -488,7 +489,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
               })}
             </div>
           </div>
-          <p>{rangeText(streak.from, streak.to)}, sin saltarte un día.</p>
+          <p>{rangeText(streak.from, streak.to)}, sin saltarme un día.</p>
           {foot}
         </>
       )
@@ -499,7 +500,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const shown = recap.rereads.slice(0, 3)
       body = (
         <>
-          <span className="rc-kicker">Volviste a abrir</span>
+          <span className="rc-kicker">Volví a abrir</span>
           <div className="rc-relbig">
             <b>{recap.rereads.length}</b>
             <span>{recap.rereads.length === 1 ? 'relectura' : 'relecturas'}</span>
@@ -529,7 +530,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       const fav = recap.favorite!
       body = (
         <>
-          <span className="rc-kicker">Tu favorito</span>
+          <span className="rc-kicker">Mi favorito</span>
           <p className="rc-favh">{isYear ? `de ${recap.period.year}` : `de ${monthName.toLowerCase()}`}</p>
           <div className="rc-favwrap">
             <Cover book={fav} width={720} />
@@ -556,7 +557,10 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       if (recap.streak && isYear) lines.push(['Racha', `${recap.streak.days} días`])
       if (recap.author) lines.push(['Autor', recap.author.name])
       if (recap.rereads.length > 0 && isYear) lines.push(['Relecturas', recap.rereads.length])
-      const last = recap.favorite ? ['Favorito', recap.favorite.title] : ['Último', recap.books[recap.books.length - 1]?.title ?? '']
+      // V.3.4.1: el favorito (o, si no hay, el último terminado) va como una línea más, igual
+      // que Autor, y su título se ve completo aunque ocupe más de un renglón.
+      const lastTitle = recap.favorite?.title ?? recap.books[recap.books.length - 1]?.title
+      if (lastTitle) lines.push([recap.favorite ? 'Favorito' : 'Último', lastTitle])
       body = (
         <>
           <div className="rc-ticket">
@@ -570,19 +574,15 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
             </div>
             <hr />
             {lines.map(([label, value]) => (
-              <div key={label} className="li">
+              <div key={label} className={label === 'Favorito' || label === 'Último' ? 'li li-wrap' : 'li'}>
                 <span>{label}</span>
                 <i />
                 <b>{value}</b>
               </div>
             ))}
             <hr />
-            <div className="tot">
-              <span>{last[0]}</span>
-              <span>{last[1]}</span>
-            </div>
             <div className="rc-barcode" />
-            <div className="thanks">{username ? `@${username} · ` : ''}Gracias por leer</div>
+            {username && <div className="thanks">@{username}</div>}
           </div>
           {foot}
         </>
