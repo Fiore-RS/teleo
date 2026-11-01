@@ -56,6 +56,6 @@ export const TOUR_STEPS: TourStep[] = [
     route: '/perfil',
     tab: 'Perfil',
     title: 'Tu rincón',
-    text: 'Tu meta del año, tu actividad, tus listas y tu tarjeta para compartir. Desde aquí también entras a Configuración.',
+    text: 'Tu biblioteca en cifras, lo que estás leyendo, tu meta, tus estanterías y tu tarjeta para compartir. Desde aquí también entras a Configuración.',
   },
 ]
