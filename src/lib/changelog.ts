@@ -22,6 +22,7 @@ export const changelog: ChangelogEntry[] = [
       'En el ticket de tu mes y tu año, tu favorito (o el último libro que terminaste) va como una línea más, igual que el autor, y su título se ve completo aunque sea largo.',
       'Al pie del ticket queda solo tu @usuario.',
       'Las tarjetas de tu mes y tu año hablan en primera persona ("Mis lecturas de octubre", "Mi racha"), para que se sientan tuyas al compartirlas en historias.',
+      'Arreglado: al compartir o descargar una tarjeta, a veces se repetía la misma portada en lugar de mostrar la de cada libro.',
     ],
   },
   {
