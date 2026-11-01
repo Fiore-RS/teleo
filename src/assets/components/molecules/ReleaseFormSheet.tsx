@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Bookmark, Search, Trash2, X, Plus, ChevronRight } from 'lucide-react'
+import { Bookmark, Search, Trash2, X, ChevronRight } from 'lucide-react'
 import { supabase } from '../../../lib/supabase'
 import { useCachedQuery } from '../../../hooks/useCachedQuery'
 import { useReleases, type Release } from '../../../hooks/useReleases'
@@ -181,7 +181,7 @@ export function ReleaseFormSheet({ userId, release, initialDate, initialBookId, 
                 type="button"
                 onClick={() => setBookId(null)}
                 aria-label="Quitar enlace con el libro"
-                className="self-start inline-flex items-center gap-1.5 mt-0.5 px-3 py-1 rounded-full bg-primary-soft text-primary-text font-body font-bold text-body-sm"
+                className="self-start inline-flex items-center gap-1.5 mt-0.5 px-3 py-1 rounded-chip bg-primary-soft text-primary-text font-body font-bold text-body-sm"
               >
                 De tus deseados
                 <X size={13} strokeWidth={2.4} />
@@ -190,9 +190,9 @@ export function ReleaseFormSheet({ userId, release, initialDate, initialBookId, 
               <button
                 type="button"
                 onClick={() => setIsPickingBook((v) => !v)}
-                className="self-start inline-flex items-center gap-1.5 mt-0.5 px-3 py-1 rounded-full bg-primary-soft text-primary-text font-body font-bold text-body-sm"
+                className="self-start inline-flex items-center gap-1.5 mt-0.5 px-3 py-1 rounded-chip bg-primary-soft text-primary-text font-body font-bold text-body-sm"
               >
-                {isPickingBook ? 'Cancelar búsqueda' : (<><Plus size={13} strokeWidth={2.4} />Elegir de tus deseados</>)}
+                {isPickingBook ? 'Cancelar búsqueda' : 'Elegir de tus deseados'}
               </button>
             )}
           </div>
@@ -200,7 +200,7 @@ export function ReleaseFormSheet({ userId, release, initialDate, initialBookId, 
 
         {isPickingBook && !linkedBook && (
           <div className="mb-5 animate-fade-in">
-            <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-full px-4 py-2.5 mb-2.5 focus-within:border-primary-text transition-colors">
+            <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-field px-4 py-2.5 mb-2.5 focus-within:border-primary-text transition-colors">
               <Search size={17} className="text-text-muted shrink-0" aria-hidden="true" />
               <input
                 autoFocus

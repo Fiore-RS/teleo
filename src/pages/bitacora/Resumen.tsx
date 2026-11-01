@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { BookCheck, CalendarRange, Crown, Heart, Check, Shapes } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
 import { queryClient } from '../../lib/queryClient'
@@ -418,8 +418,6 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
             {(byCategory.length > 0 || byFormat.length > 0) && (
               <MoreRow
                 id="anio-leido"
-                tone="orange"
-                icon={Shapes}
                 title="Qué leíste"
                 summary={leidoSummary}
                 isOpen={openRow === 'leido'}
@@ -440,8 +438,6 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
             />
             <MoreRow
               id="anio-favoritos"
-              tone="magenta"
-              icon={Crown}
               title="Tus favoritos"
               summary={
                 monthsWithReads === 0
@@ -455,7 +451,6 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
                 Elige tu libro favorito de cada mes y, entre ellos, el favorito del año.
               </p>
               <Button variant="soft" className="mt-3" onClick={() => onViewChange('favoritos')}>
-                <Heart size={16} />
                 Ir a favoritos
               </Button>
             </MoreRow>
@@ -539,10 +534,7 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
                   className="w-[84px] shrink-0 rounded-lg! shadow-[0_10px_18px_-10px_rgba(0,0,0,0.6)]"
                 />
                 <span className="min-w-0">
-                  <span className="flex items-center gap-1 text-[12px] font-bold text-magenta-text mb-1">
-                    <Crown size={13} aria-hidden="true" />
-                    Favorito del año
-                  </span>
+                  <span className="seal mb-2 text-magenta-text">Favorito del año</span>
                   <span className="block font-display font-semibold text-[20px] leading-[1.2] text-text">{yearFavoriteBook.title}</span>
                   {yearFavoriteBook.author && <span className="block text-body-md text-text-secondary mt-0.5">{yearFavoriteBook.author}</span>}
                   <span className="block text-[13px] font-bold text-magenta-text mt-2.5">Cambiar</span>
@@ -558,7 +550,6 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
                   {yearFavorite ? 'Dejaste vacío el favorito del año.' : `Elige el favorito del año entre tus ${monthlyFavoriteBooks.length} favoritos de cada mes.`}
                 </p>
                 <Button variant="magenta" className="mt-3" onClick={() => setPicking(0)}>
-                  <Crown size={17} />
                   Elegir favorito del año
                 </Button>
               </>
@@ -650,7 +641,6 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
               setPicking(null)
             }}
           >
-            {picking === 0 ? <CalendarRange size={17} /> : <BookCheck size={17} />}
             Dejar vacío
           </Button>
         </Sheet>

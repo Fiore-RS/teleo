@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowDownAZ, User, CalendarDays, Move, SlidersHorizontal, X, Shuffle, LayoutGrid } from "lucide-react";
+import { SlidersHorizontal, X, LayoutGrid } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
@@ -245,16 +245,16 @@ export function Estante() {
   );
 
   const bookSortOptions: SortMenuOption<LibrarySortMode>[] = [
-    { key: "titulo", label: "Título", icon: ArrowDownAZ },
-    { key: "autor", label: "Autor", icon: User },
-    { key: "fecha", label: "Fecha agregado", icon: CalendarDays },
-    { key: "libre", label: isReorderingBooks ? "Listo" : "Libre (arrastrar)", icon: Move },
+    { key: "titulo", label: "Título" },
+    { key: "autor", label: "Autor" },
+    { key: "fecha", label: "Fecha agregado" },
+    { key: "libre", label: isReorderingBooks ? "Listo" : "Libre (arrastrar)" },
   ];
   const sagaSortOptions: SortMenuOption<LibrarySortMode>[] = [
-    { key: "titulo", label: "Título", icon: ArrowDownAZ },
-    { key: "autor", label: "Autor", icon: User },
-    { key: "fecha", label: "Fecha agregado", icon: CalendarDays },
-    { key: "libre", label: isReorderingSagas ? "Listo" : "Libre (arrastrar)", icon: Move },
+    { key: "titulo", label: "Título" },
+    { key: "autor", label: "Autor" },
+    { key: "fecha", label: "Fecha agregado" },
+    { key: "libre", label: isReorderingSagas ? "Listo" : "Libre (arrastrar)" },
   ];
 
   // Elegir "Libre" activa el modo de arrastrar de una vez (si no se estaba ya en ese modo);
@@ -362,9 +362,8 @@ export function Estante() {
             <button
               type="button"
               onClick={() => setIsRandomPickOpen(true)}
-              className="inline-flex items-center gap-1.5 font-body text-[13px] font-bold text-primary-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+              className="inline-flex items-center gap-1.5 font-body text-[13px] font-bold text-primary-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
             >
-              <Shuffle size={14} aria-hidden="true" />
               ¿Qué leo ahora?
             </button>
           )
@@ -374,7 +373,7 @@ export function Estante() {
       <div className="space-y-5">
         {quickFlag && (
           <div className="flex">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft text-primary-text pl-3.5 pr-2 py-1.5 text-body-sm font-body font-semibold">
+            <span className="inline-flex items-center gap-2 rounded-chip bg-primary-soft text-primary-text pl-3.5 pr-2 py-1.5 text-body-sm font-body font-semibold">
               Mostrando:{" "}
               {quickFlag === "favoritos"
                 ? "Favoritos"
@@ -409,7 +408,7 @@ export function Estante() {
             <button
               type="button"
               onClick={() => setIsGoodreadsOpen(true)}
-              className="mt-3 text-body-md font-bold text-primary-text rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+              className="mt-3 text-body-md font-bold text-primary-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
             >
               ¿Ya usas Goodreads? Trae tu biblioteca
             </button>

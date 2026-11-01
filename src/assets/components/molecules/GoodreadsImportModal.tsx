@@ -1,6 +1,4 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { FileUp, BookCheck, BookOpen, Bookmark, Heart, BookX, Pause, Layers, Tags, Copy } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
 import { ProgressBar } from '../atoms/ProgressBar'
@@ -28,13 +26,13 @@ type Step =
   | { kind: 'listo'; result: GoodreadsResult; duplicates: number }
   | { kind: 'error' }
 
-const STATUS_ROWS: { status: GoodreadsStatus; label: string; icon: LucideIcon }[] = [
-  { status: 'terminado', label: 'Terminados', icon: BookCheck },
-  { status: 'leyendo', label: 'Leyendo', icon: BookOpen },
-  { status: 'pausado', label: 'En pausa', icon: Pause },
-  { status: 'pendiente', label: 'Pendientes', icon: Bookmark },
-  { status: 'deseado', label: 'Deseados', icon: Heart },
-  { status: 'abandonado', label: 'Abandonados', icon: BookX },
+const STATUS_ROWS: { status: GoodreadsStatus; label: string }[] = [
+  { status: 'terminado', label: 'Terminados' },
+  { status: 'leyendo', label: 'Leyendo' },
+  { status: 'pausado', label: 'En pausa' },
+  { status: 'pendiente', label: 'Pendientes' },
+  { status: 'deseado', label: 'Deseados' },
+  { status: 'abandonado', label: 'Abandonados' },
 ]
 
 const STEPS_TO_EXPORT = [
@@ -45,11 +43,10 @@ const STEPS_TO_EXPORT = [
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
-/** Fila de la vista previa: ícono, nombre y número (o texto) a la derecha. */
-function CountRow({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
+/** Fila de la vista previa: nombre y número (o texto) a la derecha. Sin ícono desde la V.3.5.0. */
+function CountRow({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex items-center gap-3 px-3.5 py-2.5 min-h-12">
-      <Icon size={18} className="text-primary-text shrink-0" aria-hidden="true" />
       <span className="flex-1 min-w-0 text-body-md font-semibold text-text-secondary">{label}</span>
       <span className="font-display font-semibold text-body-lg text-text tabular-nums">{value}</span>
     </div>
@@ -100,7 +97,7 @@ export function GoodreadsImportModal({ onClose, userId }: GoodreadsImportModalPr
   if (step.kind === 'inicio') {
     footer = (
       <Button variant="primary" onClick={() => inputRef.current?.click()} disabled={!userId}>
-        <FileUp size={18} /> Elegir archivo
+        Elegir archivo
       </Button>
     )
   } else if (step.kind === 'vista') {
@@ -173,8 +170,8 @@ export function GoodreadsImportModal({ onClose, userId }: GoodreadsImportModalPr
             <>
               <FormSection label={`Vas a importar ${plural(step.preview.books.length, 'libro', 'libros')}`}>
                 <FormCard>
-                  {STATUS_ROWS.filter(({ status }) => step.preview.counts[status] > 0).map(({ status, label, icon }) => (
-                    <CountRow key={status} icon={icon} label={label} value={step.preview.counts[status]} />
+                  {STATUS_ROWS.filter(({ status }) => step.preview.counts[status] > 0).map(({ status, label }) => (
+                    <CountRow key={status} label={label} value={step.preview.counts[status]} />
                   ))}
                 </FormCard>
               </FormSection>
@@ -182,10 +179,10 @@ export function GoodreadsImportModal({ onClose, userId }: GoodreadsImportModalPr
               {(step.preview.newSagas > 0 || step.preview.existingSagas > 0 || step.preview.withGenre > 0 || step.preview.duplicates > 0) && (
                 <FormSection label="Además" className="mb-0">
                   <FormCard>
-                    {step.preview.newSagas > 0 && <CountRow icon={Layers} label="Sagas nuevas, con sus libros en orden" value={step.preview.newSagas} />}
-                    {step.preview.existingSagas > 0 && <CountRow icon={Layers} label="Sagas que ya tenías y reciben libros" value={step.preview.existingSagas} />}
-                    {step.preview.withGenre > 0 && <CountRow icon={Tags} label="Libros con género desde tus estanterías" value={step.preview.withGenre} />}
-                    {step.preview.duplicates > 0 && <CountRow icon={Copy} label="Ya estaban en Teleo y no se repiten" value={step.preview.duplicates} />}
+                    {step.preview.newSagas > 0 && <CountRow label="Sagas nuevas, con sus libros en orden" value={step.preview.newSagas} />}
+                    {step.preview.existingSagas > 0 && <CountRow label="Sagas que ya tenías y reciben libros" value={step.preview.existingSagas} />}
+                    {step.preview.withGenre > 0 && <CountRow label="Libros con género desde tus estanterías" value={step.preview.withGenre} />}
+                    {step.preview.duplicates > 0 && <CountRow label="Ya estaban en Teleo y no se repiten" value={step.preview.duplicates} />}
                   </FormCard>
                 </FormSection>
               )}

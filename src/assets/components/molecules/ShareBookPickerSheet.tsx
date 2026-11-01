@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Check, EyeOff } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { SearchPill } from '../atoms/SearchPill'
 import { Button } from '../atoms/Button'
@@ -38,7 +38,6 @@ export function ShareBookPickerSheet({ title, books, searchPool, selectedId, emp
       footer={
         <FormActions>
           <Button variant="outline" onClick={() => onSelect(null)}>
-            <EyeOff size={17} />
             No mostrar
           </Button>
         </FormActions>

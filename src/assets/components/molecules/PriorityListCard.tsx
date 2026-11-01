@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookPlus, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -94,7 +94,7 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
               <button
                 type="button"
                 onClick={() => setIsReordering(false)}
-                className="inline-flex items-center gap-1.5 shrink-0 h-7 rounded-full bg-magenta text-on-magenta px-3.5 text-body-sm font-bold animate-fade-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+                className="inline-flex items-center gap-1.5 shrink-0 h-7 rounded-chip bg-magenta text-on-magenta px-3.5 text-body-sm font-bold animate-fade-in focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
               >
                 <Check size={15} strokeWidth={2.5} />
                 Listo
@@ -129,7 +129,6 @@ export function PriorityListCard({ userId, onOpenBook }: PriorityListCardProps) 
               Elige los pendientes que quieres leer pronto y ordénalos a tu manera.
             </p>
             <Button variant="soft" className="mt-3.5" onClick={() => setIsAddBooksOpen(true)}>
-              <BookPlus size={16} />
               Agregar libros
             </Button>
           </>

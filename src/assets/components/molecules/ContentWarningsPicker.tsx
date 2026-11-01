@@ -60,7 +60,7 @@ export function ContentWarningsPicker({ selected, note, onClose, onSave }: Conte
                 role="checkbox"
                 aria-checked={isOn}
                 onClick={() => toggle(w.key)}
-                className={`inline-flex items-center gap-1.5 rounded-full border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
+                className={`inline-flex items-center gap-1.5 rounded-chip border-[1.5px] px-3 py-1.5 font-body font-semibold text-body-md transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
                   isOn ? 'border-orange-text bg-orange-soft text-orange-text' : 'border-border bg-surface-2 text-text-secondary'
                 }`}
               >

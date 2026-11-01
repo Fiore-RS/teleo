@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { BookOpen, Camera, Headphones, ImageOff, Sparkles, Tablet, type LucideIcon } from 'lucide-react'
+import { Camera, ImageOff } from 'lucide-react'
 import { CoverImage } from '../atoms/CoverImage'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -44,16 +44,16 @@ export interface BookDraft {
   traits: BookTraits
 }
 
-const formatChoices: { value: BookFormat; label: string; icon: LucideIcon }[] = [
-  { value: 'fisico', label: 'Físico', icon: BookOpen },
-  { value: 'digital', label: 'Digital', icon: Tablet },
-  { value: 'audiolibro', label: 'Audiolibro', icon: Headphones },
+const formatChoices: { value: BookFormat; label: string }[] = [
+  { value: 'fisico', label: 'Físico' },
+  { value: 'digital', label: 'Digital' },
+  { value: 'audiolibro', label: 'Audiolibro' },
 ]
 
 export function FormatPicker({ value, onChange }: { value: BookFormat; onChange: (format: BookFormat) => void }) {
   return (
-    <div role="radiogroup" aria-label="Formato" className="grid grid-cols-3 gap-1 p-1 mb-2.5 bg-surface-2 border border-border rounded-[14px]">
-      {formatChoices.map(({ value: v, label, icon: Icon }) => {
+    <div role="radiogroup" aria-label="Formato" className="grid grid-cols-3 gap-1 p-1 mb-2.5 bg-surface-2 border border-border rounded-field">
+      {formatChoices.map(({ value: v, label }) => {
         const isActive = v === value
         return (
           <button
@@ -62,11 +62,10 @@ export function FormatPicker({ value, onChange }: { value: BookFormat; onChange:
             role="radio"
             aria-checked={isActive}
             onClick={() => onChange(v)}
-            className={`flex flex-col items-center gap-0.5 py-2 px-1 rounded-[10px] font-body font-bold text-body-md transition-all duration-150 ${
+            className={`flex items-center justify-center py-2.5 px-1 rounded-[6px] font-body font-bold text-body-md transition-all duration-150 ${
               isActive ? 'bg-surface text-primary-text shadow-card' : 'text-text-secondary'
             }`}
           >
-            <Icon size={17} strokeWidth={2} aria-hidden="true" />
             {label}
           </button>
         )
@@ -232,7 +231,6 @@ export function EditBookForm({
           <FormSwitchRow label="Favorito" checked={draft.isFavorite} onChange={(isFavorite) => onChange({ isFavorite })} />
           {draft.status === 'pendiente' && (
             <FormSwitchRow
-              icon={Sparkles}
               label="Próxima lectura"
               hint="Súmalo a tus próximas lecturas"
               checked={draft.isPriority}

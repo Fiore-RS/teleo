@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ImageOff, ThumbsUp, Plus, PenLine, Trash2, Quote, AlertTriangle, X } from 'lucide-react'
+import { ImageOff, Trash2, X } from 'lucide-react'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetailSkeleton } from '../assets/components/atoms/Skeleton'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
@@ -52,10 +52,10 @@ function ContentWarningsCard({ warnings, note }: { warnings: string[]; note: str
   const [isOpen, setIsOpen] = useState(false)
   const items = sortedWarnings(warnings)
   return (
-    <section className="bg-orange-tint border border-border rounded-2xl px-4 py-3">
+    <section className="bg-orange-tint border border-border border-l-[3px] border-l-orange rounded-2xl px-4 py-3">
       <div className="flex items-center gap-2">
-        <AlertTriangle size={16} className="text-orange-text shrink-0" aria-hidden="true" />
-        <h4 className="text-body-md font-bold text-orange-text">Este libro tiene avisos de contenido</h4>
+        {/* V.3.5.0: versalitas y la línea naranja de la izquierda en lugar del triángulo. */}
+        <h4 className="smallcaps text-orange-text">Avisos de contenido</h4>
         <button
           type="button"
           onClick={() => setIsOpen((o) => !o)}
@@ -72,7 +72,7 @@ function ContentWarningsCard({ warnings, note }: { warnings: string[]; note: str
             {items.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {items.map((w) => (
-                  <span key={w.key} className="px-3 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
+                  <span key={w.key} className="px-3 py-1 rounded-chip bg-orange-soft text-orange-text text-body-sm font-semibold">
                     {w.label}
                   </span>
                 ))}
@@ -254,7 +254,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
           <Trash2 size={18} />
         </Button>
         <Button variant="soft" onClick={startEditing}>
-          <PenLine size={17} />
           Editar reseña
         </Button>
       </FormActions>
@@ -291,10 +290,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={20} />
                     </div>
                     {review.recommends && (
-                      <span className="inline-flex items-center gap-1.5 mt-2.5 px-3 py-1 rounded-full bg-magenta-soft text-magenta-text text-body-sm font-bold">
-                        <ThumbsUp size={13} strokeWidth={2.2} />
-                        Lo recomiendas
-                      </span>
+                      <span className="seal mt-3 text-primary-text">Lo recomiendas</span>
                     )}
                   </>
                 )}
@@ -309,7 +305,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                     : 'Aún no has escrito una reseña para este libro.'}
                 </p>
                 <Button variant="primary" onClick={startEditing}>
-                  <PenLine size={17} />
                   Crear reseña de lectura
                 </Button>
               </div>
@@ -365,7 +360,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                     <FormCard>
                       {quotes.map((q) => (
                         <div key={q.id} className="flex gap-2.5 px-3.5 py-3">
-                          <Quote size={16} className="text-ornament shrink-0 mt-0.5" aria-hidden="true" />
+                          <span aria-hidden="true" className="font-display font-semibold text-[34px] leading-[0.8] text-primary-text shrink-0 -mt-0.5 w-4">“</span>
                           <div className="min-w-0">
                             <p className="font-display italic text-body-md text-text">{q.quote_text}</p>
                             {q.page != null && <p className="text-body-sm text-text-muted mt-0.5">Pág. {q.page}</p>}
@@ -389,7 +384,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                         <p className="font-display font-semibold text-body-lg text-text">{dateOrDash(book.end_date)}</p>
                       </div>
                       {days && (
-                        <span className="ml-auto shrink-0 px-2.5 py-1 rounded-full bg-primary-soft text-primary-text text-body-sm font-bold">{days}</span>
+                        <span className="ml-auto shrink-0 px-2.5 py-1 rounded-chip bg-primary-soft text-primary-text text-body-sm font-bold">{days}</span>
                       )}
                     </div>
                     {pastReads.length > 0 && (
@@ -397,7 +392,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                         <p className="text-body-sm font-semibold text-text-secondary mb-1.5">Lecturas anteriores</p>
                         <div className="flex flex-wrap gap-1.5">
                           {pastReads.map((h) => (
-                            <span key={h.id} className="inline-flex px-2.5 py-1 rounded-full bg-surface border border-border text-text text-body-sm font-semibold">
+                            <span key={h.id} className="inline-flex px-2.5 py-1 rounded-chip bg-surface border border-border text-text text-body-sm font-semibold">
                               {h.start_date
                                 ? `Del ${dateOrDash(h.start_date)} al ${dateOrDash(h.end_date)}`
                                 : dateOrDash(h.end_date)}
@@ -451,11 +446,9 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       onClick={() => setIsPickerOpen(true)}
                       className="w-full flex items-center gap-2 px-3.5 py-3 font-body font-bold text-body-md text-primary-text"
                     >
-                      <Plus size={16} strokeWidth={2.4} />
                       Agregar calificación
                     </button>
                     <FormSwitchRow
-                      icon={ThumbsUp}
                       label="Lo recomiendo"
                       checked={draft.recommends}
                       onChange={(recommends) => setDraft({ ...draft, recommends })}
@@ -497,7 +490,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                         {draft.content_warnings.length > 0 && (
                           <div className="flex flex-wrap gap-1.5">
                             {sortedWarnings(draft.content_warnings).map((w) => (
-                              <span key={w.key} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-full bg-orange-soft text-orange-text text-body-sm font-semibold">
+                              <span key={w.key} className="inline-flex items-center gap-1 pl-3 pr-1.5 py-1 rounded-chip bg-orange-soft text-orange-text text-body-sm font-semibold">
                                 {w.label}
                                 <button
                                   type="button"
@@ -523,7 +516,6 @@ export function Resena({ bookId, onClose }: ResenaProps) {
                       onClick={() => setIsWarningsPickerOpen(true)}
                       className="w-full flex items-center gap-2 px-3.5 py-3 font-body font-bold text-body-md text-primary-text"
                     >
-                      {hasWarnings ? <PenLine size={16} /> : <Plus size={16} strokeWidth={2.4} />}
                       {hasWarnings ? 'Editar avisos' : 'Agregar avisos de contenido'}
                     </button>
                   </FormCollapsible>

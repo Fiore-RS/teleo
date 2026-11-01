@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Share2, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '../atoms/Button'
 import { RecapCard, RECAP_CARD_WIDTH, RECAP_EXPORT_PIXEL_RATIO } from './RecapCard'
 import { useRecap } from '../../../hooks/useRecap'
@@ -170,7 +170,7 @@ export function RecapViewer({ userId, period, onClose }: RecapViewerProps) {
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="w-9 h-9 shrink-0 rounded-full bg-surface-2 border border-border text-text-secondary flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
+            className="w-9 h-9 shrink-0 rounded-button bg-surface-2 border border-border text-text-secondary flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary-text"
           >
             <X size={18} />
           </button>
@@ -204,7 +204,7 @@ export function RecapViewer({ userId, period, onClose }: RecapViewerProps) {
               Compartir todas
             </Button>
             <Button variant="primary" fullWidth disabled={isLoading || busy !== null} isLoading={busy === 'one'} onClick={() => share('one')}>
-              <Share2 size={18} /> Compartir esta
+              Compartir esta
             </Button>
           </div>
           {message && <p className="text-body-sm text-text-secondary text-center">{message}</p>}

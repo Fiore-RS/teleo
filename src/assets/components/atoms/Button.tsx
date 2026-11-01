@@ -12,7 +12,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-// Rediseño 2026: botones en forma de píldora. "primary" usa el vino de marca; "soft" es el
+// Rediseño 2026; desde la V.3.5.0 rectángulos con esquinas redondeadas (rounded-button). "primary" usa el vino de marca; "soft" es el
 // botón suave (fondo rubor, texto vino) para acciones secundarias dentro de una tarjeta.
 const variantStyles: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-ink',
@@ -45,7 +45,7 @@ export function Button({
     <button
       {...props}
       disabled={isDisabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-full font-body font-bold transition-[background-color,color,border-color,opacity,transform] duration-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
+      className={`inline-flex items-center justify-center gap-2 rounded-button font-body font-bold transition-[background-color,color,border-color,opacity,transform] duration-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
         sizeStyles[size]
       } ${fullWidth ? 'w-full' : ''} ${variantStyles[variant]} ${
         isDisabled ? 'opacity-50 cursor-not-allowed active:scale-100' : 'active:opacity-85'

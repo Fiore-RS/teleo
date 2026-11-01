@@ -1,19 +1,34 @@
-import type { ReactNode } from 'react'
-import { UserRound } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { ImageOff, UserRound } from 'lucide-react'
 import { ProgressBar } from '../assets/components/atoms/ProgressBar'
-import { Skeleton } from '../assets/components/atoms/Skeleton'
+import { Skeleton, CoverSkeleton } from '../assets/components/atoms/Skeleton'
 import { BannerArt } from '../assets/components/atoms/BannerArt'
+import { CoverImage } from '../assets/components/atoms/CoverImage'
+import { DogEar } from '../assets/components/atoms/DogEar'
+import { HorizontalScroller } from '../assets/components/atoms/HorizontalScroller'
 import { DEFAULT_BANNER, type BannerId } from '../lib/banners'
-import { Card } from '../assets/components/molecules/Card'
-import { ProfileBookShelf } from '../assets/components/molecules/ProfileBookShelf'
+import { Card, CardAction } from '../assets/components/molecules/Card'
 import type { Database } from '../types/database'
-import type { ProfileCounts } from '../hooks/useProfileLists'
+import type { LastFinishedBook, ProfileCounts, ProfileQuote } from '../hooks/useProfileLists'
+import type { ReadingStatus } from '../lib/status'
+import { getProgressInfo } from '../lib/progress'
+import { getGoalMessage } from '../lib/goalMessage'
 import { useStaggerOnce } from '../lib/motion'
 
-type Book = Pick<Database['public']['Tables']['books']['Row'], 'id' | 'title' | 'cover_url' | 'status'>
+type BookRow = Database['public']['Tables']['books']['Row']
+type Book = Pick<BookRow, 'id' | 'title' | 'cover_url' | 'status'>
 
 /** Filtro de Estante al que lleva cada número o "Ver todos". */
 export type ProfileFilter = 'leyendo' | 'favoritos' | 'recomendados' | 'deseado' | 'terminado' | 'pendiente' | 'abandonado' | 'pausado'
+
+/** Una estantería de la tarjeta "Estanterías": unas portadas al azar y cuántos hay en total. */
+export interface ProfileShelf {
+  key: 'favoritos' | 'recomendados' | 'deseados' | 'abandonados'
+  label: string
+  books: Book[]
+  total: number
+  filter: ProfileFilter
+}
 
 /** "Tu biblioteca": cada estado con su color de doblez; tocarlo abre Estante con ese filtro. */
 const libraryParts: { key: keyof ProfileCounts | 'reading'; label: string; filter: ProfileFilter; color: string }[] = [
@@ -26,6 +41,7 @@ const libraryParts: { key: keyof ProfileCounts | 'reading'; label: string; filte
 ]
 
 const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' } as Intl.NumberFormatOptions)
+const ratingFormat = new Intl.NumberFormat('es', { maximumFractionDigits: 1 })
 
 interface ProfileViewProps {
   username: string | undefined
@@ -45,16 +61,18 @@ interface ProfileViewProps {
 
   annualGoal?: number
   annualCompletedCount?: number
+  /** Abre "Editar meta" desde la pestaña de la tarjeta (V.3.5.0). */
+  onEditGoal?: () => void
+  /** Racha actual de lectura, para las cifras de Tu biblioteca (V.3.5.0). */
+  streak?: number
 
-  currentlyReading?: Book[]
-  favorites?: Book[]
-  recommended?: Book[]
-  wishlist?: Book[]
-  abandoned?: Book[]
+  currentlyReading?: BookRow[]
+  lastFinished?: LastFinishedBook | null
+  quote?: ProfileQuote | null
+  shelves?: ProfileShelf[]
   counts?: ProfileCounts
 
-  /** Tarjetas que arma Perfil con sus propios datos: Actividad y Lista de temporada. */
-  activity?: ReactNode
+  /** Mis próximas lecturas, que arma Perfil con sus propios datos. */
   priorityList?: ReactNode
 
   onBookClick?: (bookId: string) => void
@@ -63,17 +81,66 @@ interface ProfileViewProps {
   footer?: ReactNode
 }
 
-/** Rincón personal del usuario — antes también servía como la vista de "perfil público"
- *  que veían visitantes sin cuenta (`readOnly`), con secciones que se podían ocultar una
- *  por una desde Configuración. Esa página pública se retiró (ver plan en memoria del
- *  proyecto: reemplazada por la tarjeta compartible de "Compartir perfil"), así que ahora
- *  este componente SOLO lo ve el dueño de la cuenta y siempre muestra todo — cada sección
- *  ya maneja su propio estado vacío (ProfileBookShelf) o se oculta sola si no aplica
- *  (meta anual, cuando no hay una meta puesta).
+/** Portada chica de una fila (estanterías), con su doblez de estado. */
+function ShelfCover({ book, onBookClick }: { book: Book; onBookClick?: (bookId: string) => void }) {
+  const classes =
+    'relative w-24 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]'
+  const cover = (
+    <>
+      {book.cover_url ? (
+        <CoverImage src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <ImageOff size={16} className="text-text-secondary" />
+        </div>
+      )}
+      <DogEar status={book.status as ReadingStatus} size={24} className="absolute top-0 right-0" />
+    </>
+  )
+  return onBookClick ? (
+    <button
+      onClick={() => onBookClick(book.id)}
+      aria-label={book.title}
+      className={`${classes} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text`}
+    >
+      {cover}
+    </button>
+  ) : (
+    <div className={classes}>{cover}</div>
+  )
+}
+
+/** Portada de "Ahora mismo" (más grande para Leyendo, chica para el último terminado). */
+function NowCover({ book, size }: { book: Pick<BookRow, 'title' | 'cover_url'>; size: 'lg' | 'sm' }) {
+  return (
+    <span
+      className={`${size === 'lg' ? 'w-[84px]' : 'w-[48px]'} shrink-0 aspect-2/3 rounded-[8px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)] flex items-center justify-center`}
+    >
+      {book.cover_url ? (
+        <CoverImage src={book.cover_url} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <ImageOff size={size === 'lg' ? 18 : 14} className="text-text-secondary" aria-hidden="true" />
+      )}
+    </span>
+  )
+}
+
+/** Texto de progreso de "Leyendo": página de total, tiempo escuchado o porcentaje. */
+function progressText(book: BookRow): string {
+  if (book.format === 'audiolibro' && book.total_duration_seconds) return `${getProgressInfo(book).label} escuchado`
+  if (book.format === 'digital') return `${Math.round(book.progress_percent ?? 0)}%`
+  if (book.total_pages) return `Página ${book.current_page ?? 0} de ${book.total_pages}`
+  return 'Recién empezado'
+}
+
+/** Rincón personal del usuario. Solo lo ve el dueño de la cuenta (la página pública se retiró
+ *  en septiembre 2026); en la V.5.0.0 también lo verán las amistades, en solo lectura.
  *
- *  Rediseño 2026: cabecera con degradado de marca (vino → rosa), avatar cuadrado de
- *  esquinas suaves que se monta sobre la cabecera, y cada sección como tarjeta con su
- *  etiqueta en mayúsculas, igual que La mesa y Bitácora. */
+ *  V.3.5.0, dirección A "Portada y estanterías": se queda la portada de la 3.0.0 (nombre sobre
+ *  el banner, foto inclinada). Debajo, en menos bloques: Tu biblioteca con tres cifras, Ahora
+ *  mismo (leyendo, último terminado, una cita), la meta igual que en La mesa, las estanterías en
+ *  una sola tarjeta con selector y Mis próximas lecturas. Actividad salió de Perfil: el mismo
+ *  calendario está en la racha de La mesa. */
 export function ProfileView({
   username,
   nickname,
@@ -86,13 +153,13 @@ export function ProfileView({
   headerRight,
   annualGoal = 0,
   annualCompletedCount = 0,
+  onEditGoal,
+  streak = 0,
   currentlyReading = [],
-  favorites = [],
-  recommended = [],
-  wishlist = [],
-  abandoned = [],
+  lastFinished = null,
+  quote = null,
+  shelves = [],
   counts,
-  activity,
   priorityList,
   onBookClick,
   onSeeAllBooks,
@@ -103,6 +170,8 @@ export function ProfileView({
   const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
   const displayName = nickname?.trim() || username
   const initial = displayName?.trim().charAt(0).toUpperCase() ?? ''
+  const [activeShelfKey, setActiveShelfKey] = useState<ProfileShelf['key']>('favoritos')
+  const activeShelf = shelves.find((s) => s.key === activeShelfKey) ?? shelves[0]
 
   const avatarInner = avatarUrl ? (
     <img src={avatarUrl} alt="Tu foto de perfil" className="w-full h-full object-cover" />
@@ -115,6 +184,16 @@ export function ProfileView({
   const partCount = (key: (typeof libraryParts)[number]['key']) =>
     key === 'reading' ? currentlyReading.length : (counts?.[key] ?? 0)
   const libraryTotal = libraryParts.reduce((sum, p) => sum + partCount(p.key), 0)
+
+  const reading = currentlyReading[0]
+  const moreReading = currentlyReading.length - 1
+  const hasNow = !!reading || !!lastFinished || !!quote
+
+  const figures = [
+    { value: numberFormat.format(libraryTotal), label: libraryTotal === 1 ? 'libro en Teleo' : 'libros en Teleo' },
+    { value: numberFormat.format(annualCompletedCount), label: `${annualCompletedCount === 1 ? 'leído' : 'leídos'} en ${currentYear}` },
+    { value: numberFormat.format(streak), label: streak === 1 ? 'día de racha' : 'días de racha' },
+  ]
 
   return (
     <div className="min-h-screen bg-bg">
@@ -182,33 +261,38 @@ export function ProfileView({
         )}
 
         <div className={`flex flex-col gap-5 mt-5 ${stagger}`}>
-          {/* Tu biblioteca: total, barra por estado y leyenda; cada estado abre Estante. */}
+          {/* Tu biblioteca (V.3.5.0): tres cifras arriba; debajo la barra por estado y la
+              leyenda. Cada estado abre Estante con ese filtro. */}
           <Card tab={{ label: 'Tu biblioteca' }}>
             {areListsLoading ? (
               <div aria-label="Cargando">
-                <Skeleton className="h-7 w-2/5 rounded-full" />
-                <Skeleton className="h-4 w-full rounded-full mt-3" />
+                <Skeleton className="h-10 w-full rounded-[8px]" />
+                <Skeleton className="h-3.5 w-full rounded-[6px] mt-4" />
               </div>
             ) : (
               <>
-                <div className="flex items-baseline justify-between gap-3 mb-3">
-                  <b className="font-display font-semibold text-[28px] leading-none text-text tabular-nums">{numberFormat.format(libraryTotal)}</b>
-                  <span className="text-body-md text-text-secondary">{libraryTotal === 1 ? 'libro en Teleo' : 'libros en Teleo'}</span>
+                <div className="grid grid-cols-3 text-center">
+                  {figures.map((f, i) => (
+                    <div key={f.label} className={i > 0 ? 'border-l border-border px-1' : 'px-1'}>
+                      <b className="block font-title font-normal text-[30px] leading-none text-text tabular-nums">{f.value}</b>
+                      <span className="block text-[12px] leading-tight text-text-secondary mt-1.5">{f.label}</span>
+                    </div>
+                  ))}
                 </div>
                 {libraryTotal > 0 && (
-                  <div className="flex h-4 gap-[3px] rounded-full overflow-hidden" aria-hidden="true">
+                  <div className="flex h-3 gap-[3px] rounded-[5px] overflow-hidden mt-4" aria-hidden="true">
                     {libraryParts.filter((p) => partCount(p.key) > 0).map((p) => (
                       <i key={p.key} style={{ flex: partCount(p.key), background: p.color }} />
                     ))}
                   </div>
                 )}
-                <ul className="grid grid-cols-2 gap-x-3.5 gap-y-2.5 mt-3.5">
+                <ul className="grid grid-cols-2 gap-x-3.5 gap-y-2 mt-3.5">
                   {libraryParts.map((p) => {
                     const value = partCount(p.key)
                     const inner = (
                       <>
                         <i aria-hidden="true" className="w-2.5 h-2.5 rounded-[3px] shrink-0 self-center" style={{ background: p.color }} />
-                        <b className="font-display font-semibold text-[20px] text-text tabular-nums">{numberFormat.format(value)}</b>
+                        <b className="font-display font-semibold text-[18px] text-text tabular-nums">{numberFormat.format(value)}</b>
                         <span className="truncate">{p.label}</span>
                       </>
                     )
@@ -235,66 +319,155 @@ export function ProfileView({
             )}
           </Card>
 
-          {/* Meta anual */}
+          {/* Ahora mismo (V.3.5.0): leyendo, el último terminado y una cita. */}
+          {areListsLoading ? (
+            <Card tab={{ label: 'Ahora mismo' }} tone="orange">
+              <div className="flex gap-3.5" aria-label="Cargando">
+                <CoverSkeleton className="w-[84px] shrink-0" />
+                <div className="flex-1">
+                  <Skeleton className="h-5 w-4/5 rounded-full" />
+                  <Skeleton className="h-3.5 w-1/2 mt-2 rounded-full" />
+                  <Skeleton className="h-2.5 w-full mt-5 rounded-[5px]" />
+                </div>
+              </div>
+            </Card>
+          ) : hasNow ? (
+            <Card tab={{ label: 'Ahora mismo' }} tone="orange">
+              <div className="divide-y divide-border">
+                {reading && (
+                  <div className="pb-4 last:pb-0">
+                    <button
+                      type="button"
+                      onClick={() => onBookClick?.(reading.id)}
+                      className="w-full flex gap-3.5 text-left rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+                    >
+                      <NowCover book={reading} size="lg" />
+                      <span className="flex-1 min-w-0">
+                        <span className="block smallcaps text-orange-text">Leyendo</span>
+                        <span className="block font-display font-semibold text-[17px] leading-snug text-text mt-1 line-clamp-2">{reading.title}</span>
+                        {reading.author && <span className="block text-body-sm text-text-secondary truncate mt-0.5">{reading.author}</span>}
+                        <ProgressBar percent={getProgressInfo(reading).percent} color="var(--color-accent-reading)" shape="firme" className="mt-3" />
+                        <span className="block text-body-sm text-text-secondary mt-1.5">{progressText(reading)}</span>
+                      </span>
+                    </button>
+                    {moreReading > 0 && onSeeAllBooks && (
+                      <button
+                        type="button"
+                        onClick={() => onSeeAllBooks('leyendo')}
+                        className="mt-2.5 ml-[98px] font-body font-bold text-body-sm text-orange-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
+                      >
+                        {moreReading === 1 ? 'Y 1 más en Estante' : `Y ${moreReading} más en Estante`}
+                      </button>
+                    )}
+                  </div>
+                )}
+                {lastFinished && (
+                  <button
+                    type="button"
+                    onClick={() => onBookClick?.(lastFinished.id)}
+                    className="w-full flex items-center gap-3.5 text-left py-4 first:pt-0 last:pb-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+                  >
+                    <NowCover book={lastFinished} size="sm" />
+                    <span className="flex-1 min-w-0">
+                      <span className="block smallcaps text-primary-text">Último terminado</span>
+                      <span className="block font-display font-semibold text-body-lg leading-snug text-text mt-1 truncate">{lastFinished.title}</span>
+                      {lastFinished.rating != null && (
+                        <span className="block text-body-sm font-semibold text-orange-text mt-0.5">
+                          <span aria-hidden="true">★ </span>
+                          {ratingFormat.format(lastFinished.rating)}
+                          <span className="sr-only"> de calificación</span>
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                )}
+                {quote && (
+                  <div className="py-4 first:pt-0 last:pb-0">
+                    <span className="block smallcaps text-primary-text">Una cita</span>
+                    <span aria-hidden="true" className="quote-mark text-primary-text mt-2">“</span>
+                    <p className="font-display italic text-body-lg leading-snug text-text">{quote.text}</p>
+                    {(quote.bookTitle || quote.page != null) && (
+                      <p className="text-body-sm text-text-secondary mt-1.5">
+                        {[quote.bookTitle, quote.page != null ? `pág. ${quote.page}` : null].filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+          ) : null}
+
+          {/* Meta anual (V.3.5.0): igual que en La mesa, con "Editar" en la pestaña. */}
           {annualGoal > 0 && (
-            <Card tab={{ label: 'Meta anual de lectura' }} tone="pink">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="font-display font-semibold text-[28px] leading-none text-text">
-                  {annualCompletedCount}{' '}
+            <Card
+              tab={{ label: 'Meta anual de lectura' }}
+              tone="pink"
+              action={onEditGoal ? <CardAction onClick={onEditGoal}>Editar</CardAction> : undefined}
+            >
+              <div className="flex items-end justify-between gap-3">
+                <p className="font-title text-[40px] leading-none text-text">
+                  <span className="tabular-nums">{annualCompletedCount}</span>{' '}
                   <span className="font-body font-medium text-body-md text-text-secondary">
                     de {annualGoal} libros del {currentYear}
                   </span>
                 </p>
-                <span className="font-display font-semibold text-pink-text tabular-nums">{Math.round(goalPercent)}%</span>
+                <span className="font-display font-semibold text-[20px] text-pink-text tabular-nums">{Math.round(goalPercent)}%</span>
               </div>
-              <ProgressBar percent={goalPercent} color="var(--color-pink)" className="mt-3 h-3" />
+              <ProgressBar percent={goalPercent} color="var(--color-pink)" shape="firme" className="mt-3.5 h-3.5" />
+              <p className="font-display italic text-body-lg text-text-secondary mt-3">{getGoalMessage(goalPercent)}</p>
             </Card>
           )}
 
-          <ProfileBookShelf
-            title="Leyendo ahora"
-            tone="orange"
-            books={currentlyReading}
-            isLoading={areListsLoading}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('leyendo') : undefined}
-          />
+          {/* Estanterías (V.3.5.0): Favoritos, Recomendados, Deseados y Abandonados en una sola
+              tarjeta, con un selector de pestañas de texto que se puede deslizar. */}
+          {activeShelf && (
+            <Card
+              tab={{ label: 'Estanterías' }}
+              action={
+                onSeeAllBooks && activeShelf.total > 0 ? (
+                  <CardAction onClick={() => onSeeAllBooks(activeShelf.filter)}>Ver todos</CardAction>
+                ) : undefined
+              }
+            >
+              <div role="tablist" aria-label="Estanterías" className="flex gap-4 overflow-x-auto scrollbar-hide border-b border-border -mt-1 mb-3.5">
+                {shelves.map((s) => {
+                  const isActive = s.key === activeShelf.key
+                  return (
+                    <button
+                      key={s.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setActiveShelfKey(s.key)}
+                      className={`shrink-0 pb-2 pt-1 font-body text-body-md whitespace-nowrap border-b-2 -mb-px transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
+                        isActive ? 'border-primary text-primary-text font-bold' : 'border-transparent text-text-secondary font-semibold'
+                      }`}
+                    >
+                      {s.label}
+                      <span className={`ml-1.5 tabular-nums ${isActive ? 'text-primary-text' : 'text-text-muted'}`}>{s.total}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              {areListsLoading ? (
+                <div className="flex gap-3 -mx-[18px] px-[18px] overflow-hidden pb-1" aria-label="Cargando">
+                  {[0, 1, 2, 3].map((i) => (
+                    <CoverSkeleton key={i} className="w-24 shrink-0" />
+                  ))}
+                </div>
+              ) : activeShelf.books.length === 0 ? (
+                <p className="text-body-md text-text-secondary">Nada por aquí todavía.</p>
+              ) : (
+                <HorizontalScroller key={activeShelf.key} className="-mx-[18px] px-[18px] gap-3! pb-1 animate-fade-in">
+                  {activeShelf.books.map((book) => (
+                    <ShelfCover key={book.id} book={book} onBookClick={onBookClick} />
+                  ))}
+                </HorizontalScroller>
+              )}
+            </Card>
+          )}
 
-          {activity}
           {priorityList}
-
-          <ProfileBookShelf
-            title="Favoritos"
-            books={favorites}
-            isLoading={areListsLoading}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('favoritos') : undefined}
-          />
-
-          <ProfileBookShelf
-            title="Recomendados"
-            tone="pink"
-            books={recommended}
-            isLoading={areListsLoading}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('recomendados') : undefined}
-          />
-
-          <ProfileBookShelf
-            title="Lista de deseados"
-            books={wishlist}
-            isLoading={areListsLoading}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('deseado') : undefined}
-          />
-
-          <ProfileBookShelf
-            title="Abandonados"
-            books={abandoned}
-            isLoading={areListsLoading}
-            onBookClick={onBookClick}
-            onSeeAll={onSeeAllBooks ? () => onSeeAllBooks('abandonado') : undefined}
-          />
         </div>
       </div>
 

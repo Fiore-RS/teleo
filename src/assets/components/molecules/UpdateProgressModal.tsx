@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ImageOff, Check, Flag, Pause, Quote } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
 import { FormActions, FormCard, FormRow } from './FormLayout'
 import { Sheet } from '../atoms/Sheet'
 import { DetailSkeleton } from '../atoms/Skeleton'
@@ -274,19 +274,15 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
             {/* 2 × 2 desde la V.3.1.0 (con Pausar, cuatro botones no caben en una fila). */}
             <div className="grid grid-cols-2 gap-1.5 mt-3.5 mb-1">
               <Button variant="soft" size="sm" className="px-2!" onClick={() => setIsAddingQuote(true)}>
-                <Quote size={14} strokeWidth={2.4} />
                 Cita
               </Button>
               <Button variant="magenta" size="sm" className="px-2!" onClick={() => setIsFinishOpen(true)}>
-                <Check size={14} strokeWidth={2.8} />
                 Terminado
               </Button>
               <Button variant="outline" size="sm" className="px-2! text-text-secondary!" onClick={() => setIsPauseOpen(true)}>
-                <Pause size={13} strokeWidth={2.4} />
                 Pausar
               </Button>
               <Button variant="outline" size="sm" className="px-2! text-text-secondary!" onClick={() => setIsAbandonOpen(true)}>
-                <Flag size={13} strokeWidth={2.4} />
                 Abandonar
               </Button>
             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, PenLine, GripVertical, Check, X, RefreshCw, ChevronRight } from "lucide-react";
+import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, GripVertical, Check, X, ChevronRight } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
 import { DogEar } from "../assets/components/atoms/DogEar";
@@ -502,7 +502,7 @@ export function DetalleSaga({
             type="button"
             onClick={() => setIsReorderingBooks((v) => !v)}
             aria-label={isReorderingBooks ? "Terminar de organizar" : "Organizar libros"}
-            className={`w-9 h-9 rounded-full border flex items-center justify-center ${
+            className={`w-9 h-9 rounded-button border flex items-center justify-center ${
               isReorderingBooks
                 ? "bg-primary text-primary-ink border-primary"
                 : "bg-surface-2 border-border text-primary-text"
@@ -515,7 +515,7 @@ export function DetalleSaga({
           type="button"
           onClick={() => setIsSelectBookOpen(true)}
           aria-label="Agregar libros a la saga"
-          className="w-9 h-9 rounded-full bg-primary text-primary-ink flex items-center justify-center"
+          className="w-9 h-9 rounded-button bg-primary text-primary-ink flex items-center justify-center"
         >
           <Plus size={18} strokeWidth={2.4} />
         </button>
@@ -546,7 +546,6 @@ export function DetalleSaga({
               <Trash2 size={18} />
             </Button>
             <Button variant="soft" onClick={startEditing}>
-              <PenLine size={17} />
               Editar saga
             </Button>
           </FormActions>
@@ -577,15 +576,14 @@ export function DetalleSaga({
                 {saga.author && <p className="text-body-md text-text-secondary mt-1">{saga.author}</p>}
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3">
                   <Badge status={sagaStatus} />
-                  <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
-                    <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+                  <span className="font-display italic text-body-sm text-text-muted">
                     Según tus libros
                   </span>
                 </div>
                 {categories.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2.5">
                     {categories.map((c) => (
-                      <span key={c} className="inline-flex items-center px-2.5 py-1 rounded-full text-body-sm font-bold bg-primary-soft text-primary-text">
+                      <span key={c} className="inline-flex items-center px-2.5 py-1 rounded-chip text-body-sm font-bold bg-primary-soft text-primary-text">
                         {c}
                       </span>
                     ))}
@@ -654,8 +652,7 @@ export function DetalleSaga({
                 />
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   <Badge status={sagaStatus} />
-                  <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
-                    <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+                  <span className="font-display italic text-body-sm text-text-muted">
                     Según tus libros
                   </span>
                 </div>
@@ -669,8 +666,7 @@ export function DetalleSaga({
                     // Con libros, las categorías salen de ellos (computeSagaCategories).
                     <span className="flex flex-col items-end text-right min-w-0">
                       <span className="text-body-lg text-text truncate max-w-full">{categories.join(", ")}</span>
-                      <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
-                        <RefreshCw size={11} strokeWidth={2.2} aria-hidden="true" />
+                      <span className="font-display italic text-body-sm text-text-muted">
                         Según tus libros
                       </span>
                     </span>
@@ -699,7 +695,6 @@ export function DetalleSaga({
                   <p className="px-3.5 pb-2.5 text-body-sm text-text-muted">Déjalo vacío si todavía no sabes cuántos tendrá.</p>
                 </div>
                 <FormSwitchRow
-                  icon={Heart}
                   label="Favorita"
                   checked={draft.isFavorite}
                   onChange={(isFavorite) => setDraft({ ...draft, isFavorite })}
@@ -732,7 +727,6 @@ export function DetalleSaga({
               onClick={() => setDeleteState("confirm")}
               className="w-full flex items-center justify-center gap-2 py-2.5 font-body font-bold text-body-md text-primary-text"
             >
-              <Trash2 size={16} />
               Eliminar saga
             </button>
           </div>

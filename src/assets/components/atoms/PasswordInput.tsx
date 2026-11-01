@@ -1,5 +1,5 @@
 import { useState, type InputHTMLAttributes } from 'react'
-import { Eye, EyeOff, Lock } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 
 interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   /** Sin caja ni candado, alineado a la derecha: para filas compactas de formulario. */
@@ -9,7 +9,7 @@ interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
 
 /** Campo de contraseña con el botón del ojo para mostrarla u ocultarla (feedback de las
  *  beta-testers: sin él no sabían si la estaban escribiendo mal). Mismo estilo que `Input`
- *  con ícono a la izquierda, más el botón a la derecha.
+ *  (sin el candado de la izquierda desde la V.3.5.0), más el botón a la derecha.
  *
  *  Además apaga la mayúscula automática, el autocorrector y el corrector ortográfico del
  *  teclado del celular, que cambiaban la primera letra o "corregían" la contraseña. */
@@ -44,16 +44,13 @@ export function PasswordInput({ bare = false, className = '', ...props }: Passwo
 
   return (
     <div className="relative w-full">
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
-        <Lock size={18} strokeWidth={1.75} />
-      </span>
       <input
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}
         {...props}
         type={isVisible ? 'text' : 'password'}
-        className={`w-full bg-surface-2 border border-border rounded-2xl py-3 pl-11 pr-12 text-body-lg font-body text-text placeholder:text-text-muted focus:outline-none focus:border-primary-text transition-colors ${className}`}
+        className={`w-full bg-surface-2 border border-border rounded-2xl py-3 pl-4 pr-12 text-body-lg font-body text-text placeholder:text-text-muted focus:outline-none focus:border-primary-text transition-colors ${className}`}
       />
       <button
         type="button"

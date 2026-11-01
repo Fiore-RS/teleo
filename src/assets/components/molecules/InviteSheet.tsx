@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { Download, Image as ImageIcon, Send } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
 import { FormHint, type FormHintTone } from './FormLayout'
@@ -126,16 +125,13 @@ export function InviteSheet({ userId, onClose }: InviteSheetProps) {
       footer={
         <div className="flex flex-col gap-2 pb-1">
           <Button variant="primary" onClick={handleSendLink} isLoading={busy === 'link'} disabled={!link || busy !== null}>
-            {busy !== 'link' && <Send size={18} />}
             Enviar invitación
           </Button>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="py-2.5! text-body-md!" onClick={handleSendImage} isLoading={busy === 'image'} disabled={!friendCode || busy !== null}>
-              {busy !== 'image' && <ImageIcon size={17} />}
               Enviar imagen
             </Button>
             <Button variant="outline" size="sm" className="py-2.5! text-body-md!" onClick={handleDownload} isLoading={busy === 'download'} disabled={!friendCode || busy !== null}>
-              {busy !== 'download' && <Download size={17} />}
               Descargar
             </Button>
           </div>

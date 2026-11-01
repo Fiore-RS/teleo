@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { CalendarDays, Type, User, Banknote, TrendingUp } from 'lucide-react'
 import { usePurchases, type PurchaseBook } from '../../hooks/usePurchases'
 import { queryClient } from '../../lib/queryClient'
 import { formatCurrency } from '../../lib/currencies'
@@ -17,10 +16,10 @@ type Filter = 'todos' | 'sin-precio' | 'gratis' | 'regalos'
 type Sort = 'precio' | 'fecha' | 'titulo' | 'autor'
 
 const sortOptions: SortMenuOption<Sort>[] = [
-  { key: 'precio', label: 'Precio', icon: Banknote },
-  { key: 'fecha', label: 'Fecha de compra', icon: CalendarDays },
-  { key: 'titulo', label: 'Título', icon: Type },
-  { key: 'autor', label: 'Autor', icon: User },
+  { key: 'precio', label: 'Precio' },
+  { key: 'fecha', label: 'Fecha de compra' },
+  { key: 'titulo', label: 'Título' },
+  { key: 'autor', label: 'Autor' },
 ]
 
 const dateFormat = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -211,8 +210,6 @@ export function Compras({ userId, currency }: ComprasProps) {
             <div>
               <MoreRow
                 id="compras-curioso"
-                tone="orange"
-                icon={TrendingUp}
                 title="El más caro y el más barato"
                 summary={`De ${money(summary.mostExpensive.price!)} a ${money(summary.cheapest.price!)}`}
                 isOpen={isCuriousOpen}
@@ -248,7 +245,7 @@ export function Compras({ userId, currency }: ComprasProps) {
                   role="radio"
                   aria-checked={isActive}
                   onClick={() => setFilter(key)}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-body border transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
+                  className={`shrink-0 px-3 py-1.5 rounded-chip text-[13px] font-body border transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
                     isActive ? 'bg-primary border-primary text-primary-ink font-bold' : 'bg-surface-2 border-border text-text-secondary font-semibold'
                   }`}
                 >

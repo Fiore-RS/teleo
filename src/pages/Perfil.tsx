@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PenLine, Settings, Share2, Link as LinkIcon, UserPlus } from 'lucide-react'
+import { PenLine, Settings, Share2 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
@@ -9,9 +9,9 @@ import { useProfileLists } from '../hooks/useProfileLists'
 import { EditProfileModal } from '../assets/components/molecules/EditProfileModal'
 import { BannerSheet } from '../assets/components/molecules/BannerSheet'
 import { DEFAULT_BANNER, isBannerId, type BannerId } from '../lib/banners'
-import { ActivityCard } from '../assets/components/molecules/ActivityCard'
 import { PriorityListCard } from '../assets/components/molecules/PriorityListCard'
-import { ReadingCalendarSheet } from '../assets/components/molecules/ReadingCalendarSheet'
+import { EditGoalModal } from '../assets/components/molecules/EditGoalModal'
+import { useReadingStreak } from '../hooks/useReadingStreak'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
 import { ShareWishlistModal } from '../assets/components/molecules/ShareWishlistModal'
 import { InviteSheet } from '../assets/components/molecules/InviteSheet'
@@ -20,17 +20,17 @@ import { SettingsRow } from '../assets/components/molecules/SettingsList'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetalleLibro } from './DetalleLibro'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
-import { ProfileView } from './ProfileView'
+import { ProfileView, type ProfileShelf } from './ProfileView'
 import { hasUnseenChangelog } from '../lib/changelog'
 import { sampleWithSeed } from '../lib/random'
 import { queryClient } from '../lib/queryClient'
 
-// Cuántas portadas se muestran en Favoritos, Recomendados, Deseados y Abandonados.
-const SHELF_SIZE = 5
+// Cuántas portadas se muestran en cada estantería (Favoritos, Recomendados, Deseados, Abandonados).
+const SHELF_SIZE = 10
 
 // Botones redondos translúcidos sobre la portada (Compartir, Editar perfil, Configuración).
 const headerButtonClass =
-  'w-10 h-10 shrink-0 rounded-full bg-black/22 border border-white/25 text-[#FFF8EE] backdrop-blur-[4px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[#FFF8EE]'
+  'w-10 h-10 shrink-0 rounded-button bg-black/22 border border-white/25 text-[#FFF8EE] backdrop-blur-[4px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-[#FFF8EE]'
 
 export function Perfil() {
   const navigate = useNavigate()
@@ -38,17 +38,27 @@ export function Perfil() {
   const { profile, updateProfile, isLoading: profileLoading } = useProfile(user?.id)
   const banner: BannerId = isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER
   const { uploadAvatar, isUploading } = useAvatarUpload(user?.id)
-  const { goal: annualGoal, completedCount: annualCompletedCount } = useAnnualGoal(user?.id)
-  const { currentlyReading, favorites, recommended, wishlist, abandoned, counts, refetch: refetchLists, isLoading: listsLoading } = useProfileLists(user?.id)
+  const { goal: annualGoal, completedCount: annualCompletedCount, updateGoal } = useAnnualGoal(user?.id)
+  const { currentlyReading, lastFinished, quotes, favorites, recommended, wishlist, abandoned, counts, refetch: refetchLists, isLoading: listsLoading } = useProfileLists(user?.id)
+  const { streak } = useReadingStreak(user?.id)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
   const [isBannerOpen, setIsBannerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false)
   const [hasNews] = useState(hasUnseenChangelog)
   // Nueva semilla en cada visita: si una lista tiene más de 5 libros, se eligen otros 5.
   const [shelfSeed] = useState(() => Math.floor(Math.random() * 1e9))
+  // Estanterías (V.3.5.0): unas portadas al azar de cada lista y cuántos hay en total.
+  const shelves: ProfileShelf[] = [
+    { key: 'favoritos', label: 'Favoritos', books: sampleWithSeed(favorites, SHELF_SIZE, shelfSeed), total: favorites.length, filter: 'favoritos' },
+    { key: 'recomendados', label: 'Recomendados', books: sampleWithSeed(recommended, SHELF_SIZE, shelfSeed), total: recommended.length, filter: 'recomendados' },
+    { key: 'deseados', label: 'Deseados', books: sampleWithSeed(wishlist, SHELF_SIZE, shelfSeed), total: wishlist.length, filter: 'deseado' },
+    { key: 'abandonados', label: 'Abandonados', books: sampleWithSeed(abandoned, SHELF_SIZE, shelfSeed), total: abandoned.length, filter: 'abandonado' },
+  ]
+  // Una cita al azar de las más recientes, distinta en cada visita.
+  const quote = sampleWithSeed(quotes, 1, shelfSeed)[0] ?? null
   // Hoja de compartir y, al elegir, el modal de esa opción.
   const [shareStep, setShareStep] = useState<'menu' | 'invitar' | 'perfil' | 'deseados' | null>(null)
 
@@ -106,13 +116,13 @@ export function Perfil() {
         }
         annualGoal={annualGoal}
         annualCompletedCount={annualCompletedCount}
+        onEditGoal={() => setIsGoalModalOpen(true)}
+        streak={streak}
         currentlyReading={currentlyReading}
-        favorites={sampleWithSeed(favorites, SHELF_SIZE, shelfSeed)}
-        recommended={sampleWithSeed(recommended, SHELF_SIZE, shelfSeed)}
-        wishlist={sampleWithSeed(wishlist, SHELF_SIZE, shelfSeed)}
-        abandoned={sampleWithSeed(abandoned, SHELF_SIZE, shelfSeed)}
+        lastFinished={lastFinished}
+        quote={quote}
+        shelves={shelves}
         counts={counts}
-        activity={<ActivityCard userId={user?.id} onOpenCalendar={() => setIsCalendarOpen(true)} />}
         priorityList={<PriorityListCard userId={user?.id} onOpenBook={setSelectedBookId} />}
         onBookClick={(id) => setSelectedBookId(id)}
         onSeeAllBooks={(list) => navigate(`/estante?filtro=${list}`)}
@@ -152,7 +162,14 @@ export function Perfil() {
         />
       )}
 
-      {isCalendarOpen && <ReadingCalendarSheet userId={user?.id} onClose={() => setIsCalendarOpen(false)} />}
+      {isGoalModalOpen && (
+        <EditGoalModal
+          onClose={() => setIsGoalModalOpen(false)}
+          currentGoal={annualGoal}
+          completedCount={annualCompletedCount}
+          onSave={updateGoal}
+        />
+      )}
 
       {shareStep === 'menu' && (
         <Sheet title="Compartir" onClose={() => setShareStep(null)}>
@@ -160,9 +177,9 @@ export function Perfil() {
           {/* En la cuenta de visitante no hay código ni invitación. */}
           {!profile?.is_demo && <FriendCodeBox code={profile?.friend_code} />}
           <div className={`${profile?.is_demo ? '' : 'mt-3 '}bg-surface border border-border rounded-card shadow-card divide-y divide-border`}>
-            {!profile?.is_demo && <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setShareStep('invitar')} />}
-            <SettingsRow icon={Share2} label="Perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setShareStep('perfil')} />
-            <SettingsRow icon={LinkIcon} label="Lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setShareStep('deseados')} />
+            {!profile?.is_demo && <SettingsRow label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setShareStep('invitar')} />}
+            <SettingsRow label="Perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setShareStep('perfil')} />
+            <SettingsRow label="Lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setShareStep('deseados')} />
           </div>
         </Sheet>
       )}

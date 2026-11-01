@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react'
-import { ScanBarcode, Search, ImageOff, PenLine, Camera, ChevronRight, Sparkles } from 'lucide-react'
+import { Search, ImageOff, Camera, ChevronRight } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Input } from '../atoms/Input'
 import { Select } from '../atoms/Select'
@@ -259,7 +259,6 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         ) : (
           <FormCard>
             <FormSwitchRow
-              icon={Sparkles}
               label="Próxima lectura"
               hint="Súmalo a tus próximas lecturas"
               checked={isPriority}
@@ -272,7 +271,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   ) : null
 
   const searchBar = (
-    <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-full pl-4 pr-1.5 py-1.5 focus-within:border-primary-text transition-colors">
+    <div className="flex items-center gap-2 bg-surface-2 border border-border rounded-field pl-4 pr-1.5 py-1.5 focus-within:border-primary-text transition-colors">
       <input
         aria-label="Buscar un libro"
         placeholder="Título, autor o ISBN"
@@ -286,7 +285,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         onClick={handleSearch}
         disabled={!query.trim() || isSearching}
         aria-label="Buscar"
-        className="w-9.5 h-9.5 shrink-0 rounded-full bg-primary text-primary-ink flex items-center justify-center disabled:opacity-50 transition-opacity"
+        className="w-9.5 h-9.5 shrink-0 rounded-chip bg-primary text-primary-ink flex items-center justify-center disabled:opacity-50 transition-opacity"
       >
         <Search size={18} strokeWidth={2.3} />
       </button>
@@ -543,18 +542,12 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         <FormCard>
           {/* El escáner todavía no está disponible: queda visible como adelanto. */}
           <div className="flex items-center gap-3 px-3.5 py-3 opacity-70" aria-disabled="true">
-            <span className="w-8.5 h-8.5 rounded-full bg-surface border border-border text-text-muted flex items-center justify-center shrink-0">
-              <ScanBarcode size={16} />
-            </span>
             <span className="min-w-0">
               <span className="block font-body font-semibold text-body-lg text-text-secondary">Escanear código de barras</span>
               <span className="block text-body-sm text-text-muted">Próximamente</span>
             </span>
           </div>
           <button type="button" onClick={() => startManual()} className="w-full flex items-center gap-3 px-3.5 py-3 text-left">
-            <span className="w-8.5 h-8.5 rounded-full bg-primary-soft text-primary-text flex items-center justify-center shrink-0">
-              <PenLine size={16} />
-            </span>
             <span className="flex-1 min-w-0">
               <span className="block font-body font-semibold text-body-lg text-text">¿No lo encuentras?</span>
               <span className="block text-body-sm text-text-muted">Créalo desde cero</span>

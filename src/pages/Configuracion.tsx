@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-  User, Mail, Lock, Info, Share2, Link as LinkIcon, Upload, Download, Pause, Trash2, Eraser as ClearIcon, LogOut, Palette, Coins, Heart, Megaphone, Paintbrush, Languages, AtSign, ShieldCheck, FileText, Library, Tags, LibraryBig, UserPlus, Route,
-} from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useTour } from '../context/tourContextValue'
 import { useProfile } from '../hooks/useProfile'
@@ -148,16 +145,15 @@ export function Configuracion() {
 
       <div className="flex flex-col gap-5">
         <SettingsGroup title="Teleo">
-          <SettingsRow icon={Heart} label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
-          <SettingsRow icon={Megaphone} label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
+          <SettingsRow label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
+          <SettingsRow label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
         </SettingsGroup>
 
         <SettingsGroup title="Apariencia">
-          <SettingsField icon={Palette} label="Modo de color" description="Sistema sigue el modo de tu teléfono">
+          <SettingsField label="Modo de color" description="Sistema sigue el modo de tu teléfono">
             <ThemeToggle />
           </SettingsField>
           <SettingsRow
-            icon={Paintbrush}
             label="Tema"
             description={activePalette.name}
             onClick={() => setIsPaletteOpen(true)}
@@ -172,10 +168,10 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Sistema">
-          <SettingsField icon={Languages} label="Idioma" description="Por ahora Teleo está solo en español">
+          <SettingsField label="Idioma" description="Por ahora Teleo está solo en español">
             <Select options={[{ value: 'es', label: 'Español' }]} value="es" disabled />
           </SettingsField>
-          <SettingsField icon={Coins} label="Moneda" description="Se usa para mostrar el valor de tu biblioteca en Bitácora">
+          <SettingsField label="Moneda" description="Se usa para mostrar el valor de tu biblioteca en Bitácora">
             <Select
               options={currencyOptions}
               value={profile?.currency ?? undefined}
@@ -186,47 +182,46 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup title="Cuenta">
-          {!isDemo && <SettingsRow icon={AtSign} label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />}
-          <SettingsRow icon={User} label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
-          {!isDemo && <SettingsRow icon={Mail} label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />}
-          {!isDemo && <SettingsRow icon={Lock} label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />}
+          {!isDemo && <SettingsRow label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />}
+          <SettingsRow label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
+          {!isDemo && <SettingsRow label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />}
+          {!isDemo && <SettingsRow label="Contraseña" description="Actualiza tu clave de acceso" onClick={() => setAccountSheet('contrasena')} />}
         </SettingsGroup>
 
         <SettingsGroup
           title="Compartir"
           note="Quien se registre con tu enlace queda como invitación tuya. Más adelante, tu código servirá para agregarse en el Club."
         >
-          {!isDemo && <SettingsRow icon={UserPlus} label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setIsInviteOpen(true)} />}
+          {!isDemo && <SettingsRow label="Invita a alguien a Teleo" description="Un enlace y una tarjeta con tu código" onClick={() => setIsInviteOpen(true)} />}
           {!isDemo && <FriendCodeSettingsRow code={profile?.friend_code} />}
-          <SettingsRow icon={Share2} label="Compartir perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setIsShareModalOpen(true)} />
-          <SettingsRow icon={LinkIcon} label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
+          <SettingsRow label="Compartir perfil" description="Una tarjeta de tu rincón en imagen" onClick={() => setIsShareModalOpen(true)} />
+          <SettingsRow label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
         </SettingsGroup>
 
         <SettingsGroup title="Información">
-          <SettingsRow icon={Route} label="Tutorial" description="Un recorrido corto por la app" onClick={startTour} />
-          <SettingsRow icon={Info} label="Guía de Teleo" description="Todo lo que puedes hacer en cada sección, con más detalle" onClick={() => openSubpage('/guia')} />
-          <SettingsRow icon={ShieldCheck} label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
-          <SettingsRow icon={FileText} label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
+          <SettingsRow label="Tutorial" description="Un recorrido corto por la app" onClick={startTour} />
+          <SettingsRow label="Guía de Teleo" description="Todo lo que puedes hacer en cada sección, con más detalle" onClick={() => openSubpage('/guia')} />
+          <SettingsRow label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
+          <SettingsRow label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
         </SettingsGroup>
 
         <SettingsGroup title="Tus datos">
-          <SettingsRow icon={Upload} label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
-          {!isDemo && <SettingsRow icon={Download} label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />}
-          {!isDemo && <SettingsRow icon={Library} label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />}
-          <SettingsRow icon={Tags} label="Completar géneros" description="Sugerencias para tus libros sin género" onClick={() => setIsGenreSuggestOpen(true)} />
-          <SettingsRow icon={LibraryBig} label="Completa tu estante" description="Género, ánimo y ritmo de lo que ya leíste, libro por libro" onClick={() => setIsCompleteShelfOpen(true)} />
+          <SettingsRow label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
+          {!isDemo && <SettingsRow label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />}
+          {!isDemo && <SettingsRow label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />}
+          <SettingsRow label="Completar géneros" description="Sugerencias para tus libros sin género" onClick={() => setIsGenreSuggestOpen(true)} />
+          <SettingsRow label="Completa tu estante" description="Género, ánimo y ritmo de lo que ya leíste, libro por libro" onClick={() => setIsCompleteShelfOpen(true)} />
         </SettingsGroup>
 
         {!isDemo && (
         <SettingsGroup title="Zona de peligro">
-          <SettingsRow danger icon={ClearIcon} label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
-          <SettingsRow danger icon={Pause} label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
-          <SettingsRow danger icon={Trash2} label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
+          <SettingsRow danger label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
+          <SettingsRow danger label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
+          <SettingsRow danger label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
         </SettingsGroup>
         )}
 
         <Button variant="outline" onClick={() => setConfirmAction('cerrarSesion')}>
-          <LogOut size={18} />
           Cerrar sesión
         </Button>
       </div>

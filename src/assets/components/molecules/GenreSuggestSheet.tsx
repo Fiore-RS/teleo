@@ -427,7 +427,7 @@ export function GenreSuggestSheet({ userId, onClose }: GenreSuggestSheetProps) {
                           role="checkbox"
                           aria-checked={on}
                           onClick={() => toggleGenre(b.key, g)}
-                          className={`inline-flex items-center gap-1 rounded-full border-[1.5px] px-2.5 py-1 font-body font-semibold text-body-sm ${
+                          className={`inline-flex items-center gap-1 rounded-chip border-[1.5px] px-2.5 py-1 font-body font-semibold text-body-sm ${
                             on ? 'border-primary-text bg-primary-soft text-primary-text' : 'border-border bg-surface-2 text-text-muted line-through'
                           }`}
                         >

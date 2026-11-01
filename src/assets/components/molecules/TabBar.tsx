@@ -54,7 +54,7 @@ export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
               }`}
             >
               <span
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
+                className={`w-10 h-10 rounded-[12px] flex items-center justify-center transition-colors motion-reduce:transition-none ${
                   isActive ? 'bg-primary text-primary-ink' : ''
                 }`}
               >

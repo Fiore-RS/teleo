@@ -14,8 +14,8 @@ const sections: TutorialSection[] = [
     points: [
       'Ve los libros que estás leyendo, con su avance, y actualízalos cuando quieras. Si no estás leyendo nada, Teleo puede elegir al azar uno de tus pendientes.',
       'Marca tu sesión de lectura del día para mantener tu racha: la cinta de arriba a la derecha se llena. Tócala, o toca "Calendario", para ver tus días leídos, tu racha más larga y los números de cada mes.',
-      'Mira cuánto falta para el próximo libro que esperas y toca la tarjeta para ir a Lanzamientos.',
-      'Define una meta anual de libros y sigue tu progreso a lo largo del año.',
+      'Mira la fecha del próximo libro que esperas y cuánto falta, y toca la tarjeta para ir a Lanzamientos.',
+      'Define una meta anual de libros y sigue tu progreso a lo largo del año. Para cambiarla, toca "Editar" arriba de su tarjeta, aquí o en Perfil.',
     ],
   },
   {
@@ -62,9 +62,9 @@ const sections: TutorialSection[] = [
     title: 'Perfil',
     points: [
       'Toca el lápiz de arriba para cambiar tu foto, tu nickname y tu descripción.',
-      'En Tu biblioteca, toca cualquier estado (leyendo, en pausa, leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
-      'Mira tu actividad del mes y organiza Mis próximas lecturas desde sus tres puntos: agrega o quita pendientes con "Agregar libros", cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
-      'En Favoritos, Recomendados, Deseados y Abandonados verás cinco libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
+      'En Tu biblioteca ves cuántos libros tienes, cuántos leíste este año y tu racha. Toca cualquier estado (leyendo, en pausa, leídos, pendientes, deseados y abandonados) para verlos en tu Estante.',
+      'En Ahora mismo ves lo que estás leyendo, el último libro que terminaste y una de tus citas, distinta en cada visita. Organiza Mis próximas lecturas desde sus tres puntos: agrega o quita pendientes con "Agregar libros", cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
+      'En Estanterías elige Favoritos, Recomendados, Deseados o Abandonados para ver hasta diez libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
       'El botón de compartir muestra tu código de Teleo (tócalo para copiarlo) y te deja invitar a alguien con un enlace o una tarjeta con código QR, enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
     ],
   },

@@ -1,4 +1,3 @@
-import { Rows3, Type } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Shelf, type ShelfItem } from './Shelf'
 import { FormCard, FormRow, FormSection, FormSwitchRow } from './FormLayout'
@@ -56,7 +55,7 @@ export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps)
                   role="radio"
                   aria-checked={view.columns === n}
                   onClick={() => onChange({ ...view, columns: n })}
-                  className={`w-11 h-9 rounded-full font-body font-bold text-body-md tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
+                  className={`w-11 h-9 rounded-chip font-body font-bold text-body-md tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
                     view.columns === n ? 'bg-primary text-primary-ink' : 'bg-surface border border-border text-text-secondary'
                   }`}
                 >
@@ -66,14 +65,12 @@ export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps)
             </div>
           </FormRow>
           <FormSwitchRow
-            icon={Type}
             label="Título y autor"
             hint="Sin ellos se ven solo las portadas"
             checked={view.showNames}
             onChange={(showNames) => onChange({ ...view, showNames })}
           />
           <FormSwitchRow
-            icon={Rows3}
             label="Repisa"
             hint="Un tablón bajo cada fila de libros"
             checked={view.planks}

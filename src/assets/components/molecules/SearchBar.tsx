@@ -15,7 +15,7 @@ export function SearchBar({ className = '', ...props }: SearchBarProps) {
         {...props}
         type="text"
         placeholder={props.placeholder ?? 'Buscar por título, autor, género, etc...'}
-        className="w-full bg-surface border border-border rounded-full py-3 pl-11 pr-4 text-body-lg font-body text-text placeholder:text-text-muted focus:outline-none focus:border-primary-text transition-colors"
+        className="w-full bg-surface border border-border rounded-field py-3 pl-11 pr-4 text-body-lg font-body text-text placeholder:text-text-muted focus:outline-none focus:border-primary-text transition-colors"
       />
     </div>
   )

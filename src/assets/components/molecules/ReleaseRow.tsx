@@ -1,4 +1,3 @@
-import { CalendarDays, MapPin } from 'lucide-react'
 import type { Release } from '../../../hooks/useReleases'
 import { countdownLabel, daysUntil, formatReleaseDate } from '../../../lib/releases'
 import { formatCurrency } from '../../../lib/currencies'
@@ -27,7 +26,7 @@ export function ReleaseRow({ release, currency, onClick }: ReleaseRowProps) {
           {release.author && <span className="block text-body-sm text-text-secondary mt-0.5">{release.author}</span>}
         </span>
         <span
-          className={`shrink-0 px-2.5 py-1 rounded-full text-[12px] font-bold whitespace-nowrap ${
+          className={`shrink-0 px-2.5 py-1 rounded-chip text-[12px] font-bold whitespace-nowrap ${
             isPast ? 'bg-surface text-text-muted border border-border' : isSoon ? 'bg-magenta text-on-magenta' : 'bg-magenta-soft text-magenta-text'
           }`}
         >
@@ -35,15 +34,9 @@ export function ReleaseRow({ release, currency, onClick }: ReleaseRowProps) {
         </span>
       </span>
       <span className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-body-sm text-text-secondary">
-        <span className="inline-flex items-center gap-1">
-          <CalendarDays size={14} />
-          {formatReleaseDate(release.release_date)}
-        </span>
+        <span>{formatReleaseDate(release.release_date)}</span>
         {release.place && (
-          <span className="inline-flex items-center gap-1 min-w-0">
-            <MapPin size={14} className="shrink-0" />
-            <span className="truncate">{release.place}</span>
-          </span>
+          <span className="truncate min-w-0">{release.place}</span>
         )}
         {release.price != null && (
           <span className="font-semibold text-text tabular-nums">

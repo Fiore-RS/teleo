@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, Copy, Download, EllipsisVertical, Share, SquarePlus, type LucideIcon } from 'lucide-react'
 import { Button } from '../assets/components/atoms/Button'
 import { FormHint } from '../assets/components/molecules/FormLayout'
 import { AuthCard, AuthLayout } from '../assets/components/molecules/AuthLayout'
@@ -42,7 +41,7 @@ export function Instalar() {
     <button
       type="button"
       onClick={() => navigate('/')}
-      className="mx-auto py-1 text-body-md text-primary-text font-bold rounded-full focus-visible:outline-2 focus-visible:outline-primary-text"
+      className="mx-auto py-1 text-body-md text-primary-text font-bold rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
     >
       Prefiero usarla en el navegador
     </button>
@@ -71,12 +70,10 @@ export function Instalar() {
       <Steps
         steps={[
           {
-            icon: EllipsisVertical,
             title: 'Toca el menú de tres puntos',
             detail: 'Suele estar arriba a la derecha o abajo de la pantalla.',
           },
           {
-            icon: platform === 'ios' ? Share : Download,
             title: platform === 'ios' ? 'Elige "Abrir en Safari"' : 'Elige "Abrir en el navegador"',
           },
         ]}
@@ -89,7 +86,6 @@ export function Instalar() {
     subtitle = 'Tenla en tu pantalla de inicio y ábrela como cualquier app, sin tiendas ni descargas pesadas.'
     action = (
       <Button onClick={handleInstall} isLoading={isPrompting}>
-        <Download size={18} strokeWidth={2.2} />
         Instalar Teleo
       </Button>
     )
@@ -101,17 +97,14 @@ export function Instalar() {
         <Steps
           steps={[
             {
-              icon: Share,
               title: 'Toca Compartir',
               detail: 'Es el cuadrado con la flecha hacia arriba. Si no lo ves, toca primero los tres puntos (···).',
             },
             {
-              icon: SquarePlus,
               title: 'Elige "Agregar a pantalla de inicio"',
               detail: 'Puede que tengas que deslizar hacia abajo para encontrarlo.',
             },
             {
-              icon: Check,
               title: 'Toca "Agregar"',
               detail: 'Teleo aparecerá junto a tus otras apps.',
             },
@@ -128,16 +121,13 @@ export function Instalar() {
         <Steps
           steps={[
             {
-              icon: EllipsisVertical,
               title: 'Toca el menú de tu navegador',
               detail: 'Los tres puntos o el ícono de menú, arriba o abajo según el navegador.',
             },
             {
-              icon: Download,
               title: 'Elige "Instalar app" o "Agregar a pantalla de inicio"',
             },
             {
-              icon: Check,
               title: 'Confirma con "Instalar"',
               detail: 'Teleo aparecerá junto a tus otras apps.',
             },
@@ -175,7 +165,6 @@ export function Instalar() {
 }
 
 interface Step {
-  icon: LucideIcon
   title: string
   detail?: string
 }
@@ -184,13 +173,11 @@ function Steps({ steps }: { steps: Step[] }) {
   return (
     <AuthCard label="Cómo instalarla">
       <ol className="divide-y divide-border">
-        {steps.map(({ icon: Icon, title, detail }, index) => (
+        {steps.map(({ title, detail }, index) => (
           <li key={title} className="flex gap-3 items-start px-3.5 py-3">
-            <span
-              aria-hidden="true"
-              className="w-9 h-9 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center"
-            >
-              <Icon size={18} strokeWidth={2} />
+            {/* V.3.5.0: el número del paso en Young Serif reemplaza al ícono. */}
+            <span aria-hidden="true" className="w-6 shrink-0 font-title text-[24px] leading-none text-primary-text text-center pt-0.5">
+              {index + 1}
             </span>
             <div className="min-w-0 pt-0.5">
               <p className="text-body-md text-text font-semibold">
@@ -225,7 +212,6 @@ function CopyLink() {
   return (
     <div>
       <Button variant="soft" onClick={handleCopy}>
-        {status === 'copied' ? <Check size={18} strokeWidth={2.2} /> : <Copy size={18} strokeWidth={2} />}
         {status === 'copied' ? 'Enlace copiado' : 'Copiar enlace'}
       </Button>
       {status === 'failed' && (

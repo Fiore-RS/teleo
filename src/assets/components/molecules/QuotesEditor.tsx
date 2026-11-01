@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react'
-import { Plus, Quote, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { cleanPageInput, parsePage } from '../../../lib/quotes'
 
 interface QuoteItem { id: string; quote_text: string; page?: number | null }
@@ -32,7 +32,7 @@ export function QuotesEditor({ quotes, onAdd, onRemove }: QuotesEditorProps) {
     <div className="bg-surface-2 border border-border rounded-[18px] divide-y divide-border">
       {quotes.map((q) => (
         <div key={q.id} className="flex items-start gap-2.5 pl-3.5 pr-2 py-3 animate-fade-in">
-          <Quote size={16} className="text-ornament shrink-0 mt-0.5" aria-hidden="true" />
+          <span aria-hidden="true" className="font-display font-semibold text-[34px] leading-[0.8] text-primary-text shrink-0 -mt-0.5 w-4">“</span>
           <div className="flex-1 min-w-0">
             <p className="font-display italic text-body-md text-text">{q.quote_text}</p>
             {q.page != null && <p className="text-body-sm text-text-muted mt-0.5">Pág. {q.page}</p>}
@@ -70,7 +70,7 @@ export function QuotesEditor({ quotes, onAdd, onRemove }: QuotesEditorProps) {
           onClick={handleAdd}
           aria-label="Agregar cita"
           disabled={!value.trim()}
-          className="w-8 h-8 shrink-0 rounded-full bg-primary-soft text-primary-text flex items-center justify-center disabled:opacity-50 transition-opacity focus-visible:outline-2 focus-visible:outline-primary-text"
+          className="w-8 h-8 shrink-0 rounded-button bg-primary-soft text-primary-text flex items-center justify-center disabled:opacity-50 transition-opacity focus-visible:outline-2 focus-visible:outline-primary-text"
         >
           <Plus size={17} strokeWidth={2.4} />
         </button>

@@ -35,7 +35,7 @@ export function StatusMenu({ status, onChange, align = 'right', className = '' }
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Cambiar estado de lectura"
-        className="inline-flex items-center gap-1.5 pl-4 pr-3 py-1.5 rounded-full text-body-sm font-body font-bold transition-opacity active:opacity-80"
+        className="inline-flex items-center gap-1.5 pl-4 pr-3 py-1.5 rounded-chip text-body-sm font-body font-bold transition-opacity active:opacity-80"
         style={{ backgroundColor: statusColorVar[status], color: 'var(--color-surface)' }}
       >
         {statusLabel[status]}
