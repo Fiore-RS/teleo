@@ -1,15 +1,21 @@
+/* Zonas de Instagram (V.3.5.1): en una historia, Instagram tapa arriba ~10 % con su barra y abajo
+   ~9 % con el campo de responder, y en teléfonos más altos que 9:16 agranda la imagen y recorta
+   ~9 % de cada costado. Por eso el contenido va centrado de arriba abajo, con margen arriba y
+   abajo, y el pie ("Teleo" y el @) queda fijo en las esquinas, metido hacia adentro. */
+
 /* Tarjetas de "Tu lectura en Teleo" (V.3.2.0). Miden 300 × 533,33 en pantalla y se exportan con
    pixelRatio 3,6 (1080 × 1920, formato historia). Cada tarjeta recibe sus colores en variables
    (lib/recapTones): --pc fondo, --oc texto sobre el fondo, --paper y --paper-ink para las piezas
    claras, --pi acento legible sobre el papel. Diseño aprobado por Fiorella en la vista previa
    "Tu lectura en Teleo" (13 oct 2026). */
 
-.rc{width:300px;height:533.333px;border-radius:20px;position:relative;overflow:hidden;color:var(--oc);display:flex;flex-direction:column;padding:20px 20px 16px;font-family:var(--font-body);text-align:left;
+.rc{width:300px;height:533.333px;border-radius:20px;position:relative;overflow:hidden;color:var(--oc);display:flex;flex-direction:column;justify-content:center;justify-content:safe center;padding:56px 24px 84px;font-family:var(--font-body);text-align:left;
   background:radial-gradient(120% 70% at 85% 0%,color-mix(in srgb,var(--pc) 72%,#fff 28%),transparent 60%),radial-gradient(90% 60% at 0% 100%,color-mix(in srgb,var(--pc) 75%,#000 25%),transparent 70%),var(--pc)}
 .rc::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.1;background-image:radial-gradient(circle at 1px 1px,var(--oc) .8px,transparent 1.2px);background-size:7px 7px}
 .rc>*{position:relative;z-index:1}
 .rc-wm{font:400 16px/1 var(--font-title);color:var(--oc)}
-.rc-foot{align-self:stretch;display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;font:600 11.5px var(--font-body);opacity:.92}
+/* Pie fijo (V.3.5.1): "Teleo" y el @ siempre en el mismo lugar, por encima del campo de responder. */
+.rc-foot{position:absolute;left:30px;right:30px;bottom:54px;display:flex;justify-content:space-between;align-items:center;font:600 11.5px var(--font-body);opacity:.92}
 .rc-kicker{font:700 11px var(--font-body);letter-spacing:.16em;text-transform:uppercase;opacity:.85}
 .rc-cv{aspect-ratio:2/3;border-radius:3px 6px 6px 3px;background:var(--c);display:flex;flex-direction:column;justify-content:flex-end;padding:7px 6px 7px 9px;color:#FFF8EE;font:600 10px/1.15 var(--font-display);overflow:hidden;position:relative;box-shadow:0 10px 20px -10px rgba(0,0,0,.6);flex-shrink:0}
 .rc-cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -28,7 +34,7 @@
 .rc-ptitle .yr.mes{font:italic 600 62px/.95 var(--font-display);letter-spacing:-.03em;margin-top:2px;text-shadow:4px 4px 0 rgba(0,0,0,.2)}
 .rc-ptitle .yrsmall{font:400 22px var(--font-title);opacity:.85;margin-top:4px}
 .rc-ptitle .en{font:italic 500 30px/1.1 var(--font-display);align-self:flex-end;margin-top:6px}
-.rc-shelf{display:flex;align-items:flex-end;gap:3px;height:120px;margin-top:auto;padding:0 6px;border-bottom:6px solid color-mix(in srgb,var(--oc) 85%,transparent);border-radius:0 0 3px 3px}
+.rc-shelf{display:flex;align-items:flex-end;gap:3px;height:120px;margin-top:30px;padding:0 6px;border-bottom:6px solid color-mix(in srgb,var(--oc) 85%,transparent);border-radius:0 0 3px 3px}
 .rc-shelf i{display:block;border-radius:3px 3px 1px 1px;position:relative;box-shadow:inset -3px 0 0 rgba(0,0,0,.15)}
 .rc-shelf i::after{content:"";position:absolute;left:3px;right:3px;top:14%;height:3px;border-top:1px solid rgba(255,248,238,.55);border-bottom:1px solid rgba(255,248,238,.55)}
 .rc-shelf i.lean{transform:rotate(-12deg);transform-origin:bottom left;margin-left:10px}
@@ -39,17 +45,21 @@
 .rc-giant{font:400 158px/.82 var(--font-title);letter-spacing:-.06em;margin:14px 0 0 -8px;text-shadow:6px 6px 0 rgba(0,0,0,.22)}
 .rc-giant.long{font-size:118px}
 .rc-giant-l{font:italic 600 34px/1 var(--font-display);margin:0 0 6px}
-.rc-pagesrow{display:flex;gap:16px;align-items:flex-end;margin-top:auto}
+.rc-pagesrow{display:flex;gap:16px;align-items:flex-end;margin-top:16px}
 .rc-tower{position:relative;width:86px;display:flex;flex-direction:column-reverse;flex-shrink:0}
 .rc-tower i{display:block;height:5px;background:var(--paper);border-radius:1px;margin-top:1px;box-shadow:0 1px 0 rgba(0,0,0,.2)}
 .rc-ruler{position:absolute;right:-12px;bottom:0;width:6px;border:1.5px solid var(--oc);border-left:0}
 .rc-pages b{display:block;font:400 34px/1 var(--font-title);font-variant-numeric:tabular-nums}
 .rc-pages span{font:italic 500 17px var(--font-display)}
 .rc-pages p{margin:8px 0 0;font-size:13px;line-height:1.35;opacity:.92;max-width:20ch}
-.rc-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px}
+.rc-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:12px}
 .rc-days i{aspect-ratio:1;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--oc) 45%,transparent);display:grid;place-items:center;font:700 8.5px var(--font-body);font-style:normal}
 .rc-days i.on{background:var(--paper);border-color:var(--paper);color:var(--pi)}
 .rc-days i.fut{opacity:.3;border-style:dashed}
+.rc.libros-mes .rc-giant{font-size:124px;margin-top:6px}
+.rc.libros-mes .rc-days{max-width:206px}
+.rc.libros-mes .rc-pagesrow{margin-top:14px}
+.rc.libros-mes .rc-tower{width:70px}
 
 /* portadas (V.3.3.1): el ancho de cada portada y el espacio entre ellas salen de fitCoverGrid */
 .rc-pg-top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:28px}
@@ -67,16 +77,16 @@
 .rc-monthname{font:italic 600 58px/.95 var(--font-display);letter-spacing:-.02em;margin-top:8px}
 /* max-width: el texto se queda a la izquierda de la etiqueta redonda (rc-sticker). */
 .rc-tied{font-size:12.5px;opacity:.9;margin-top:4px;max-width:165px}
-.rc-sticker{position:absolute;right:16px;top:64px;width:84px;height:84px;border-radius:50%;background:var(--paper);color:var(--pi);display:grid;place-items:center;text-align:center;transform:rotate(12deg);box-shadow:0 10px 20px -10px rgba(0,0,0,.6);z-index:2}
+.rc-sticker{position:absolute;right:16px;top:108px;width:84px;height:84px;border-radius:50%;background:var(--paper);color:var(--pi);display:grid;place-items:center;text-align:center;transform:rotate(12deg);box-shadow:0 10px 20px -10px rgba(0,0,0,.6);z-index:2}
 .rc-sticker b{display:block;font:400 34px/.9 var(--font-title)}
 .rc-sticker span{font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase}
 .rc-mshelf{display:flex;flex-direction:column;gap:3px;margin-top:16px}
-.rc-mrow{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:end;gap:6px;height:22px;padding:0 6px;border-bottom:2px solid color-mix(in srgb,var(--oc) 40%,transparent)}
+.rc-mrow{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:end;gap:6px;height:19px;padding:0 6px;border-bottom:2px solid color-mix(in srgb,var(--oc) 40%,transparent)}
 .rc-mrow small{font:700 9.5px var(--font-body);letter-spacing:.06em;text-transform:uppercase;opacity:.85;align-self:center}
 .rc-mrow div{display:flex;gap:2px;align-items:flex-end;height:100%;overflow:hidden}
 /* Borde fino: un lomo del mismo tono que el fondo de la tarjeta (ej. ciruela sobre Atardecer) no desaparece. */
 .rc-mrow div i{display:block;width:9px;flex-shrink:0;border-radius:2px 2px 0 0;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oc) 45%,transparent)}
-.rc-mrow.top{background:color-mix(in srgb,var(--paper) 22%,transparent);border-radius:6px 6px 0 0;border-bottom-color:var(--paper);height:26px}
+.rc-mrow.top{background:color-mix(in srgb,var(--paper) 22%,transparent);border-radius:6px 6px 0 0;border-bottom-color:var(--paper);height:23px}
 .rc-mrow.top small{opacity:1}
 .rc-mrow.fut div{border-bottom:1.5px dashed color-mix(in srgb,var(--oc) 45%,transparent);height:50%;align-self:center}
 
@@ -107,14 +117,15 @@
 .rc-ficha .ln span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rc-ficha .ln em{font-style:normal;color:var(--pi);font-weight:700;font-size:10.5px;text-transform:uppercase}
 .rc-ficha .rc-stamp{position:absolute;right:10px;bottom:30px;color:var(--pi);background:color-mix(in srgb,var(--paper) 70%,transparent);transform:rotate(-14deg);font-size:12px}
-.rc-fanrow{display:flex;justify-content:center;margin-top:auto;padding-top:14px}
+/* Autor del año (V.3.5.1): las portadas justo debajo de la ficha, no empujadas al fondo. */
+.rc-fanrow{display:flex;justify-content:center;margin-top:26px}
 .rc-fanrow .rc-cv{width:60px;margin:0 -8px}
 .rc-fanrow .rc-cv:nth-child(odd){transform:rotate(-6deg) translateY(4px)}
 .rc-fanrow .rc-cv:nth-child(even){transform:rotate(5deg)}
 
 /* racha: cinta separadora */
 .rc.racha{padding-left:132px}
-.rc-cinta{position:absolute;left:22px;top:-2px;width:92px;height:372px;background:var(--paper);color:var(--pi);clip-path:polygon(0 0,100% 0,100% 100%,50% 91%,0 100%);display:flex;flex-direction:column;align-items:center;padding-top:28px;z-index:2}
+.rc-cinta{position:absolute;left:22px;top:-2px;width:92px;height:420px;background:var(--paper);color:var(--pi);clip-path:polygon(0 0,100% 0,100% 100%,50% 91%,0 100%);display:flex;flex-direction:column;align-items:center;padding-top:66px;z-index:2}
 .rc-cinta::before{content:"";position:absolute;inset:6px 6px 0;border:1.5px dashed color-mix(in srgb,var(--pi) 45%,transparent);border-bottom:0;pointer-events:none}
 .rc-cinta b{font:400 70px/.9 var(--font-title);letter-spacing:-.04em}
 .rc-cinta b.long{font-size:52px}
@@ -134,7 +145,7 @@
 .rc-relbig{display:flex;align-items:baseline;gap:8px;margin-top:10px}
 .rc-relbig b{font:400 104px/.85 var(--font-title);letter-spacing:-.05em;text-shadow:5px 5px 0 rgba(0,0,0,.22)}
 .rc-relbig span{font:italic 600 26px/1 var(--font-display)}
-.rc-ring{position:relative;height:220px;margin-top:auto;display:grid;place-items:center}
+.rc-ring{position:relative;height:220px;margin-top:18px;display:grid;place-items:center}
 .rc-ring svg{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:var(--oc);stroke-width:2;stroke-dasharray:4 6;opacity:.7}
 .rc-trio{display:flex;align-items:flex-end}
 .rc-one{position:relative}
@@ -147,7 +158,7 @@
 
 /* favorito */
 .rc.favorito{align-items:center;text-align:center;background:radial-gradient(60% 42% at 50% 46%,color-mix(in srgb,var(--pc) 45%,#fff 55%),transparent 70%),radial-gradient(90% 60% at 0% 100%,color-mix(in srgb,var(--pc) 75%,#000 25%),transparent 70%),var(--pc)}
-.rc.favorito .rc-kicker{margin-top:6px}
+.rc.favorito .rc-kicker{margin-top:0}
 .rc-favh{font:italic 600 26px/1.05 var(--font-display);margin:6px 0 0}
 .rc-favwrap{position:relative;margin-top:22px}
 .rc-favwrap .rc-cv{width:150px;font-size:15px;padding:12px 10px 12px 14px;transform:rotate(-4deg);box-shadow:0 26px 40px -18px rgba(0,0,0,.75)}
@@ -156,7 +167,7 @@
 .rc-favauthor{font:italic 500 16px var(--font-display);opacity:.92}
 
 /* cierre: ticket */
-.rc.cierre{padding-top:24px}
+
 .rc-ticket{position:relative;background:var(--paper);color:var(--paper-ink);font-family:"Courier Prime","Courier New",monospace;font-size:12px;padding:16px 16px 12px;transform:rotate(1.5deg);box-shadow:0 18px 30px -16px rgba(0,0,0,.7);margin:0 4px}
 .rc-ticket::before,.rc-ticket::after{content:"";position:absolute;left:0;right:0;height:12px;background:radial-gradient(circle at 7px 6px,var(--pc) 5px,transparent 5.5px) 0 0/14px 12px repeat-x}
 .rc-ticket::before{top:-6px}

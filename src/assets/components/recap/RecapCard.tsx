@@ -257,6 +257,9 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
     }
 
     case 'libros': {
+      // V.3.5.1: en el mes, la cifra y el calendario un poco más chicos para que todo quepa entre
+      // las zonas que tapa Instagram.
+      if (!isYear) className += ' libros-mes'
       const n = Math.min(30, Math.max(3, Math.round(recap.pages / 480)))
       const kicker = isYear ? (recap.isOngoing ? 'Este año, hasta ahora' : 'Este año') : recap.isOngoing ? 'Este mes, hasta hoy' : 'Este mes'
       let days: ReactNode = null
@@ -341,7 +344,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
             </div>
           )}
           {/* Con un mes de nombre largo, la etiqueta baja para no tapar el nombre. */}
-          <div className="rc-sticker" style={MONTH_NAMES[best.month - 1].length > 6 ? { top: 104 } : undefined}>
+          <div className="rc-sticker" style={MONTH_NAMES[best.month - 1].length > 6 ? { top: 150 } : undefined}>
             <div>
               <b>{best.count}</b>
               <span>{best.count === 1 ? 'libro' : 'libros'}</span>
@@ -431,6 +434,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
     }
 
     case 'autor': {
+      className += ' autor'
       const author = recap.author!
       const shown = author.books.slice(0, 4)
       body = (
