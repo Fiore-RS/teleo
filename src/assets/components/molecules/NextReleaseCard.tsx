@@ -30,7 +30,7 @@ export function NextReleaseCard({ userId }: NextReleaseCardProps) {
       action={
         next && (
           <CardAction onClick={() => navigate('/lanzamientos?vista=cuenta-atras')}>
-            {upcoming.length > 1 ? `Ver los ${upcoming.length}` : 'Ver'}
+            {upcoming.length > 1 ? 'Ver todos' : 'Ver'}
           </CardAction>
         )
       }
