@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, GripVertical, Check, X, RefreshCw, ChevronRight } from "lucide-react";
+import { ImageOff, Heart, Trash2, ArrowUpDown, Plus, GripVertical, Check, X, ChevronRight } from "lucide-react";
 import { useSaga } from "../hooks/useSaga";
 import { useAuth } from "../hooks/useAuth";
 import { DogEar } from "../assets/components/atoms/DogEar";
@@ -576,8 +576,7 @@ export function DetalleSaga({
                 {saga.author && <p className="text-body-md text-text-secondary mt-1">{saga.author}</p>}
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3">
                   <Badge status={sagaStatus} />
-                  <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
-                    <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+                  <span className="font-display italic text-body-sm text-text-muted">
                     Según tus libros
                   </span>
                 </div>
@@ -653,8 +652,7 @@ export function DetalleSaga({
                 />
                 <div className="flex flex-wrap items-center gap-2 mt-1">
                   <Badge status={sagaStatus} />
-                  <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
-                    <RefreshCw size={12} strokeWidth={2.2} aria-hidden="true" />
+                  <span className="font-display italic text-body-sm text-text-muted">
                     Según tus libros
                   </span>
                 </div>
@@ -668,8 +666,7 @@ export function DetalleSaga({
                     // Con libros, las categorías salen de ellos (computeSagaCategories).
                     <span className="flex flex-col items-end text-right min-w-0">
                       <span className="text-body-lg text-text truncate max-w-full">{categories.join(", ")}</span>
-                      <span className="inline-flex items-center gap-1 text-body-sm text-text-muted">
-                        <RefreshCw size={11} strokeWidth={2.2} aria-hidden="true" />
+                      <span className="font-display italic text-body-sm text-text-muted">
                         Según tus libros
                       </span>
                     </span>
