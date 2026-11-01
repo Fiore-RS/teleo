@@ -7,7 +7,6 @@ import { useAnnualGoal } from "../hooks/useAnnualGoal";
 import { useProfile } from "../hooks/useProfile";
 import { getProgressInfo } from "../lib/progress";
 import { StreakRibbon } from "../assets/components/atoms/StreakRibbon";
-import { Sparkle } from "../assets/components/atoms/Sparkle";
 import { Skeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
 import { Card, CardAction } from "../assets/components/molecules/Card";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
@@ -236,7 +235,7 @@ export function Mesa() {
                   } ${d.isFuture ? "opacity-50" : ""}`}
                 >
                   <span
-                    className={`w-[26px] h-[26px] rounded-full border-[1.5px] flex items-center justify-center ${
+                    className={`w-[30px] h-[30px] rounded-[8px] border-[1.5px] flex items-center justify-center ${
                       d.read
                         ? "bg-orange border-orange text-on-orange"
                         : d.isToday
@@ -263,40 +262,37 @@ export function Mesa() {
         </Card>
 
         {/* Meta anual */}
-        <Card tab={{ label: "Meta anual de lectura" }} tone="pink">
+        <Card
+          tab={{ label: "Meta anual de lectura" }}
+          tone="pink"
+          action={<CardAction onClick={() => setIsGoalModalOpen(true)}>Editar</CardAction>}
+        >
           {goalLoading ? (
             <div aria-label="Cargando">
-              <Skeleton className="h-7 w-3/5 rounded-full" />
-              <Skeleton className="h-3 w-full mt-4 rounded-full" />
-              <Skeleton className="h-3.5 w-1/2 mx-auto mt-3.5 mb-3.5 rounded-full" />
+              <Skeleton className="h-10 w-3/5 rounded-full" />
+              <Skeleton className="h-3.5 w-full mt-4 rounded-[6px]" />
+              <Skeleton className="h-4 w-1/2 mt-3.5 rounded-full" />
             </div>
           ) : (
           <>
-          <div className="flex items-baseline justify-between gap-3">
-            <p className="font-display font-semibold text-[28px] leading-none text-text">
-              <span key={completedCount} className="inline-block animate-fade-in">{completedCount}</span>{" "}
+          {/* V.3.5.0: la cifra grande, la frase en cursiva y "Editar" en la pestaña. */}
+          <div className="flex items-end justify-between gap-3">
+            <p className="font-title text-[40px] leading-none text-text">
+              <span key={completedCount} className="inline-block animate-fade-in tabular-nums">{completedCount}</span>{" "}
               <span className="font-body font-medium text-body-md text-text-secondary">
                 de {goal} libros del {new Date().getFullYear()}
               </span>
             </p>
-            <span className="font-display font-semibold text-pink-text tabular-nums">
+            <span className="font-display font-semibold text-[20px] text-pink-text tabular-nums">
               {Math.round(goalPercent)}%
             </span>
           </div>
-          <ProgressBar percent={goalPercent} color="var(--color-pink)" className="mt-3 h-3" />
-          <p className="text-body-md text-text-secondary text-center mt-2.5 mb-3.5">
+          <ProgressBar percent={goalPercent} color="var(--color-pink)" shape="firme" className="mt-3.5 h-3.5" />
+          <p className="font-display italic text-body-lg text-text-secondary mt-3">
             {getGoalMessage(goalPercent)}
           </p>
           </>
           )}
-          <div className="flex items-center gap-2.5 text-ornament mb-3.5" aria-hidden="true">
-            <span className="flex-1 h-px bg-border" />
-            <Sparkle size={10} />
-            <span className="flex-1 h-px bg-border" />
-          </div>
-          <Button variant="soft" onClick={() => setIsGoalModalOpen(true)}>
-            Editar meta
-          </Button>
         </Card>
       </div>
 
