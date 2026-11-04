@@ -755,3 +755,9 @@
   --teleo-on-magenta: #0F1A1F;
   --teleo-on-accent: #0F1A1F;
 }
+
+/* Fondo de la página detrás de la app. Sin esto, en el teléfono las zonas del sistema (debajo
+   de la barra de pestañas, la rayita del iPhone, el rebote al deslizar) mostraban otro color. */
+html {
+  background-color: var(--teleo-bg);
+}
