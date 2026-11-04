@@ -21,8 +21,9 @@ export default defineConfig({
         scope: '/teleo/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#7A2E3A',
-        theme_color: '#7A2E3A',
+        // Sin background_color ni theme_color a propósito: así Chrome en Android usa los suyos
+        // (claro u oscuro según el modo del teléfono) en la apertura y en la barra de abajo,
+        // que salen del manifest y no se pueden cambiar con código.
         icons: [
           {
             src: 'pwa-icons/pwa-192x192.png',

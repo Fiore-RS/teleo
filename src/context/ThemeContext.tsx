@@ -72,13 +72,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement
     root.dataset.palette = palette
-    // Las barras del teléfono (app instalada) toman el color de fondo del tema y el modo, para
-    // que se fundan con la app. Antes tomaban el vino de marca, y la barra de abajo se quedaba
-    // vino debajo de la barra de pestañas. El vino de la pantalla de carga sale del manifest
-    // y de index.html, y se cambia acá apenas abre la app.
-    const meta = document.querySelector('meta[name="theme-color"]')
+    // La barra de arriba (y la del navegador) toma el color de fondo del tema y el modo, para
+    // que se funda con la app. La etiqueta se crea acá: index.html ya no trae un color fijo.
+    // La barra de abajo de la app instalada en Android sale del manifest, que no declara color
+    // para que Chrome siga el modo del teléfono (ver vite.config.ts).
+    let meta = document.querySelector('meta[name="theme-color"]')
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'theme-color')
+      document.head.appendChild(meta)
+    }
     const bg = getComputedStyle(root).getPropertyValue('--teleo-bg').trim()
-    if (meta && bg) meta.setAttribute('content', bg)
+    if (bg) meta.setAttribute('content', bg)
   }, [palette, resolvedTheme])
 
   function setTheme(newTheme: Theme) {
