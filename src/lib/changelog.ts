@@ -15,6 +15,14 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.5.2',
+    date: '4 de noviembre de 2026',
+    title: 'Del color de tu tema',
+    items: [
+      'Con Teleo instalada en el teléfono, la barra del sistema de abajo ya no se queda en vino después de abrir la app: toma el color de fondo de tu tema, en modo claro y oscuro.',
+    ],
+  },
+  {
     version: '3.5.1',
     date: '2 de noviembre de 2026',
     title: 'Listas para tus historias',

@@ -72,10 +72,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement
     root.dataset.palette = palette
-    // La barra de estado del teléfono (app instalada) toma el color de marca del tema.
+    // Las barras del teléfono (app instalada) toman el color de fondo del tema y el modo, para
+    // que se fundan con la app. Antes tomaban el vino de marca, y la barra de abajo se quedaba
+    // vino debajo de la barra de pestañas. El vino de la pantalla de carga sale del manifest
+    // y de index.html, y se cambia acá apenas abre la app.
     const meta = document.querySelector('meta[name="theme-color"]')
-    const primary = getComputedStyle(root).getPropertyValue('--teleo-primary').trim()
-    if (meta && primary) meta.setAttribute('content', primary)
+    const bg = getComputedStyle(root).getPropertyValue('--teleo-bg').trim()
+    if (meta && bg) meta.setAttribute('content', bg)
   }, [palette, resolvedTheme])
 
   function setTheme(newTheme: Theme) {
