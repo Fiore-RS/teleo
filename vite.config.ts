@@ -23,7 +23,11 @@ export default defineConfig({
         orientation: 'portrait',
         // Sin background_color ni theme_color a propósito: así Chrome en Android usa los suyos
         // (claro u oscuro según el modo del teléfono) en la apertura y en la barra de abajo,
-        // que salen del manifest y no se pueden cambiar con código.
+        // que salen del manifest y no se pueden cambiar con código. Van en undefined y no
+        // simplemente borrados porque vite-plugin-pwa rellena los que faltan con sus valores
+        // por defecto (#ffffff y un verde #42b883); con undefined quedan fuera del manifest.
+        background_color: undefined,
+        theme_color: undefined,
         icons: [
           {
             src: 'pwa-icons/pwa-192x192.png',
