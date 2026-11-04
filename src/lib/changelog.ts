@@ -19,7 +19,8 @@ export const changelog: ChangelogEntry[] = [
     date: '4 de noviembre de 2026',
     title: 'Del color de tu tema',
     items: [
-      'Con Teleo instalada en el teléfono, la barra del sistema de abajo ya no se queda en vino después de abrir la app: toma el color de fondo de tu tema, en modo claro y oscuro.',
+      'Con Teleo instalada en el teléfono, las barras del sistema ya no se quedan en vino: la de arriba toma el color de fondo de tu tema, y la de abajo y la pantalla al abrir la app siguen el modo claro u oscuro de tu teléfono.',
+      'Si todavía las ves en vino, el teléfono puede tardar unos días en aplicar el cambio.',
     ],
   },
   {
