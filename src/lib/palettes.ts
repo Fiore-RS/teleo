@@ -1,7 +1,8 @@
 /** Temas de color de Teleo (V.2.1.0). Los colores completos de cada tema viven en
  *  index.css (bloques [data-palette]); aquí solo está lo que necesita la app para mostrar
  *  la lista: nombre, descripción y una muestra de colores para la vista previa.
- *  Los ids también están en la restricción de la columna profiles.palette (0030). */
+ *  Los ids también están en la restricción de la columna profiles.palette (0030; Arrecife y
+ *  Ciruela, V.3.6.0, en la 0038). */
 
 export type PaletteId =
   | 'atardecer'
@@ -10,6 +11,8 @@ export type PaletteId =
   | 'algodon'
   | 'bosque'
   | 'margarita'
+  | 'arrecife'
+  | 'ciruela'
 
 export interface PaletteSwatch {
   bg: string
@@ -218,6 +221,68 @@ export const palettes: Palette[] = [
         '#8DC468'
       ]
     }
+  },
+  {
+    id: 'arrecife',
+    name: 'Arrecife',
+    description: 'Turquesa y coral sobre arena rosada.',
+    light: {
+      bg: '#FFEEF1',
+      surface: '#FFF9FA',
+      border: '#F3D0D8',
+      text: '#10302E',
+      primary: '#0F7F79',
+      primaryInk: '#FFFAF7',
+      accents: [
+        '#EC7A95',
+        '#20B2AA',
+        '#F08A6E'
+      ]
+    },
+    dark: {
+      bg: '#0A201E',
+      surface: '#102C29',
+      border: '#21453F',
+      text: '#FDEFEA',
+      primary: '#20B2AA',
+      primaryInk: '#0C1A19',
+      accents: [
+        '#F7A1B4',
+        '#5FD3CB',
+        '#F5A18A'
+      ]
+    }
+  },
+  {
+    id: 'ciruela',
+    name: 'Ciruela',
+    description: 'Ciruela profunda con pervinca y durazno.',
+    light: {
+      bg: '#EDEFF8',
+      surface: '#F9FAFE',
+      border: '#D5DAEC',
+      text: '#2B0A17',
+      primary: '#470B24',
+      primaryInk: '#FFF4E6',
+      accents: [
+        '#EFA765',
+        '#7E88C4',
+        '#C2477F'
+      ]
+    },
+    dark: {
+      bg: '#1A0F1E',
+      surface: '#241729',
+      border: '#3E2B45',
+      text: '#FBEDE3',
+      primary: '#B5BEDD',
+      primaryInk: '#1A0F1E',
+      accents: [
+        '#F2B279',
+        '#A9B3E0',
+        '#E07AA8'
+      ]
+    }
   }
 ]
 
@@ -231,10 +296,12 @@ export function getPalette(id: PaletteId): Palette {
 
 /** Cuánto se suben las opacidades de los dibujos de banners y de la tarjeta de cita (V.3.6.0).
  *  Va de la mano con --teleo-banner-ink en index.css: en Margarita (claro y oscuro) y en
- *  Algodón de azúcar oscuro los dibujos pasaron de oscuros a blanco, y sobre esos degradados
+ *  Algodón de azúcar oscuro (y en Arrecife y Ciruela oscuros) los dibujos pasaron de oscuros a blanco, y sobre esos degradados
  *  claros el blanco con las opacidades de siempre se veía tenue. */
 export function bannerArtBoost(palette: PaletteId, mode: 'light' | 'dark'): number {
   if (palette === 'margarita') return 1.7
   if (palette === 'algodon' && mode === 'dark') return 1.7
+  // Arrecife y Ciruela (V.3.6.0): en oscuro el principal es claro y su texto oscuro.
+  if ((palette === 'arrecife' || palette === 'ciruela') && mode === 'dark') return 1.7
   return 1
 }
