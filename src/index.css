@@ -480,6 +480,10 @@
   .postcard-button {
     animation: teleo-postcard-button-in var(--motion-slow) 1.1s var(--ease-enter) both;
   }
+  /* Postal quieta, dentro de una pantalla (Resumen › Año). */
+  .postcard-static, .postcard-static .postcard-stamp, .postcard-static .postcard-mark {
+    animation: none;
+  }
   @media (prefers-reduced-motion: reduce) {
     .postcard-in, .postcard-stamp, .postcard-mark, .postcard-button {
       animation: none;

@@ -10,8 +10,21 @@ import './recapCards.css'
 export const RECAP_CARD_WIDTH = 300
 export const RECAP_EXPORT_PIXEL_RATIO = 3.6
 
-/** Colores de los lomos y de las portadas sin imagen. */
-const SPINES = ['#2B211B', '#C68A3D', '#3F5B4E', '#E8C9A0', '#5B7A88', '#8E5A7A', '#FFF8EE', '#6B4E3D', '#E3B37A', '#2E4057', '#D0A0A4']
+/** Colores de los lomos y de las portadas sin imagen. V.3.6.0: el blanco pasó a verde salvia y
+ *  el café casi negro a caramelo, porque se perdían contra el fondo en algunos temas. */
+const SPINES = ['#B5794A', '#C68A3D', '#3F5B4E', '#E8C9A0', '#5B7A88', '#8E5A7A', '#7FA7A0', '#6B4E3D', '#E3B37A', '#2E4057', '#D0A0A4']
+
+/** Pila de libros junto a las páginas (V.3.6.0): pocos libros acostados, de alto, ancho y color
+ *  distintos, en vez de una torre de hojas que con muchas páginas chocaba con la cifra grande. */
+const STACK_BOOKS = [
+  { h: 13, w: 100, c: '#C68A3D' },
+  { h: 11, w: 90, c: '#3F5B4E' },
+  { h: 15, w: 96, c: '#D0A0A4' },
+  { h: 12, w: 86, c: '#5B7A88' },
+  { h: 14, w: 93, c: '#E3B37A' },
+  { h: 11, w: 88, c: '#8E5A7A' },
+  { h: 13, w: 92, c: '#7FA7A0' },
+]
 const PLAIN_COVERS = ['#7A2E3A', '#C68A3D', '#3F5B4E', '#B85C6E', '#5B7A88', '#8E5A7A', '#6B4E3D', '#4E6B5A', '#3D4E6B', '#B07A2E']
 
 const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' } as Intl.NumberFormatOptions)
@@ -260,7 +273,10 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       // V.3.5.1: en el mes, la cifra y el calendario un poco más chicos para que todo quepa entre
       // las zonas que tapa Instagram.
       if (!isYear) className += ' libros-mes'
-      const n = Math.min(30, Math.max(3, Math.round(recap.pages / 480)))
+      // Entre 3 y 7 libros en la pila, según las páginas.
+      const n = Math.min(STACK_BOOKS.length, Math.max(3, Math.round(recap.pages / 1500)))
+      const stack = STACK_BOOKS.slice(0, n)
+      const stackHeight = stack.reduce((sum, b) => sum + b.h + 1, 0)
       const kicker = isYear ? (recap.isOngoing ? 'Este año, hasta ahora' : 'Este año') : recap.isOngoing ? 'Este mes, hasta hoy' : 'Este mes'
       let days: ReactNode = null
       if (recap.period.kind === 'mes') {
@@ -288,8 +304,10 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
           {recap.pages > 0 && (
             <div className="rc-pagesrow">
               <div className="rc-tower">
-                {Array.from({ length: n }, (_, k) => <i key={k} style={{ transform: `translateX(${((k * 37) % 7) - 3}px)` }} />)}
-                <span className="rc-ruler" style={{ height: n * 6 }} />
+                {stack.map((b, k) => (
+                  <i key={k} style={{ height: b.h, width: `${b.w}%`, background: b.c, transform: `translateX(${((k * 37) % 7) - 3}px)` }} />
+                ))}
+                <span className="rc-ruler" style={{ height: stackHeight }} />
               </div>
               <div className="rc-pages">
                 <b>{fmt(recap.pages)}</b>
