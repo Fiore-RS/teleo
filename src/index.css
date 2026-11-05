@@ -84,6 +84,12 @@
      principal; en los temas donde ese texto es oscuro (Margarita, Algodón de azúcar oscuro)
      se cambia a blanco, porque en negro los dibujos se veían pesados sobre el degradado. */
   --teleo-banner-ink: var(--teleo-primary-ink);
+
+  /* Grano de papel del fondo (V.3.6.0): ruido en escala de grises, solo en el fondo de las
+     pantallas (no en tarjetas). En claro oscurece apenas (multiply); en oscuro aclara apenas
+     (screen). Ver .bg-glow-top y .bg-paper. */
+  --teleo-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.10'/%3E%3C/svg%3E");
+  --teleo-grain-blend: multiply;
 }
 
 /* "Noche con lámpara" */
@@ -141,6 +147,8 @@
   /* Borde de luz de 1 px arriba de tarjetas, pestañas y barra de pestañas. */
   --teleo-edge-top: color-mix(in srgb, var(--teleo-text) 22%, var(--teleo-surface));
   --teleo-shelf: #5E4232;
+  --teleo-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.07'/%3E%3C/svg%3E");
+  --teleo-grain-blend: screen;
 }
 
 @theme {
@@ -366,11 +374,24 @@
     scrollbar-width: none;
   }
 
-  /* Brillo difuso arriba de la pantalla, como una niebla suave */
+  /* Brillo difuso arriba de la pantalla, como una niebla suave, sobre el grano de papel
+     (V.3.6.0). Las tarjetas para compartir que usan esta clase llevan bg-glow-top-plain. */
   .bg-glow-top {
+    background:
+      var(--teleo-grain) 0 0 / 180px 180px,
+      radial-gradient(120% 360px at 15% -80px, var(--color-bg-glow) 0%, transparent 70%),
+      var(--color-bg);
+    background-blend-mode: var(--teleo-grain-blend), normal;
+  }
+  .bg-glow-top-plain {
     background:
       radial-gradient(120% 360px at 15% -80px, var(--color-bg-glow) 0%, transparent 70%),
       var(--color-bg);
+  }
+  /* Fondo con grano y sin brillo (Perfil, que arriba tiene el banner). */
+  .bg-paper {
+    background: var(--teleo-grain) 0 0 / 180px 180px, var(--color-bg);
+    background-blend-mode: var(--teleo-grain-blend);
   }
 
   /* ---------- Estilo editorial (V.3.5.0) ----------
@@ -414,6 +435,15 @@
     font-weight: 600;
     font-size: 54px;
     line-height: 0.7;
+  }
+}
+
+/* Números de estilo antiguo en Fraunces (V.3.6.0): páginas, fechas y conteos con cifras que
+   suben y bajan como en un libro impreso. Va en la capa components (más baja que utilities),
+   así donde se usa tabular-nums para alinear cifras en columna, tabular-nums gana. */
+@layer components {
+  .font-display {
+    font-variant-numeric: oldstyle-nums;
   }
 }
 
