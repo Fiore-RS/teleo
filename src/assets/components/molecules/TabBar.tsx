@@ -37,7 +37,7 @@ export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
     >
       <nav
         aria-label="Secciones"
-        className="pointer-events-auto bg-surface border border-border rounded-[22px] shadow-float flex justify-between items-center p-2"
+        className="pointer-events-auto bg-surface border border-border border-t-edge-top rounded-[22px] shadow-float flex justify-between items-center p-2"
       >
         {tabs.map(({ key, label, icon: Icon }) => {
           const isActive = active === key

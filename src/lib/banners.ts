@@ -319,3 +319,14 @@ export function bannerSvg(id: BannerId, uid: string): string {
     .replace(/id="([^"]+)"/g, `id="$1-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, `url(#$1-${uid})`)
 }
+
+/** Multiplica las opacidades de un dibujo (fill-, stroke-, stop-opacity y opacity), sin pasar
+ *  de 1. Para los temas donde los dibujos van en blanco sobre un degradado claro (ver
+ *  bannerArtBoost en lib/palettes.ts): ahí, con las opacidades de siempre, se veían tenues. */
+export function scaleSvgOpacity(svg: string, factor: number): string {
+  if (factor === 1) return svg
+  return svg.replace(/((?:fill-|stroke-|stop-)?opacity)="([\d.]+)"/g, (_, attr: string, value: string) => {
+    const scaled = Math.min(1, parseFloat(value) * factor)
+    return `${attr}="${Math.round(scaled * 1000) / 1000}"`
+  })
+}

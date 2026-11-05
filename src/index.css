@@ -65,8 +65,25 @@
   --teleo-on-pink: #FFF8EE;
   --teleo-on-magenta: #FFF8EE;
 
-  --teleo-shadow-card: 0 1px 2px rgba(90, 40, 40, 0.06), 0 8px 24px -12px rgba(90, 40, 40, 0.18);
-  --teleo-shadow-float: 0 10px 30px -10px rgba(90, 40, 40, 0.32);
+  /* Sombras (V.3.6.0): en claro van teñidas con el color de sombra de cada tema (RGB, se
+     redefine en cada bloque de tema claro); en oscuro son negras y más profundas, con un borde
+     de luz arriba (edge-top). Tres niveles: tarjeta (suave), flotante (barra de pestañas,
+     botón de agregar, menús) y hoja (la más marcada). */
+  --teleo-shadow-rgb: 90, 40, 40;
+  --teleo-shadow-card: 0 1px 1.5px rgba(var(--teleo-shadow-rgb), 0.12), 0 8px 14px -2px rgba(var(--teleo-shadow-rgb), 0.16);
+  --teleo-shadow-tab: 0 -1px 1.5px rgba(var(--teleo-shadow-rgb), 0.08);
+  --teleo-shadow-float: 0 10px 30px -10px rgba(var(--teleo-shadow-rgb), 0.38);
+  --teleo-shadow-sheet: 0 24px 48px -16px rgba(var(--teleo-shadow-rgb), 0.45);
+  --teleo-edge-top: var(--teleo-border);
+
+  /* Repisas de Estante y del Resumen (V.3.6.0): un color fijo por tema y modo, como madera
+     teñida con el tema. Antes eran el surface-2 y casi no se veían contra el fondo. */
+  --teleo-shelf: #C49A72;
+
+  /* Color de los dibujos de los banners (V.3.6.0). Por defecto el mismo texto que va sobre el
+     principal; en los temas donde ese texto es oscuro (Margarita, Algodón de azúcar oscuro)
+     se cambia a blanco, porque en negro los dibujos se veían pesados sobre el degradado. */
+  --teleo-banner-ink: var(--teleo-primary-ink);
 }
 
 /* "Noche con lámpara" */
@@ -117,8 +134,13 @@
   --teleo-on-pink: #1C1513;
   --teleo-on-magenta: #1C1513;
 
-  --teleo-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 26px -14px rgba(0, 0, 0, 0.6);
+  --teleo-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 16px -2px rgba(0, 0, 0, 0.45);
+  --teleo-shadow-tab: none;
   --teleo-shadow-float: 0 12px 30px -8px rgba(0, 0, 0, 0.7);
+  --teleo-shadow-sheet: 0 24px 48px -12px rgba(0, 0, 0, 0.8);
+  /* Borde de luz de 1 px arriba de tarjetas, pestañas y barra de pestañas. */
+  --teleo-edge-top: color-mix(in srgb, var(--teleo-text) 22%, var(--teleo-surface));
+  --teleo-shelf: #5E4232;
 }
 
 @theme {
@@ -169,7 +191,12 @@
   --color-on-magenta: var(--teleo-on-magenta);
 
   --shadow-card: var(--teleo-shadow-card);
+  --shadow-tab: var(--teleo-shadow-tab);
   --shadow-float: var(--teleo-shadow-float);
+  --shadow-sheet: var(--teleo-shadow-sheet);
+  --color-edge-top: var(--teleo-edge-top);
+  --color-shelf: var(--teleo-shelf);
+  --color-banner-ink: var(--teleo-banner-ink);
 
   --radius-card: 24px;
   /* Formas (V.3.5.0, "Firme"): lo que antes era píldora pasa a rectángulo con esquinas
@@ -412,6 +439,8 @@
   --teleo-primary-soft: #E7EDD2;
   --teleo-rose: #8DA432;
   --teleo-ornament: color-mix(in srgb, #8DA432 55%, #F6F3E6);
+  --teleo-shelf: #AE8D55;
+  --teleo-shadow-rgb: 50, 62, 12;
   --teleo-orange-text: #8C580A;
   --teleo-orange: #C27A0E;
   --teleo-orange-soft: #F5E8D0;
@@ -448,6 +477,7 @@
   --teleo-primary-soft: #2A3212;
   --teleo-rose: #8DA432;
   --teleo-ornament: color-mix(in srgb, #8DA432 55%, #16130A);
+  --teleo-shelf: #574823;
   --teleo-orange-text: #DB9A2E;
   --teleo-orange: #DB9A2E;
   --teleo-orange-soft: #413112;
@@ -484,6 +514,8 @@
   --teleo-primary-soft: #E7E3F5;
   --teleo-rose: #01CBAE;
   --teleo-ornament: color-mix(in srgb, #01CBAE 55%, #F1F4F6);
+  --teleo-shelf: #A3AECB;
+  --teleo-shadow-rgb: 30, 40, 95;
   --teleo-orange-text: #007554;
   --teleo-orange: #00B784;
   --teleo-orange-soft: #D3F2EA;
@@ -520,6 +552,7 @@
   --teleo-primary-soft: #463A8E;
   --teleo-rose: #01EFAC;
   --teleo-ornament: color-mix(in srgb, #01EFAC 55%, #0A1220);
+  --teleo-shelf: #33405F;
   --teleo-orange-text: #1FE0A8;
   --teleo-orange: #1FE0A8;
   --teleo-orange-soft: #0F3F3E;
@@ -556,6 +589,8 @@
   --teleo-primary-soft: #E6DEDA;
   --teleo-rose: #726E68;
   --teleo-ornament: color-mix(in srgb, #726E68 55%, #EDEBE7);
+  --teleo-shelf: #8E6B53;
+  --teleo-shadow-rgb: 45, 32, 28;
   --teleo-orange-text: #3D5A86;
   --teleo-orange: #3D5A86;
   --teleo-orange-soft: #DADEE2;
@@ -592,6 +627,7 @@
   --teleo-primary-soft: #4E302D;
   --teleo-rose: #726E68;
   --teleo-ornament: color-mix(in srgb, #726E68 55%, #0A0A0A);
+  --teleo-shelf: #4A3429;
   --teleo-orange-text: #7E9CCB;
   --teleo-orange: #7E9CCB;
   --teleo-orange-soft: #242A34;
@@ -628,6 +664,8 @@
   --teleo-primary-soft: #FAD2EA;
   --teleo-rose: #5DB8EE;
   --teleo-ornament: color-mix(in srgb, #5DB8EE 55%, #FFF4FA);
+  --teleo-shelf: #E3B3CB;
+  --teleo-shadow-rgb: 125, 35, 85;
   --teleo-orange-text: #1A6494;
   --teleo-orange: #3FA7E6;
   --teleo-orange-soft: #D1EAF9;
@@ -660,10 +698,12 @@
   --teleo-text-muted: color-mix(in srgb, #C3BBD6 62%, #151A2E);
   --teleo-primary: #FF94D4;
   --teleo-primary-ink: #2A1030;
+  --teleo-banner-ink: #FFFFFF;
   --teleo-primary-text: #FFC2E6;
   --teleo-primary-soft: #7A3E82;
   --teleo-rose: #7CCBF7;
   --teleo-ornament: color-mix(in srgb, #7CCBF7 55%, #151A2E);
+  --teleo-shelf: #4D3D63;
   --teleo-orange-text: #8FD4F8;
   --teleo-orange: #6CC6F6;
   --teleo-orange-soft: #335472;
@@ -696,10 +736,13 @@
   --teleo-text-muted: color-mix(in srgb, #4D6570 62%, #EAF4F7);
   --teleo-primary: #F4B600;
   --teleo-primary-ink: #2A2104;
+  --teleo-banner-ink: #FFFFFF;
   --teleo-primary-text: #846100;
   --teleo-primary-soft: #FCEDBF;
   --teleo-rose: #FFD86B;
   --teleo-ornament: color-mix(in srgb, #FFD86B 55%, #EAF4F7);
+  --teleo-shelf: #D9C089;
+  --teleo-shadow-rgb: 18, 62, 82;
   --teleo-orange-text: #2A7489;
   --teleo-orange: #94CFDC;
   --teleo-orange-soft: #EBF4F5;
@@ -732,10 +775,12 @@
   --teleo-text-muted: color-mix(in srgb, #AFC2C8 62%, #0F1A1F);
   --teleo-primary: #F4B600;
   --teleo-primary-ink: #1C1600;
+  --teleo-banner-ink: #FFFFFF;
   --teleo-primary-text: #F7C94A;
   --teleo-primary-soft: #3A2F0C;
   --teleo-rose: #FFD86B;
   --teleo-ornament: color-mix(in srgb, #FFD86B 55%, #0F1A1F);
+  --teleo-shelf: #3C5560;
   --teleo-orange-text: #94CFDC;
   --teleo-orange: #94CFDC;
   --teleo-orange-soft: #2C4249;

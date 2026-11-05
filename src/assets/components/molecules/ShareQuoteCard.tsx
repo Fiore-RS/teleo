@@ -1,7 +1,8 @@
 import { forwardRef, useId, useState } from 'react'
 import { BookOpen } from 'lucide-react'
 import { Logo } from '../atoms/Logo'
-import type { BannerId } from '../../../lib/banners'
+import { scaleSvgOpacity, type BannerId } from '../../../lib/banners'
+import { useBannerArtBoost } from '../../../hooks/useBannerArtBoost'
 import { quoteCardSvg } from '../../../lib/quoteCardArt'
 import { shareSafeImageUrl } from '../../../lib/shareImage'
 import { getQuoteCardColor, type QuoteCardColor } from '../../../lib/quoteCardStyles'
@@ -37,11 +38,12 @@ function MiniCover({ url, title }: { url: string | null; title: string }) {
 /** Decoración de toda la tarjeta con la temática del banner elegido (lib/quoteCardArt). */
 function CardArt({ banner, inkClass }: { banner: BannerId; inkClass: string }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '')
+  const boost = useBannerArtBoost()
   return (
     <div
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 ${inkClass} [&>svg]:absolute [&>svg]:inset-0 [&>svg]:h-full [&>svg]:w-full`}
-      dangerouslySetInnerHTML={{ __html: quoteCardSvg(banner, uid) }}
+      dangerouslySetInnerHTML={{ __html: scaleSvgOpacity(quoteCardSvg(banner, uid), boost) }}
     />
   )
 }
@@ -68,7 +70,7 @@ export const ShareQuoteCard = forwardRef<HTMLDivElement, ShareQuoteCardProps>(fu
       style={{ width: SHARE_QUOTE_WIDTH, height: SHARE_QUOTE_HEIGHT }}
       className={`relative overflow-hidden rounded-[22px] ${style.panel}`}
     >
-      {banner && <CardArt banner={banner} inkClass={style.ink} />}
+      {banner && <CardArt banner={banner} inkClass={style.art} />}
 
       <div className="relative h-full flex flex-col px-6 pt-7 pb-7">
         <div className="flex justify-center">
