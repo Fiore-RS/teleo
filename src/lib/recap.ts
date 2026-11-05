@@ -13,6 +13,7 @@ export type RecapCardId =
   | 'portada'
   | 'libros'
   | 'portadas'
+  | 'meta'
   | 'meses'
   | 'generos'
   | 'autor'
@@ -83,6 +84,9 @@ export interface RecapData {
   streak: StreakRange | null
   rereads: RecapReread[]
   favorite: RecapBook | null
+  /** Solo en el año (V.3.6.0): la meta, si se cumplió, y el día en que se cumplió (la fecha de
+   *  fin de la lectura número `target`). null si no hay meta o todavía no se cumple. */
+  goal: { target: number; reachedOn: string } | null
   /** Tarjetas que entran, en orden. */
   cards: RecapCardId[]
 }
@@ -99,6 +103,8 @@ export interface BuildRecapInput {
   favoriteBookId: string | null
   /** Hoy en `YYYY-MM-DD` (se pasa para poder probar con cualquier fecha). */
   today: string
+  /** Meta de libros del año (reading_goals), 0 si no hay. Solo cuenta en el año. */
+  goal?: number
 }
 
 function pad(n: number) {
@@ -120,7 +126,7 @@ function daysBetween(from: string, to: string) {
 
 const toBook = (r: YearRead): RecapBook => ({ bookId: r.bookId, title: r.title, author: r.author, coverUrl: r.coverUrl, endDate: r.endDate })
 
-export function buildRecap({ period, reads, sessionDates, priorCompletions, favoriteBookId, today }: BuildRecapInput): RecapData {
+export function buildRecap({ period, reads, sessionDates, priorCompletions, favoriteBookId, today, goal: goalTarget = 0 }: BuildRecapInput): RecapData {
   const { start, last } = periodBounds(period)
   const isOngoing = today >= start && today <= last
   const end = isOngoing ? today : last
@@ -183,10 +189,18 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
 
   const favorite = favoriteBookId ? byId.get(favoriteBookId) ?? null : null
 
+  // Meta cumplida (V.3.6.0): las lecturas vienen ordenadas por fecha de fin, así que la que
+  // cumple la meta es la número `goalTarget`. Las relecturas cuentan, como en la meta.
+  const goal =
+    period.kind === 'anio' && goalTarget > 0 && reads.length >= goalTarget
+      ? { target: goalTarget, reachedOn: reads[goalTarget - 1].endDate }
+      : null
+
   const minTraits = RECAP_RULES.minTraitBooks[period.kind]
   const cards: RecapCardId[] = ['portada', 'libros']
   // Portadas (V.3.3.1): cada libro una vez, aunque se haya releído en el periodo.
   if (books.length > 0) cards.push('portadas')
+  if (goal) cards.push('meta')
   if (bestMonth) cards.push('meses')
   if (traitBooks >= minTraits) cards.push('generos')
   if (period.kind === 'anio') {
@@ -220,6 +234,7 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
     streak,
     rereads,
     favorite,
+    goal,
     cards,
   }
 }

@@ -57,6 +57,22 @@ export function useRecap(userId: string | undefined, periodInput: RecapPeriod) {
     { enabled: !!userId && bookIds.length > 0 }
   )
 
+  // Meta del año (V.3.6.0), para la tarjeta "Mi meta". Solo en el resumen del año.
+  const { data: goal, isLoading: goalLoading } = useCachedQuery<number>(
+    ['recapGoal', userId, period.year],
+    async () => {
+      const { data } = await supabase
+        .from('reading_goals')
+        .select('goal')
+        .eq('user_id', userId!)
+        .eq('year', period.year)
+        .maybeSingle()
+      return data?.goal ?? 0
+    },
+    0,
+    { enabled: !!userId && period.kind === 'anio' }
+  )
+
   const favoriteBookId =
     favorites.find((f) => f.month === (period.kind === 'mes' ? period.month : null))?.bookId ?? null
   const today = todayLocalDate()
@@ -70,10 +86,12 @@ export function useRecap(userId: string | undefined, periodInput: RecapPeriod) {
         priorCompletions: new Map(Object.entries(prior)),
         favoriteBookId,
         today,
+        goal,
       }),
-    [period, reads, sessionDates, prior, favoriteBookId, today]
+    [period, reads, sessionDates, prior, favoriteBookId, today, goal]
   )
 
-  const isLoading = readsLoading || favoritesLoading || sessionsLoading || (bookIds.length > 0 && priorLoading)
+  const isLoading =
+    readsLoading || favoritesLoading || sessionsLoading || (bookIds.length > 0 && priorLoading) || (period.kind === 'anio' && goalLoading)
   return { recap, isLoading }
 }
