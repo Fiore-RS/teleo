@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
 import { useCachedQuery } from './useCachedQuery'
+import { refreshAll } from '../lib/queryClient'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -19,7 +20,11 @@ export function useProfile(userId: string | undefined) {
     if (!userId) return
     const { data, error } = await supabase
       .from('profiles').update(updates).eq('id', userId).select().single()
-    if (!error && data) setProfile(data)
+    if (!error && data) {
+      setProfile(data)
+      // El nombre, la foto o la meta también se ven en La mesa y en otras pantallas.
+      void refreshAll()
+    }
   }
 
   return { profile, isLoading, refetch, updateProfile }

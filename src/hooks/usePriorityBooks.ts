@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase'
 import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
-import { queryClient } from '../lib/queryClient'
+import { refreshAll } from '../lib/queryClient'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -54,6 +54,8 @@ export function usePriorityBooks(userId: string | undefined) {
       .update({ status: 'leyendo', ...(startDate ? { start_date: startDate } : {}) })
       .eq('id', bookId)
     setBooks((prev) => prev.filter((b) => b.id !== bookId))
+    // El libro pasa a Leyendo ahora (La mesa) y cambian las cifras de Perfil.
+    void refreshAll()
   }
 
   /** Hoja "Agregar libros" (V.3.3.0): suma los libros marcados al final de la lista, en el
@@ -68,7 +70,7 @@ export function usePriorityBooks(userId: string | undefined) {
       ...removeIds.map((id) => supabase.from('books').update({ is_priority: false }).eq('id', id)),
     ]).then((results) => ({ error: results.find((r) => r.error)?.error ?? null }))
     // La lista se ve en Perfil, en el filtro de Estante y en "¿Qué leo ahora?": se refresca todo.
-    await queryClient.invalidateQueries()
+    await refreshAll()
     return { error }
   }
 
