@@ -29,7 +29,7 @@ function PalettePreview({ palette, mode }: { palette: Palette; mode: 'light' | '
   )
 }
 
-/** Hoja "Tema" de Configuración › Apariencia (V.2.1.0): los 10 temas en dos columnas. Al tocar
+/** Hoja "Tema" de Configuración › Apariencia (V.2.1.0): los temas en dos columnas. Al tocar
  *  uno se aplica al instante (se ve detrás de la hoja) y queda guardado en la cuenta. */
 export function PaletteSheet({ onClose, onSave }: PaletteSheetProps) {
   const { palette: active, setPalette, resolvedTheme } = useTheme()
