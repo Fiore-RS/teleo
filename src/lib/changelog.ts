@@ -31,6 +31,7 @@ export const changelog: ChangelogEntry[] = [
       'Los dibujos de los banners y de las tarjetas para compartir citas se ven claros en todos los temas.',
       'En el resumen del año, la pila de libros junto a tus páginas ya no tapa la cifra, y los lomos de la portada estrenan colores.',
       'Novedades se lee más corta: cada versión se despliega con la flecha de la derecha.',
+      'Las fechas de compra y de lanzamiento se ven completas y con el mismo formato en todos los teléfonos.',
     ],
   },
   {

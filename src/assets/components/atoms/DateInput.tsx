@@ -8,6 +8,15 @@ type DateInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
   bare?: boolean
 }
 
+const shortDate = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' })
+
+/** "2026-11-05" → "5 nov 2026", sin depender del formato del teléfono. */
+function formatShortDate(value: string) {
+  const [y, m, d] = value.split('-').map(Number)
+  if (!y || !m || !d) return value
+  return shortDate.format(new Date(y, m - 1, d)).replace(/\./g, '').replace(/ de /g, ' ')
+}
+
 // Hace que el ícono nativo del calendario cubra todo el campo (invisible), así cualquier
 // toque abre el selector del teléfono.
 const pickerOverlay =
@@ -31,14 +40,22 @@ export function DateInput({ className = '', bare = false, ...props }: DateInputP
   }
 
   if (bare) {
+    // V.3.6.0: en el teléfono el campo de fecha nativo tiene su propio ancho y formato (en
+    // Android y iPhone se salía de la fila o se veía cortado, por ejemplo en "Fecha de compra").
+    // Ahora se muestra la fecha formateada en un texto propio y el campo nativo queda encima,
+    // invisible, solo para abrir el calendario del teléfono.
+    const value = typeof props.value === 'string' ? props.value : ''
     return (
-      <div className="relative inline-flex items-center justify-end gap-1.5 cursor-pointer text-primary-text" onClick={openPicker}>
+      <div className={`relative inline-flex items-center justify-end gap-1.5 cursor-pointer text-primary-text focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary-text rounded-sm ${className}`} onClick={openPicker}>
         <Calendar size={16} strokeWidth={2} className="shrink-0 pointer-events-none" />
+        <span aria-hidden="true" className={`font-body text-body-lg whitespace-nowrap pointer-events-none ${value ? 'text-text' : 'text-text-muted'}`}>
+          {value ? formatShortDate(value) : 'Elegir'}
+        </span>
         <input
           {...props}
           ref={inputRef}
           type="date"
-          className={`bg-transparent font-body text-body-lg text-text text-right focus:outline-none cursor-pointer min-w-0 ${pickerOverlay} ${className}`}
+          className={`absolute inset-0 w-full h-full opacity-0 cursor-pointer ${pickerOverlay}`}
         />
       </div>
     )
