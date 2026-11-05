@@ -74,7 +74,7 @@ export function Card({
     return (
       <Tag
         aria-labelledby={labelledBy}
-        className={`relative ${bg} border border-border rounded-card shadow-card p-[18px] ${className}`}
+        className={`relative ${bg} border border-border border-t-edge-top rounded-card shadow-card p-[18px] ${className}`}
       >
         {children}
       </Tag>
@@ -86,10 +86,10 @@ export function Card({
   // nunca queda pegada a ella.
   return (
     <Tag aria-labelledby={labelledBy ?? tabId} className={`relative pt-[31px] ${className}`}>
-      <div className={`relative ${bg} border border-border rounded-card rounded-tl-none shadow-card ${padding}`}>
+      <div className={`relative ${bg} border border-border border-t-edge-top rounded-card rounded-tl-none shadow-card ${padding}`}>
         <h2
           id={tabId}
-          className={`absolute -top-[31px] -left-px h-[31px] max-w-[calc(100%-6rem)] px-4 flex items-center gap-[7px] ${bg} border border-border border-b-0 rounded-t-[14px] font-body font-bold text-body-md ${toneText[tone]}`}
+          className={`absolute -top-[31px] -left-px h-[31px] max-w-[calc(100%-6rem)] px-4 flex items-center gap-[7px] ${bg} border border-border border-t-edge-top border-b-0 rounded-t-[14px] shadow-tab font-body font-bold text-body-md ${toneText[tone]}`}
         >
           <span className="truncate">{tab.label}</span>
           {/* Tapa la línea de arriba de la tarjeta bajo la pestaña. */}

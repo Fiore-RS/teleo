@@ -67,7 +67,7 @@ export const InviteCard = forwardRef<HTMLDivElement, InviteCardProps>(function I
     <div
       ref={ref}
       style={{ width: INVITE_CARD_WIDTH, height: INVITE_CARD_HEIGHT }}
-      className="relative overflow-hidden rounded-[22px] bg-bg bg-glow-top text-text flex flex-col"
+      className="relative overflow-hidden rounded-[22px] bg-bg bg-glow-top-plain text-text flex flex-col"
     >
       <div className="relative aspect-18/7 shrink-0 rounded-b-[26px] overflow-hidden bg-linear-to-br from-primary to-rose">
         <BannerArt banner={banner} />

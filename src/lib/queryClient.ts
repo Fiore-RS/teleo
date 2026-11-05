@@ -19,3 +19,17 @@ export const queryClient = new QueryClient({
     },
   },
 })
+
+/** Refresca toda la app después de guardar algo (V.3.6.0, "cambios en vivo").
+ *
+ *  Marca todos los datos en caché como desactualizados y vuelve a pedir a Supabase solo los
+ *  que están en pantalla en ese momento; los demás se piden al volver a su pantalla. Así,
+ *  por ejemplo, terminar un libro desde La mesa actualiza al instante la meta anual, que
+ *  vive en otra consulta de la misma pantalla. Es liviano: en una pantalla hay pocas
+ *  consultas a la vez.
+ *
+ *  Usar después de cada cambio que se guarda en Supabase. No hace falta en los cambios
+ *  locales al reordenar (ahí ya se actualizó la vista al instante con `setData`). */
+export function refreshAll() {
+  return queryClient.invalidateQueries()
+}

@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { refreshAll } from '../lib/queryClient'
 import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
@@ -61,6 +62,8 @@ export function useLibraryBooks(userId: string | undefined) {
       if (data.status === 'terminado') {
         await recordBookCompletion({ bookId: data.id, userId, startDate: data.start_date, endDate: data.end_date })
       }
+      // Un libro nuevo puede mover la meta, Leyendo ahora, Bitácora o Perfil.
+      void refreshAll()
     }
     return { data, error }
   }

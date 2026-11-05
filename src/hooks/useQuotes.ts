@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { queryClient } from '../lib/queryClient'
+import { refreshAll } from '../lib/queryClient'
 import type { Database } from '../types/database'
 import { useCachedQuery } from './useCachedQuery'
 import { computeMidpointOrder } from '../lib/reorder'
@@ -73,12 +73,8 @@ export function useQuotes(userId: string | undefined) {
     }
 
     setQuotes((prev) => [{ ...quote, book }, ...prev])
-    // La reseña del libro (y Cuaderno, si se creó una) tiene que enterarse de la cita nueva.
-    queryClient.invalidateQueries({ queryKey: ['review', book.id] })
-    if (!existing) {
-      queryClient.invalidateQueries({ queryKey: ['reviews', userId] })
-      queryClient.invalidateQueries({ queryKey: ['reviewableBooks', userId] })
-    }
+    // La reseña del libro, Cuaderno (si se creó una reseña) y Perfil se enteran de la cita nueva.
+    void refreshAll()
     return true
   }
 
@@ -91,7 +87,7 @@ export function useQuotes(userId: string | undefined) {
       return false
     }
     setQuotes((prev) => prev.map((q) => (q.id === quote.id ? { ...q, quote_text: quoteText, page } : q)))
-    queryClient.invalidateQueries({ queryKey: ['review', quote.book.id] })
+    void refreshAll()
     return true
   }
 
@@ -99,7 +95,7 @@ export function useQuotes(userId: string | undefined) {
     const { error } = await supabase.from('favorite_quotes').delete().eq('id', quote.id)
     if (error) return false
     setQuotes((prev) => prev.filter((q) => q.id !== quote.id))
-    queryClient.invalidateQueries({ queryKey: ['review', quote.book.id] })
+    void refreshAll()
     return true
   }
 

@@ -190,3 +190,21 @@
 @keyframes rc-in{from{opacity:.4;transform:translateX(10px)}}
 @keyframes rc-in-back{from{opacity:.4;transform:translateX(-10px)}}
 @media (prefers-reduced-motion:reduce){.rc-enter{animation:none}}
+
+/* meta (V.3.6.0): la postal con estampilla de la meta cumplida, como en La mesa. El matasellos
+   lleva el día en que se cumplió. La perforación deja ver la postal y la sombra dibuja el borde. */
+.rc.meta h3{font:italic 600 34px/1 var(--font-display);margin:8px 0 18px}
+.rc-postal{position:relative;background:var(--paper);color:var(--paper-ink);border-radius:5px;padding:16px 14px 14px;display:grid;grid-template-columns:1fr 84px;grid-template-rows:auto auto;gap:10px 12px;transform:rotate(-2deg);box-shadow:0 18px 30px -16px rgba(0,0,0,.7)}
+.rc-postal-txt{display:flex;flex-direction:column;justify-content:center;border-right:1px dashed color-mix(in srgb,var(--paper-ink) 35%,transparent);padding-right:10px}
+.rc-postal-txt .sc{font:700 9.5px var(--font-body);letter-spacing:.16em;text-transform:uppercase;color:var(--pi)}
+.rc-postal-txt b{font:400 64px/.95 var(--font-title);color:var(--pi);margin-top:4px}
+.rc-postal-txt .l{font:italic 500 18px/1 var(--font-display)}
+.rc-postal-stamp{width:84px;height:104px;transform:rotate(3deg);filter:drop-shadow(0 3px 3px rgba(0,0,0,.28))}
+.rc-postal-stamp .perf{width:84px;height:104px;padding:5px;background:radial-gradient(circle at 5px 5px,transparent 3.5px,var(--paper) 4px) -5px -5px/10px 10px}
+.rc-postal-stamp .in{height:100%;background:color-mix(in srgb,var(--pc) 18%,var(--paper));box-shadow:inset 0 0 0 1px var(--pi);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.rc-postal-stamp .in b{font:400 22px/.9 var(--font-title);color:var(--pi)}
+.rc-postal-stamp .in svg{width:52px;height:42px}
+.rc-postal-addr{grid-column:1 / -1;display:flex;flex-direction:column;gap:7px;font:italic 500 13px var(--font-display)}
+.rc-postal-addr span{border-bottom:1px solid color-mix(in srgb,var(--paper-ink) 25%,transparent);padding-bottom:2px}
+.rc-postal-mark{position:absolute;right:46px;top:84px;width:104px;height:55px;opacity:.85;transform:rotate(-14deg);pointer-events:none}
+.rc.meta>p{font:italic 500 17px/1.3 var(--font-display);margin-top:20px}

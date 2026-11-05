@@ -327,6 +327,66 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       break
     }
 
+    case 'meta': {
+      // V.3.6.0: la misma postal con estampilla de la meta cumplida en La mesa, en formato
+      // historia y en primera persona.
+      className += ' meta'
+      const goal = recap.goal!
+      const reached = goal.reachedOn
+      const stack = ['#7A2E3A', '#C68A3D', '#3F5B4E', '#5B7A88', '#8E5A7A', '#B85C6E']
+      body = (
+        <>
+          <span className="rc-kicker">Mi meta de {recap.period.year}</span>
+          <h3>Cumplida</h3>
+          <div className="rc-postal">
+            <div className="rc-postal-txt">
+              <span className="sc">Meta cumplida</span>
+              <b>{goal.target}</b>
+              <span className="l">{goal.target === 1 ? 'libro' : 'libros'}</span>
+            </div>
+            <div className="rc-postal-stamp">
+              <div className="perf">
+                <div className="in">
+                  <b>{goal.target}</b>
+                  <svg viewBox="0 0 150 120" aria-hidden="true">
+                    {stack.map((c, k) => (
+                      <rect key={k} x={[22, 30, 18, 34, 26, 40][k]} y={98 - k * 16} width={[106, 92, 100, 88, 96, 74][k]} height="16" rx="2" fill={c} />
+                    ))}
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div className="rc-postal-addr">
+              <span>Para mí</span>
+              <span>Teleo, {recap.period.year}</span>
+            </div>
+            <svg className="rc-postal-mark" viewBox="0 0 170 90" aria-hidden="true">
+              <g fill="none" stroke="var(--pi)" strokeWidth="2">
+                <circle cx="45" cy="45" r="38" />
+                <circle cx="45" cy="45" r="31" strokeWidth="1" />
+                <path d="M88 30 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0" />
+                <path d="M88 45 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0" />
+                <path d="M88 60 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0" />
+              </g>
+              <text x="45" y="42" textAnchor="middle" fontFamily="Karla, sans-serif" fontWeight="700" fontSize="13" fill="var(--pi)">
+                {dayOf(reached)} {MONTH_ABBR[monthOf(reached) - 1].toUpperCase()}
+              </text>
+              <text x="45" y="58" textAnchor="middle" fontFamily="Karla, sans-serif" fontWeight="700" fontSize="12" fill="var(--pi)">
+                {reached.slice(0, 4)}
+              </text>
+            </svg>
+          </div>
+          <p>
+            {recap.readCount > goal.target
+              ? `Me propuse ${goal.target} y llegué a ${recap.readCount}.`
+              : `Me propuse ${goal.target} y lo logré.`}
+          </p>
+          {foot}
+        </>
+      )
+      break
+    }
+
     case 'meses': {
       const best = recap.bestMonth!
       const months = recap.months ?? []

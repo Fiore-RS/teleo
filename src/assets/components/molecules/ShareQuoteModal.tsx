@@ -165,7 +165,7 @@ export function ShareQuoteModal({ quote, onClose }: ShareQuoteModalProps) {
                     isActive ? 'border-primary-text' : 'border-transparent'
                   }`}
                 >
-                  {id && <BannerArt banner={id} colorClass={colorStyle.ink} className="opacity-60" />}
+                  {id && <BannerArt banner={id} colorClass={colorStyle.art} className="opacity-60" />}
                 </span>
                 <span className={`block text-body-sm mt-1 truncate ${isActive ? 'font-bold text-text' : 'text-text-secondary'}`}>{name}</span>
               </button>

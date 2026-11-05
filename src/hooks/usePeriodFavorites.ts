@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { queryClient } from '../lib/queryClient'
+import { queryClient, refreshAll } from '../lib/queryClient'
 import { useCachedQuery } from './useCachedQuery'
 
 export interface PeriodFavorite {
@@ -43,7 +43,7 @@ export function usePeriodFavorites(userId: string | undefined, year: number) {
         { user_id: userId, year, month, book_id: bookId, updated_at: new Date().toISOString() },
         { onConflict: 'user_id,year,month' }
       )
-    await queryClient.invalidateQueries({ queryKey: key })
+    await refreshAll()
   }
 
   /** Vuelve a "sin elegir" (borra la fila). */
@@ -53,7 +53,7 @@ export function usePeriodFavorites(userId: string | undefined, year: number) {
     let query = supabase.from('period_favorites').delete().eq('user_id', userId).eq('year', year)
     query = month === null ? query.is('month', null) : query.eq('month', month)
     await query
-    await queryClient.invalidateQueries({ queryKey: key })
+    await refreshAll()
   }
 
   return { favorites, isLoading, setFavorite, clearFavorite }

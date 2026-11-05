@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient, type QueryKey } from '@tanstack/react-query'
+import { refreshAll } from '../lib/queryClient'
 
 export type Updater<T> = T | ((prev: T) => T)
 
@@ -14,6 +15,10 @@ interface Options<T> {
 /** Envoltorio de TanStack Query con la misma forma que tenían los hooks de datos antes del
  *  caché: devuelve `data`, un `setData` para cambios locales (reordenar, agregar, quitar), un
  *  `isLoading` y `refetch`. Así cada hook conserva su API pública y las pantallas no cambian.
+ *
+ *  `refetch` refresca toda la app, no solo esta consulta (V.3.6.0): los hooks lo llaman
+ *  después de guardar algo, y un cambio casi siempre afecta a otras tarjetas de la misma
+ *  pantalla (terminar un libro mueve Leyendo ahora y también la meta). Ver `refreshAll`.
  *
  *  `isLoading` solo es true cuando todavía NO hay nada que mostrar (primera carga): al volver
  *  a una pantalla con datos en caché queda en false aunque se esté refrescando por detrás,
@@ -47,11 +52,9 @@ export function useCachedQuery<T>(key: QueryKey, fetcher: () => Promise<T>, empt
     [queryClient, stableKey]
   )
 
-  const { refetch: runRefetch } = query
   const refetch = useCallback(async () => {
-    if (!enabled) return
-    await runRefetch()
-  }, [enabled, runRefetch])
+    await refreshAll()
+  }, [])
 
   return { data: query.data ?? empty, setData, isLoading: query.isPending, refetch }
 }

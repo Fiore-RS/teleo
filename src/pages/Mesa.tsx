@@ -20,6 +20,8 @@ import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet"
 import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCalendarSheet";
 import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard";
 import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
+import { GoalPostcard } from "../assets/components/molecules/GoalPostcard";
+import { markGoalCelebrated, wasGoalCelebrated } from "../lib/goalCelebration";
 import { DemoNotice } from "../assets/components/molecules/DemoNotice";
 import { useTour } from "../context/tourContextValue";
 import { ANNOUNCEMENT_OFFERS_TOUR, ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
@@ -111,6 +113,25 @@ export function Mesa() {
 
   const goalPercent =
     goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
+
+  // Meta cumplida (V.3.6.0): la postal sale una vez por año en este dispositivo, también para
+  // quien ya la había cumplido antes de esta versión. Nunca a la vez que el anuncio de versión
+  // o el del resumen del año.
+  const [goalCelebrationClosed, setGoalCelebrationClosed] = useState(false)
+  const showGoalPostcard =
+    !goalCelebrationClosed &&
+    !goalLoading &&
+    goal > 0 &&
+    completedCount >= goal &&
+    !!profile?.has_seen_intro &&
+    !showAnnouncement &&
+    !showYearRecap &&
+    !wasGoalCelebrated(user?.id, recapYear)
+
+  function closeGoalPostcard() {
+    markGoalCelebrated(user?.id, recapYear)
+    setGoalCelebrationClosed(true)
+  }
 
   function handleTabChange(tab: TabKey) {
     navigate(`/${tab}`);
@@ -330,6 +351,16 @@ export function Mesa() {
           year={recapYear}
           onOpen={() => closeYearRecapAnnouncement(true)}
           onDismiss={() => closeYearRecapAnnouncement(false)}
+        />
+      )}
+      {showGoalPostcard && (
+        <GoalPostcard
+          userId={user?.id}
+          goal={goal}
+          count={completedCount}
+          year={recapYear}
+          name={profile?.nickname || (profile?.username ? `@${profile.username}` : 'ti')}
+          onClose={closeGoalPostcard}
         />
       )}
       {isYearRecapOpen && (
