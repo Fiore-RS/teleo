@@ -5,6 +5,7 @@ import { buildRecap, periodBounds, type RecapPeriod } from '../lib/recap'
 import { useCachedQuery } from './useCachedQuery'
 import { useYearReads } from './useYearReads'
 import { usePeriodFavorites } from './usePeriodFavorites'
+import { useYearGoal } from './useYearGoal'
 
 const EMPTY_DATES: string[] = []
 const EMPTY_PRIOR: Record<string, number> = {}
@@ -58,20 +59,7 @@ export function useRecap(userId: string | undefined, periodInput: RecapPeriod) {
   )
 
   // Meta del año (V.3.6.0), para la tarjeta "Mi meta". Solo en el resumen del año.
-  const { data: goal, isLoading: goalLoading } = useCachedQuery<number>(
-    ['recapGoal', userId, period.year],
-    async () => {
-      const { data } = await supabase
-        .from('reading_goals')
-        .select('goal')
-        .eq('user_id', userId!)
-        .eq('year', period.year)
-        .maybeSingle()
-      return data?.goal ?? 0
-    },
-    0,
-    { enabled: !!userId && period.kind === 'anio' }
-  )
+  const { goal, isLoading: goalLoading } = useYearGoal(userId, period.year, period.kind === 'anio')
 
   const favoriteBookId =
     favorites.find((f) => f.month === (period.kind === 'mes' ? period.month : null))?.bookId ?? null

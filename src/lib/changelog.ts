@@ -15,6 +15,25 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.6.0',
+    announced: true,
+    date: '5 de noviembre de 2026',
+    title: 'Con sello propio',
+    items: [
+      'Teleo estrena logo. En Android el ícono de la app instalada se actualiza solo con el tiempo; en iPhone, quita Teleo de tu pantalla de inicio y vuelve a agregarla para verlo.',
+      'Dos temas nuevos: Arrecife, turquesa y coral sobre arena rosada, y Ciruela, ciruela profunda con pervinca y durazno. Elígelos en Configuración, en Apariencia.',
+      'Cuando cumples tu meta del año, te llega una postal a La mesa. Queda guardada en Bitácora: en el Resumen del año, toca la estampilla junto a tus libros para volver a verla. Y en tu resumen para historias hay una tarjeta nueva para compartirla.',
+      'En Estadísticas, el año se cambia con la misma fila de flechas que en Resumen.',
+      'Lo que guardas se ve al momento en toda la app, sin refrescar: al terminar un libro, tu meta se actualiza enseguida.',
+      'Las sombras toman el color de tu tema, y en modo oscuro un borde de luz despega las tarjetas del fondo.',
+      'Las repisas de Estante tienen su propio color en cada tema y ya no se pierden contra el fondo.',
+      'El fondo tiene un grano suave de papel, y las cifras van en números de estilo antiguo, como en un libro impreso.',
+      'Los dibujos de los banners y de las tarjetas para compartir citas se ven claros en todos los temas.',
+      'En el resumen del año, la pila de libros junto a tus páginas ya no tapa la cifra, y los lomos de la portada estrenan colores.',
+      'Novedades se lee más corta: cada versión se despliega con la flecha de la derecha.',
+    ],
+  },
+  {
     version: '3.5.2',
     date: '4 de noviembre de 2026',
     title: 'Del color de tu tema',

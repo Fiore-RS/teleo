@@ -10,6 +10,7 @@ import { Card } from '../../assets/components/molecules/Card'
 import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MonthCalendar } from '../../assets/components/atoms/MonthCalendar'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
+import { PeriodNav } from '../../assets/components/molecules/PeriodNav'
 import { StreakTiles } from '../../assets/components/molecules/StreakTiles'
 import { RatingRow } from '../../assets/components/molecules/RatingRow'
 import { formatDuration } from '../../lib/progress'
@@ -211,20 +212,21 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   return (
     <div className={`flex flex-col gap-5 ${stagger}`}>
       {hasFinished ? (
-        <Card
-          tab={{ label: String(year) }}
-          tone="pink"
-          action={
-            <div className="flex items-center gap-1.5">
-              <NavButton label="Año anterior" onClick={() => setYear((y) => y - 1)} disabled={year <= firstYear} className="w-[26px] h-[26px]">
-                <ChevronLeft size={16} />
-              </NavButton>
-              <NavButton label="Año siguiente" onClick={() => setYear((y) => y + 1)} disabled={year >= currentYear} className="w-[26px] h-[26px]">
-                <ChevronRight size={16} />
-              </NavButton>
-            </div>
-          }
-        >
+        // Mismo relleno que la hoja de Resumen, para que las dos pantallas de Bitácora coincidan.
+        <Card tab={{ label: 'Tu año' }} tone="pink" padding="px-3.5 pt-4 pb-[18px]">
+          {/* V.3.6.0: la misma fila de Resumen (flecha, año, flecha) en vez de las flechas sueltas
+              arriba a la derecha. */}
+          <div className="mb-3">
+            <PeriodNav
+              label={String(year)}
+              onPrev={() => setYear((y) => y - 1)}
+              onNext={() => setYear((y) => y + 1)}
+              canGoPrev={year > firstYear}
+              canGoNext={year < currentYear}
+              prevLabel="Año anterior"
+              nextLabel="Año siguiente"
+            />
+          </div>
           <PeriodTransition order={year}>
             <p className="font-display text-[20px] leading-[1.4] text-text">{sentence}</p>
             <div className="grid grid-cols-3 gap-2 mt-3.5">

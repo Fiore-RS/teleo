@@ -47,7 +47,13 @@
 .rc-giant-l{font:italic 600 34px/1 var(--font-display);margin:0 0 6px}
 .rc-pagesrow{display:flex;gap:16px;align-items:flex-end;margin-top:16px}
 .rc-tower{position:relative;width:86px;display:flex;flex-direction:column-reverse;flex-shrink:0}
-.rc-tower i{display:block;height:5px;background:var(--paper);border-radius:1px;margin-top:1px;box-shadow:0 1px 0 rgba(0,0,0,.2)}
+.rc-tower{align-items:flex-start}
+/* V.3.6.0: cada pieza es un libro acostado, con el lomo hacia afuera (bandas cerca de las
+   puntas) y el canto de las hojas claro a la derecha. */
+.rc-tower i{display:block;position:relative;border-radius:2px 1px 1px 2px;margin-top:1px;box-shadow:inset -5px 0 0 rgba(255,248,238,.55),0 1px 0 rgba(0,0,0,.25)}
+.rc-tower i::before,.rc-tower i::after{content:"";position:absolute;top:2px;bottom:2px;width:1.5px;background:rgba(255,248,238,.5)}
+.rc-tower i::before{left:7px}
+.rc-tower i::after{left:12px}
 .rc-ruler{position:absolute;right:-12px;bottom:0;width:6px;border:1.5px solid var(--oc);border-left:0}
 .rc-pages b{display:block;font:400 34px/1 var(--font-title);font-variant-numeric:tabular-nums}
 .rc-pages span{font:italic 500 17px var(--font-display)}
@@ -63,6 +69,8 @@
 
 /* portadas (V.3.3.1): el ancho de cada portada y el espacio entre ellas salen de fitCoverGrid */
 .rc-pg-top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:28px}
+/* V.3.6.0: el sello de "N títulos" se inclina hacia la derecha (pedido de Fiorella). */
+.rc-pg-top .rc-stamp{transform:rotate(7deg)}
 .rc-pg-title{font:italic 600 30px/1.02 var(--font-display);margin:8px 0 0;text-wrap:balance}
 .rc-pg-area{flex:1;min-height:0;margin-top:14px;display:flex;align-items:center;justify-content:center}
 .rc-pg-grid{display:flex;flex-wrap:wrap;justify-content:center;align-content:center}

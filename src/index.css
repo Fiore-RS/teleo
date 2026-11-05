@@ -480,6 +480,10 @@
   .postcard-button {
     animation: teleo-postcard-button-in var(--motion-slow) 1.1s var(--ease-enter) both;
   }
+  /* Postal quieta, dentro de una pantalla (Resumen › Año). */
+  .postcard-static, .postcard-static .postcard-stamp, .postcard-static .postcard-mark {
+    animation: none;
+  }
   @media (prefers-reduced-motion: reduce) {
     .postcard-in, .postcard-stamp, .postcard-mark, .postcard-button {
       animation: none;
@@ -878,6 +882,160 @@
   --teleo-magenta-tint: color-mix(in srgb, #2B3F2F 50%, #16242B);
   --teleo-on-magenta: #0F1A1F;
   --teleo-on-accent: #0F1A1F;
+}
+
+/* Arrecife · claro (V.3.6.0). Antes "Rosa y turquesa": turquesa con rosa coral sobre arena
+   rosada. Paleta base: Blossom Silk #FFCAD4, Marine Jade #20B2AA, Mist Linen #FFF5EE. */
+:root[data-palette="arrecife"]:not(.dark) {
+  --teleo-bg: #FFEEF1;
+  --teleo-bg-glow: #DDF3F1;
+  --teleo-surface: #FFF9FA;
+  --teleo-surface-2: #FBE0E6;
+  --teleo-border: #F3D0D8;
+  --teleo-text: #10302E;
+  --teleo-text-secondary: #4F6462;
+  --teleo-text-muted: color-mix(in srgb, #4F6462 62%, #FFEEF1);
+  --teleo-primary: #0F7F79;
+  --teleo-primary-ink: #FFFAF7;
+  --teleo-primary-text: #0B6B66;
+  --teleo-primary-soft: #D6EFEC;
+  --teleo-rose: #4CC4BB;
+  --teleo-ornament: color-mix(in srgb, #4CC4BB 55%, #FFEEF1);
+  --teleo-shadow-rgb: 12, 85, 80;
+  --teleo-shelf: #D2B7A8;
+  --teleo-orange-text: #A23B57;
+  --teleo-orange: #EC7A95;
+  --teleo-orange-soft: #FFE6EC;
+  --teleo-orange-tint: color-mix(in srgb, #FFE6EC 50%, #FFF9FA);
+  --teleo-orange-button: #A23B57;
+  --teleo-on-orange: #10302E;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #0B6B66;
+  --teleo-pink: #20B2AA;
+  --teleo-pink-soft: #E6F6F4;
+  --teleo-pink-tint: color-mix(in srgb, #E6F6F4 50%, #FFF9FA);
+  --teleo-on-pink: #0C1A19;
+  --teleo-magenta-text: #A8432F;
+  --teleo-magenta: #F08A6E;
+  --teleo-magenta-soft: #FDE5DD;
+  --teleo-magenta-tint: color-mix(in srgb, #FDE5DD 50%, #FFF9FA);
+  --teleo-on-magenta: #10302E;
+  --teleo-on-accent: #10302E;
+}
+
+/* Arrecife · oscuro */
+:root.dark[data-palette="arrecife"] {
+  --teleo-bg: #0A201E;
+  --teleo-bg-glow: #3A1A26;
+  --teleo-surface: #102C29;
+  --teleo-surface-2: #163633;
+  --teleo-border: #21453F;
+  --teleo-text: #FDEFEA;
+  --teleo-text-secondary: #C2D3D0;
+  --teleo-text-muted: color-mix(in srgb, #C2D3D0 62%, #0A201E);
+  --teleo-primary: #20B2AA;
+  --teleo-primary-ink: #0C1A19;
+  --teleo-banner-ink: #FFFFFF;
+  --teleo-primary-text: #5FD3CB;
+  --teleo-primary-soft: #14403D;
+  --teleo-rose: #7FE0D8;
+  --teleo-ornament: color-mix(in srgb, #7FE0D8 55%, #0A201E);
+  --teleo-shelf: #3E5A55;
+  --teleo-orange-text: #F7A1B4;
+  --teleo-orange: #F7A1B4;
+  --teleo-orange-soft: #3A2229;
+  --teleo-orange-tint: color-mix(in srgb, #3A2229 50%, #102C29);
+  --teleo-orange-button: #F7A1B4;
+  --teleo-on-orange: #0A201E;
+  --teleo-on-orange-button: #0A201E;
+  --teleo-pink-text: #5FD3CB;
+  --teleo-pink: #5FD3CB;
+  --teleo-pink-soft: #123B38;
+  --teleo-pink-tint: color-mix(in srgb, #123B38 50%, #102C29);
+  --teleo-on-pink: #0A201E;
+  --teleo-magenta-text: #F5A18A;
+  --teleo-magenta: #F5A18A;
+  --teleo-magenta-soft: #3A2620;
+  --teleo-magenta-tint: color-mix(in srgb, #3A2620 50%, #102C29);
+  --teleo-on-magenta: #0A201E;
+  --teleo-on-accent: #0A201E;
+}
+
+/* Ciruela · claro (V.3.6.0): ciruela profunda con pervinca y durazno.
+   Paleta base: Crimson Violet #470B24, Clouded Periwinkle #B5BEDD, Apricot Silk #FFEDD5. */
+:root[data-palette="ciruela"]:not(.dark) {
+  --teleo-bg: #EDEFF8;
+  --teleo-bg-glow: #F6E6EE;
+  --teleo-surface: #F9FAFE;
+  --teleo-surface-2: #E2E5F3;
+  --teleo-border: #D5DAEC;
+  --teleo-text: #2B0A17;
+  --teleo-text-secondary: #6B4A57;
+  --teleo-text-muted: color-mix(in srgb, #6B4A57 62%, #EDEFF8);
+  --teleo-primary: #470B24;
+  --teleo-primary-ink: #FFF4E6;
+  --teleo-primary-text: #470B24;
+  --teleo-primary-soft: #EEDDE2;
+  --teleo-rose: #8C4A6B;
+  --teleo-ornament: color-mix(in srgb, #8C4A6B 55%, #EDEFF8);
+  --teleo-shadow-rgb: 55, 22, 75;
+  --teleo-shelf: #A88F9E;
+  --teleo-orange-text: #8A4A1E;
+  --teleo-orange: #EFA765;
+  --teleo-orange-soft: #FFF3E4;
+  --teleo-orange-tint: color-mix(in srgb, #FFF3E4 50%, #F9FAFE);
+  --teleo-orange-button: #8A4A1E;
+  --teleo-on-orange: #2B0A17;
+  --teleo-on-orange-button: #FFFFFF;
+  --teleo-pink-text: #4B5590;
+  --teleo-pink: #7E88C4;
+  --teleo-pink-soft: #E3E6F5;
+  --teleo-pink-tint: color-mix(in srgb, #E3E6F5 50%, #F9FAFE);
+  --teleo-on-pink: #1A0F1E;
+  --teleo-magenta-text: #9A2F5E;
+  --teleo-magenta: #C2477F;
+  --teleo-magenta-soft: #F6DDE7;
+  --teleo-magenta-tint: color-mix(in srgb, #F6DDE7 50%, #F9FAFE);
+  --teleo-on-magenta: #FFFFFF;
+  --teleo-on-accent: #FFFFFF;
+}
+
+/* Ciruela · oscuro */
+:root.dark[data-palette="ciruela"] {
+  --teleo-bg: #1A0F1E;
+  --teleo-bg-glow: #2E2445;
+  --teleo-surface: #241729;
+  --teleo-surface-2: #2E1E34;
+  --teleo-border: #3E2B45;
+  --teleo-text: #FBEDE3;
+  --teleo-text-secondary: #D3BCC4;
+  --teleo-text-muted: color-mix(in srgb, #D3BCC4 62%, #1A0F1E);
+  --teleo-primary: #B5BEDD;
+  --teleo-primary-ink: #1A0F1E;
+  --teleo-banner-ink: #FFFFFF;
+  --teleo-primary-text: #C9D0EC;
+  --teleo-primary-soft: #2F2B4A;
+  --teleo-rose: #9E7BB5;
+  --teleo-ornament: color-mix(in srgb, #9E7BB5 55%, #1A0F1E);
+  --teleo-shelf: #4A3550;
+  --teleo-orange-text: #FFCB94;
+  --teleo-orange: #F2B279;
+  --teleo-orange-soft: #3A2A1E;
+  --teleo-orange-tint: color-mix(in srgb, #2C2019 50%, #241729);
+  --teleo-orange-button: #F2B279;
+  --teleo-on-orange: #1A0F1E;
+  --teleo-on-orange-button: #1A0F1E;
+  --teleo-pink-text: #C9D0EC;
+  --teleo-pink: #A9B3E0;
+  --teleo-pink-soft: #2A2C48;
+  --teleo-pink-tint: color-mix(in srgb, #2A2C48 50%, #241729);
+  --teleo-on-pink: #1A0F1E;
+  --teleo-magenta-text: #F09CC0;
+  --teleo-magenta: #E07AA8;
+  --teleo-magenta-soft: #3D2033;
+  --teleo-magenta-tint: color-mix(in srgb, #3D2033 50%, #241729);
+  --teleo-on-magenta: #1A0F1E;
+  --teleo-on-accent: #1A0F1E;
 }
 
 /* Fondo de la página detrás de la app. Sin esto, en el teléfono las zonas del sistema (debajo
