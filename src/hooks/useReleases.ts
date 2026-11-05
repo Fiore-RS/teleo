@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { queryClient } from '../lib/queryClient'
+import { refreshAll } from '../lib/queryClient'
 import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 
@@ -27,8 +27,9 @@ export function useReleases(userId: string | undefined) {
     { enabled: !!userId }
   )
 
+  // Un lanzamiento se ve en La mesa y puede cambiar el precio de un libro (ver syncBookPrice).
   async function refresh() {
-    await queryClient.invalidateQueries({ queryKey: ['releases'] })
+    await refreshAll()
   }
 
   /** El precio de un lanzamiento es el precio del libro: si está enlazado a un deseado, ese
@@ -40,7 +41,7 @@ export function useReleases(userId: string | undefined) {
     if (!input.book_id || input.price == null) return
     await supabase.from('books').update({ price: input.price }).eq('id', input.book_id)
     // El precio del libro se ve en varias pantallas (detalle, Compras, Estante...).
-    await queryClient.invalidateQueries()
+    await refreshAll()
   }
 
   async function addRelease(input: ReleaseInput) {
