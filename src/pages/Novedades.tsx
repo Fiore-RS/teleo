@@ -75,24 +75,34 @@ export function Novedades() {
                 <ChevronDown
                   size={22}
                   aria-hidden="true"
-                  className={`shrink-0 mt-0.5 text-text-secondary transition-transform duration-200 motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}
+                  className={`shrink-0 mt-0.5 text-text-secondary transition-transform duration-[450ms] ease-(--ease-enter) motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}
                 />
               </button>
             </h3>
-            {isOpen && (
-              <ul id={panelId} className="mt-3 space-y-2.5 animate-fade-in">
-                <li className="flex gap-2.5 text-body-md text-text-muted">
-                  <Sparkle size={9} className="text-ornament shrink-0 mt-1.5" />
-                  <span>{entry.date}</span>
-                </li>
-                {entry.items.map((item) => (
-                  <li key={item} className="flex gap-2.5 text-body-md text-text-secondary">
+            {/* Se despliega con una transición de alto (grid de 0fr a 1fr) y un fundido de 450 ms
+                (un poco más lenta que --motion-slow, a pedido de Fiorella), en vez de aparecer de golpe. Cerrada, la lista sigue en la página pero queda inerte. */}
+            <div
+              id={panelId}
+              inert={!isOpen}
+              className={`grid transition-[grid-template-rows,opacity] duration-[450ms] ease-(--ease-enter) motion-reduce:transition-none ${
+                isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+              }`}
+            >
+              <div className="overflow-hidden">
+                <ul className="pt-3 space-y-2.5">
+                  <li className="flex gap-2.5 text-body-md text-text-muted">
                     <Sparkle size={9} className="text-ornament shrink-0 mt-1.5" />
-                    <span className="text-pretty">{item}</span>
+                    <span>{entry.date}</span>
                   </li>
-                ))}
-              </ul>
-            )}
+                  {entry.items.map((item) => (
+                    <li key={item} className="flex gap-2.5 text-body-md text-text-secondary">
+                      <Sparkle size={9} className="text-ornament shrink-0 mt-1.5" />
+                      <span className="text-pretty">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </Card>
           </Fragment>
           )
