@@ -228,3 +228,13 @@ export function isPaletteId(value: unknown): value is PaletteId {
 export function getPalette(id: PaletteId): Palette {
   return palettes.find((p) => p.id === id) ?? palettes[0]
 }
+
+/** Cuánto se suben las opacidades de los dibujos de banners y de la tarjeta de cita (V.3.6.0).
+ *  Va de la mano con --teleo-banner-ink en index.css: en Margarita (claro y oscuro) y en
+ *  Algodón de azúcar oscuro los dibujos pasaron de oscuros a blanco, y sobre esos degradados
+ *  claros el blanco con las opacidades de siempre se veía tenue. */
+export function bannerArtBoost(palette: PaletteId, mode: 'light' | 'dark'): number {
+  if (palette === 'margarita') return 1.7
+  if (palette === 'algodon' && mode === 'dark') return 1.7
+  return 1
+}

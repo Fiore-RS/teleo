@@ -24,16 +24,19 @@ interface ShelfProps {
   className?: string
 }
 
+// V.3.6.0: el tablón usa el color de repisa de cada tema (--color-shelf); antes era el
+// surface-2 y casi no se notaba contra el fondo, ni en claro ni en oscuro.
 const plankBackground: CSSProperties = {
-  background: 'linear-gradient(180deg, var(--color-surface-2), color-mix(in srgb, var(--color-surface-2) 80%, #000))',
+  background: 'linear-gradient(180deg, var(--color-shelf), color-mix(in srgb, var(--color-shelf) 78%, #000))',
+  borderColor: 'color-mix(in srgb, var(--color-shelf) 70%, #000)',
 }
 
-/** Tablón de madera bajo una fila de portadas, en los colores del tema. */
+/** Tablón de madera bajo una fila de portadas, en el color de repisa del tema. */
 export function ShelfPlank({ className = '' }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={`h-3 -mx-0.5 rounded border border-border shadow-[0_8px_12px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] ${className}`}
+      className={`h-3 -mx-0.5 rounded border border-border shadow-[0_8px_12px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] ${className}`}
       style={plankBackground}
     />
   )
@@ -48,7 +51,7 @@ function PlankSegment({ col, perRow }: { col: number; perRow: number }) {
   return (
     <div
       aria-hidden="true"
-      className={`h-3 shrink-0 border-y border-border shadow-[0_8px_12px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] ${
+      className={`h-3 shrink-0 border-y border-border shadow-[0_8px_12px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] ${
         first ? 'border-l rounded-l' : ''
       } ${last ? 'border-r rounded-r' : ''}`}
       style={{ ...plankBackground, marginLeft: first ? -12 : -6, marginRight: last ? -12 : -6 }}
