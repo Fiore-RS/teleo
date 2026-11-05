@@ -1,4 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
+import { GoalPostcard, GoalStamp, Postmark } from '../../assets/components/molecules/GoalPostcard'
+import { useYearGoal } from '../../hooks/useYearGoal'
+import { useProfile } from '../../hooks/useProfile'
 import { Check } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
@@ -292,6 +295,19 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
   const stagger = useStaggerOnce('resumen-anio')
   const now = new Date()
   const { favorites } = usePeriodFavorites(userId, year)
+  // Meta cumplida (V.3.6.0): la misma postal de La mesa, quieta, con el día en que se cumplió
+  // (fecha de fin de la lectura número `goal`; las lecturas vienen ordenadas por fecha de fin).
+  const { goal } = useYearGoal(userId, year)
+  const { profile } = useProfile(userId)
+  const goalReachedOnText = goal > 0 && reads.length >= goal ? reads[goal - 1].endDate : null
+  const goalReachedOn = useMemo(
+    () =>
+      goalReachedOnText
+        ? new Date(Number(goalReachedOnText.slice(0, 4)), Number(goalReachedOnText.slice(5, 7)) - 1, Number(goalReachedOnText.slice(8, 10)))
+        : null,
+    [goalReachedOnText]
+  )
+  const [isPostcardOpen, setIsPostcardOpen] = useState(false)
   const [openRow, setOpenRow] = useState<'leido' | 'rasgos' | 'favoritos' | null>(null)
   const [isCompleteShelfOpen, setIsCompleteShelfOpen] = useState(false)
   // Géneros y ánimos del año (V.3.1.0): cada libro una vez, aunque se haya releído.
@@ -356,7 +372,31 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
             </div>
           ) : (
             <>
-              <p className="font-display text-[20px] leading-[1.4] text-text mt-3">{sentence}</p>
+              {/* V.3.6.0, opción E: con la meta cumplida, la estampilla se pega junto a la frase,
+                  como un sello en la página, y al tocarla se abre la postal completa. */}
+              <div className="flex items-start gap-3 mt-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-display text-[20px] leading-[1.4] text-text">{sentence}</p>
+                  {goalReachedOn && (
+                    <p className="text-body-sm font-bold text-primary-text mt-2">
+                      Meta de {goal} cumplida el {goalReachedOn.getDate()} de {MONTH_NAMES[goalReachedOn.getMonth()].toLowerCase()}
+                    </p>
+                  )}
+                </div>
+                {goalReachedOn && (
+                  <button
+                    type="button"
+                    onClick={() => setIsPostcardOpen(true)}
+                    aria-label="Ver la postal de tu meta cumplida"
+                    className="postcard-static relative shrink-0 w-[72px] h-[90px] mr-1 mt-1 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-text"
+                  >
+                    <span className="absolute left-0 top-0 origin-top-left scale-75">
+                      <GoalStamp goal={goal} />
+                    </span>
+                    <Postmark date={goalReachedOn} className="absolute -left-6 -bottom-3 w-[84px] h-[45px]" />
+                  </button>
+                )}
+              </div>
               {n > 0 && (
                 <div className="mt-5">
                   <RecapEntryRow label="Compartir mi año" onClick={onOpenRecap} />
@@ -366,6 +406,19 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
           )}
         </PeriodTransition>
       </ResumenSheet>
+
+      {isPostcardOpen && goalReachedOn && (
+        <GoalPostcard
+          userId={userId}
+          goal={goal}
+          count={reads.length}
+          year={year}
+          name={profile?.nickname || (profile?.username ? `@${profile.username}` : 'ti')}
+          reachedOn={goalReachedOn}
+          ongoing={isCurrentYear}
+          onClose={() => setIsPostcardOpen(false)}
+        />
+      )}
 
       <Card tab={{ label: 'Tu año en un estante' }}>
         <PeriodTransition order={year}>
