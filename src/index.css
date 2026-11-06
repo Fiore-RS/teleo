@@ -388,6 +388,13 @@
       radial-gradient(120% 360px at 15% -80px, var(--color-bg-glow) 0%, transparent 70%),
       var(--color-bg);
   }
+  /* Solo el grano, sobre el color de fondo que ponga otra clase (bg-bg/88...): la barra fija de
+     Estante, Cuaderno y Bitácora cuando queda pegada arriba. */
+  .bg-grain {
+    background-image: var(--teleo-grain);
+    background-size: 180px 180px;
+    background-blend-mode: var(--teleo-grain-blend);
+  }
   /* Fondo con grano y sin brillo (Perfil, que arriba tiene el banner). */
   .bg-paper {
     background: var(--teleo-grain) 0 0 / 180px 180px, var(--color-bg);
