@@ -78,8 +78,11 @@ export function ScreenHeader<T extends string>({
 
       {/* z-20: los menús que se abren desde la barra (Organizar) quedan sobre las portadas. */}
       <div
-        className={`sticky top-0 z-20 -mx-4 px-4 mb-5 flex flex-col gap-3.5 bg-bg/88 backdrop-blur-md border-b ${anim} ${
-          isStuck ? 'border-border shadow-[0_10px_18px_-14px_rgba(0,0,0,0.6)]' : 'border-transparent'
+        // V.3.6.0: sin pegar, la barra es transparente para que se vea el grano de papel del
+        // fondo (con fondo propio y desenfoque se notaba como una franja lisa). Pegada arriba
+        // lleva fondo, desenfoque y el mismo grano.
+        className={`sticky top-0 z-20 -mx-4 px-4 mb-5 flex flex-col gap-3.5 border-b ${anim} ${
+          isStuck ? 'bg-bg/88 bg-grain backdrop-blur-md border-border shadow-[0_10px_18px_-14px_rgba(0,0,0,0.6)]' : 'bg-transparent border-transparent'
         }`}
         style={{ paddingTop: isStuck ? 'calc(10px + env(safe-area-inset-top, 0px))' : '10px' }}
       >
