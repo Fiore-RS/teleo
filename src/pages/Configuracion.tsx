@@ -13,6 +13,7 @@ import { FriendCodeSettingsRow } from '../assets/components/molecules/FriendCode
 import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsImportModal'
 import { GenreSuggestSheet } from '../assets/components/molecules/GenreSuggestSheet'
 import { CompleteShelfSheet } from '../assets/components/molecules/CompleteShelfSheet'
+import { MarkOwnedSheet } from '../assets/components/molecules/MarkOwnedSheet'
 import { PaletteSheet } from '../assets/components/molecules/PaletteSheet'
 import { AccountSheet, type AccountSheetKey } from '../assets/components/molecules/AccountSheets'
 import { useTheme } from '../hooks/useTheme'
@@ -48,6 +49,7 @@ export function Configuracion() {
   const [isGoodreadsOpen, setIsGoodreadsOpen] = useState(false)
   const [isGenreSuggestOpen, setIsGenreSuggestOpen] = useState(false)
   const [isCompleteShelfOpen, setIsCompleteShelfOpen] = useState(false)
+  const [isMarkOwnedOpen, setIsMarkOwnedOpen] = useState(false)
   const [isPaletteOpen, setIsPaletteOpen] = useState(false)
   // Hojas de Cuenta (V.2.2.0). Las rutas viejas (/configuracion/usuario, etc.) siguen
   // funcionando: abren Configuración con la hoja correspondiente ya abierta.
@@ -211,6 +213,7 @@ export function Configuracion() {
           {!isDemo && <SettingsRow label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />}
           <SettingsRow label="Completar géneros" description="Sugerencias para tus libros sin género" onClick={() => setIsGenreSuggestOpen(true)} />
           <SettingsRow label="Completa tu estante" description="Género, ánimo y ritmo de lo que ya leíste, libro por libro" onClick={() => setIsCompleteShelfOpen(true)} />
+          <SettingsRow label="Marcar mis libros físicos" description="Lo tengo en los físicos que no están en Deseados" onClick={() => setIsMarkOwnedOpen(true)} />
         </SettingsGroup>
 
         {!isDemo && (
@@ -246,6 +249,7 @@ export function Configuracion() {
 
       {isGenreSuggestOpen && <GenreSuggestSheet userId={user?.id} onClose={() => setIsGenreSuggestOpen(false)} />}
       {isCompleteShelfOpen && <CompleteShelfSheet userId={user?.id} onClose={() => setIsCompleteShelfOpen(false)} />}
+      {isMarkOwnedOpen && <MarkOwnedSheet userId={user?.id} mode="settings" onClose={() => setIsMarkOwnedOpen(false)} />}
 
       {isGoodreadsOpen && (
         <GoodreadsImportModal onClose={() => setIsGoodreadsOpen(false)} userId={user?.id} />
