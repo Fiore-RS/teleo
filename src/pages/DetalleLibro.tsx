@@ -41,6 +41,16 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
 import { useUserTags } from '../hooks/useUserTags'
 import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
+import { ownedOnLeavingWishlist } from '../lib/owned'
+
+/** En Editar libro, al pasar el estado de Deseado a otro, un libro físico queda con "Lo tengo"
+ *  (V.3.7.0). Después se puede quitar con el interruptor. */
+function draftOwnedOnLeavingWishlist(draft: BookDraft, patch: Partial<BookDraft>): Partial<BookDraft> {
+  return ownedOnLeavingWishlist(
+    { status: draft.status, format: draft.format, owned: draft.owned },
+    { status: patch.status, format: patch.format }
+  )
+}
 
 /** Orden inicial al final de la lista de temporada (fuera del componente: el lint de React
  *  marca Date.now() dentro de él aunque solo se use al guardar). */
@@ -345,7 +355,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               coverUrl={book.cover_url}
               savedStatus={book.status as ReadingStatus}
               draft={draft}
-              onChange={(patch) => setDraft({ ...draft, ...patch })}
+              onChange={(patch) => setDraft({ ...draft, ...draftOwnedOnLeavingWishlist(draft, patch), ...patch })}
               tags={tags}
               onAddTag={handleAddTag}
               onRemoveTag={handleRemoveTag}
