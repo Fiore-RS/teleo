@@ -16,6 +16,8 @@ export interface AdvancedFilters {
   customMoods: string[]
   pace: PaceKey | null
   tags: string[]
+  /** Solo los libros con "Lo tengo" (V.3.7.0). */
+  owned: boolean
 }
 
 export const defaultAdvancedFilters: AdvancedFilters = {
@@ -28,6 +30,7 @@ export const defaultAdvancedFilters: AdvancedFilters = {
   customMoods: [],
   pace: null,
   tags: [],
+  owned: false,
 }
 
 /** ¿Hay algún filtro puesto? */
@@ -41,7 +44,8 @@ export function hasActiveFilters(f: AdvancedFilters): boolean {
     f.moods.length > 0 ||
     f.customMoods.length > 0 ||
     f.pace !== null ||
-    f.tags.length > 0
+    f.tags.length > 0 ||
+    f.owned
   )
 }
 
