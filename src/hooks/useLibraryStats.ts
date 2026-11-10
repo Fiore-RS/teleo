@@ -52,8 +52,9 @@ export interface LibraryStats {
     owned: number
     read: number
     unread: number
-    /** Leyendo, en pausa o abandonados. */
-    other: number
+    reading: number
+    paused: number
+    abandoned: number
   }
   /** Género, ánimo y ritmo de los libros terminados (V.3.1.0). */
   rasgos: TraitStats
@@ -82,7 +83,7 @@ const emptyStats: LibraryStats = {
   ritmo: { longestStreak: 0, sessionDates: [] },
   coleccion: { byCategory: [], byFormat: [], byLanguage: [], readByCategory: [], readByFormat: [], longestBook: null, shortestBook: null },
   autoresYSeries: { topAuthor: null, sagasCompleted: 0, sagasInProgress: 0, mostRereadBook: null },
-  casa: { owned: 0, read: 0, unread: 0, other: 0 },
+  casa: { owned: 0, read: 0, unread: 0, reading: 0, paused: 0, abandoned: 0 },
   rasgos: computeTraitStats([]),
   calificaciones: { avgRating: null, bestRated: null, worstRated: null, hasTie: false, quotesCount: 0 },
   historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0, porAnio: [] },
@@ -125,8 +126,7 @@ export function useLibraryStats(userId: string | undefined) {
     const wishlist = books.filter((b) => b.status === 'deseado')
     const abandoned = books.filter((b) => b.status === 'abandonado')
     const owned = books.filter((b) => b.owned && b.status !== 'deseado')
-    const ownedRead = owned.filter((b) => b.status === 'terminado').length
-    const ownedUnread = owned.filter((b) => b.status === 'pendiente').length
+    const ownedIn = (status: string) => owned.filter((b) => b.status === status).length
 
     let quotesCount = 0
     if (reviews.length > 0) {
@@ -280,7 +280,14 @@ export function useLibraryStats(userId: string | undefined) {
         sagasInProgress,
         mostRereadBook,
       },
-      casa: { owned: owned.length, read: ownedRead, unread: ownedUnread, other: owned.length - ownedRead - ownedUnread },
+      casa: {
+        owned: owned.length,
+        read: ownedIn('terminado'),
+        unread: ownedIn('pendiente'),
+        reading: ownedIn('leyendo'),
+        paused: ownedIn('pausado'),
+        abandoned: ownedIn('abandonado'),
+      },
       rasgos: computeTraitStats(finished),
       calificaciones: { avgRating, bestRated, worstRated, hasTie, quotesCount },
       historialAnual: {

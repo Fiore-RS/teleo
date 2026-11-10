@@ -96,8 +96,10 @@ export function Compras({ userId, currency }: ComprasProps) {
   const [isMarkOwnedOpen, setIsMarkOwnedOpen] = useState(false)
 
   const summary = useMemo(() => {
-    // V.3.7.0: cuenta solo los libros con "Lo tengo" (antes, todo lo que no era deseado).
-    const owned = books.filter((b) => b.owned && b.status !== 'deseado')
+    // V.3.7.0: cuenta los libros con "Lo tengo" y los que tienen precio aunque no la tengan
+    // (por ejemplo, un ebook comprado). Antes contaba todo lo que no era deseado, también los
+    // prestados y los de biblioteca.
+    const owned = books.filter((b) => b.status !== 'deseado' && (b.owned || b.price != null))
     const withPrice = owned.filter((b) => b.price != null)
     const paid = withPrice.filter((b) => (b.price ?? 0) > 0)
     const invested = sumPrices(withPrice)
@@ -117,7 +119,7 @@ export function Compras({ userId, currency }: ComprasProps) {
       paused: sumPrices(inStatus('pausado')),
       mostExpensive,
       cheapest,
-      // Hay libros fuera de Deseados, pero ninguno con "Lo tengo".
+      // Hay libros fuera de Deseados, pero ninguno con "Lo tengo" ni con precio.
       hasUnmarked: owned.length === 0 && books.some((b) => b.status !== 'deseado'),
     }
   }, [books])
@@ -275,7 +277,7 @@ export function Compras({ userId, currency }: ComprasProps) {
                   : filter === 'regalos'
                     ? 'No tienes libros marcados como regalo. Márcalo al editar el libro.'
                     : summary.hasUnmarked
-                      ? 'Compras cuenta los libros con Lo tengo, y todavía no tienes ninguno marcado.'
+                      ? 'Compras cuenta los libros con Lo tengo y los que tienen precio, y todavía no tienes ninguno.'
                       : 'Todavía no tienes libros.'}
               {filter === 'todos' && summary.hasUnmarked && (
                 <button
