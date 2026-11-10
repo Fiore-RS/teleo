@@ -19,6 +19,8 @@ export interface GoodreadsBook {
   status: 'terminado' | 'leyendo' | 'pendiente' | 'deseado' | 'abandonado' | 'pausado'
   format: BookFormat | null
   totalPages: number | null
+  /** Tiene copias propias en Goodreads ("Owned Copies" mayor que 0): queda con "Lo tengo" (V.3.7.0). */
+  owned: boolean
   /** Fecha de fin (AAAA-MM-DD). Solo para libros leídos. */
   endDate: string | null
   /** Cuándo se agregó a Goodreads (AAAA-MM-DD), para conservar el orden de "agregados". */
@@ -242,6 +244,7 @@ export function parseGoodreadsCsv(text: string): GoodreadsBook[] | null {
       status,
       format: formatFromBinding(get(row, 'Binding')),
       totalPages: Number.isFinite(pages) && pages > 0 ? pages : null,
+      owned: ownedCopies > 0,
       endDate: status === 'terminado' ? cleanDate(get(row, 'Date Read')) : null,
       addedDate: cleanDate(get(row, 'Date Added')),
       rating: rating >= 1 && rating <= 5 ? rating : null,
