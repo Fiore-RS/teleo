@@ -178,6 +178,7 @@ export function Estante() {
         advFilters.language === "todos" || normalizeLanguage(book.language) === advFilters.language;
       const matchesCategory = advFilters.category === "todos" || book.category === advFilters.category;
       const matchesFormat = advFilters.format === "todos" || book.format === advFilters.format;
+      const matchesOwned = !advFilters.owned || book.owned;
       const matchesTraits = matchesTraitFilters(book, tagsByBook[book.id] ?? [], advFilters);
       const matchesQuickFlag =
         !quickFlag ||
@@ -191,7 +192,7 @@ export function Estante() {
         book.title.toLowerCase().includes(search.toLowerCase()) ||
         (book.author ?? "").toLowerCase().includes(search.toLowerCase());
       return (
-        matchesFilter && matchesLanguage && matchesCategory && matchesFormat && matchesTraits && matchesQuickFlag && matchesSearch
+        matchesFilter && matchesLanguage && matchesCategory && matchesFormat && matchesOwned && matchesTraits && matchesQuickFlag && matchesSearch
       );
     });
   }, [books, advFilters, quickFlag, search, tagsByBook]);
