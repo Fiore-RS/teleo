@@ -39,6 +39,8 @@ export interface BookDraft {
   endDate: string
   abandonReason: string
   isFavorite: boolean
+  /** "Lo tengo" (V.3.7.0): el libro está en el estante real de la persona. */
+  owned: boolean
   isPriority: boolean
   /** Género, ánimo y ritmo (V.3.1.0). */
   traits: BookTraits
@@ -229,6 +231,14 @@ export function EditBookForm({
         )}
         <FormCard>
           <FormSwitchRow label="Favorito" checked={draft.isFavorite} onChange={(isFavorite) => onChange({ isFavorite })} />
+          {draft.status !== 'deseado' && (
+            <FormSwitchRow
+              label="Lo tengo"
+              hint="Está en tu estante de casa"
+              checked={draft.owned}
+              onChange={(owned) => onChange({ owned })}
+            />
+          )}
           {draft.status === 'pendiente' && (
             <FormSwitchRow
               label="Próxima lectura"

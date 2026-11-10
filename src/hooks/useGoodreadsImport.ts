@@ -254,6 +254,7 @@ export async function importGoodreadsBooks(
     cover_url: covers[i].coverUrl,
     language: covers[i].language === 'es' || covers[i].language === 'en' ? covers[i].language : null,
     is_favorite: false,
+    owned: book.owned,
     saga_id: sagaOf[i]?.sagaId ?? null,
     saga_sort_order: sagaOf[i]?.order ?? null,
     estante_sort_order: nextOrder + (i + 1) * 1000,

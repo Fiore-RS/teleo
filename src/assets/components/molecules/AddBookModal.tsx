@@ -33,6 +33,7 @@ interface NewBookPayload {
   is_priority?: boolean; priority_sort_order?: number
   start_date?: string | null; end_date?: string | null
   genres?: string[]; genres_source?: string | null
+  owned?: boolean
 }
 
 interface AddBookModalProps {
@@ -85,6 +86,8 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   // Empiezan vacías: sin fecha de fin el libro se guarda igual, pero no cuenta para el reto.
   const [finishDates, setFinishDates] = useState<ReadingDates>({ startDate: '', endDate: '' })
   const [isPriority, setIsPriority] = useState(initialPriority)
+  // "Lo tengo" (V.3.7.0): sigue al formato (Físico lo marca) hasta que la persona lo toca a mano.
+  const [ownedOverride, setOwnedOverride] = useState<boolean | null>(null)
   // Género (V.3.1.0): al elegir un resultado de la búsqueda viene sugerido y se puede cambiar.
   const [traits, setTraits] = useState<BookTraits>(EMPTY_TRAITS)
   const [suggestedGenres, setSuggestedGenres] = useState<GenreKey[]>([])
@@ -117,6 +120,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     setIsManual(false)
     setManualDraft(emptyManualDraft(initialStatus))
     setIsPriority(initialPriority)
+    setOwnedOverride(null)
     setFinishDates({ startDate: '', endDate: '' })
     setTraits(EMPTY_TRAITS)
     setSuggestedGenres([])
@@ -179,6 +183,11 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     else setNotFound(true)
   }
 
+  /** Un libro de Deseados nunca queda con "Lo tengo". */
+  function ownedFor(bookStatus: ReadingStatus, bookFormat: BookFormat) {
+    return bookStatus !== 'deseado' && (ownedOverride ?? bookFormat === 'fisico')
+  }
+
   async function handleAdd() {
     if (!result) return
     const resolvedStatus = canPickStatus ? status : initialStatus
@@ -194,6 +203,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       isbn: result.isbn ?? null,
       format,
       status: resolvedStatus,
+      owned: ownedFor(resolvedStatus, format),
       saga_id: sagaId,
       ...(resolvedStatus === 'pendiente' && isPriority
         ? { is_priority: true, priority_sort_order: Date.now() }
@@ -222,6 +232,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       isbn: manualDraft.isbn.trim() || null,
       format: manualDraft.format,
       status: resolvedStatus,
+      owned: ownedFor(resolvedStatus, manualDraft.format),
       saga_id: sagaId,
       ...(resolvedStatus === 'pendiente' && isPriority
         ? { is_priority: true, priority_sort_order: Date.now() }
@@ -236,6 +247,17 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const showResultsList = results.length > 0 && !result
   const activeStatus = isManual ? manualDraft.status : status
   const datesInvalid = canPickStatus && activeStatus === 'terminado' && !readingDatesAreValid(finishDates)
+
+  const activeFormat = isManual ? manualDraft.format : format
+  const isOwned = ownedFor(activeStatus, activeFormat)
+  const ownedRow = activeStatus !== 'deseado' ? (
+    <FormSwitchRow
+      label="Lo tengo"
+      hint={isOwned ? (ownedOverride === null ? 'Lo marcamos porque es físico' : 'Está en tu estante de casa') : 'Márcalo si lo tienes en casa'}
+      checked={isOwned}
+      onChange={setOwnedOverride}
+    />
+  ) : null
 
   function setActiveStatus(next: ReadingStatus) {
     if (isManual) setManualDraft((prev) => ({ ...prev, status: next }))
@@ -419,6 +441,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
                 className="text-right text-body-lg"
               />
             </FormRow>
+            {ownedRow}
           </FormCard>
         </FormSection>
 
@@ -472,6 +495,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
             <FormRow label="Categoría">
               <Select bare options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />
             </FormRow>
+            {ownedRow}
           </FormCard>
         </FormSection>
 
