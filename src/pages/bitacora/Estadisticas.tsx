@@ -206,7 +206,9 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   const casaParts = [
     { key: 'read', label: casa.read === 1 ? 'leído' : 'leídos', count: casa.read, color: 'bg-accent-finished' },
     { key: 'unread', label: 'por leer', count: casa.unread, color: 'bg-state-pending' },
-    { key: 'other', label: 'leyendo, en pausa o dejados', count: casa.other, color: 'bg-state-abandoned' },
+    { key: 'reading', label: 'leyendo', count: casa.reading, color: 'bg-accent-reading' },
+    { key: 'paused', label: 'en pausa', count: casa.paused, color: 'bg-state-paused' },
+    { key: 'abandoned', label: casa.abandoned === 1 ? 'abandonado' : 'abandonados', count: casa.abandoned, color: 'bg-state-abandoned' },
   ].filter((p) => p.count > 0)
   const hasRows = showRitmo || showColeccion || showCasa || showAutores || showCalificaciones || showLeido || showRasgos
 
