@@ -78,6 +78,7 @@ export type Database = {
           id: string
           is_favorite: boolean | null
           is_gift: boolean
+          owned: boolean
           gift_from: string | null
           genres: string[]
           genres_source: string | null
@@ -119,6 +120,7 @@ export type Database = {
           id?: string
           is_favorite?: boolean | null
           is_gift?: boolean
+          owned?: boolean
           gift_from?: string | null
           genres?: string[]
           genres_source?: string | null
@@ -160,6 +162,7 @@ export type Database = {
           id?: string
           is_favorite?: boolean | null
           is_gift?: boolean
+          owned?: boolean
           gift_from?: string | null
           genres?: string[]
           genres_source?: string | null

@@ -15,6 +15,21 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.7.0',
+    announced: true,
+    date: '10 de noviembre de 2026',
+    title: 'Tu estante en casa',
+    items: [
+      'Nueva marca Lo tengo para los libros que tienes en la vida real. Aparece junto al estado en los detalles del libro, y se pone o se quita en Agregar libro y en Editar libro.',
+      'Los libros físicos se marcan solos al agregarlos y al sacarlos de Deseados, por ejemplo cuando por fin compras uno. Si era prestado o de biblioteca, quítale la marca.',
+      'Para tu biblioteca de antes, Teleo te ofrece una vez marcar todos tus libros físicos que no están en Deseados. Si prefieres hacerlo después, está en Configuración, en Tus datos, como "Marcar mis libros físicos".',
+      'En Estante, el filtro Lo tengo muestra solo tu estante de casa. Junto con Pendiente, ves lo que tienes por leer.',
+      'En Bitácora, Estadísticas suma "Tu estante en casa": cuántos libros son tuyos y cuántos te faltan por leer.',
+      'Compras ahora cuenta los libros con Lo tengo y los que tienen precio, como tus ebooks comprados. Un libro prestado o de biblioteca ya no aparece entre tus compras.',
+      'Al importar desde Goodreads, los libros con copias propias quedan con Lo tengo.',
+    ],
+  },
+  {
     version: '3.6.0',
     announced: true,
     date: '5 de noviembre de 2026',

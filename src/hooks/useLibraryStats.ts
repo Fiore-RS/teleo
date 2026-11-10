@@ -47,6 +47,15 @@ export interface LibraryStats {
     sagasInProgress: number
     mostRereadBook: CountEntry | null
   }
+  /** "Lo tengo" (V.3.7.0): los libros del estante de casa, por cómo van. */
+  casa: {
+    owned: number
+    read: number
+    unread: number
+    reading: number
+    paused: number
+    abandoned: number
+  }
   /** Género, ánimo y ritmo de los libros terminados (V.3.1.0). */
   rasgos: TraitStats
   calificaciones: {
@@ -74,6 +83,7 @@ const emptyStats: LibraryStats = {
   ritmo: { longestStreak: 0, sessionDates: [] },
   coleccion: { byCategory: [], byFormat: [], byLanguage: [], readByCategory: [], readByFormat: [], longestBook: null, shortestBook: null },
   autoresYSeries: { topAuthor: null, sagasCompleted: 0, sagasInProgress: 0, mostRereadBook: null },
+  casa: { owned: 0, read: 0, unread: 0, reading: 0, paused: 0, abandoned: 0 },
   rasgos: computeTraitStats([]),
   calificaciones: { avgRating: null, bestRated: null, worstRated: null, hasTie: false, quotesCount: 0 },
   historialAnual: { yearsBreakdown: [], monthlyThisYear: [], currentYearCount: 0, previousYearCount: 0, porAnio: [] },
@@ -95,7 +105,7 @@ export function useLibraryStats(userId: string | undefined) {
       { data: sessionsData },
     ] = await Promise.all([
       supabase.from('books')
-        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, created_at, genres, moods, custom_moods, pace')
+        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, created_at, genres, moods, custom_moods, pace, owned')
         .eq('user_id', userId),
       supabase.from('sagas').select('id, status').eq('user_id', userId),
       supabase.from('reviews').select(`id, book_id, ${REVIEW_CONTENT_COLUMNS}`).eq('user_id', userId),
@@ -115,6 +125,8 @@ export function useLibraryStats(userId: string | undefined) {
     const reading = books.filter((b) => b.status === 'leyendo' || b.status === 'pausado')
     const wishlist = books.filter((b) => b.status === 'deseado')
     const abandoned = books.filter((b) => b.status === 'abandonado')
+    const owned = books.filter((b) => b.owned && b.status !== 'deseado')
+    const ownedIn = (status: string) => owned.filter((b) => b.status === status).length
 
     let quotesCount = 0
     if (reviews.length > 0) {
@@ -267,6 +279,14 @@ export function useLibraryStats(userId: string | undefined) {
         sagasCompleted,
         sagasInProgress,
         mostRereadBook,
+      },
+      casa: {
+        owned: owned.length,
+        read: ownedIn('terminado'),
+        unread: ownedIn('pendiente'),
+        reading: ownedIn('leyendo'),
+        paused: ownedIn('pausado'),
+        abandoned: ownedIn('abandonado'),
       },
       rasgos: computeTraitStats(finished),
       calificaciones: { avgRating, bestRated, worstRated, hasTie, quotesCount },

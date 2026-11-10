@@ -160,6 +160,8 @@ export function useDataImport(userId: string | undefined) {
           price: b.price ?? null,
           purchase_date: b.purchase_date ?? null,
           is_gift: b.is_gift ?? false,
+          // "Lo tengo" (V.3.7.0); los respaldos anteriores no lo traen.
+          owned: b.owned ?? false,
           gift_from: b.gift_from ?? null,
           is_priority: b.is_priority ?? false,
           priority_sort_order: b.priority_sort_order ?? null,

@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { recomputeSagaStatus } from './sagaStatus'
 import { todayLocalDate } from './date'
+import { ownedOnLeavingWishlist } from './owned'
 
 /** "Sigue en la saga" (V.3.1.0): al terminar un libro de una saga, Teleo propone el siguiente
  *  si está en pendientes ("Empezar a leerlo") o en deseados ("Pasar a pendientes"). */
@@ -52,11 +53,16 @@ export function findNextInSaga(
 }
 
 /** Avanza el siguiente libro: de pendientes a Leyendo (con la fecha de hoy como inicio) o de
- *  deseados a pendientes. Recalcula el estado de la saga. */
+ *  deseados a pendientes (si es físico, queda con "Lo tengo", V.3.7.0). Recalcula el estado
+ *  de la saga. */
 export async function advanceNextInSaga(next: NextInSaga): Promise<void> {
-  const update = next.status === 'pendiente'
-    ? { status: 'leyendo', start_date: todayLocalDate() }
-    : { status: 'pendiente' }
+  let update: { status: string; start_date?: string; owned?: true }
+  if (next.status === 'pendiente') {
+    update = { status: 'leyendo', start_date: todayLocalDate() }
+  } else {
+    const { data: current } = await supabase.from('books').select('status, format, owned').eq('id', next.id).single()
+    update = { status: 'pendiente', ...(current ? ownedOnLeavingWishlist(current, { status: 'pendiente' }) : {}) }
+  }
   await supabase.from('books').update(update).eq('id', next.id)
   await recomputeSagaStatus(next.sagaId)
 }

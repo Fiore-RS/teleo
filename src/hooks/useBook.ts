@@ -5,6 +5,7 @@ import { recomputeSagaStatus } from '../lib/sagaStatus'
 import { pauseTransition } from '../lib/pause'
 import type { ReadingStatus } from '../lib/status'
 import { useCachedQuery } from './useCachedQuery'
+import { ownedOnLeavingWishlist } from '../lib/owned'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -47,7 +48,10 @@ export function useBook(bookId: string | undefined) {
     if (!bookId) return
     // Al cambiar de estado se ajustan solas la fecha y los días en pausa (V.3.1.0); lo que
     // venga en el cambio (ej. el motivo al pausar) tiene prioridad.
-    const updates = changes.status && book ? { ...pauseTransition(book, changes.status as ReadingStatus), ...changes } : changes
+    // V.3.7.0: al salir de Deseados, un libro físico queda con "Lo tengo".
+    const updates = changes.status && book
+      ? { ...pauseTransition(book, changes.status as ReadingStatus), ...ownedOnLeavingWishlist(book, changes), ...changes }
+      : changes
     await supabase.from('books').update(updates).eq('id', bookId)
     // El estado de la saga se recalcula solo cuando cambia el status del libro (es lo único
     // que afecta el cálculo) y el libro pertenece a una saga.

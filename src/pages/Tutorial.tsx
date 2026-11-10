@@ -27,7 +27,8 @@ const sections: TutorialSection[] = [
       'Agrupa libros en sagas, agrega varios a la vez y anota cuántos tendrá en total para ver tu progreso, por ejemplo "2 de 5". Al terminar un libro de una saga, Teleo te propone el siguiente. Ponle género y ánimo a la saga y llegan a todos sus libros; cada libro se puede cambiar en Editar libro.',
       'Cuenta cómo es cada libro: hasta 3 géneros, hasta 3 ánimos (también los tuyos) y su ritmo, desde Editar libro o al terminarlo. En Configuración, "Completar géneros" los sugiere para tu biblioteca (uno por saga) y "Completa tu estante" te pasa tus libros leídos uno por uno.',
       'Si dejas un libro por un tiempo, ponlo En pausa: tu progreso se guarda y lo retomas desde sus detalles.',
-      'Usa la barra de arriba para buscar por título o autor, y su botón de filtros para ver solo los libros de un estado, idioma, categoría, formato, género, ánimo, ritmo o etiqueta. En Sagas puedes filtrar por estado, categoría, género y ánimo. Al bajar, la barra y las pestañas se quedan fijas; toca Estante en la barra de abajo para volver arriba.',
+      'Marca con Lo tengo los libros que tienes en casa, desde Agregar libro o Editar libro. Los físicos se marcan solos al agregarlos o al sacarlos de Deseados, y en Configuración, "Marcar mis libros físicos" marca de una vez los que ya tenías.',
+      'Usa la barra de arriba para buscar por título o autor, y su botón de filtros para ver solo los libros de un estado, idioma, categoría, formato, género, ánimo, ritmo o etiqueta, o solo los que tienes. En Sagas puedes filtrar por estado, categoría, género y ánimo. Al bajar, la barra y las pestañas se quedan fijas; toca Estante en la barra de abajo para volver arriba.',
       'Toca el botón de vista de la barra para elegir cómo se ve tu estante: 3 o 4 libros por fila, con o sin título y autor, y con o sin repisa. Se guarda en tu cuenta.',
       'Usa el botón de organizar de la barra para ordenar por título, autor o fecha, o elige "Libre" para reordenar tus repisas arrastrando tus libros o sagas.',
       '¿No sabes qué leer? Toca "¿Qué leo ahora?" y Teleo elegirá uno de tus pendientes; puedes pedirle uno de cierto género, ánimo o ritmo.',
@@ -44,10 +45,10 @@ const sections: TutorialSection[] = [
   {
     title: 'Bitácora',
     points: [
-      'En Estadísticas: tu año en una tarjeta (usa las flechas para ver años anteriores) y, en "Más de tu bitácora", tu ritmo y tu racha, tu colección, tus autores y sagas, tus calificaciones, lo que leíste y tus géneros y ánimos. Toca cada fila para abrirla.',
+      'En Estadísticas: tu año en una tarjeta (usa las flechas para ver años anteriores) y, en "Más de tu bitácora", tu ritmo y tu racha, tu colección, tu estante en casa, tus autores y sagas, tus calificaciones, lo que leíste y tus géneros y ánimos. Toca cada fila para abrirla.',
       'En Resumen: los libros que terminaste cada mes, tu año en un estante (toca un lomo para ver ese mes) y, en Favoritos, tu favorito de cada mes y del año.',
       'Comparte tu lectura: en Resumen › Mes toca "Compartir mi mes", y en Resumen › Año, "Compartir mi año". Pasa las tarjetas con un toque y comparte una o todas.',
-      'En Compras: cuánto has invertido en tu biblioteca por estado y la lista de tus libros agrupada por mes de compra. Filtra los que no tienen precio y tócalos para agregarlo.',
+      'En Compras: cuánto has invertido por estado en los libros con Lo tengo y en los que tienen precio (como tus ebooks), y la lista de esos libros agrupada por mes de compra. Filtra los que no tienen precio y tócalos para agregarlo.',
     ],
   },
   {

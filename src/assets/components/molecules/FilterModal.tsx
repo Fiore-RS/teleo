@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
 import { Sheet } from '../atoms/Sheet'
 import { Button } from '../atoms/Button'
-import { FormActions, FormCollapsible, FormSection } from './FormLayout'
+import { FormActions, FormCard, FormCollapsible, FormSection, FormSwitchRow } from './FormLayout'
 import { statusLabel, type ReadingStatus } from '../../../lib/status'
 import { categoryOptions, formatOptions } from '../../../lib/options'
 import { defaultAdvancedFilters, type AdvancedFilters } from '../../../lib/advancedFilters'
@@ -153,6 +153,16 @@ export function FilterModal({
             <ChoiceCollapsible title="Categoría" options={categoryOptions} value={value.category} allLabel="Todas" onChange={(category) => update({ category })} />
             {isBooks && <ChoiceCollapsible title="Idioma" options={languageOptions} value={value.language} onChange={(language) => update({ language })} />}
             {isBooks && <ChoiceCollapsible title="Formato" options={formatOptions} value={value.format} onChange={(format) => update({ format })} />}
+            {isBooks && (
+              <FormCard>
+                <FormSwitchRow
+                  label="Lo tengo"
+                  hint="Solo los libros de tu estante de casa"
+                  checked={value.owned}
+                  onChange={(owned) => update({ owned })}
+                />
+              </FormCard>
+            )}
           </div>
         </FormSection>
 

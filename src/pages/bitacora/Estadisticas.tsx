@@ -58,7 +58,7 @@ interface EstadisticasProps {
   onOpenYear: (year: number) => void
 }
 
-type RowKey = 'ritmo' | 'coleccion' | 'autores' | 'calificaciones' | 'leido' | 'rasgos'
+type RowKey = 'ritmo' | 'coleccion' | 'casa' | 'autores' | 'calificaciones' | 'leido' | 'rasgos'
 
 /** Bitácora > Estadísticas (V.3.0.0, "que no abrume"): arriba solo la tarjeta del año, con
  *  una frase y tres números, y flechas para ver años anteriores. Todo lo demás va en "Más de
@@ -197,7 +197,20 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   const showCalificaciones = calificaciones.avgRating != null
   const showLeido = coleccion.readByCategory.length > 0 || coleccion.readByFormat.length > 0
   const showRasgos = stats.rasgos.total > 0
-  const hasRows = showRitmo || showColeccion || showAutores || showCalificaciones || showLeido || showRasgos
+  // "Lo tengo" (V.3.7.0): solo si hay libros marcados.
+  const casa = stats.casa
+  const showCasa = casa.owned > 0
+  const casaSummary = casa.unread > 0
+    ? `${plural(casa.owned, 'libro es tuyo', 'libros son tuyos')}, ${fmt(casa.unread)} por leer`
+    : plural(casa.owned, 'libro es tuyo', 'libros son tuyos')
+  const casaParts = [
+    { key: 'read', label: casa.read === 1 ? 'leído' : 'leídos', count: casa.read, color: 'bg-accent-finished' },
+    { key: 'unread', label: 'por leer', count: casa.unread, color: 'bg-state-pending' },
+    { key: 'reading', label: 'leyendo', count: casa.reading, color: 'bg-accent-reading' },
+    { key: 'paused', label: 'en pausa', count: casa.paused, color: 'bg-state-paused' },
+    { key: 'abandoned', label: casa.abandoned === 1 ? 'abandonado' : 'abandonados', count: casa.abandoned, color: 'bg-state-abandoned' },
+  ].filter((p) => p.count > 0)
+  const hasRows = showRitmo || showColeccion || showCasa || showAutores || showCalificaciones || showLeido || showRasgos
 
   const memberSinceLabel = resumen.memberSince
     ? new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' }).format(new Date(resumen.memberSince))
@@ -377,6 +390,35 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
                 </div>
               )}
               {memberSinceLabel && <Footnote>Leyendo en Teleo desde {memberSinceLabel}</Footnote>}
+            </MoreRow>
+          )}
+
+          {showCasa && (
+            <MoreRow
+              id="casa"
+              title="Tu estante en casa"
+              summary={casaSummary}
+              isOpen={openRow === 'casa'}
+              onToggle={() => toggle('casa')}
+            >
+              <div className="flex items-baseline gap-2.5">
+                <b className="font-title font-normal text-[40px] leading-none text-primary-text tabular-nums">{fmt(casa.owned)}</b>
+                <span className="text-body-md text-text-secondary">{casa.owned === 1 ? 'libro es tuyo' : 'libros son tuyos'}</span>
+              </div>
+              <div className="flex h-3 rounded-[6px] overflow-hidden bg-surface-2 mt-3.5" aria-hidden="true">
+                {casaParts.map((p) => (
+                  <div key={p.key} className={p.color} style={{ width: `${(p.count / casa.owned) * 100}%` }} />
+                ))}
+              </div>
+              <ul className="flex flex-wrap gap-x-4 gap-y-1.5 mt-2.5 text-[13px] text-text-secondary">
+                {casaParts.map((p) => (
+                  <li key={p.key} className="inline-flex items-center gap-1.5">
+                    <i className={`w-2.5 h-2.5 rounded-[3px] ${p.color}`} aria-hidden="true" />
+                    {fmt(p.count)} {p.label}
+                  </li>
+                ))}
+              </ul>
+              <Footnote>Cuenta los libros con Lo tengo. Se marca en Agregar libro y en Editar libro.</Footnote>
             </MoreRow>
           )}
 

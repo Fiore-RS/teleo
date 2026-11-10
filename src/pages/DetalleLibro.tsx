@@ -41,6 +41,16 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
 import { useUserTags } from '../hooks/useUserTags'
 import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
+import { ownedOnLeavingWishlist } from '../lib/owned'
+
+/** En Editar libro, al pasar el estado de Deseado a otro, un libro físico queda con "Lo tengo"
+ *  (V.3.7.0). Después se puede quitar con el interruptor. */
+function draftOwnedOnLeavingWishlist(draft: BookDraft, patch: Partial<BookDraft>): Partial<BookDraft> {
+  return ownedOnLeavingWishlist(
+    { status: draft.status, format: draft.format, owned: draft.owned },
+    { status: patch.status, format: patch.format }
+  )
+}
 
 /** Orden inicial al final de la lista de temporada (fuera del componente: el lint de React
  *  marca Date.now() dentro de él aunque solo se use al guardar). */
@@ -135,6 +145,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       endDate: book.end_date ?? '',
       abandonReason: book.abandon_reason ?? '',
       isFavorite: book.is_favorite ?? false,
+      owned: book.owned ?? false,
       isPriority: book.is_priority ?? false,
       traits: bookTraits,
     })
@@ -169,6 +180,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       is_gift: draft.isGift,
       gift_from: draft.isGift ? draft.giftFrom.trim().slice(0, 60) || null : null,
       is_favorite: draft.isFavorite,
+      // Un libro de Deseados nunca queda con "Lo tengo".
+      owned: draft.status !== 'deseado' && draft.owned,
       ...priorityUpdate,
       ...traitsToColumns(draft.traits, bookTraits),
     }
@@ -342,7 +355,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               coverUrl={book.cover_url}
               savedStatus={book.status as ReadingStatus}
               draft={draft}
-              onChange={(patch) => setDraft({ ...draft, ...patch })}
+              onChange={(patch) => setDraft({ ...draft, ...draftOwnedOnLeavingWishlist(draft, patch), ...patch })}
               tags={tags}
               onAddTag={handleAddTag}
               onRemoveTag={handleRemoveTag}
@@ -375,8 +388,14 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
               <div className="flex-1 min-w-0 pt-1">
                 <h3 className="font-display font-semibold text-[21px] leading-tight text-text text-balance">{book.title}</h3>
                 {book.author && <p className="text-body-md text-text-secondary mt-1">{book.author}</p>}
-                <div className="mt-3">
+                {/* "Lo tengo" (V.3.7.0): solo si está marcado; se marca desde Editar libro. */}
+                <div className="mt-3 flex flex-wrap items-center gap-1.5">
                   <StatusMenu status={book.status as ReadingStatus} onChange={handleStatusChange} align="left" />
+                  {book.owned && book.status !== 'deseado' && (
+                    <span className="inline-flex items-center px-3 py-1.25 rounded-chip border-[1.5px] border-primary-text bg-primary-soft text-primary-text text-body-sm font-body font-bold animate-fade-in">
+                      Lo tengo
+                    </span>
+                  )}
                 </div>
                 {book.status === 'pausado' && book.paused_at && (
                   <p className="text-body-sm text-text-secondary mt-2">En pausa desde el {formatPausedSince(book.paused_at)}</p>

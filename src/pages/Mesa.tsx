@@ -22,6 +22,9 @@ import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard"
 import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
 import { GoalPostcard } from "../assets/components/molecules/GoalPostcard";
 import { markGoalCelebrated, wasGoalCelebrated } from "../lib/goalCelebration";
+import { MarkOwnedSheet } from "../assets/components/molecules/MarkOwnedSheet";
+import { useUnownedPhysical } from "../hooks/useUnownedPhysical";
+import { markOwnedOffered, wasOwnedOffered } from "../lib/owned";
 import { DemoNotice } from "../assets/components/molecules/DemoNotice";
 import { useTour } from "../context/tourContextValue";
 import { ANNOUNCEMENT_OFFERS_TOUR, ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
@@ -131,6 +134,20 @@ export function Mesa() {
   function closeGoalPostcard() {
     markGoalCelebrated(user?.id, recapYear)
     setGoalCelebrationClosed(true)
+  }
+
+  // "Lo tengo" (V.3.7.0): una sola vez, ofrece marcar los libros físicos que ya estaban en la
+  // biblioteca. Nunca a la vez que el anuncio de versión, el del resumen del año o la postal.
+  const [ownedOfferClosed, setOwnedOfferClosed] = useState(false)
+  const ownedOfferPending =
+    !ownedOfferClosed && !!profile?.has_seen_intro && !profile.is_demo && !wasOwnedOffered(user?.id)
+  const { count: unownedCount, isLoading: unownedLoading } = useUnownedPhysical(user?.id, ownedOfferPending)
+  const showOwnedOffer =
+    ownedOfferPending && !showAnnouncement && !showYearRecap && !showGoalPostcard && !unownedLoading && unownedCount > 0
+
+  function closeOwnedOffer() {
+    markOwnedOffered(user?.id)
+    setOwnedOfferClosed(true)
   }
 
   function handleTabChange(tab: TabKey) {
@@ -363,6 +380,7 @@ export function Mesa() {
           onClose={closeGoalPostcard}
         />
       )}
+      {showOwnedOffer && <MarkOwnedSheet userId={user?.id} mode="offer" onClose={closeOwnedOffer} />}
       {isYearRecapOpen && (
         <RecapViewer userId={user?.id} period={{ kind: 'anio', year: recapYear }} onClose={() => setIsYearRecapOpen(false)} />
       )}

@@ -2,7 +2,7 @@ import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '3.6.0'
+export const ANNOUNCEMENT_VERSION = '3.7.0'
 
 /** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
  *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
@@ -14,11 +14,10 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'Logo nuevo', text: 'Teleo estrena ícono. En iPhone, quita Teleo de tu pantalla de inicio y vuelve a agregarla para verlo.' },
-  { title: 'Dos temas nuevos', text: 'Arrecife y Ciruela te esperan en Configuración, en Apariencia.' },
-  { title: 'Tu meta, celebrada', text: 'Cuando cumplas tu meta del año, te llega algo a La mesa.' },
-  { title: 'Todo al momento', text: 'Lo que guardas se ve enseguida en toda la app, sin refrescar.' },
-  { title: 'Más profundidad', text: 'Sombras con el color de tu tema, repisas que se notan y un grano suave de papel en el fondo.' },
+  { title: 'Lo tengo', text: 'Una marca para los libros que tienes en casa. Los físicos se marcan solos al agregarlos.' },
+  { title: 'Tu biblioteca de antes', text: 'Teleo te ofrece marcar de una vez los libros físicos que ya tenías.' },
+  { title: 'Tu pila por leer', text: 'Filtra tu Estante por Lo tengo y mira en Bitácora cuántos te faltan por leer.' },
+  { title: 'Compras más justas', text: 'Cuentan los libros que tienes y los que compraste, no los prestados ni los de biblioteca.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */

@@ -11,6 +11,7 @@ import { MONTH_ABBR, MONTH_NAMES } from '../../lib/months'
 import { SortMenu, type SortMenuOption } from '../../assets/components/molecules/SortMenu'
 import { DetalleLibro } from '../DetalleLibro'
 import { useStaggerOnce } from '../../lib/motion'
+import { MarkOwnedSheet } from '../../assets/components/molecules/MarkOwnedSheet'
 
 type Filter = 'todos' | 'sin-precio' | 'gratis' | 'regalos'
 type Sort = 'precio' | 'fecha' | 'titulo' | 'autor'
@@ -92,15 +93,20 @@ export function Compras({ userId, currency }: ComprasProps) {
   const [sort, setSort] = useState<Sort>('fecha')
   const [isCuriousOpen, setIsCuriousOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  const [isMarkOwnedOpen, setIsMarkOwnedOpen] = useState(false)
 
   const summary = useMemo(() => {
-    const owned = books.filter((b) => b.status !== 'deseado')
+    // V.3.7.0: cuenta los libros con "Lo tengo" y los que tienen precio aunque no la tengan
+    // (por ejemplo, un ebook comprado). Antes contaba todo lo que no era deseado, también los
+    // prestados y los de biblioteca.
+    const owned = books.filter((b) => b.status !== 'deseado' && (b.owned || b.price != null))
     const withPrice = owned.filter((b) => b.price != null)
     const paid = withPrice.filter((b) => (b.price ?? 0) > 0)
     const invested = sumPrices(withPrice)
     const mostExpensive = paid.length > 0 ? paid.reduce((max, b) => (b.price! > max.price! ? b : max)) : null
     const cheapest = paid.length > 0 ? paid.reduce((min, b) => (b.price! < min.price! ? b : min)) : null
-    const inStatus = (status: PurchaseBook['status']) => books.filter((b) => b.status === status && b.price != null)
+    const inStatus = (status: PurchaseBook['status']) =>
+      (status === 'deseado' ? books : owned).filter((b) => b.status === status && b.price != null)
     return {
       owned,
       withPrice,
@@ -113,6 +119,8 @@ export function Compras({ userId, currency }: ComprasProps) {
       paused: sumPrices(inStatus('pausado')),
       mostExpensive,
       cheapest,
+      // Hay libros fuera de Deseados, pero ninguno con "Lo tengo" ni con precio.
+      hasUnmarked: owned.length === 0 && books.some((b) => b.status !== 'deseado'),
     }
   }, [books])
 
@@ -268,7 +276,18 @@ export function Compras({ userId, currency }: ComprasProps) {
                   ? 'No tienes libros marcados como gratis. Pon el precio en 0 para marcarlo.'
                   : filter === 'regalos'
                     ? 'No tienes libros marcados como regalo. Márcalo al editar el libro.'
-                    : 'Todavía no tienes libros.'}
+                    : summary.hasUnmarked
+                      ? 'Compras cuenta los libros con Lo tengo y los que tienen precio, y todavía no tienes ninguno.'
+                      : 'Todavía no tienes libros.'}
+              {filter === 'todos' && summary.hasUnmarked && (
+                <button
+                  type="button"
+                  onClick={() => setIsMarkOwnedOpen(true)}
+                  className="block mt-2 font-bold text-primary-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
+                >
+                  Marcar mis libros físicos
+                </button>
+              )}
             </p>
           ) : sort === 'fecha' ? (
             groupByMonth(visibleBooks).map((group) => (
@@ -294,6 +313,7 @@ export function Compras({ userId, currency }: ComprasProps) {
         </Card>
       </div>
 
+      {isMarkOwnedOpen && <MarkOwnedSheet userId={userId} mode="settings" onClose={() => setIsMarkOwnedOpen(false)} />}
       {selectedBookId && (
         <DetalleLibro
           bookId={selectedBookId}
