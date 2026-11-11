@@ -15,6 +15,14 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.7.1',
+    date: '11 de noviembre de 2026',
+    title: 'Portadas en su lugar',
+    items: [
+      'En Leyendo ahora, los títulos largos se cortan en dos líneas con puntos suspensivos, y la portada ya no se estira ni se recorta.',
+    ],
+  },
+  {
     version: '3.7.0',
     announced: true,
     date: '10 de noviembre de 2026',

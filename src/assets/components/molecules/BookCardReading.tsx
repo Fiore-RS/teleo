@@ -40,7 +40,7 @@ export function BookCardReading({
     <article className="flex gap-3.5">
       <CoverTag
         {...(onOpen ? { type: 'button' as const, onClick: onOpen, 'aria-label': `Ver detalles de ${title}` } : {})}
-        className="relative w-26 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)] block p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+        className="relative w-26 shrink-0 self-start aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)] block p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
       >
         {coverUrl ? (
           <CoverImage src={coverUrl} alt={title} className="w-full h-full object-cover" />
@@ -62,13 +62,15 @@ export function BookCardReading({
 
       <div className="flex-1 min-w-0 flex flex-col justify-between gap-2.5">
         <div>
-          <h3 className="font-display font-semibold text-[17px] leading-tight text-text line-clamp-2">
+          {/* El recorte a 2 líneas va en un <span> interno: un <button> siempre se comporta como
+              inline-block y el line-clamp del h3 no lo puede cortar. */}
+          <h3 className="font-display font-semibold text-[17px] leading-tight text-text" title={title}>
             {onOpen ? (
-              <button type="button" onClick={onOpen} className="text-left focus-visible:outline-2 focus-visible:outline-primary-text rounded-sm">
-                {title}
+              <button type="button" onClick={onOpen} className="block w-full text-left focus-visible:outline-2 focus-visible:outline-primary-text rounded-sm">
+                <span className="line-clamp-2">{title}</span>
               </button>
             ) : (
-              title
+              <span className="line-clamp-2">{title}</span>
             )}
           </h3>
           {author && (
