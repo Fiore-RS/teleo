@@ -289,6 +289,8 @@ export type Database = {
           shelf_columns: number
           shelf_planks: boolean
           shelf_show_names: boolean
+          theme_mode: string | null
+          ui_marks: Json
           username: string
           username_changed_at: string | null
         }
@@ -311,6 +313,8 @@ export type Database = {
           shelf_columns?: number
           shelf_planks?: boolean
           shelf_show_names?: boolean
+          theme_mode?: string | null
+          ui_marks?: Json
           username: string
           username_changed_at?: string | null
         }
@@ -333,6 +337,8 @@ export type Database = {
           shelf_columns?: number
           shelf_planks?: boolean
           shelf_show_names?: boolean
+          theme_mode?: string | null
+          ui_marks?: Json
           username?: string
           username_changed_at?: string | null
         }
