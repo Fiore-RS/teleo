@@ -5,6 +5,22 @@ import { useAuth } from '../../../hooks/useAuth'
 import { useProfile } from '../../../hooks/useProfile'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import type { TabKey } from './TabBar'
+import logoFull from '../../images/logo/logo-full.svg'
+import logoIcon from '../../images/logo/logo-icon.svg'
+
+/** El logo es de un solo color: se usa como máscara y se pinta con el color de texto de la
+ *  tapa, así se lee sobre la tapa de cualquier tema, en claro y en oscuro. */
+function CoverLogo({ src, className }: { src: string; className: string }) {
+  const mask = `url("${src}") center / contain no-repeat`
+  return (
+    <span
+      role="img"
+      aria-label="Teleo: Diario de Lectura"
+      className={`block bg-current ${className}`}
+      style={{ mask, WebkitMask: mask }}
+    />
+  )
+}
 
 /** Secciones de la tapa. Perfil no va en la lista: se abre desde tu foto, abajo. */
 const sections: { key: Exclude<TabKey, 'perfil'>; label: string }[] = [
@@ -24,8 +40,9 @@ interface CoverNavProps {
  *  misma tapa de la barra de pestañas del teléfono (color principal del tema con textura de
  *  puntos y costura), puesta a la izquierda. La sección activa es un separador de papel del
  *  color del fondo que sale de la tapa y se une con la pantalla.
- *  - Escritorio (260px): TELEO, buscador, secciones con nombre, "Agregar libro" y tu foto.
- *  - Tableta (76px): las secciones escritas de lado, como lomos; abajo + y tu foto.
+ *  - Escritorio (260px): el logo completo, buscador, secciones con nombre, "Agregar libro" y tu foto.
+ *  - Tableta (76px): el logo del libro solo; las secciones escritas de lado, como lomos; abajo
+ *    + y tu foto.
  *  Se dibuja dentro del portal de TabBar; en el celular está oculta (hidden tableta:flex). */
 export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
   const navigate = useNavigate()
@@ -77,8 +94,7 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
       {/* ---------- Escritorio ---------- */}
       <div className="hidden escritorio:flex flex-col flex-1 min-h-0 pt-8 pb-6 pl-6.5">
         <div className="pr-10">
-          <p className="font-title text-[32px] leading-none tracking-[0.06em]">TELEO</p>
-          <p className="mt-1 text-[13px] opacity-80">Diario de Lectura</p>
+          <CoverLogo src={logoFull} className="w-[196px] aspect-[838/259] -ml-1" />
           <form role="search" onSubmit={search} className="relative mt-6.5">
             <label htmlFor="tapa-buscar" className="sr-only">
               Buscar en tu biblioteca
@@ -150,9 +166,7 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
 
       {/* ---------- Tableta ---------- */}
       <div className="flex escritorio:hidden flex-col items-end flex-1 min-h-0 pt-6 pb-5 pl-4.5">
-        <p aria-hidden="true" className="self-center pr-4.5 mb-5 font-title text-[22px] leading-none">
-          T
-        </p>
+        <CoverLogo src={logoIcon} className="self-center mr-4.5 mb-5 w-10 aspect-[412/340]" />
         <ul className="flex flex-col gap-1.5 w-full">
           {sections.map(({ key, label }) => {
             const isActive = active === key

@@ -19,7 +19,7 @@ function LegalPage({ title, sections }: LegalPageProps) {
   const { user, isLoading } = useAuth()
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
       <PageHeader title={title} subtitle={`Última actualización: ${LEGAL_LAST_UPDATED}.`} />
 
       <div className="flex flex-col gap-4">

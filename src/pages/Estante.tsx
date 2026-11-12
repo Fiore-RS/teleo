@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, LayoutGrid } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { useProfile } from "../hooks/useProfile";
@@ -78,6 +79,12 @@ export function Estante() {
   // guarda en la cuenta.
   const [viewOverride, setViewOverride] = useState<ShelfView | null>(null);
   const shelfView = viewOverride ?? shelfViewFromProfile(profile);
+  // Libros por repisa (V.4.0.0): la elección de 3 o 4 vale para el celular; en tableta y
+  // escritorio caben más, así las portadas no crecen de más con el ancho.
+  const breakpoint = useBreakpoint();
+  const perRow = shelfView.columns + (breakpoint === "escritorio" ? 4 : breakpoint === "tableta" ? 2 : 0);
+  // Las portadas chicas solo hacen falta con 4 por repisa en el celular.
+  const smallCovers = shelfView.columns === 4 && breakpoint === "celular";
   const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
   function changeShelfView(view: ShelfView) {
     setViewOverride(view);
@@ -344,7 +351,7 @@ export function Estante() {
   const isLoading = tab === "libros" ? booksLoading : sagasLoading;
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-ancha">
       <CoverBand />
       <ScreenHeader
         title="Estante"
@@ -446,10 +453,10 @@ export function Estante() {
         {isLoading && (
           <div
             className="grid gap-x-3 gap-y-4"
-            style={{ gridTemplateColumns: `repeat(${shelfView.columns}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))` }}
             aria-label="Cargando"
           >
-            {Array.from({ length: shelfView.columns * 3 }, (_, i) => (
+            {Array.from({ length: perRow * 3 }, (_, i) => (
               <BookTileSkeleton key={i} />
             ))}
           </div>
@@ -459,7 +466,7 @@ export function Estante() {
             <SortableContext items={isReorderingBooks ? sortedBooks.map((b) => b.id) : []} strategy={rectSortingStrategy}>
               <Shelf
                 className={staggerLibros}
-                perRow={shelfView.columns}
+                perRow={perRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
                 items={sortedBooks.map((book) => ({
@@ -473,7 +480,7 @@ export function Estante() {
                       coverUrl={book.cover_url ?? undefined}
                       status={book.status as ReadingStatus}
                       isFavorite={book.is_favorite ?? false}
-                      small={shelfView.columns === 4}
+                      small={smallCovers}
                     />
                   ),
                 }))}
@@ -496,7 +503,7 @@ export function Estante() {
             <SortableContext items={isReorderingSagas ? sortedSagas.map((s) => s.id) : []} strategy={rectSortingStrategy}>
               <Shelf
                 className={staggerSagas}
-                perRow={shelfView.columns}
+                perRow={perRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
                 items={sortedSagas.map((saga) => ({
@@ -511,7 +518,7 @@ export function Estante() {
                       bookCount={saga.bookCount}
                       status={(saga.status ?? "pendiente") as ReadingStatus}
                       isFavorite={saga.is_favorite ?? false}
-                      small={shelfView.columns === 4}
+                      small={smallCovers}
                     />
                   ),
                 }))}

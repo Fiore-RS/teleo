@@ -1102,3 +1102,37 @@ html {
     --tapa-ancho: 260px;
   }
 }
+
+/* ---------- Pantallas a lo ancho (V.4.0.0) ----------
+   En el celular no cambian nada. Desde tableta, cada pantalla se centra con un ancho máximo
+   según lo que muestra, sin volver a la columna de teléfono:
+   - .pagina-ancha (1100px): pantallas de portadas y hojas (Estante, Cuaderno).
+   - .pagina-media (880px): tarjetas y cifras (La mesa, Bitácora, Perfil).
+   - .pagina-lectura (720px): listas y textos (Configuración, Novedades, Lanzamientos, Guía...).
+   Van fuera de las capas de Tailwind para ganarle al px-4 del celular. */
+@media (min-width: 44rem) {
+  .pagina-ancha,
+  .pagina-media,
+  .pagina-lectura {
+    margin-inline: auto;
+    padding-inline: 2rem;
+    padding-top: 2rem;
+  }
+  .pagina-ancha {
+    max-width: 1100px;
+  }
+  .pagina-media {
+    max-width: 880px;
+  }
+  .pagina-lectura {
+    max-width: 720px;
+  }
+}
+@media (min-width: 70rem) {
+  .pagina-ancha,
+  .pagina-media,
+  .pagina-lectura {
+    padding-inline: 3rem;
+    padding-top: 2.5rem;
+  }
+}

@@ -47,7 +47,7 @@ export function Bitacora() {
   }
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-media">
       <CoverBand />
       <ScreenHeader
         title="Bitácora"
