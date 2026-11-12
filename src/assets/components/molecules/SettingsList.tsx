@@ -42,7 +42,7 @@ export function SettingsRow({ label, description, onClick, disabled = false, dan
       type="button"
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left first:rounded-t-card last:rounded-b-card focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-text ${
+      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left first:rounded-t-card last:rounded-b-card hover:bg-surface-2 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-text ${
         disabled ? 'opacity-50 cursor-not-allowed' : 'active:bg-surface-2'
       }`}
     >

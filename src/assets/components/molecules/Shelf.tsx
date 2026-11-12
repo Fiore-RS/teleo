@@ -114,7 +114,7 @@ export function Shelf({ items, perRow = 3, showNames = true, planks = true, wrap
                   type="button"
                   onClick={item.onClick}
                   aria-label={item.subtitle ? `${item.title}, ${item.subtitle}` : item.title}
-                  className="block w-full text-left rounded-[10px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+                  className="block w-full text-left rounded-[10px] transition-transform duration-200 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
                 >
                   {item.cover}
                 </button>

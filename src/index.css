@@ -332,6 +332,33 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
+/* ---------- Mouse y teclado (V.4.0.0) ----------
+   Tailwind 4 deja los botones con la flecha normal: en la computadora, todo lo que se puede
+   tocar muestra la manito. Y un foco visible por defecto para los botones y enlaces que se
+   recorren con el teclado y no traen el suyo (las clases focus-visible: de cada componente le
+   ganan a esto). Los campos de texto no: ya marcan el foco con su borde. */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  [role="tab"],
+  [role="radio"],
+  [role="switch"],
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [role="radio"]:focus-visible,
+  [role="switch"]:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-primary-text);
+    outline-offset: 2px;
+  }
+}
+
 @layer utilities {
   .animate-sheet-down { animation: teleo-sheet-down var(--motion-slow) var(--ease-enter); }
   .animate-sheet-out { animation: teleo-sheet-out var(--motion-base) var(--ease-exit) forwards; }

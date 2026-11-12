@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
@@ -50,6 +50,23 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
   const { profile } = useProfile(user?.id)
   const breakpoint = useBreakpoint()
   const [query, setQuery] = useState('')
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  // Atajo "/" para el buscador (V.4.0.0), en escritorio, donde el buscador está en la tapa. No
+  // se activa mientras se escribe en otro campo ni con una hoja abierta.
+  useEffect(() => {
+    if (breakpoint !== 'escritorio') return
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return
+      const target = e.target as HTMLElement | null
+      const isTyping = !!target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
+      if (isTyping || document.querySelector('[aria-modal="true"]')) return
+      e.preventDefault()
+      searchRef.current?.focus()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [breakpoint])
   // La marca del recorrido va solo en la versión que se ve (la barra de abajo, la tapa de
   // tableta o la de escritorio): el recorrido busca el primer elemento con la marca.
   const tour = (key: TabKey) => (breakpoint === 'escritorio' ? `tab-${key}` : undefined)
@@ -102,12 +119,20 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
             <Search size={16} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 opacity-70" />
             <input
               id="tapa-buscar"
+              ref={searchRef}
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar…"
-              className="w-full h-10 pl-9 pr-3 rounded-field bg-cover-ink/10 border border-cover-ink/25 font-body text-body-md text-cover-ink placeholder:text-cover-ink/60 focus-visible:outline-2 focus-visible:outline-cover-ink"
+              aria-keyshortcuts="/"
+              className="w-full h-10 pl-9 pr-9 rounded-field bg-cover-ink/10 border border-cover-ink/25 font-body text-body-md text-cover-ink placeholder:text-cover-ink/60 focus-visible:outline-2 focus-visible:outline-cover-ink"
             />
+            <kbd
+              aria-hidden="true"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 rounded-[5px] border border-cover-ink/30 font-body text-[12px] leading-[18px] opacity-70 pointer-events-none"
+            >
+              /
+            </kbd>
           </form>
         </div>
 
