@@ -118,16 +118,16 @@ function App() {
   }, [location.key, navigationType]);
 
   return (
-    // Teleo está pensada para móvil. En pantallas anchas (PC), en vez de
-    // estirar el contenido borde a borde, lo centramos en una columna con
-    // ancho de teléfono — mismo patrón que usan WhatsApp Web o Notion en
-    // su vista móvil.
-    <div className="min-h-screen bg-border">
+    // En el celular la app es una columna de ancho de teléfono. Desde tableta (V.4.0.0) ocupa
+    // todo el ancho: las pantallas con secciones dejan a la izquierda el espacio de la tapa del
+    // cuaderno (.app-columna en index.css) y cada pantalla se acomoda al ancho. Las de entrada
+    // (Inicio, Login, Registro...) siguen centradas con su propio ancho (AuthLayout).
+    <div className="min-h-screen bg-border tableta:bg-bg">
       <PaletteSync />
       <PreferencesSync />
       {/* overflow-x-clip: mientras una pantalla secundaria entra desde el costado no aparece
           desplazamiento horizontal (clip, y no hidden, para no romper los elementos sticky). */}
-      <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl overflow-x-clip">
+      <div className="app-columna mx-auto w-full max-w-120 tableta:max-w-none min-h-screen bg-bg overflow-x-clip">
         {/* Suspense va por fuera del contenedor con key (V.3.5.0). El router cambia de
             pantalla dentro de una transición de React: si el archivo de la pantalla nueva
             todavía no llegó, React deja la pantalla anterior a la vista hasta que esté lista.

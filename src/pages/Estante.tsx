@@ -126,6 +126,34 @@ export function Estante() {
   const [isReorderingBooks, setIsReorderingBooks] = useState(false);
   const [isReorderingSagas, setIsReorderingSagas] = useState(false);
 
+  // Desde la tapa del cuaderno (V.4.0.0, tableta y escritorio): "Agregar libro" llega con
+  // ?agregar=libro y el buscador con ?buscar=texto. Puede pasar estando ya en Estante (la
+  // pantalla no se vuelve a montar), por eso se mira cada vez que cambia la dirección.
+  const agregarParam = searchParams.get("agregar");
+  const buscarParam = searchParams.get("buscar");
+  const tapaRequest = `${agregarParam ?? ""}|${buscarParam ?? ""}`;
+  const [prevTapaRequest, setPrevTapaRequest] = useState("|");
+  if (tapaRequest !== prevTapaRequest) {
+    setPrevTapaRequest(tapaRequest);
+    if (agregarParam === "libro") {
+      setTab("libros");
+      setIsAddBookOpen(true);
+    }
+    if (buscarParam !== null) {
+      setTab("libros");
+      setSearch(buscarParam);
+    }
+  }
+  // Ya leído, se quita de la dirección para que no vuelva a pasar al recargar.
+  useEffect(() => {
+    if (agregarParam === null && buscarParam === null) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("agregar");
+    next.delete("buscar");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agregarParam, buscarParam]);
+
   // Ya aplicado el filtro de la URL, se limpia para que no vuelva a aplicarse al recargar.
   useEffect(() => {
     if (initialFiltro) setSearchParams({}, { replace: true });
