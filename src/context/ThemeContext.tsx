@@ -4,8 +4,6 @@ import { ThemeContext, type ResolvedTheme, type Theme } from './themeContextValu
 
 const STORAGE_KEY = 'teleo-theme'
 const PALETTE_KEY = 'teleo-palette'
-/** Marca del cambio único a "Sistema" de la V.2.1.0 (ver getInitialTheme). */
-const MODE_RESET_KEY = 'teleo-mode-reset-2.1'
 
 function read(key: string): string | null {
   try {
@@ -23,15 +21,11 @@ function write(key: string, value: string) {
   }
 }
 
-/** Con la V.2.1.0 todas las cuentas pasan una sola vez a "Sistema", aunque ya tuvieran Claro u
- *  Oscuro elegido (el anuncio de la versión lo explica). Después se respeta lo que cada quien
- *  elija: la marca MODE_RESET_KEY evita que el cambio se repita. */
+/** El modo se guarda en la cuenta desde la V.3.7.2 (profiles.theme_mode, ver PreferencesSync);
+ *  el dispositivo guarda una copia para abrir Teleo con el modo correcto sin destello.
+ *  Se quitó la marca del cambio único a "Sistema" de la V.2.1.0 ('teleo-mode-reset-2.1'): en
+ *  la dirección nueva (V.4.0.0) se habría vuelto a disparar. */
 function getInitialTheme(): Theme {
-  if (read(MODE_RESET_KEY) !== 'hecho') {
-    write(MODE_RESET_KEY, 'hecho')
-    write(STORAGE_KEY, 'system')
-    return 'system'
-  }
   const stored = read(STORAGE_KEY)
   if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
   return 'system'

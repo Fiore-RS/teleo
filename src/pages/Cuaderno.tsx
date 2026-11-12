@@ -12,7 +12,8 @@ import { Fab } from '../assets/components/atoms/Fab'
 import { SelectReviewBookModal } from '../assets/components/molecules/SelectReviewBookModal'
 import { SortMenu, type SortMenuOption } from '../assets/components/molecules/SortMenu'
 import { SortableItem } from '../assets/components/atoms/SortableItem'
-import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from '../lib/librarySort'
+import { sortByMode, type LibrarySortMode } from '../lib/librarySort'
+import { useSortMode } from '../hooks/useSortMode'
 import { sortQuotes } from '../lib/quoteOrder'
 import { Resena } from './Resena'
 import { Citas } from './cuaderno/Citas'
@@ -113,25 +114,15 @@ export function Cuaderno() {
   const [search, setSearch] = useState('')
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
-  // El modo elegido se guarda en localStorage (mismo mecanismo que Estante) para que no se
-  // reinicie a "libre" cada vez que se refresca la página.
-  const [sortMode, setSortModeState] = useState<LibrarySortMode>(() => getStoredSortMode('cuaderno-resenas'))
+  // El modo elegido se guarda en la cuenta desde la V.3.7.2 (mismo mecanismo que Estante,
+  // ver useSortMode).
+  const [sortMode, setSortMode] = useSortMode('cuaderno-resenas')
   const [isReordering, setIsReordering] = useState(false)
-
-  function setSortMode(mode: LibrarySortMode) {
-    setSortModeState(mode)
-    setStoredSortMode('cuaderno-resenas', mode)
-  }
 
   // Orden de Citas (V.3.1.0): su propio modo guardado; por defecto "Fecha agregada" (la más
   // reciente arriba), como era antes.
-  const [quoteSortMode, setQuoteSortModeState] = useState<LibrarySortMode>(() => getStoredSortMode('cuaderno-citas', 'fecha'))
+  const [quoteSortMode, setQuoteSortMode] = useSortMode('cuaderno-citas', 'fecha')
   const [isReorderingQuotes, setIsReorderingQuotes] = useState(false)
-
-  function setQuoteSortMode(mode: LibrarySortMode) {
-    setQuoteSortModeState(mode)
-    setStoredSortMode('cuaderno-citas', mode)
-  }
 
   // Mismo mecanismo de activación por "mantener presionado" que ya se usa en Estante y Mesa.
   const sensors = useSensors(

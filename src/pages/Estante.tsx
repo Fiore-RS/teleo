@@ -45,7 +45,8 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableItem } from "../assets/components/atoms/SortableItem";
 import { SortMenu, type SortMenuOption } from "../assets/components/molecules/SortMenu";
-import { sortByMode, getStoredSortMode, setStoredSortMode, type LibrarySortMode } from "../lib/librarySort";
+import { sortByMode, type LibrarySortMode } from "../lib/librarySort";
+import { useSortMode } from "../hooks/useSortMode";
 import { languageOptionsFrom, normalizeLanguage } from "../lib/languages";
 import { computeSagaCategories } from "../lib/sagaStatus";
 import { useStaggerOnce } from '../lib/motion'
@@ -117,26 +118,12 @@ export function Estante() {
   // Un modo de orden y un estado de "arrastrando" separados por pestaña (libros/sagas), ya
   // que cada una tiene su propio orden persistido (estante_sort_order de cada tabla) y no
   // tiene sentido que activar el drag en una afecte a la otra. El modo elegido (título/autor/
-  // fecha/libre) se guarda en localStorage para que no se reinicie al refrescar la página;
-  // el estado de "arrastrando" en sí no se guarda, ese siempre arranca apagado.
-  const [bookSortMode, setBookSortModeState] = useState<LibrarySortMode>(() =>
-    getStoredSortMode("estante-libros")
-  );
-  const [sagaSortMode, setSagaSortModeState] = useState<LibrarySortMode>(() =>
-    getStoredSortMode("estante-sagas")
-  );
+  // fecha/libre) se guarda en la cuenta desde la V.3.7.2 (ver useSortMode); el estado de
+  // "arrastrando" en sí no se guarda, ese siempre arranca apagado.
+  const [bookSortMode, setBookSortMode] = useSortMode("estante-libros");
+  const [sagaSortMode, setSagaSortMode] = useSortMode("estante-sagas");
   const [isReorderingBooks, setIsReorderingBooks] = useState(false);
   const [isReorderingSagas, setIsReorderingSagas] = useState(false);
-
-  function setBookSortMode(mode: LibrarySortMode) {
-    setBookSortModeState(mode);
-    setStoredSortMode("estante-libros", mode);
-  }
-
-  function setSagaSortMode(mode: LibrarySortMode) {
-    setSagaSortModeState(mode);
-    setStoredSortMode("estante-sagas", mode);
-  }
 
   // Ya aplicado el filtro de la URL, se limpia para que no vuelva a aplicarse al recargar.
   useEffect(() => {

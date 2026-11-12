@@ -1,4 +1,5 @@
 import { useTheme } from '../../../hooks/useTheme'
+import type { Theme } from '../../../context/themeContextValue'
 
 const options = [
   { value: 'light' as const, label: 'Claro' },
@@ -7,8 +8,9 @@ const options = [
 ]
 
 /** Selector de tema en forma de píldora (rediseño 2026), mismo lenguaje que las pestañas de antes:
- *  la opción activa va rellena en vino. Solo texto desde la V.3.5.0. */
-export function ThemeToggle() {
+ *  la opción activa va rellena en vino. Solo texto desde la V.3.5.0. `onChange` avisa la
+ *  elección para guardarla en la cuenta (V.3.7.2). */
+export function ThemeToggle({ onChange }: { onChange?: (theme: Theme) => void }) {
   const { theme, setTheme } = useTheme()
 
   return (
@@ -24,7 +26,10 @@ export function ThemeToggle() {
             key={value}
             role="radio"
             aria-checked={isActive}
-            onClick={() => setTheme(value)}
+            onClick={() => {
+              setTheme(value)
+              onChange?.(value)
+            }}
             className={`flex-1 flex items-center justify-center py-2 rounded-[6px] text-body-md font-body transition-colors ${
               isActive ? 'bg-primary text-primary-ink font-bold' : 'text-text-secondary font-medium'
             }`}
