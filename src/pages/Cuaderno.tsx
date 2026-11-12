@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { columnIndexes, columnsFor } from '../lib/columns'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ImageOff } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
@@ -113,6 +115,7 @@ export function Cuaderno() {
   }
 
   const [search, setSearch] = useState('')
+  const columns = columnsFor(useBreakpoint())
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   // El modo elegido se guarda en la cuenta desde la V.3.7.2 (mismo mecanismo que Estante,
@@ -230,7 +233,7 @@ export function Cuaderno() {
   }
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-ancha">
       <CoverBand />
       <ScreenHeader
         title="Cuaderno"
@@ -279,7 +282,7 @@ export function Cuaderno() {
           )}
 
           {isLoading && (
-            <div className="grid grid-cols-2 gap-2.5" aria-label="Cargando">
+            <div className="grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5" aria-label="Cargando">
               {Array.from({ length: 4 }, (_, i) => (
                 <div key={i} className="bg-surface border border-border rounded-2xl shadow-card p-3">
                   <div className="flex gap-2.5">
@@ -300,7 +303,7 @@ export function Cuaderno() {
               <SortableContext items={sortedReviews.map((r) => r.id)} strategy={rectSortingStrategy}>
                 {/* Al arrastrar se usa una cuadrícula simple de dos columnas (dnd-kit necesita
                     una sola lista); fuera de ese modo, las hojas se reparten en dos columnas. */}
-                <div className={`grid grid-cols-2 gap-2.5 items-start ${staggerResenas}`}>
+                <div className={`grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 items-start ${staggerResenas}`}>
                   {sortedReviews.map((r) => (
                     <SortableItem key={r.id} id={r.id}>
                       <ReviewCard review={r} onOpen={() => setSelectedBookId(r.book_id)} />
@@ -310,13 +313,14 @@ export function Cuaderno() {
               </SortableContext>
             </DndContext>
           ) : (
-            // Dos columnas que se llenan alternando (1 izquierda, 2 derecha...), así el orden
-            // elegido se sigue leyendo de arriba hacia abajo, igual que en Citas.
-            <div className="grid grid-cols-2 gap-2.5 items-start">
-              {[0, 1].map((col) => (
+            // Columnas que se llenan alternando (1 izquierda, 2 derecha...), así el orden elegido
+            // se sigue leyendo de arriba hacia abajo, igual que en Citas. Dos en el celular, tres
+            // en tableta y cuatro en escritorio (V.4.0.0).
+            <div className="grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 items-start">
+              {columnIndexes(columns).map((col) => (
                 <div key={col} className={`flex flex-col gap-2.5 min-w-0 ${staggerResenas}`}>
                   {sortedReviews
-                    .filter((_, i) => i % 2 === col)
+                    .filter((_, i) => i % columns === col)
                     .map((r) => (
                       <ReviewCard key={r.id} review={r} onOpen={() => setSelectedBookId(r.book_id)} />
                     ))}

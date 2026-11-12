@@ -165,7 +165,7 @@ export function Mesa() {
   const dayLetters = ["L", "M", "X", "J", "V", "S", "D"];
 
   return (
-    <div className="relative min-h-screen bg-glow-top px-4 pt-4">
+    <div className="relative min-h-screen bg-glow-top px-4 pt-4 pagina-media">
       <CoverBand />
       <StreakRibbon
         streak={streak}

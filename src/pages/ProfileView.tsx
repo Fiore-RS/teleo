@@ -196,7 +196,7 @@ export function ProfileView({
   ]
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-paper pagina-media tableta:px-0! tableta:pt-0!">
       {/* Portada (V.3.0.0): banner grande con el nombre encima a la izquierda, oscurecido abajo
           para que el texto se lea en cualquier tema; la foto va a la derecha, algo torcida,
           montada sobre el borde. El dibujo se muestra completo en su proporción (360 × 140)

@@ -6,6 +6,8 @@ import { Card, CardAction } from '../../assets/components/molecules/Card'
 import { QuoteMenu } from '../../assets/components/molecules/QuoteMenu'
 import type { QuoteWithBook } from '../../hooks/useQuotes'
 import { useStaggerOnce } from '../../lib/motion'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
+import { columnIndexes, columnsFor } from '../../lib/columns'
 import { SortableItem } from '../../assets/components/atoms/SortableItem'
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable'
@@ -107,6 +109,7 @@ function QuoteCard({
  *  reciente a la más antigua). Tocar el libro abre su reseña. Desde la V.2.1.1 cada cita tiene
  *  su menú (⋯) para compartirla, ver la reseña, editarla o eliminarla. */
 export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEdit, onDelete, isReordering = false, onReorder }: CitasProps) {
+  const columns = columnsFor(useBreakpoint())
   const stagger = useStaggerOnce('cuaderno-citas')
   // Mismo "mantener presionado" que Reseñas y Estante, para no arrastrar al hacer scroll.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 5 } }))
@@ -190,7 +193,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
             <SortableContext items={quotes.map((q) => q.id)} strategy={rectSortingStrategy}>
               {/* Al arrastrar, una cuadrícula simple de dos columnas (dnd-kit necesita una sola
                   lista), igual que en Reseñas. */}
-              <div className="grid grid-cols-2 gap-2.5 items-start">
+              <div className="grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 items-start">
                 {quotes.map((q, i) => (
                   <SortableItem key={q.id} id={q.id}>
                     <QuoteCard
@@ -208,18 +211,19 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
           </DndContext>
         </>
       ) : (
-      /* Dos columnas: las citas se reparten alternando (1 izquierda, 2 derecha, 3 izquierda...)
-         para que el orden elegido se siga leyendo de arriba hacia abajo. */
-      <div className="grid grid-cols-2 gap-2.5 items-start">
-        {[0, 1].map((col) => (
+      /* Columnas: las citas se reparten alternando (1 izquierda, 2 derecha, 3 izquierda...)
+         para que el orden elegido se siga leyendo de arriba hacia abajo. Dos en el celular,
+         tres en tableta y cuatro en escritorio (V.4.0.0). */
+      <div className="grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 items-start">
+        {columnIndexes(columns).map((col) => (
           <div key={col} className={`flex flex-col gap-2.5 min-w-0 ${stagger}`}>
             {quotes
-              .filter((_, i) => i % 2 === col)
+              .filter((_, i) => i % columns === col)
               .map((q) => (
                 <QuoteCard
                   key={q.id}
                   quote={q}
-                  align={col === 0 ? 'left' : 'right'}
+                  align={col % 2 === 0 ? 'left' : 'right'}
                   onShare={onShare}
                   onOpenBook={onOpenBook}
                   onEdit={onEdit}

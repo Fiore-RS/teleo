@@ -45,7 +45,7 @@ export function Novedades() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
       <PageHeader title="Novedades" subtitle="Lo que ha cambiado en Teleo, versión por versión." />
 
       <div className="flex flex-col gap-4">

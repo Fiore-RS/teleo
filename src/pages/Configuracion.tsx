@@ -136,7 +136,7 @@ export function Configuracion() {
   }
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
       {/* V.3.0.0: sin flecha de regresar; la barra de pestañas queda visible con Perfil
           marcado, y tocar Perfil vuelve a Perfil (en iPhone instalado puede no haber gesto
           para volver). */}

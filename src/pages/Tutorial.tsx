@@ -85,7 +85,7 @@ const sections: TutorialSection[] = [
  *  abre solo desde Configuración, con la barra de pestañas y Perfil marcado. */
 export function Tutorial() {
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
       <PageHeader
         title="Guía de Teleo"
         subtitle="Todo lo que puedes hacer en cada sección de la app, punto por punto."
