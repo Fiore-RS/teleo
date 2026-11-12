@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
+import { CoverBand } from '../assets/components/atoms/CoverBand'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { Estadisticas } from './bitacora/Estadisticas'
 import { Resumen, type ResumenView } from './bitacora/Resumen'
@@ -47,6 +48,7 @@ export function Bitacora() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <CoverBand />
       <ScreenHeader
         title="Bitácora"
         lead={subtitles[tab]}

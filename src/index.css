@@ -90,6 +90,14 @@
      (screen). Ver .bg-glow-top y .bg-paper. */
   --teleo-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.10'/%3E%3C/svg%3E");
   --teleo-grain-blend: multiply;
+
+  /* Tapa del cuaderno (V.3.8.0): la barra de pestañas y la franja de arriba de las pantallas
+     principales, del color principal del tema, como la barra lateral de escritorio. En claro
+     es el principal con su texto; en oscuro, el principal mezclado con el fondo (cuero oscuro)
+     y el texto normal. Se arma con var() para que sirva en los 8 temas sin repetirla. */
+  --teleo-cover: var(--teleo-primary);
+  --teleo-cover-ink: var(--teleo-primary-ink);
+  --teleo-cover-shadow: rgba(60, 20, 20, 0.45);
 }
 
 /* "Noche con lámpara" */
@@ -149,6 +157,10 @@
   --teleo-shelf: #5E4232;
   --teleo-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.07'/%3E%3C/svg%3E");
   --teleo-grain-blend: screen;
+
+  --teleo-cover: color-mix(in srgb, var(--teleo-primary) 42%, var(--teleo-bg));
+  --teleo-cover-ink: var(--teleo-text);
+  --teleo-cover-shadow: rgba(0, 0, 0, 0.6);
 }
 
 @theme {
@@ -205,6 +217,8 @@
   --color-edge-top: var(--teleo-edge-top);
   --color-shelf: var(--teleo-shelf);
   --color-banner-ink: var(--teleo-banner-ink);
+  --color-cover: var(--teleo-cover);
+  --color-cover-ink: var(--teleo-cover-ink);
 
   --radius-card: 24px;
   /* Formas (V.3.5.0, "Firme"): lo que antes era píldora pasa a rectángulo con esquinas
@@ -395,6 +409,18 @@
     background-size: 180px 180px;
     background-blend-mode: var(--teleo-grain-blend);
   }
+  /* Tapa del cuaderno (V.3.8.0): color de la tapa con una textura sutil de puntos, como la
+     barra lateral de escritorio. Barra de pestañas y franja de arriba (CoverBand). */
+  .bg-cover {
+    background-color: var(--color-cover);
+    background-image: radial-gradient(color-mix(in srgb, var(--color-cover-ink) 7%, transparent) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+  /* Costura punteada de la tapa: el color lo da el texto de la tapa, apagado. */
+  .border-stitch {
+    border-color: color-mix(in srgb, var(--color-cover-ink) 30%, transparent);
+  }
+
   /* Fondo con grano y sin brillo (Perfil, que arriba tiene el banner). */
   .bg-paper {
     background: var(--teleo-grain) 0 0 / 180px 180px, var(--color-bg);

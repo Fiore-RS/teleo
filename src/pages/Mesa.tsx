@@ -7,6 +7,7 @@ import { useAnnualGoal } from "../hooks/useAnnualGoal";
 import { useProfile } from "../hooks/useProfile";
 import { getProgressInfo } from "../lib/progress";
 import { StreakRibbon } from "../assets/components/atoms/StreakRibbon";
+import { CoverBand } from "../assets/components/atoms/CoverBand";
 import { Skeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
 import { Card, CardAction } from "../assets/components/molecules/Card";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
@@ -165,6 +166,7 @@ export function Mesa() {
 
   return (
     <div className="relative min-h-screen bg-glow-top px-4 pt-4">
+      <CoverBand />
       <StreakRibbon
         streak={streak}
         marked={markedToday}

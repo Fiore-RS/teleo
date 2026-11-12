@@ -7,6 +7,7 @@ import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { useProfile } from "../hooks/useProfile";
 import { getPriorityListName } from "../lib/priorityList";
 import { ScreenHeader, HeaderBarButton } from "../assets/components/molecules/ScreenHeader";
+import { CoverBand } from "../assets/components/atoms/CoverBand";
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
 import { defaultAdvancedFilters, hasActiveFilters, matchesSagaTraitFilters, matchesTraitFilters, type AdvancedFilters } from "../lib/advancedFilters";
@@ -316,6 +317,7 @@ export function Estante() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <CoverBand />
       <ScreenHeader
         title="Estante"
         tabsLabel="Libros o sagas"
