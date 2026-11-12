@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.8.0',
+    date: '12 de noviembre de 2026',
+    title: 'Entre tapas',
+    items: [
+      'La barra de secciones ahora es la tapa de tu cuaderno: toma el color principal de tu tema, va de lado a lado y lleva una costura, como un cuaderno de verdad.',
+      'La mesa, Estante, Cuaderno y Bitácora estrenan una franja del mismo color arriba, y la cinta de tu racha es más larga y le pasa por encima.',
+      'Si cambias de tema en Configuración, en Apariencia, la tapa cambia de color con él, en modo claro y oscuro.',
+    ],
+  },
+  {
     version: '3.7.2',
     date: '12 de noviembre de 2026',
     title: 'Preparar la mudanza',
