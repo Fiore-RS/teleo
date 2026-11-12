@@ -15,6 +15,16 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '3.7.2',
+    date: '12 de noviembre de 2026',
+    title: 'Preparar la mudanza',
+    items: [
+      'Tus ajustes ahora viajan con tu cuenta: el modo claro u oscuro, cómo organizas tu Estante y tu Cuaderno, y lo que ya viste en Teleo (como la postal de tu meta) se guardan en tu cuenta, no solo en este dispositivo.',
+      'Si abres Teleo en otro dispositivo, te recibe igual: con tu modo, tu orden y sin volver a mostrarte lo que ya viste.',
+      'Es un paso para lo que viene: pronto Teleo se muda a una dirección nueva, y así no se pierde nada en el camino.',
+    ],
+  },
+  {
     version: '3.7.1',
     date: '11 de noviembre de 2026',
     title: 'Portadas en su lugar',
