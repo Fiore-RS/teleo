@@ -25,20 +25,29 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
 }
 
-/** Barra flotante de secciones. V.3.0.0: la pestaña activa es un círculo vino con el ícono
- *  claro. Tocar la pestaña en la que ya se está vuelve arriba (reemplaza al botón de subir). */
+/** Barra de secciones. V.3.0.0: tocar la pestaña en la que ya se está vuelve arriba (reemplaza
+ *  al botón de subir). V.3.8.0: es la tapa del cuaderno, del color principal del tema (como la
+ *  barra lateral de escritorio), pegada de lado a lado y abajo, con las esquinas de arriba
+ *  redondeadas, textura de puntos y costura punteada. La pestaña activa es un cuadro del color
+ *  del fondo con el ícono de acento, como el separador de papel de escritorio. */
 export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
   // Se monta en <body> con un portal para que quede fuera del contenedor que se desliza al
   // entrar a una pantalla secundaria: así la barra se queda quieta y solo cambia la pestaña activa.
   return createPortal(
-    <div
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-120 px-3.5 pointer-events-none z-30"
-      style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
-    >
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-120 pointer-events-none z-30">
       <nav
         aria-label="Secciones"
-        className="pointer-events-auto bg-surface border border-border border-t-edge-top rounded-[22px] shadow-float flex justify-between items-center p-2"
+        className="relative pointer-events-auto bg-cover text-cover-ink rounded-t-[22px] flex justify-between items-center px-2 pt-2.5"
+        style={{
+          paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
+          boxShadow: '0 -8px 20px -12px var(--teleo-cover-shadow)',
+        }}
       >
+        {/* Costura cerca del borde de arriba, siguiendo las esquinas redondeadas. */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-[7px] top-[6px] bottom-0 border-t-[1.5px] border-x-[1.5px] border-b-0 border-dashed border-stitch rounded-t-[16px] pointer-events-none"
+        />
         {tabs.map(({ key, label, icon: Icon }) => {
           const isActive = active === key
 
@@ -49,13 +58,13 @@ export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
               onClick={() => (isActive ? (onActiveTap ?? scrollToTop)() : onChange(key))}
               aria-current={isActive ? 'page' : undefined}
               data-tour={`tab-${key}`}
-              className={`flex flex-col items-center gap-0.5 flex-1 rounded-2xl focus-visible:outline-2 focus-visible:outline-primary-text ${
-                isActive ? 'text-text' : 'text-text-secondary'
+              className={`relative flex flex-col items-center gap-0.5 flex-1 rounded-2xl focus-visible:outline-2 focus-visible:outline-cover-ink ${
+                isActive ? '' : 'opacity-75'
               }`}
             >
               <span
                 className={`w-10 h-10 rounded-[12px] flex items-center justify-center transition-colors motion-reduce:transition-none ${
-                  isActive ? 'bg-primary text-primary-ink' : ''
+                  isActive ? 'bg-bg text-primary-text shadow-[0_2px_5px_-2px_var(--teleo-cover-shadow)]' : ''
                 }`}
               >
                 <Icon size={20} strokeWidth={isActive ? 2.1 : 1.8} aria-hidden="true" />

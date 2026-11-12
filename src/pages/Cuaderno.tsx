@@ -5,6 +5,7 @@ import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews, type ReviewWithBook } from '../hooks/useReviews'
 import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
+import { CoverBand } from '../assets/components/atoms/CoverBand'
 import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
@@ -230,6 +231,7 @@ export function Cuaderno() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4">
+      <CoverBand />
       <ScreenHeader
         title="Cuaderno"
         tabsLabel="Reseñas o citas"
