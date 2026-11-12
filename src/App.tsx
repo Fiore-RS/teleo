@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useLayoutEffect, useState, type ComponentTyp
 import { Routes, Route, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { LoadingScreen } from "./pages/LoadingScreen";
 import { PaletteSync } from "./assets/components/atoms/PaletteSync";
+import { PreferencesSync } from "./assets/components/atoms/PreferencesSync";
 import { routeTransition } from "./lib/motion";
 
 /* Cada pantalla se descarga recién cuando se abre (lazy), en vez de venir toda en un solo
@@ -123,6 +124,7 @@ function App() {
     // su vista móvil.
     <div className="min-h-screen bg-border">
       <PaletteSync />
+      <PreferencesSync />
       {/* overflow-x-clip: mientras una pantalla secundaria entra desde el costado no aparece
           desplazamiento horizontal (clip, y no hidden, para no romper los elementos sticky). */}
       <div className="mx-auto w-full max-w-120 min-h-screen bg-bg md:shadow-2xl overflow-x-clip">

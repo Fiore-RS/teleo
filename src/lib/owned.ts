@@ -1,3 +1,5 @@
+import type { UiMarks } from './uiMarks'
+
 /** "Lo tengo" (V.3.7.0). Al sacar un libro de Deseados (normalmente porque se compró), si es
  *  físico queda marcado solo. Si ya estaba marcado, no es físico o el cambio ya decide la marca
  *  (por ejemplo, desde Editar libro), no se toca. */
@@ -11,25 +13,12 @@ export function ownedOnLeavingWishlist(
 }
 
 /** Hoja de Mesa que ofrece marcar con "Lo tengo" los libros físicos que ya estaban en la
- *  biblioteca (V.3.7.0). Sale una sola vez por dispositivo; después queda el atajo en
- *  Configuración › Tus datos. */
-const offerKey = (userId: string) => `teleo:loTengoOfrecido:${userId}`
-
-export function wasOwnedOffered(userId: string | undefined): boolean {
-  if (!userId) return true
-  try {
-    return localStorage.getItem(offerKey(userId)) !== null
-  } catch {
-    // Sin almacenamiento (modo privado): mejor no mostrarla que mostrarla cada vez.
-    return true
-  }
+ *  biblioteca (V.3.7.0). Sale una sola vez; después queda el atajo en Configuración › Tus
+ *  datos. Desde la V.3.7.2 se recuerda en la cuenta (ui_marks.loTengoOfrecido). */
+export function wasOwnedOffered(marks: UiMarks): boolean {
+  return !!marks.loTengoOfrecido
 }
 
-export function markOwnedOffered(userId: string | undefined) {
-  if (!userId) return
-  try {
-    localStorage.setItem(offerKey(userId), new Date().toISOString())
-  } catch {
-    // Sin almacenamiento: no pasa nada.
-  }
+export function ownedOfferedPatch(): UiMarks {
+  return { loTengoOfrecido: new Date().toISOString() }
 }

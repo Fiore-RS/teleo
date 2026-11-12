@@ -21,10 +21,11 @@ import { ReadingCalendarSheet } from "../assets/components/molecules/ReadingCale
 import { NextReleaseCard } from "../assets/components/molecules/NextReleaseCard";
 import { AnnouncementSheet } from "../assets/components/molecules/AnnouncementSheet";
 import { GoalPostcard } from "../assets/components/molecules/GoalPostcard";
-import { markGoalCelebrated, wasGoalCelebrated } from "../lib/goalCelebration";
+import { goalCelebratedPatch, wasGoalCelebrated } from "../lib/goalCelebration";
+import { useUiMarks } from "../hooks/useUiMarks";
 import { MarkOwnedSheet } from "../assets/components/molecules/MarkOwnedSheet";
 import { useUnownedPhysical } from "../hooks/useUnownedPhysical";
-import { markOwnedOffered, wasOwnedOffered } from "../lib/owned";
+import { ownedOfferedPatch, wasOwnedOffered } from "../lib/owned";
 import { DemoNotice } from "../assets/components/molecules/DemoNotice";
 import { useTour } from "../context/tourContextValue";
 import { ANNOUNCEMENT_OFFERS_TOUR, ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
@@ -37,7 +38,7 @@ import { queryClient } from '../lib/queryClient'
 import { DetalleLibro } from './DetalleLibro'
 import { RecapYearAnnouncement } from '../assets/components/recap/RecapYearAnnouncement'
 import { RecapViewer } from '../assets/components/recap/RecapViewer'
-import { isYearRecapAnnouncementDue, markYearRecapAnnouncementSeen } from '../lib/recapAnnouncement'
+import { isYearRecapAnnouncementDue, yearRecapSeenPatch } from '../lib/recapAnnouncement'
 import { useYearReads } from '../hooks/useYearReads'
 export function Mesa() {
   const staggerMesa = useStaggerOnce("mesa");
@@ -89,14 +90,17 @@ export function Mesa() {
 
   // Solo en diciembre, después del anuncio de versión (nunca los dos a la vez) y si hay libros
   // terminados en el año.
+  // Lo que ya vio (resumen del año, postal, hoja de "Lo tengo") se recuerda en la cuenta desde
+  // la V.3.7.2. Mientras no llega el perfil no se muestra ninguna de esas hojas.
+  const { marks, ready: marksReady, patchMarks } = useUiMarks()
   const recapYear = new Date().getFullYear()
-  const yearRecapDue = isYearRecapAnnouncementDue(user?.id)
+  const yearRecapDue = marksReady && isYearRecapAnnouncementDue(marks)
   const { reads: yearReads, isLoading: yearReadsLoading } = useYearReads(yearRecapDue ? user?.id : undefined, recapYear)
   const showYearRecap =
     yearRecapDue && !yearRecapDismissed && !!profile?.has_seen_intro && !showAnnouncement && !yearReadsLoading && yearReads.length > 0
 
   function closeYearRecapAnnouncement(open: boolean) {
-    markYearRecapAnnouncementSeen(user?.id, recapYear)
+    void patchMarks(yearRecapSeenPatch(recapYear))
     setYearRecapDismissed(true)
     if (open) setIsYearRecapOpen(true)
   }
@@ -117,7 +121,7 @@ export function Mesa() {
   const goalPercent =
     goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
 
-  // Meta cumplida (V.3.6.0): la postal sale una vez por año en este dispositivo, también para
+  // Meta cumplida (V.3.6.0): la postal sale una vez por año (en la cuenta), también para
   // quien ya la había cumplido antes de esta versión. Nunca a la vez que el anuncio de versión
   // o el del resumen del año.
   const [goalCelebrationClosed, setGoalCelebrationClosed] = useState(false)
@@ -129,10 +133,11 @@ export function Mesa() {
     !!profile?.has_seen_intro &&
     !showAnnouncement &&
     !showYearRecap &&
-    !wasGoalCelebrated(user?.id, recapYear)
+    marksReady &&
+    !wasGoalCelebrated(marks, recapYear)
 
   function closeGoalPostcard() {
-    markGoalCelebrated(user?.id, recapYear)
+    void patchMarks(goalCelebratedPatch(recapYear))
     setGoalCelebrationClosed(true)
   }
 
@@ -140,13 +145,13 @@ export function Mesa() {
   // biblioteca. Nunca a la vez que el anuncio de versión, el del resumen del año o la postal.
   const [ownedOfferClosed, setOwnedOfferClosed] = useState(false)
   const ownedOfferPending =
-    !ownedOfferClosed && !!profile?.has_seen_intro && !profile.is_demo && !wasOwnedOffered(user?.id)
+    !ownedOfferClosed && !!profile?.has_seen_intro && !profile.is_demo && marksReady && !wasOwnedOffered(marks)
   const { count: unownedCount, isLoading: unownedLoading } = useUnownedPhysical(user?.id, ownedOfferPending)
   const showOwnedOffer =
     ownedOfferPending && !showAnnouncement && !showYearRecap && !showGoalPostcard && !unownedLoading && unownedCount > 0
 
   function closeOwnedOffer() {
-    markOwnedOffered(user?.id)
+    void patchMarks(ownedOfferedPatch())
     setOwnedOfferClosed(true)
   }
 

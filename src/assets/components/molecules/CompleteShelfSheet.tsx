@@ -9,6 +9,7 @@ import { BookTraitsFields } from './BookTraitsFields'
 import { supabase } from '../../../lib/supabase'
 import { fetchAllRows } from '../../../lib/fetchAllRows'
 import { useUserCustomMoods } from '../../../hooks/useUserCustomMoods'
+import { useUiMarks } from '../../../hooks/useUiMarks'
 import { traitsFromBook, traitsToColumns, type BookTraits } from '../../../lib/bookTraits'
 
 interface ShelfBook {
@@ -28,24 +29,6 @@ interface ShelfBook {
  *  terminados primero, del más reciente al más antiguo. */
 const STATUS_ORDER = ['terminado', 'abandonado', 'pausado', 'leyendo']
 
-const skippedKey = (userId: string) => `teleo:completeShelf:skipped:${userId}`
-
-function loadSkipped(userId: string): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(skippedKey(userId)) ?? '[]') as string[]
-  } catch {
-    return []
-  }
-}
-
-function saveSkipped(userId: string, ids: string[]) {
-  try {
-    localStorage.setItem(skippedKey(userId), JSON.stringify(ids))
-  } catch {
-    // Sin almacenamiento, los saltados vuelven a aparecer la próxima vez.
-  }
-}
-
 function isMissingSomething(book: ShelfBook): boolean {
   const t = traitsFromBook(book)
   return t.genres.length === 0 || t.moods.length + t.customMoods.length === 0 || t.pace === null
@@ -57,13 +40,16 @@ interface CompleteShelfSheetProps {
 }
 
 /** "Completa tu estante" (V.3.1.0): un libro por pantalla para poner género, ánimo y ritmo a
- *  los libros que ya leíste o empezaste. "Saltar" lo deja para después (se recuerda en el
- *  dispositivo); se puede cerrar en cualquier momento y seguir otro día. */
+ *  los libros que ya leíste o empezaste. "Saltar" lo deja para después (se recuerda en la
+ *  cuenta desde la V.3.7.2, ui_marks.completeShelfSkipped); se puede cerrar en cualquier
+ *  momento y seguir otro día. */
 export function CompleteShelfSheet({ userId, onClose }: CompleteShelfSheetProps) {
   const queryClient = useQueryClient()
   const knownCustomMoods = useUserCustomMoods(userId)
   const [books, setBooks] = useState<ShelfBook[] | null>(null)
-  const [skipped, setSkipped] = useState<string[]>(() => (userId ? loadSkipped(userId) : []))
+  const { marks, patchMarks } = useUiMarks()
+  // Copia local mientras la hoja está abierta; cada cambio se guarda también en la cuenta.
+  const [skipped, setSkipped] = useState<string[]>(() => marks.completeShelfSkipped ?? [])
   const [doneIds, setDoneIds] = useState<string[]>([])
   const [draft, setDraft] = useState<BookTraits | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -105,10 +91,10 @@ export function CompleteShelfSheet({ userId, onClose }: CompleteShelfSheetProps)
   }
 
   function skip() {
-    if (!current || !userId) return
+    if (!current) return
     const next = [...skipped, current.id]
     setSkipped(next)
-    saveSkipped(userId, next)
+    void patchMarks({ completeShelfSkipped: next })
   }
 
   async function saveAndNext() {
@@ -125,7 +111,7 @@ export function CompleteShelfSheet({ userId, onClose }: CompleteShelfSheetProps)
 
   function restoreSkipped() {
     setSkipped([])
-    if (userId) saveSkipped(userId, [])
+    void patchMarks({ completeShelfSkipped: [] })
   }
 
   function handleClose() {
