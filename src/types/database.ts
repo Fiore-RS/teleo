@@ -616,6 +616,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      merge_ui_marks: {
+        Args: { patch: Json }
+        Returns: Json
+      }
       inviter_preview: {
         Args: { code: string }
         Returns: {

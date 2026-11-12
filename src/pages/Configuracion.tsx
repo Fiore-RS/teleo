@@ -153,7 +153,7 @@ export function Configuracion() {
 
         <SettingsGroup title="Apariencia">
           <SettingsField label="Modo de color" description="Sistema sigue el modo de tu teléfono">
-            <ThemeToggle />
+            <ThemeToggle onChange={(mode) => { if (!isDemo) void updateProfile({ theme_mode: mode }) }} />
           </SettingsField>
           <SettingsRow
             label="Tema"
