@@ -220,6 +220,11 @@
   --color-cover: var(--teleo-cover);
   --color-cover-ink: var(--teleo-cover-ink);
 
+  /* Tamaños de pantalla (V.4.0.0): tableta (tapa angosta) y escritorio (tapa completa). Los
+     mismos valores que useBreakpoint. Debajo de tableta, Teleo es la de siempre. */
+  --breakpoint-tableta: 44rem;
+  --breakpoint-escritorio: 70rem;
+
   --radius-card: 24px;
   /* Formas (V.3.5.0, "Firme"): lo que antes era píldora pasa a rectángulo con esquinas
      redondeadas, para ir con las tarjetas. Lo que es un círculo de verdad (foto, puntitos,
@@ -1075,4 +1080,25 @@
    de la barra de pestañas, la rayita del iPhone, el rebote al deslizar) mostraban otro color. */
 html {
   background-color: var(--teleo-bg);
+}
+
+/* ---------- Tapa del cuaderno lateral (V.4.0.0) ----------
+   En tableta y escritorio, las pantallas con secciones (las que muestran TabBar) llevan la
+   tapa del cuaderno a la izquierda. TabBar marca <html data-tapa> mientras está montada, y la
+   columna de la app (App.tsx, .app-columna) deja ese espacio libre. */
+:root {
+  --tapa-ancho: 0px;
+}
+@media (min-width: 44rem) {
+  :root {
+    --tapa-ancho: 76px;
+  }
+  html[data-tapa] .app-columna {
+    padding-left: var(--tapa-ancho);
+  }
+}
+@media (min-width: 70rem) {
+  :root {
+    --tapa-ancho: 260px;
+  }
 }

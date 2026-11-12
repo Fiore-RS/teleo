@@ -34,7 +34,7 @@ interface SheetProps {
   footer?: ReactNode
 }
 
-/** Hoja del rediseño 2026: baja desde arriba de la pantalla, con esquinas redondeadas abajo,
+/** Hoja del rediseño 2026 (en tableta y escritorio, con 560px de ancho máximo, V.4.0.0): baja desde arriba de la pantalla, con esquinas redondeadas abajo,
  *  una "manija" al pie y el título a la izquierda con un botón redondo para cerrar. Se abre
  *  desde arriba (y no desde abajo) para que en el celular el teclado no tape los campos al
  *  escribir. Se usa para pantallas de contenido (detalle de libro, reseña, filtros...); las
@@ -76,7 +76,7 @@ export function Sheet({ onClose, title, children, headerRight, footer }: SheetPr
     <div className="fixed inset-0 z-50 flex items-start justify-center" role="dialog" aria-modal="true" aria-label={title}>
       <div className={`absolute inset-0 bg-black/50 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={requestClose} />
       <div
-        className={`relative w-full max-w-120 max-h-[92vh] flex flex-col bg-surface rounded-b-[28px] shadow-sheet ${
+        className={`relative w-full max-w-120 tableta:max-w-[560px] max-h-[92vh] flex flex-col bg-surface rounded-b-[28px] shadow-sheet ${
           isClosing ? 'animate-sheet-out' : 'animate-sheet-down'
         }`}
         // Aire arriba: la zona segura del teléfono (muesca, barra de estado) más 16px, para que
