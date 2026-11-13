@@ -14,6 +14,10 @@ import type { ReadingStatus } from '../lib/status'
 import { getProgressInfo } from '../lib/progress'
 import { getGoalMessage } from '../lib/goalMessage'
 import { useStaggerOnce } from '../lib/motion'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { GoalCard } from './mesa/MesaCards'
+import { HojaModeContext } from '../lib/hojaMode'
+import { Librero, ShelfPlank } from '../assets/components/molecules/Shelf'
 
 type BookRow = Database['public']['Tables']['books']['Row']
 type Book = Pick<BookRow, 'id' | 'title' | 'cover_url' | 'status'>
@@ -74,6 +78,10 @@ interface ProfileViewProps {
 
   /** Mis próximas lecturas, que arma Perfil con sus propios datos. */
   priorityList?: ReactNode
+  /** La misma lista como primera repisa del librero (computadora y tableta, V.4.2.0). */
+  priorityRepisa?: ReactNode
+  /** Día en que se cumplió la meta del año (pantallas grandes: matasellos de la estampilla). */
+  annualGoalReachedOn?: Date | null
 
   onBookClick?: (bookId: string) => void
   onSeeAllBooks?: (list: ProfileFilter) => void
@@ -133,6 +141,69 @@ function progressText(book: BookRow): string {
   return 'Recién empezado'
 }
 
+/** Una repisa del librero de Perfil (V.4.2.0, computadora y tableta): la etiqueta de la
+ *  estantería, hasta 7 portadas paradas sobre el tablón y "Ver todos". */
+function Repisa({ shelf, isLoading, onBookClick, onSeeAll }: {
+  shelf: ProfileShelf
+  isLoading: boolean
+  onBookClick?: (bookId: string) => void
+  onSeeAll?: () => void
+}) {
+  const books = shelf.books.slice(0, 7)
+  return (
+    <section aria-label={shelf.label} className="relative px-5 pt-16">
+      <div className="absolute top-3 left-5 right-5 flex items-center justify-between gap-3">
+        <h3 className="h-6 px-3 rounded-[4px] bg-surface text-primary-text font-body font-bold text-[13px] inline-flex items-center gap-1.5 shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
+          {shelf.label}
+          <span className="font-semibold opacity-75 tabular-nums">{shelf.total}</span>
+        </h3>
+        {onSeeAll && shelf.total > 0 && (
+          <button
+            type="button"
+            onClick={onSeeAll}
+            className="font-body font-bold text-[13px] text-[#FBF3EA] hover:underline underline-offset-4 rounded-chip focus-visible:outline-2 focus-visible:outline-[#FBF3EA]"
+          >
+            Ver todos ›
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-7 gap-3.5 items-end min-h-[60px]">
+        {isLoading
+          ? Array.from({ length: 5 }, (_, i) => <CoverSkeleton key={i} className="w-full" />)
+          : books.length === 0
+            ? <p className="col-span-7 pb-3 font-display italic text-[16px] text-[#FBF3EA]/75">Nada por aquí todavía.</p>
+            : books.map((book) => {
+                const inner = (
+                  <>
+                    {book.cover_url ? (
+                      <CoverImage src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="w-full h-full flex items-end p-2 bg-accent-finished text-on-accent font-title text-[12px] leading-tight text-left">{book.title}</span>
+                    )}
+                    <DogEar status={book.status as ReadingStatus} size={20} className="absolute top-0 right-0" />
+                  </>
+                )
+                const cls = 'relative block w-full aspect-2/3 rounded-[3px_6px_6px_3px] overflow-hidden bg-surface-2 shadow-[0_1px_1.5px_rgba(0,0,0,0.2),0_8px_14px_-6px_rgba(0,0,0,0.55)]'
+                return onBookClick ? (
+                  <button
+                    key={book.id}
+                    type="button"
+                    onClick={() => onBookClick(book.id)}
+                    aria-label={book.title}
+                    className={`${cls} transition-transform duration-200 hover:-translate-y-1 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF3EA]`}
+                  >
+                    {inner}
+                  </button>
+                ) : (
+                  <div key={book.id} className={cls}>{inner}</div>
+                )
+              })}
+      </div>
+      <ShelfPlank className="-mx-5! rounded-none!" />
+    </section>
+  )
+}
+
 /** Rincón personal del usuario. Solo lo ve el dueño de la cuenta (la página pública se retiró
  *  en septiembre 2026); en la V.5.0.0 también lo verán las amistades, en solo lectura.
  *
@@ -153,6 +224,7 @@ export function ProfileView({
   headerRight,
   annualGoal = 0,
   annualCompletedCount = 0,
+  annualGoalReachedOn = null,
   onEditGoal,
   streak = 0,
   currentlyReading = [],
@@ -161,11 +233,16 @@ export function ProfileView({
   shelves = [],
   counts,
   priorityList,
+  priorityRepisa,
   onBookClick,
   onSeeAllBooks,
   footer,
 }: ProfileViewProps) {
   const stagger = useStaggerOnce('perfil')
+  // Computadora y tableta (V.4.2.0, lienzo "Perfil · E"): la portada arriba; debajo, a la
+  // izquierda, un librero con una repisa por estantería, y a la derecha las notas (Tu biblioteca,
+  // Ahora mismo, la meta y Mis próximas lecturas) como las hojas de Bitácora.
+  const isAncha = useBreakpoint() !== 'celular'
   const currentYear = new Date().getFullYear()
   const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
   const displayName = nickname?.trim() || username
@@ -196,25 +273,31 @@ export function ProfileView({
   ]
 
   return (
-    <div className="min-h-screen bg-paper pagina-media tableta:px-0! tableta:pt-0!">
+    <div className="min-h-screen bg-paper pagina-media">
       {/* Portada (V.3.0.0): banner grande con el nombre encima a la izquierda, oscurecido abajo
           para que el texto se lea en cualquier tema; la foto va a la derecha, algo torcida,
           montada sobre el borde. El dibujo se muestra completo en su proporción (360 × 140)
           arriba, sin recortarse, y se desvanece hacia abajo; el degradado sigue debajo para
           dar lugar al nombre. */}
       <div className="relative">
-        <div className="relative flex flex-col rounded-b-[28px] bg-linear-to-br from-primary to-rose overflow-hidden">
-          <div
-            className="relative aspect-18/7"
-            style={{
-              maskImage: 'linear-gradient(to bottom, #000 55%, transparent)',
-              WebkitMaskImage: 'linear-gradient(to bottom, #000 55%, transparent)',
-            }}
-          >
-            <BannerArt banner={banner} />
+        <div className="relative flex flex-col rounded-b-[28px] tableta:rounded-[24px] bg-linear-to-br from-primary to-rose overflow-hidden">
+          {/* En el celular, el dibujo ocupa todo el ancho y se desvanece hacia abajo. En la tableta
+              (V.4.2.0) ese mismo arreglo lo recortaba (el banner es mucho más ancho que alto): ahí
+              el dibujo va completo, en su proporción, a la derecha del banner, y se funde con el
+              degradado hacia la izquierda, donde va tu nombre. En escritorio usa su versión ancha. */}
+          <div className="relative aspect-18/7 tableta:aspect-auto tableta:h-[230px] [mask-image:linear-gradient(to_bottom,#000_55%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,#000_55%,transparent)] tableta:[mask-image:none] tableta:[-webkit-mask-image:none]">
+            <div className="absolute inset-0 tableta:left-auto tableta:aspect-18/7 tableta:[mask-image:linear-gradient(to_right,transparent,#000_35%)] tableta:[-webkit-mask-image:linear-gradient(to_right,transparent,#000_35%)] escritorio:hidden">
+              <BannerArt banner={banner} />
+            </div>
+            {/* En escritorio, la versión ancha del dibujo ocupa todo el banner, sin desvanecerse. */}
+            <div className="absolute inset-0 hidden escritorio:block">
+              <BannerArt banner={banner} ancho />
+            </div>
           </div>
-          <div className="h-[52px]" />
-          <span aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-transparent from-40% to-[rgba(20,12,10,0.75)]" />
+          <div className="h-[52px] tableta:hidden" />
+          {/* Oscurece donde va el nombre para que se lea en cualquier tema: abajo en el celular; a la
+              izquierda en pantallas grandes, sin tapar el dibujo. */}
+          <span aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-transparent from-40% to-[rgba(20,12,10,0.75)] tableta:bg-linear-to-r tableta:from-[rgba(20,12,10,0.5)] tableta:from-0% tableta:to-transparent tableta:to-55%" />
           <div
             className="absolute right-4 z-[2] flex items-center gap-2"
             style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
@@ -247,7 +330,7 @@ export function ProfileView({
         </div>
       </div>
 
-      <div className="px-4">
+      <div className="px-4 tableta:px-0">
         {/* Bio: texto suelto bajo la portada, con lugar a la derecha para la foto. */}
         {isProfileLoading ? (
           <div className="px-1 pr-[150px] mt-3.5" aria-label="Cargando">
@@ -260,7 +343,33 @@ export function ProfileView({
           </p>
         )}
 
-        <div className={`flex flex-col gap-5 mt-5 ${stagger}`}>
+        <HojaModeContext.Provider value={isAncha}>
+        <div
+          className={
+            isAncha
+              ? `grid escritorio:grid-cols-[minmax(0,1fr)_330px] gap-6.5 items-start mt-5 ${stagger}`
+              : `flex flex-col gap-5 mt-5 ${stagger}`
+          }
+        >
+          {isAncha && (
+            <section aria-label="Tu librero" className="escritorio:row-span-6">
+              <h2 className="smallcaps text-text-secondary mb-3">Tu librero</h2>
+              <Librero>
+                <div className="pb-2">
+                  {priorityRepisa}
+                  {shelves.map((shelf) => (
+                    <Repisa
+                      key={shelf.key}
+                      shelf={shelf}
+                      isLoading={areListsLoading}
+                      onBookClick={onBookClick}
+                      onSeeAll={onSeeAllBooks ? () => onSeeAllBooks(shelf.filter) : undefined}
+                    />
+                  ))}
+                </div>
+              </Librero>
+            </section>
+          )}
           {/* Tu biblioteca (V.3.5.0): tres cifras arriba; debajo la barra por estado y la
               leyenda. Cada estado abre Estante con ese filtro. */}
           <Card tab={{ label: 'Tu biblioteca' }}>
@@ -398,7 +507,21 @@ export function ProfileView({
           ) : null}
 
           {/* Meta anual (V.3.5.0): igual que en La mesa, con "Editar" en la pestaña. */}
-          {annualGoal > 0 && (
+          {/* En pantallas grandes (V.4.2.0), la tarjeta de la meta es la de La mesa, con la
+              estampilla fija al cumplirla (fuera del modo hoja, en su carpeta). */}
+          {annualGoal > 0 && isAncha && (
+            <HojaModeContext.Provider value={false}>
+              <GoalCard
+                goal={annualGoal}
+                completedCount={annualCompletedCount}
+                isLoading={false}
+                onEdit={onEditGoal ?? (() => {})}
+                showStamp
+                reachedOn={annualGoalReachedOn}
+              />
+            </HojaModeContext.Provider>
+          )}
+          {annualGoal > 0 && !isAncha && (
             <Card
               tab={{ label: 'Meta anual de lectura' }}
               tone="pink"
@@ -419,8 +542,9 @@ export function ProfileView({
           )}
 
           {/* Estanterías (V.3.5.0): Favoritos, Recomendados, Deseados y Abandonados en una sola
-              tarjeta, con un selector de pestañas de texto que se puede deslizar. */}
-          {activeShelf && (
+              tarjeta, con un selector de pestañas de texto que se puede deslizar. En pantallas
+              grandes van en el librero (arriba). */}
+          {activeShelf && !isAncha && (
             <Card
               tab={{ label: 'Estanterías' }}
               action={
@@ -467,8 +591,9 @@ export function ProfileView({
             </Card>
           )}
 
-          {priorityList}
+          {!isAncha && priorityList}
         </div>
+        </HojaModeContext.Provider>
       </div>
 
       {footer}
