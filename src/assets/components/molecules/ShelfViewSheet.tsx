@@ -41,7 +41,7 @@ function Preview({ view }: { view: ShelfView }) {
  *  (se ve detrás de la hoja) y queda guardada en la cuenta, para Libros y Sagas. */
 export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps) {
   return (
-    <Sheet title="Vista del estante" onClose={onClose}>
+    <Sheet side title="Vista del estante" onClose={onClose}>
       <Preview view={view} />
 
       <FormSection label="Cómo se ven tus libros y sagas">

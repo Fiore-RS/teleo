@@ -8,6 +8,7 @@ import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { useProfile } from "../hooks/useProfile";
 import { getPriorityListName } from "../lib/priorityList";
 import { ScreenHeader, HeaderBarButton } from "../assets/components/molecules/ScreenHeader";
+import { EstanteEncabezado } from "./estante/EstanteEncabezado";
 import { CoverBand } from "../assets/components/atoms/CoverBand";
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
@@ -350,9 +351,48 @@ export function Estante() {
 
   const isLoading = tab === "libros" ? booksLoading : sagasLoading;
 
+  // Encabezado de pantallas grandes (V.4.1.0): la línea de debajo del título cuenta la
+  // biblioteca completa, o cuántos se ven de cuántos si hay búsqueda o filtros.
+  const isAncha = breakpoint !== "celular";
+  const isNarrowed = !!search.trim() || hasActiveAdvFilters || (tab === "libros" && quickFlag !== null);
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const estanteSubtitle = isLoading
+    ? "Toda tu biblioteca"
+    : tab === "libros"
+      ? isNarrowed
+        ? `${filteredBooks.length} de ${plural(books.length, "libro", "libros")}`
+        : `Toda tu biblioteca, ${plural(books.length, "libro", "libros")}`
+      : isNarrowed
+        ? `${filteredSagas.length} de ${plural(sagas.length, "saga", "sagas")}`
+        : `Tus sagas, ${plural(sagas.length, "saga", "sagas")}`;
+  const sortLabel = (mode: LibrarySortMode) =>
+    mode === "titulo" ? "Título" : mode === "autor" ? "Autor" : mode === "fecha" ? "Fecha agregado" : "Libre";
+
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-ancha">
       <CoverBand />
+      {isAncha ? (
+        <EstanteEncabezado
+          tab={tab}
+          onTabChange={handleTabSwitch}
+          bookCount={booksLoading ? undefined : filteredBooks.length}
+          sagaCount={sagasLoading ? undefined : filteredSagas.length}
+          subtitle={estanteSubtitle}
+          search={search}
+          onClearSearch={() => setSearch("")}
+          hasFilters={hasActiveAdvFilters}
+          onFilters={() => setIsFilterModalOpen(true)}
+          onView={() => setIsViewSheetOpen(true)}
+          onRandomPick={tab === "libros" ? () => setIsRandomPickOpen(true) : undefined}
+          sortMenu={
+            tab === "libros" ? (
+              <SortMenu variant="button" buttonLabel={sortLabel(bookSortMode)} options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} />
+            ) : (
+              <SortMenu variant="button" buttonLabel={sortLabel(sagaSortMode)} options={sagaSortOptions} activeKey={sagaSortMode} onSelect={handleSagaSortSelect} />
+            )
+          }
+        />
+      ) : (
       <ScreenHeader
         title="Estante"
         tabsLabel="Libros o sagas"
@@ -394,6 +434,7 @@ export function Estante() {
           )
         }
       />
+      )}
 
       <div className="space-y-5">
         {quickFlag && (

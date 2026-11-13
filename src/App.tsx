@@ -137,7 +137,7 @@ function App() {
     // todo el ancho: las pantallas con secciones dejan a la izquierda el espacio de la tapa del
     // cuaderno (.app-columna en index.css) y cada pantalla se acomoda al ancho. Las de entrada
     // (Inicio, Login, Registro...) siguen centradas con su propio ancho (AuthLayout).
-    <div className="min-h-screen bg-border tableta:bg-bg">
+    <div className="app-fondo min-h-screen bg-border tableta:bg-bg">
       <PaletteSync />
       <PreferencesSync />
       {/* overflow-x-clip: mientras una pantalla secundaria entra desde el costado no aparece

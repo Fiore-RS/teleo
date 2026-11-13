@@ -12,7 +12,7 @@ import { Card } from "../assets/components/molecules/Card";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
 import { Button } from "../assets/components/atoms/Button";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
 import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
@@ -178,15 +178,6 @@ export function Mesa() {
         : null,
     [goalReachedText]
   );
-
-  // Con la mesa de fondo, el separador de la tapa toma el color de la mesa (index.css).
-  useLayoutEffect(() => {
-    if (!isAncha) return;
-    document.documentElement.dataset.pantalla = "mesa";
-    return () => {
-      delete document.documentElement.dataset.pantalla;
-    };
-  }, [isAncha]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";

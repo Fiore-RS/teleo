@@ -1143,10 +1143,26 @@ html {
   html[data-tapa] .app-columna {
     padding-left: var(--tapa-ancho);
   }
-  /* En La mesa el fondo es la mesa: el separador de la sección activa toma ese color para
-     seguir unido a la pantalla (Mesa marca <html data-pantalla="mesa">). */
-  html[data-pantalla="mesa"] {
+  /* V.4.1.0: en tableta y computadora todas las pantallas con la tapa tienen el fondo de la
+     mesa (antes solo La mesa), y el separador de la sección activa toma ese mismo color para
+     seguir unido a la pantalla. Va fuera de las capas de Tailwind para ganarle al fondo que
+     cada pantalla trae para el celular (bg-glow-top, bg-paper). */
+  html[data-tapa] {
     --tapa-papel: var(--color-mesa);
+    background-color: var(--color-mesa);
+  }
+  html[data-tapa] .app-columna,
+  html[data-tapa] .app-fondo {
+    background-color: var(--color-mesa);
+  }
+  html[data-tapa] .pagina-ancha,
+  html[data-tapa] .pagina-media,
+  html[data-tapa] .pagina-lectura {
+    background: transparent;
+  }
+  /* La barra fija de Cuaderno y Bitácora, cuando queda pegada arriba. */
+  html[data-tapa] .barra-fija-pegada {
+    background-color: color-mix(in srgb, var(--color-mesa) 88%, transparent);
   }
 }
 @media (min-width: 70rem) {
@@ -1155,12 +1171,12 @@ html {
   }
 }
 
-/* ---------- Pantallas a lo ancho (V.4.0.0) ----------
-   En el celular no cambian nada. Desde tableta, cada pantalla se centra con un ancho máximo
-   según lo que muestra, sin volver a la columna de teléfono:
-   - .pagina-ancha (1100px): pantallas de portadas y hojas (Estante, Cuaderno).
-   - .pagina-media (880px): tarjetas y cifras (La mesa, Bitácora, Perfil).
-   - .pagina-lectura (720px): listas y textos (Configuración, Novedades, Lanzamientos, Guía...).
+/* ---------- Pantallas a lo ancho (V.4.0.0; V.4.1.0 igual que La mesa) ----------
+   En el celular no cambian nada. Desde tableta, todas las pantallas con la tapa tienen el
+   mismo aire que La mesa (Fiorella, 12 nov 2026): 32px a cada lado en tableta y 52px en
+   computadora, entre la tapa y el contenido y entre el contenido y el borde derecho, con el
+   contenido hasta 1180px y centrado en monitores grandes. Las tres clases quedan por si
+   alguna pantalla necesita después un ancho propio.
    Van fuera de las capas de Tailwind para ganarle al px-4 del celular. */
 @media (min-width: 44rem) {
   .pagina-ancha,
@@ -1168,24 +1184,16 @@ html {
   .pagina-lectura {
     margin-inline: auto;
     padding-inline: 2rem;
-    padding-top: 2rem;
-  }
-  .pagina-ancha {
-    max-width: 1100px;
-  }
-  .pagina-media {
-    max-width: 880px;
-  }
-  .pagina-lectura {
-    max-width: 720px;
+    padding-top: 2.5rem;
+    max-width: calc(1180px + 4rem);
   }
 }
 @media (min-width: 70rem) {
   .pagina-ancha,
   .pagina-media,
   .pagina-lectura {
-    padding-inline: 3rem;
-    padding-top: 2.5rem;
+    padding-inline: 3.25rem;
+    max-width: calc(1180px + 6.5rem);
   }
 }
 
