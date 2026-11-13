@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
+import { useHojaMode, useInsideHoja } from '../../../lib/hojaMode'
+import { Hoja } from './Card'
 
 /** Fila plegable de las tarjetas "Más de…" de Bitácora (Estadísticas y Resumen): nombre en
  *  Fraunces, una línea de resumen y una flecha que gira al abrir. Sin ícono ni color desde la
@@ -13,6 +15,26 @@ export function MoreRow({ id, title, summary, isOpen, onToggle, children }: {
   onToggle: () => void
   children: ReactNode
 }) {
+  // Modo hoja (V.4.2.0): cada fila es su propia hoja, ya abierta, con su resumen debajo del
+  // título. Va dentro de .hojas-columnas (dos columnas).
+  const hojaMode = useHojaMode()
+  const insideHoja = useInsideHoja()
+  if (hojaMode && insideHoja) {
+    // Dentro de otra hoja (Dato curioso): abierta, con su título, sin otra hoja alrededor.
+    return (
+      <div id={`mas-${id}`} className="py-1">
+        <h3 className="font-display font-semibold text-[17px] leading-tight text-text mb-2.5">{title}</h3>
+        {children}
+      </div>
+    )
+  }
+  if (hojaMode) {
+    return (
+      <Hoja as="div" className="mb-5.5 break-inside-avoid" title={title}>
+        <div id={`mas-${id}`}>{children}</div>
+      </Hoja>
+    )
+  }
   return (
     <div className="border-t border-border first:border-t-0">
       <button

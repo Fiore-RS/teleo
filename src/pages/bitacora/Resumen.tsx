@@ -13,7 +13,10 @@ import { Button } from '../../assets/components/atoms/Button'
 import { CoverSkeleton, Skeleton } from '../../assets/components/atoms/Skeleton'
 import { Card } from '../../assets/components/molecules/Card'
 import { MoreRow } from '../../assets/components/molecules/MoreRow'
-import { Shelf, ShelfPlank } from '../../assets/components/molecules/Shelf'
+import { Librero, Shelf, ShelfPlank } from '../../assets/components/molecules/Shelf'
+import { Hoja } from '../../assets/components/molecules/Card'
+import { useHojaMode } from '../../lib/hojaMode'
+import { useBreakpoint } from '../../hooks/useBreakpoint'
 import { BookCover } from '../../assets/components/molecules/BookCover'
 import { PeriodNav } from '../../assets/components/molecules/PeriodNav'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
@@ -48,6 +51,34 @@ function ResumenSheet({ view, onViewChange, children }: {
   onViewChange: (view: ResumenView) => void
   children: ReactNode
 }) {
+  // Modo hoja (V.4.2.0, tableta y computadora): la hoja del Cuaderno con Mes, Año y Favoritos
+  // como un selector arriba, en vez de pestañas de separador.
+  if (useHojaMode()) {
+    return (
+      <Hoja as="section">
+        <div role="tablist" aria-label="Vista del resumen" className="flex p-[3px] rounded-[11px] bg-surface-2 mb-4">
+          {views.map(({ key, label }) => {
+            const isActive = view === key
+            return (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => onViewChange(key)}
+                className={`flex-1 h-[34px] rounded-[8px] font-body text-[15px] focus-visible:outline-2 focus-visible:outline-primary-text ${
+                  isActive ? 'bg-surface text-primary-text font-bold shadow-[0_1px_2px_rgba(0,0,0,0.15)]' : 'text-text-secondary font-semibold hover:text-text'
+                }`}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </div>
+        {children}
+      </Hoja>
+    )
+  }
   return (
     // El espacio de las pestañas va como padding de un contenedor y no como margen: un margen
     // se juntaba con el de la barra de arriba en Mes y la hoja quedaba pegada a ella.
@@ -218,6 +249,73 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
   // primera vez en la sesión).
   const stagger = useStaggerOnce('resumen-mes')
   const staggerLibros = useStaggerOnce('resumen-mes-libros')
+  // En tableta y computadora el mes va a lo ancho, con más libros por repisa (V.4.2.0).
+  const breakpoint = useBreakpoint()
+  const hojaMode = useHojaMode()
+  const perRow = breakpoint === 'escritorio' ? 6 : breakpoint === 'tableta' ? 5 : 3
+
+  // Tableta y computadora (V.4.2.0, lienzo "Resumen · Mes"): a la izquierda la hoja del mes con
+  // el número grande y Compartir; a la derecha "Lo que terminaste", con la fecha de cada libro.
+  if (hojaMode) {
+    const monthName = MONTH_NAMES[month - 1]
+    return (
+      <div className={`bitacora-hojas flex flex-col gap-5 ${stagger}`}>
+        <ResumenSheet view={view} onViewChange={onViewChange}>
+          <h2 className="sr-only">Libros terminados en {monthName} de {year}</h2>
+          <PeriodNav
+            label={`${monthName} ${year}`}
+            onPrev={onPrev}
+            onNext={onNext}
+            canGoNext={canGoNext}
+            prevLabel="Mes anterior"
+            nextLabel="Mes siguiente"
+          />
+          <PeriodTransition order={year * 12 + month}>
+            {isLoading ? (
+              <Skeleton className="h-20 w-1/2 rounded-lg mt-5" />
+            ) : (
+              <>
+                <p className="mt-5 font-title text-[80px] leading-[0.9] text-pink-text tabular-nums">{reads.length}</p>
+                <p className="mt-1.5 font-display italic text-[19px] text-text-secondary">
+                  {reads.length === 1 ? 'libro terminado' : 'libros terminados'} en {monthName.toLowerCase()}
+                </p>
+                {reads.length > 0 && (
+                  <Button className="mt-5" onClick={onOpenRecap}>
+                    Compartir mi mes
+                  </Button>
+                )}
+              </>
+            )}
+          </PeriodTransition>
+        </ResumenSheet>
+
+        <Hoja title="Lo que terminaste">
+          <PeriodTransition order={year * 12 + month}>
+            {isLoading ? (
+              <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))` }} aria-label="Cargando">
+                {Array.from({ length: perRow }, (_, i) => <CoverSkeleton key={i} className="w-full" />)}
+              </div>
+            ) : reads.length === 0 ? (
+              <p className="font-display italic text-[17px] text-text-secondary">No terminaste libros este mes.</p>
+            ) : (
+              <Shelf
+                className={staggerLibros}
+                perRow={perRow}
+                items={reads.map((read) => ({
+                  key: read.id,
+                  title: read.title,
+                  subtitle: `Terminado el ${Number(read.endDate.slice(8, 10))} de ${MONTH_NAMES[Number(read.endDate.slice(5, 7)) - 1].toLowerCase()}`,
+                  onClick: () => onBookClick(read.bookId),
+                  cover: <BookCover title={read.title} coverUrl={read.coverUrl ?? undefined} status="terminado" />,
+                }))}
+              />
+            )}
+          </PeriodTransition>
+        </Hoja>
+      </div>
+    )
+  }
+
   return (
     <div className={stagger}>
     <ResumenSheet view={view} onViewChange={onViewChange}>
@@ -245,6 +343,7 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
             </p>
             <Shelf
               className={staggerLibros}
+              perRow={perRow}
               items={reads.map((read) => ({
                 key: read.id,
                 title: read.title,
@@ -293,6 +392,7 @@ const SPINE_TONES = [
  *  por mes, más alto mientras más libros; tocarlo abre el mes) y "Más de tu año", plegado. */
 function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoading, canGoNext, onPrev, onNext, onMonthClick, onOpenRecap }: YearViewProps) {
   const stagger = useStaggerOnce('resumen-anio')
+  const hojaMode = useHojaMode()
   const now = new Date()
   const { favorites } = usePeriodFavorites(userId, year)
   // Meta cumplida (V.3.6.0): la misma postal de La mesa, quieta, con el día en que se cumplió
@@ -353,7 +453,7 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
     )
 
   return (
-    <div className={`flex flex-col gap-5 ${stagger}`}>
+    <div className={`bitacora-hojas flex flex-col gap-5 ${stagger}`}>
       <ResumenSheet view={view} onViewChange={onViewChange}>
         <h2 className="sr-only">Tu {year} en libros</h2>
         <PeriodNav
@@ -374,9 +474,17 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
             <>
               {/* V.3.6.0, opción E: con la meta cumplida, la estampilla se pega junto a la frase,
                   como un sello en la página, y al tocarla se abre la postal completa. */}
+              {hojaMode && (
+                <>
+                  <p className="mt-5 font-title text-[80px] leading-[0.9] text-pink-text tabular-nums">{n}</p>
+                  <p className="mt-1.5 font-display italic text-[19px] text-text-secondary">
+                    {n === 1 ? 'libro terminado' : 'libros terminados'} en {year}
+                  </p>
+                </>
+              )}
               <div className="flex items-start gap-3 mt-3">
                 <div className="flex-1 min-w-0">
-                  <p className="font-display text-[20px] leading-[1.4] text-text">{sentence}</p>
+                  <p className={`font-display text-text ${hojaMode ? 'text-[18px] leading-[32px] mt-2' : 'text-[20px] leading-[1.4]'}`}>{sentence}</p>
                   {goalReachedOn && (
                     <p className="text-body-sm font-bold text-primary-text mt-2">
                       Meta de {goal} cumplida el {goalReachedOn.getDate()} de {MONTH_NAMES[goalReachedOn.getMonth()].toLowerCase()}
@@ -397,11 +505,16 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
                   </button>
                 )}
               </div>
-              {n > 0 && (
-                <div className="mt-5">
-                  <RecapEntryRow label="Compartir mi año" onClick={onOpenRecap} />
-                </div>
-              )}
+              {n > 0 &&
+                (hojaMode ? (
+                  <Button className="mt-5" onClick={onOpenRecap}>
+                    Compartir mi año
+                  </Button>
+                ) : (
+                  <div className="mt-5">
+                    <RecapEntryRow label="Compartir mi año" onClick={onOpenRecap} />
+                  </div>
+                ))}
             </>
           )}
         </PeriodTransition>
@@ -420,6 +533,53 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
         />
       )}
 
+      {hojaMode ? (
+        // Tableta y computadora (V.4.2.0): el librero del Estante, un compartimento por mes con
+        // sus lomos parados. Tocar un mes lo abre.
+        <Hoja title="Tu año en un estante">
+          <PeriodTransition order={year}>
+            <Librero>
+              <div className="grid grid-cols-6 gap-x-2 gap-y-1 px-2.5 pt-4">
+                {counts.map((c, i) => {
+                  const month = i + 1
+                  const isFuture = month > lastMonth
+                  const label = `${MONTH_NAMES[i]}: ${isFuture ? 'todavía no llega' : c === 0 ? 'sin libros' : `${c} ${c === 1 ? 'libro' : 'libros'}`}`
+                  return (
+                    <button
+                      key={month}
+                      type="button"
+                      disabled={isFuture}
+                      onClick={() => onMonthClick(month)}
+                      aria-label={label}
+                      className={`group rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF3EA] ${isFuture ? 'opacity-35' : ''}`}
+                    >
+                      <span className="flex items-end justify-center gap-[3px] h-[78px] px-1 transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none">
+                        {Array.from({ length: Math.min(c, 9) }, (_, j) => {
+                          const tone = SPINE_TONES[(i + j) % SPINE_TONES.length]
+                          return (
+                            <span
+                              key={j}
+                              aria-hidden="true"
+                              className="w-[9px] rounded-t-[2px] shadow-[inset_-2px_0_0_rgba(0,0,0,0.18)]"
+                              style={{ height: 56 + ((i * 7 + j * 11) % 18), background: tone.bg }}
+                            />
+                          )
+                        })}
+                      </span>
+                      <ShelfPlank className="h-2! -mx-1.5" />
+                      <span className="block text-center text-[12px] font-bold text-[#FBF3EA] mt-1 mb-2 capitalize">
+                        {MONTH_ABBR[i]}
+                        {c > 0 && <span className="font-semibold opacity-75"> · {c}</span>}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </Librero>
+          </PeriodTransition>
+          <p className="text-[12.5px] text-text-muted text-center mt-2.5">Toca un mes para ver sus libros.</p>
+        </Hoja>
+      ) : (
       <Card tab={{ label: 'Tu año en un estante' }}>
         <PeriodTransition order={year}>
           <div className="flex items-end gap-1 h-[150px] px-0.5">
@@ -464,9 +624,10 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
         <ShelfPlank />
         <p className="text-[12.5px] text-text-muted text-center mt-2.5">Toca un mes para ver sus libros.</p>
       </Card>
+      )}
 
       {!isLoading && n > 0 && (
-        <Card tab={{ label: `Más de tu ${year}` }} padding="px-4 py-1">
+        <Card group tab={{ label: `Más de tu ${year}` }} padding="px-4 py-1">
           <div>
             {(byCategory.length > 0 || byFormat.length > 0) && (
               <MoreRow
@@ -529,6 +690,7 @@ interface FavoritesViewProps extends SheetViewProps {
 
 function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, canGoNext, onPrev, onNext }: FavoritesViewProps) {
   const stagger = useStaggerOnce('resumen-favoritos')
+  const hojaMode = useHojaMode()
   const { favorites, setFavorite } = usePeriodFavorites(userId, year)
   // Qué se está eligiendo: un mes (1-12) o el año (0).
   const [picking, setPicking] = useState<number | null>(null)
@@ -554,7 +716,7 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
   const pickerCurrent = picking === null ? undefined : favoriteFor(picking === 0 ? null : picking)
 
   return (
-    <div className={`flex flex-col gap-5 ${stagger}`}>
+    <div className={`bitacora-hojas flex flex-col gap-5 ${stagger}`}>
       <ResumenSheet view={view} onViewChange={onViewChange}>
         <h2 className="sr-only">Favoritos de {year}</h2>
         <PeriodNav
@@ -579,12 +741,14 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
               <button
                 type="button"
                 onClick={() => setPicking(0)}
-                className="w-full flex items-center gap-3.5 text-left rounded-xl focus-visible:outline-2 focus-visible:outline-primary-text"
+                className={`w-full flex text-left rounded-xl focus-visible:outline-2 focus-visible:outline-primary-text ${
+                  hojaMode ? 'flex-col items-start gap-4' : 'items-center gap-3.5'
+                }`}
               >
                 <MiniCover
                   src={yearFavoriteBook.coverUrl}
                   title={yearFavoriteBook.title}
-                  className="w-[84px] shrink-0 rounded-lg! shadow-[0_10px_18px_-10px_rgba(0,0,0,0.6)]"
+                  className={`${hojaMode ? 'w-[150px]' : 'w-[84px]'} shrink-0 rounded-lg! shadow-[0_10px_18px_-10px_rgba(0,0,0,0.6)]`}
                 />
                 <span className="min-w-0">
                   <span className="seal mb-2 text-magenta-text">Favorito del año</span>
@@ -614,11 +778,11 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
       <Card tab={{ label: 'Uno por mes' }}>
         <PeriodTransition order={year}>
           {isLoading ? (
-            <div className="grid grid-cols-4 gap-x-2 gap-y-3" aria-label="Cargando">
+            <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4'}`} aria-label="Cargando">
               {Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="aspect-2/3 rounded-md" />)}
             </div>
           ) : (
-            <div className="grid grid-cols-4 gap-x-2 gap-y-3">
+            <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4'}`}>
               {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
                 const isFuture = month > lastMonth
                 const monthReads = reads.filter((r) => r.month === month)

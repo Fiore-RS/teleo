@@ -6,6 +6,7 @@ import { StatTile } from '../../assets/components/atoms/StatTile'
 import { MiniCover } from '../../assets/components/atoms/MiniCover'
 import { Skeleton, StatTileSkeleton } from '../../assets/components/atoms/Skeleton'
 import { Card } from '../../assets/components/molecules/Card'
+import { useHojaMode } from '../../lib/hojaMode'
 import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MONTH_ABBR, MONTH_NAMES } from '../../lib/months'
 import { SortMenu, type SortMenuOption } from '../../assets/components/molecules/SortMenu'
@@ -88,6 +89,7 @@ interface ComprasProps {
  *  Tocar un libro abre su detalle, donde se agrega o cambia el precio. */
 export function Compras({ userId, currency }: ComprasProps) {
   const stagger = useStaggerOnce('bitacora-compras')
+  const hojaMode = useHojaMode()
   const { books, isLoading } = usePurchases(userId)
   const [filter, setFilter] = useState<Filter>('todos')
   const [sort, setSort] = useState<Sort>('fecha')
@@ -176,10 +178,19 @@ export function Compras({ userId, currency }: ComprasProps) {
 
   return (
     <>
-      <div className={`flex flex-col gap-5 ${stagger}`}>
+      <div className={`bitacora-hojas flex flex-col gap-5 ${stagger}`}>
+        {/* En computadora (V.4.2.0) el total y el dato curioso van juntos, fijos a la izquierda;
+            en el celular este envoltorio no existe (contents). */}
+        <div className={hojaMode ? 'flex flex-col gap-5' : 'contents'}>
         {/* Total invertido */}
         <Card tab={{ label: 'Total invertido' }} tone="magenta">
-          <p className="font-display font-semibold text-[36px] leading-none text-text tabular-nums break-words">{money(summary.invested)}</p>
+          <p
+            className={`leading-none tabular-nums break-words ${
+              hojaMode ? 'font-title text-[48px] text-magenta-text' : 'font-display font-semibold text-[36px] text-text'
+            }`}
+          >
+            {money(summary.invested)}
+          </p>
           <p className="text-body-md text-text-secondary mt-2">
             en {summary.withPrice.length} de {summary.owned.length} {summary.owned.length === 1 ? 'libro' : 'libros'} con precio
           </p>
@@ -231,6 +242,8 @@ export function Compras({ userId, currency }: ComprasProps) {
             </div>
           </Card>
         )}
+
+        </div>
 
         {/* Lista */}
         <Card
