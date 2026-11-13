@@ -14,7 +14,9 @@ import { GoodreadsImportModal } from '../assets/components/molecules/GoodreadsIm
 import { GenreSuggestSheet } from '../assets/components/molecules/GenreSuggestSheet'
 import { CompleteShelfSheet } from '../assets/components/molecules/CompleteShelfSheet'
 import { MarkOwnedSheet } from '../assets/components/molecules/MarkOwnedSheet'
-import { PaletteSheet } from '../assets/components/molecules/PaletteSheet'
+import { PaletteGrid, PaletteSheet } from '../assets/components/molecules/PaletteSheet'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { ConfigLateral, type SeccionConfig } from './configuracion/ConfigLateral'
 import { AccountSheet, type AccountSheetKey } from '../assets/components/molecules/AccountSheets'
 import { useTheme } from '../hooks/useTheme'
 import { getPalette } from '../lib/palettes'
@@ -26,11 +28,24 @@ import { Select } from '../assets/components/atoms/Select'
 import { currencyOptions } from '../lib/currencies'
 import { SettingsGroup, SettingsRow, SettingsField } from '../assets/components/molecules/SettingsList'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { supabase } from '../lib/supabase'
 import { LATEST_VERSION, hasUnseenChangelog } from '../lib/changelog'
 
 const SCROLL_KEY = 'teleo-config-scroll'
+
+/** Secciones para el índice de la computadora (V.4.3.0), en el orden de la pantalla. */
+const SECCIONES: SeccionConfig[] = [
+  { id: 'cfg-teleo', label: 'Teleo' },
+  { id: 'cfg-apariencia', label: 'Apariencia' },
+  { id: 'cfg-sistema', label: 'Sistema' },
+  { id: 'cfg-cuenta', label: 'Cuenta' },
+  { id: 'cfg-compartir', label: 'Compartir' },
+  { id: 'cfg-informacion', label: 'Información' },
+  { id: 'cfg-datos', label: 'Tus datos' },
+  { id: 'cfg-peligro', label: 'Zona de peligro', danger: true },
+]
 
 export function Configuracion() {
   const navigate = useNavigate()
@@ -63,6 +78,9 @@ export function Configuracion() {
     if (location.pathname !== '/configuracion') navigate('/configuracion', { replace: true })
   }
   const { palette, resolvedTheme } = useTheme()
+  // En tableta y computadora (V.4.3.0) el tema se elige ahí mismo, con los temas a la vista.
+  const breakpoint = useBreakpoint()
+  const isAncha = breakpoint !== 'celular'
   const activePalette = getPalette(palette)
   const [confirmAction, setConfirmAction] = useState<
     'cerrarSesion' | 'exportar' | 'importar' | 'vaciar' | 'desactivar' | 'eliminar' | null
@@ -140,21 +158,36 @@ export function Configuracion() {
       {/* V.3.0.0: sin flecha de regresar; la barra de pestañas queda visible con Perfil
           marcado, y tocar Perfil vuelve a Perfil (en iPhone instalado puede no haber gesto
           para volver). */}
-      <PageHeader
-        title="Configuración"
-        subtitle="Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto."
-      />
+      {/* En tableta y computadora (V.4.3.0), el encabezado de las demás pantallas: queda fijo
+          arriba al bajar, con el título más chico. */}
+      {isAncha ? (
+        <EncabezadoAncho title="Configuración" subtitle="Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto." />
+      ) : (
+        <PageHeader
+          title="Configuración"
+          subtitle="Ajusta tus preferencias, privacidad y gestiona tu cuenta a tu gusto."
+        />
+      )}
 
-      <div className="flex flex-col gap-5">
-        <SettingsGroup title="Teleo">
+      {/* En tableta y computadora (V.4.3.0): las mismas carpetas del teléfono, en una columna de
+          720px alineada con el encabezado. En la computadora, a la derecha va una columna fija con
+          la vista previa del tema y el índice de las secciones (ConfigLateral). */}
+      <div className="escritorio:grid escritorio:grid-cols-[720px_minmax(0,1fr)] escritorio:gap-14 escritorio:items-start">
+      <div className="flex flex-col gap-5 tableta:max-w-180">
+        <SettingsGroup id="cfg-teleo" title="Teleo">
           <SettingsRow label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
           <SettingsRow label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Apariencia">
-          <SettingsField label="Modo de color" description="Sistema sigue el modo de tu teléfono">
+        <SettingsGroup id="cfg-apariencia" title="Apariencia">
+          <SettingsField label="Modo de color" description={`Sistema sigue el modo de tu ${isAncha ? 'dispositivo' : 'teléfono'}`}>
             <ThemeToggle onChange={(mode) => { if (!isDemo) void updateProfile({ theme_mode: mode }) }} />
           </SettingsField>
+          {isAncha ? (
+            <SettingsField label="Tema" description="Toca uno para cambiarlo. Cada tema tiene su versión clara y oscura.">
+              <PaletteGrid columns={4} withDescription={false} onSave={(id) => { void updateProfile({ palette: id }) }} />
+            </SettingsField>
+          ) : (
           <SettingsRow
             label="Tema"
             description={activePalette.name}
@@ -167,9 +200,10 @@ export function Configuracion() {
               </span>
             }
           />
+          )}
         </SettingsGroup>
 
-        <SettingsGroup title="Sistema">
+        <SettingsGroup id="cfg-sistema" title="Sistema">
           <SettingsField label="Idioma" description="Por ahora Teleo está solo en español">
             <Select options={[{ value: 'es', label: 'Español' }]} value="es" disabled />
           </SettingsField>
@@ -183,7 +217,7 @@ export function Configuracion() {
           </SettingsField>
         </SettingsGroup>
 
-        <SettingsGroup title="Cuenta">
+        <SettingsGroup id="cfg-cuenta" title="Cuenta">
           {!isDemo && <SettingsRow label="Nombre de usuario" description={profile?.username ? `@${profile.username}` : 'Tu @usuario en Teleo'} onClick={() => setAccountSheet('usuario')} />}
           <SettingsRow label="Nickname" description={profile?.nickname || 'Cómo te saluda Teleo'} onClick={() => setAccountSheet('nickname')} />
           {!isDemo && <SettingsRow label="Correo" description={user?.email ?? 'El correo con el que inicias sesión'} onClick={() => setAccountSheet('correo')} />}
@@ -191,6 +225,7 @@ export function Configuracion() {
         </SettingsGroup>
 
         <SettingsGroup
+          id="cfg-compartir"
           title="Compartir"
           note="Quien se registre con tu enlace queda como invitación tuya. Más adelante, tu código servirá para agregarse en el Club."
         >
@@ -200,14 +235,14 @@ export function Configuracion() {
           <SettingsRow label="Compartir lista de deseados" description="Un PDF con los libros que quieres" onClick={() => setIsShareWishlistModalOpen(true)} />
         </SettingsGroup>
 
-        <SettingsGroup title="Información">
+        <SettingsGroup id="cfg-informacion" title="Información">
           <SettingsRow label="Tutorial" description="Un recorrido corto por la app" onClick={startTour} />
           <SettingsRow label="Guía de Teleo" description="Todo lo que puedes hacer en cada sección, con más detalle" onClick={() => openSubpage('/guia')} />
           <SettingsRow label="Política de privacidad" description="Qué datos guarda Teleo y para qué" onClick={() => openSubpage('/privacidad')} />
           <SettingsRow label="Términos de uso" description="Las reglas para usar Teleo" onClick={() => openSubpage('/terminos')} />
         </SettingsGroup>
 
-        <SettingsGroup title="Tus datos">
+        <SettingsGroup id="cfg-datos" title="Tus datos">
           <SettingsRow label="Exportar datos" description="Descarga una copia de tu librería" onClick={() => { setConfirmAction('exportar'); setDialogState('confirm') }} />
           {!isDemo && <SettingsRow label="Importar datos" description="Trae datos desde un archivo de respaldo" onClick={handleImportClick} />}
           {!isDemo && <SettingsRow label="Importar desde Goodreads" description="Trae tu biblioteca de Goodreads a Teleo" onClick={() => setIsGoodreadsOpen(true)} />}
@@ -217,7 +252,7 @@ export function Configuracion() {
         </SettingsGroup>
 
         {!isDemo && (
-        <SettingsGroup title="Zona de peligro">
+        <SettingsGroup id="cfg-peligro" title="Zona de peligro">
           <SettingsRow danger label="Vaciar datos" description="Borra libros, sagas y reseñas" onClick={() => { setConfirmAction('vaciar'); setDialogState('confirm') }} />
           <SettingsRow danger label="Desactivar cuenta" description="Pausa tu cuenta sin perder nada" onClick={() => { setConfirmAction('desactivar'); setDialogState('confirm') }} />
           <SettingsRow danger label="Eliminar cuenta" description="Borra tu cuenta para siempre" onClick={() => { setConfirmAction('eliminar'); setDialogState('confirm'); setDeleteChecked(false) }} />
@@ -227,6 +262,10 @@ export function Configuracion() {
         <Button variant="outline" onClick={() => setConfirmAction('cerrarSesion')}>
           Cerrar sesión
         </Button>
+      </div>
+      {breakpoint === 'escritorio' && (
+        <ConfigLateral secciones={isDemo ? SECCIONES.filter((x) => !x.danger) : SECCIONES} />
+      )}
       </div>
 
       <div className="pb-28" />
