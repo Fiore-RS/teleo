@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { columnIndexes, columnsFor } from '../lib/columns'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ImageOff } from 'lucide-react'
+import { ImageOff, Search } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews, type ReviewWithBook } from '../hooks/useReviews'
 import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
+import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
 import { CoverBand } from '../assets/components/atoms/CoverBand'
 import { Skeleton } from '../assets/components/atoms/Skeleton'
 import { RatingRow } from '../assets/components/molecules/RatingRow'
@@ -40,21 +41,27 @@ import { useStaggerOnce } from '../lib/motion'
 interface ReviewCardProps {
   review: ReviewWithBook
   onOpen: () => void
+  /** Tableta y computadora (V.4.2.0): la misma hoja con más aire, letra más grande y más
+   *  renglones del comentario. */
+  large?: boolean
 }
 
 /** Reseña como hoja rayada (V.3.0.0): portada pequeña, título, autor y estrellas arriba; el
  *  comentario en Fraunces itálica sobre renglones con margen rosa. Toda la
  *  hoja se toca para abrir la reseña. Sin fecha: no hace falta saber cuándo se escribió. */
-function ReviewCard({ review, onOpen }: ReviewCardProps) {
+function ReviewCard({ review, onOpen, large = false }: ReviewCardProps) {
+  const line = large ? 26 : 22
   return (
     <button
       type="button"
       onClick={onOpen}
       aria-label={`Ver reseña de ${review.book.title}`}
-      className="block w-full text-left bg-surface border border-border rounded-2xl shadow-card px-3 pt-3 pb-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+      className={`block w-full text-left bg-surface border border-border rounded-2xl shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
+        large ? 'px-4 pt-4 pb-3.5 transition-transform duration-200 hover:-translate-y-0.5 motion-reduce:transition-none' : 'px-3 pt-3 pb-2.5'
+      }`}
     >
-      <div className="grid grid-cols-[40px_1fr] gap-[9px] items-start">
-        <div className="w-10 aspect-2/3 rounded-[5px] overflow-hidden bg-surface-2 shadow-[0_4px_8px_-5px_rgba(0,0,0,0.6)]">
+      <div className={`grid items-start ${large ? 'grid-cols-[52px_1fr] gap-3.5' : 'grid-cols-[40px_1fr] gap-[9px]'}`}>
+        <div className="w-full aspect-2/3 rounded-[5px] overflow-hidden bg-surface-2 shadow-[0_4px_8px_-5px_rgba(0,0,0,0.6)]">
           {review.book.cover_url ? (
             <CoverImage src={review.book.cover_url} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -62,20 +69,25 @@ function ReviewCard({ review, onOpen }: ReviewCardProps) {
           )}
         </div>
         <div className="min-w-0">
-          <p className="font-display font-semibold text-[14px] leading-[1.2] text-text line-clamp-3">{review.book.title}</p>
-          {review.book.author && <p className="text-[11.5px] text-text-secondary mt-px truncate">{review.book.author}</p>}
+          <p className={`font-display font-semibold leading-[1.2] text-text line-clamp-3 ${large ? 'text-[17px]' : 'text-[14px]'}`}>{review.book.title}</p>
+          {review.book.author && (
+            <p className={`text-text-secondary mt-px truncate ${large ? 'text-[13.5px] mt-0.5' : 'text-[11.5px]'}`}>{review.book.author}</p>
+          )}
           {(review.general_rating ?? 0) > 0 && (
-            <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={10} className="mt-1" />
+            <RatingRow shape="star" color="var(--color-orange)" value={review.general_rating ?? 0} size={large ? 13 : 10} className={large ? 'mt-1.5' : 'mt-1'} />
           )}
         </div>
       </div>
 
       {review.general_comments && (
         <p
-          className="font-display italic text-[13.5px] leading-[22px] text-text mt-2 pl-2.5 border-l-2 line-clamp-3 whitespace-pre-line break-words"
+          className={`font-display italic text-text border-l-2 whitespace-pre-line break-words ${
+            large ? 'text-[15.5px] mt-3 pl-3 line-clamp-5' : 'text-[13.5px] mt-2 pl-2.5 line-clamp-3'
+          }`}
           style={{
-            backgroundImage: 'linear-gradient(transparent 21px, var(--color-border) 21px)',
-            backgroundSize: '100% 22px',
+            lineHeight: `${line}px`,
+            backgroundImage: `linear-gradient(transparent ${line - 1}px, var(--color-border) ${line - 1}px)`,
+            backgroundSize: `100% ${line}px`,
             borderLeftColor: 'color-mix(in srgb, var(--color-rose) 55%, transparent)',
           }}
         >
@@ -115,7 +127,14 @@ export function Cuaderno() {
   }
 
   const [search, setSearch] = useState('')
-  const columns = columnsFor(useBreakpoint())
+  const breakpoint = useBreakpoint()
+  // En tableta y computadora (V.4.2.0) las reseñas son las mismas hojas del celular, más
+  // grandes y con más aire: tres columnas en tableta y cuatro en computadora.
+  const isAncha = breakpoint !== 'celular'
+  const columns = columnsFor(breakpoint)
+  const reviewGrid = `grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 items-start ${isAncha ? 'gap-5' : 'gap-2.5'}`
+  const sortLabel = (mode: LibrarySortMode) =>
+    mode === 'titulo' ? 'Título' : mode === 'autor' ? 'Autor' : mode === 'fecha' ? 'Fecha agregada' : 'Libre'
   const [isPickerOpen, setIsPickerOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   // El modo elegido se guarda en la cuenta desde la V.3.7.2 (mismo mecanismo que Estante,
@@ -235,6 +254,39 @@ export function Cuaderno() {
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-ancha">
       <CoverBand />
+      {isAncha ? (
+        <EncabezadoAncho
+          title="Cuaderno"
+          tabsLabel="Reseñas o citas"
+          tabs={[
+            { value: 'resenas' as const, label: 'Reseñas', count: isLoading ? undefined : filtered.length },
+            { value: 'citas' as const, label: 'Citas', count: isLoadingQuotes ? undefined : filteredQuotes.length },
+          ]}
+          active={tab}
+          onTabChange={changeTab}
+          actions={
+            <>
+              {/* El buscador de la tapa busca en el Estante: aquí queda uno propio, chico. */}
+              <label className="relative">
+                <span className="sr-only">{tab === 'citas' ? 'Buscar en tus citas' : 'Buscar en tus reseñas'}</span>
+                <Search size={16} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={tab === 'citas' ? 'Buscar en tus citas' : 'Buscar por título o autor'}
+                  className="h-10 w-60 pl-9 pr-3 rounded-button border border-border bg-surface font-body text-body-md text-text placeholder:text-text-muted focus-visible:outline-2 focus-visible:outline-primary-text"
+                />
+              </label>
+              {tab === 'resenas' ? (
+                <SortMenu variant="button" buttonLabel={sortLabel(sortMode)} options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
+              ) : (
+                <SortMenu variant="button" buttonLabel={sortLabel(quoteSortMode)} options={quoteSortOptions} activeKey={quoteSortMode} onSelect={handleQuoteSortSelect} />
+              )}
+            </>
+          }
+        />
+      ) : (
       <ScreenHeader
         title="Cuaderno"
         tabsLabel="Reseñas o citas"
@@ -256,6 +308,7 @@ export function Cuaderno() {
             ),
         }}
       />
+      )}
 
       {tab === 'citas' ? (
         <Citas
@@ -303,10 +356,10 @@ export function Cuaderno() {
               <SortableContext items={sortedReviews.map((r) => r.id)} strategy={rectSortingStrategy}>
                 {/* Al arrastrar se usa una cuadrícula simple de dos columnas (dnd-kit necesita
                     una sola lista); fuera de ese modo, las hojas se reparten en dos columnas. */}
-                <div className={`grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 items-start ${staggerResenas}`}>
+                <div className={`${reviewGrid} ${staggerResenas}`}>
                   {sortedReviews.map((r) => (
                     <SortableItem key={r.id} id={r.id}>
-                      <ReviewCard review={r} onOpen={() => setSelectedBookId(r.book_id)} />
+                      <ReviewCard review={r} large={isAncha} onOpen={() => setSelectedBookId(r.book_id)} />
                     </SortableItem>
                   ))}
                 </div>
@@ -316,13 +369,13 @@ export function Cuaderno() {
             // Columnas que se llenan alternando (1 izquierda, 2 derecha...), así el orden elegido
             // se sigue leyendo de arriba hacia abajo, igual que en Citas. Dos en el celular, tres
             // en tableta y cuatro en escritorio (V.4.0.0).
-            <div className="grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 items-start">
+            <div className={reviewGrid}>
               {columnIndexes(columns).map((col) => (
-                <div key={col} className={`flex flex-col gap-2.5 min-w-0 ${staggerResenas}`}>
+                <div key={col} className={`flex flex-col ${isAncha ? 'gap-5' : 'gap-2.5'} min-w-0 ${staggerResenas}`}>
                   {sortedReviews
                     .filter((_, i) => i % columns === col)
                     .map((r) => (
-                      <ReviewCard key={r.id} review={r} onOpen={() => setSelectedBookId(r.book_id)} />
+                      <ReviewCard key={r.id} review={r} large={isAncha} onOpen={() => setSelectedBookId(r.book_id)} />
                     ))}
                 </div>
               ))}

@@ -71,7 +71,7 @@ function QuoteCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   return (
     <article
-      className={`relative ${isMenuOpen ? 'z-20' : ''} bg-surface border border-border rounded-2xl shadow-card px-3 pt-3.5 pb-3`}
+      className={`relative ${isMenuOpen ? 'z-20' : ''} bg-surface border border-border rounded-2xl shadow-card px-3 pt-3.5 pb-3 tableta:px-4 tableta:pt-4`}
     >
       {/* Esquina doblada magenta, como una nota. */}
       <span
@@ -80,13 +80,13 @@ function QuoteCard({
         style={{ background: 'linear-gradient(45deg, var(--color-magenta-soft) 50%, var(--color-bg) 50%)' }}
       />
       <span aria-hidden="true" className="block h-3.5 font-title text-[30px] leading-[0.6] text-ornament">“</span>
-      <p className="font-display italic text-[14.5px] leading-[1.4] text-text whitespace-pre-line mt-1">{quote.quote_text}</p>
+      <p className="font-display italic text-[14.5px] tableta:text-[16px] leading-[1.4] tableta:leading-[1.45] text-text whitespace-pre-line mt-1">{quote.quote_text}</p>
       <div className="flex items-end justify-between gap-2 mt-2.5 pt-2 border-t border-dashed border-border">
         <button
           type="button"
           onClick={() => onOpenBook(book.id)}
           aria-label={`Ver reseña de ${book.title}`}
-          className="min-w-0 text-left text-[12px] rounded-md focus-visible:outline-2 focus-visible:outline-primary-text"
+          className="min-w-0 text-left text-[12px] tableta:text-[13px] rounded-md focus-visible:outline-2 focus-visible:outline-primary-text"
         >
           <p className="font-bold leading-[1.2] text-text line-clamp-2">{book.title}</p>
           {quote.page != null && <p className="text-text-secondary">Pág. {quote.page}</p>}
@@ -159,7 +159,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 tableta:gap-7">
       {showRandom && (
         <Card
           tab={{ label: 'Cita al azar' }}
@@ -167,7 +167,7 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
           action={<CardAction onClick={nextRandom}>Otra</CardAction>}
           className={isRandomMenuOpen ? 'z-20' : ''}
         >
-          <p key={random.id} className="font-display italic text-[19px] leading-snug text-text animate-fade-in">
+          <p key={random.id} className="font-display italic text-[19px] tableta:text-[24px] escritorio:text-[26px] leading-snug tableta:leading-[1.35] tableta:max-w-[900px] text-text animate-fade-in">
             “{random.quote_text}”
           </p>
           <div className="flex items-center justify-between gap-3 mt-4">
@@ -214,9 +214,9 @@ export function Citas({ quotes, isFiltered, isLoading, onShare, onOpenBook, onEd
       /* Columnas: las citas se reparten alternando (1 izquierda, 2 derecha, 3 izquierda...)
          para que el orden elegido se siga leyendo de arriba hacia abajo. Dos en el celular,
          tres en tableta y cuatro en escritorio (V.4.0.0). */
-      <div className="grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 items-start">
+      <div className="grid grid-cols-2 tableta:grid-cols-3 escritorio:grid-cols-4 gap-2.5 tableta:gap-5 items-start">
         {columnIndexes(columns).map((col) => (
-          <div key={col} className={`flex flex-col gap-2.5 min-w-0 ${stagger}`}>
+          <div key={col} className={`flex flex-col gap-2.5 tableta:gap-5 min-w-0 ${stagger}`}>
             {quotes
               .filter((_, i) => i % columns === col)
               .map((q) => (
