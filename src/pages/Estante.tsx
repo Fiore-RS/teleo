@@ -469,6 +469,7 @@ export function Estante() {
                 perRow={perRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
+                librero={breakpoint !== "celular"}
                 items={sortedBooks.map((book) => ({
                   key: book.id,
                   title: book.title,
@@ -506,6 +507,7 @@ export function Estante() {
                 perRow={perRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
+                librero={breakpoint !== "celular"}
                 items={sortedSagas.map((saga) => ({
                   key: saga.id,
                   title: saga.title,
