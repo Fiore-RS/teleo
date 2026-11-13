@@ -126,6 +126,7 @@ export function FinishBookSheet({
   if (step === 2) {
     return (
       <Sheet
+        corta
         // El libro ya quedó terminado: cerrar es lo mismo que omitir.
         onClose={() => onDone(writeReview)}
         title={needsTraits ? '¿Cómo fue?' : 'Sigue en la saga'}
@@ -162,6 +163,7 @@ export function FinishBookSheet({
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="¡Lo terminaste!"
       footer={

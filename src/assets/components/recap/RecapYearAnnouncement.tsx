@@ -29,7 +29,7 @@ export function RecapYearAnnouncement({ userId, year, onOpen, onDismiss }: Recap
   const minis: RecapCardId[] = ['portada', 'libros', third]
 
   return (
-    <Sheet title="Novedades de Teleo" onClose={onDismiss}>
+    <Sheet abajo title="Novedades de Teleo" onClose={onDismiss}>
       <p className="text-[11px] font-bold tracking-[0.12em] uppercase text-primary-text">Llegó diciembre</p>
       <h3 className="font-title text-[24px] leading-tight text-primary-text mt-1">Tu {year} en Teleo ya está listo</h3>
       <div className="flex justify-center gap-2 my-5" aria-hidden="true">

@@ -207,6 +207,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   return (
     <>
       <Sheet
+        corta
         onClose={onClose}
         title="Actualizar progreso"
         footer={book ? (

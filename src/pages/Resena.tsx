@@ -263,6 +263,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
   return (
     <>
       <Sheet
+        alta
         onClose={onClose}
         title={isEditing ? (isWritten ? 'Editar reseña' : 'Nueva reseña') : 'Reseña de lectura'}
         footer={footer}

@@ -1146,6 +1146,26 @@
   --teleo-on-accent: #1A0F1E;
 }
 
+/* Lomos de "También en tu mesa" (V.4.3.0): tres colores del tema que se distinguen bien entre
+   sí. Por defecto el principal, el naranja y el rosa; en los temas donde el rosa se parece al
+   principal, el tercero es el magenta. Cada uno con su color de texto. */
+:root {
+  --teleo-lomo-1: var(--teleo-primary);
+  --teleo-lomo-1-ink: var(--teleo-primary-ink);
+  --teleo-lomo-2: var(--teleo-orange);
+  --teleo-lomo-2-ink: var(--teleo-on-orange);
+  --teleo-lomo-3: var(--teleo-pink);
+  --teleo-lomo-3-ink: var(--teleo-on-pink);
+}
+:root[data-palette="aurora"],
+:root[data-palette="algodon"],
+:root[data-palette="margarita"],
+:root[data-palette="arrecife"],
+:root.dark[data-palette="ciruela"] {
+  --teleo-lomo-3: var(--teleo-magenta);
+  --teleo-lomo-3-ink: var(--teleo-on-magenta);
+}
+
 /* Fondo de la página detrás de la app. Sin esto, en el teléfono las zonas del sistema (debajo
    de la barra de pestañas, la rayita del iPhone, el rebote al deslizar) mostraban otro color. */
 html {

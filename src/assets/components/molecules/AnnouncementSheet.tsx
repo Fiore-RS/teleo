@@ -56,7 +56,7 @@ export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeA
   const showCatchUp = missed.length >= CATCH_UP_MIN && !!onSeeAll
   const announcedTitle = changelog.find((e) => e.version === ANNOUNCEMENT_VERSION)?.title
   return (
-    <Sheet title="Novedades de Teleo" onClose={onDone}>
+    <Sheet abajo title="Novedades de Teleo" onClose={onDone}>
       {showCatchUp && <CatchUpCard missed={missed} lastSeen={lastSeen} onSeeAll={onSeeAll} />}
 
       <div className="flex items-center gap-2">

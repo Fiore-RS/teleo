@@ -33,10 +33,17 @@ interface SheetProps {
   /** Botones fijos al pie (ej. Cancelar / Guardar): quedan siempre a mano mientras el
    *  contenido se desplaza por detrás, con un degradado que lo deja pasar suave. */
   footer?: ReactNode
-  /** Hoja de detalle (V.4.0.0): en tableta y escritorio, en vez de bajar desde arriba, es una
-   *  hoja de cuaderno que entra desde la derecha y flota encima de la pantalla, sin moverla ni
-   *  achicarla. En el celular es la hoja de siempre. */
-  side?: boolean
+  /** Hoja corta (V.4.3.0): en tableta y escritorio es de papel más grueso, como una hoja de
+   *  libreta de notas (terminar, pausar, progreso, meta, avisos, cuenta), para distinguirla
+   *  cuando sale encima de otra. En el celular es la hoja de siempre. */
+  corta?: boolean
+  /** Alto completo en tableta y escritorio (V.4.3.0): para las hojas cuyo contenido cambia
+   *  mucho mientras se usan (Detalles del libro y de la saga, Agregar libro, Filtros, Reseña),
+   *  así no crecen ni se encogen ni mueven los botones. Las demás miden lo que llevan, hasta el
+   *  alto de la pantalla. */
+  alta?: boolean
+  /** Sigue bajando desde arriba también en pantallas grandes (los anuncios de Novedades). */
+  abajo?: boolean
 }
 
 /** Renglones de la hoja de detalle. Van en el contenido con `local`, así bajan con el texto. */
@@ -45,14 +52,17 @@ const HOJA_LINES =
 /** Tamaño de la esquina doblada (arriba a la derecha). */
 const HOJA_FOLD = 26
 
-/** Hoja del rediseño 2026 (en tableta y escritorio, con 560px de ancho máximo, V.4.0.0): baja desde arriba de la pantalla, con esquinas redondeadas abajo,
+/** Hoja del rediseño 2026. En tableta y escritorio (V.4.3.0) es la hoja de cuaderno de la derecha
+ *  (ver `corta` y `abajo`); lo que sigue describe la del celular: baja desde arriba de la pantalla, con esquinas redondeadas abajo,
  *  una "manija" al pie y el título a la izquierda con un botón redondo para cerrar. Se abre
  *  desde arriba (y no desde abajo) para que en el celular el teclado no tape los campos al
  *  escribir. Se usa para pantallas de contenido (detalle de libro, reseña, filtros...); las
  *  confirmaciones cortas siguen siendo diálogos centrados (Modal). Escape también la cierra. */
-export function Sheet({ onClose, title, children, headerRight, footer, side = false }: SheetProps) {
+export function Sheet({ onClose, title, children, headerRight, footer, corta = false, alta = false, abajo = false }: SheetProps) {
   const breakpoint = useBreakpoint()
-  const asHoja = side && breakpoint !== 'celular'
+  // V.4.0.0 empezó con Detalles del libro y de la saga; desde la V.4.3.0 todas las hojas son
+  // hoja de cuaderno a la derecha en tableta y escritorio (las cortas, del alto de lo que llevan).
+  const asHoja = !abajo && breakpoint !== 'celular'
   // Al cerrar desde la propia hoja (fondo, ✕ o Escape) primero se reproduce la animación de
   // salida y después se avisa al padre. Si el padre la cierra por su cuenta (ej. después de
   // guardar), desaparece al instante.
@@ -103,12 +113,21 @@ export function Sheet({ onClose, title, children, headerRight, footer, side = fa
         <div className={`absolute inset-0 bg-black/35 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={requestClose} />
         {/* La sombra va en un envoltorio: el recorte de la esquina doblada se la comería. */}
         <div
-          className={`relative h-full w-1/2 escritorio:w-[460px] drop-shadow-[0_24px_30px_rgba(0,0,0,0.32)] ${
-            isClosing ? 'animate-hoja-out' : 'animate-hoja-in'
-          }`}
+          className={`relative ${alta ? 'h-full' : 'self-start max-h-[calc(100%-6px)] flex flex-col'} ${
+            corta ? 'drop-shadow-[0_28px_34px_rgba(0,0,0,0.42)]' : 'drop-shadow-[0_24px_30px_rgba(0,0,0,0.32)]'
+          } w-1/2 escritorio:w-[460px] ${isClosing ? 'animate-hoja-out' : 'animate-hoja-in'}`}
         >
+          {/* La hoja corta es de papel más grueso, como de libreta de notas (V.4.3.0): el canto se
+              ve abajo y a la derecha, así se distingue cuando sale encima de una hoja larga. */}
+          {corta && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 translate-x-[3px] translate-y-[5px] rounded-[6px] bg-surface-2 border border-border"
+              style={{ clipPath: `polygon(0 0, calc(100% - ${HOJA_FOLD}px) 0, 100% ${HOJA_FOLD}px, 100% 100%, 0 100%)` }}
+            />
+          )}
           <div
-            className="relative h-full flex flex-col bg-surface rounded-[6px] overflow-hidden"
+            className={`relative ${alta ? 'h-full' : 'min-h-0'} ${corta ? 'border border-border' : ''} flex flex-col bg-surface rounded-[6px] overflow-hidden`}
             style={{ clipPath: `polygon(0 0, calc(100% - ${HOJA_FOLD}px) 0, 100% ${HOJA_FOLD}px, 100% 100%, 0 100%)` }}
           >
             {/* Margen rojo del cuaderno, de arriba abajo. */}
@@ -135,7 +154,10 @@ export function Sheet({ onClose, title, children, headerRight, footer, side = fa
                 {closeButton}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto pl-12 pr-6 pb-5 pt-1" style={{ backgroundImage: HOJA_LINES, backgroundAttachment: 'local' }}>
+            <div
+              className={`${alta ? 'flex-1' : 'min-h-0'} overflow-y-auto pl-12 pr-6 pb-5 pt-1`}
+              style={{ backgroundImage: HOJA_LINES, backgroundAttachment: 'local' }}
+            >
               {children}
             </div>
             {footer && (

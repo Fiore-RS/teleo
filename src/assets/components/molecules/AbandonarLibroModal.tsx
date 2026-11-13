@@ -39,6 +39,7 @@ function AbandonarLibroSheet({ onClose, book, initialStartDate, onConfirm }: Omi
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Abandonar libro"
       footer={

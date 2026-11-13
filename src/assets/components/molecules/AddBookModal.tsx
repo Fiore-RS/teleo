@@ -591,7 +591,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   return (
     <>
       {isOpen && (
-        <Sheet onClose={handleClose} title={title} footer={footer}>
+        <Sheet alta onClose={handleClose} title={title} footer={footer}>
           {body}
         </Sheet>
       )}

@@ -36,19 +36,28 @@ function progressDetail(book: Book): string | null {
   return null
 }
 
-/** Colores de los lomos: los del tema elegido (V.4.3.0; antes mezclaba colores de estado, que
- *  son iguales en todos los temas), elegidos por el título para que el mismo libro siempre
- *  tenga el mismo color. Cada color va con su texto, que el tema ajusta en claro y oscuro. */
-const SPINE_COLORS: { bg: string; ink: string }[] = [
-  { bg: 'var(--color-primary)', ink: 'var(--color-primary-ink)' },
-  { bg: 'var(--color-orange)', ink: 'var(--color-on-orange)' },
-  { bg: 'var(--color-pink)', ink: 'var(--color-on-pink)' },
-  { bg: 'var(--color-magenta)', ink: 'var(--color-on-magenta)' },
-]
-function spineColor(title: string) {
+/** Colores de los lomos (V.4.3.0): tres colores del tema elegido que se distinguen bien entre
+ *  sí (--teleo-lomo-1 a 3 en index.css, cada uno con su texto). Se eligen por el título, así el
+ *  mismo libro suele tener el mismo color; si dos lomos seguidos caen en el mismo, el segundo
+ *  pasa al siguiente, para que nunca se mezclen. */
+const SPINE_COLORS: { bg: string; ink: string }[] = [1, 2, 3].map((n) => ({
+  bg: `var(--teleo-lomo-${n})`,
+  ink: `var(--teleo-lomo-${n}-ink)`,
+}))
+function spineIndex(title: string) {
   let h = 0
   for (let i = 0; i < title.length; i++) h = (h * 31 + title.charCodeAt(i)) >>> 0
-  return SPINE_COLORS[h % SPINE_COLORS.length]
+  return h % SPINE_COLORS.length
+}
+/** Índice de color de cada lomo de la pila, sin dos iguales seguidos. */
+function spineIndexes(titles: string[]) {
+  const out: number[] = []
+  titles.forEach((t, i) => {
+    let idx = spineIndex(t)
+    if (i > 0 && idx === out[i - 1]) idx = (idx + 1) % SPINE_COLORS.length
+    out.push(idx)
+  })
+  return out
 }
 /** Ancho del lomo entre 500 y 600px, también por el título: la pila no se ve pareja. */
 function spineWidth(title: string) {
@@ -201,6 +210,7 @@ interface BookSpinesProps {
 function BookSpines({ books, onOpen, onUpdate, onSeeAll }: BookSpinesProps) {
   const shown = books.slice(0, 2)
   const rest = books.length - shown.length
+  const colors = spineIndexes(shown.map((b) => b.title)).map((n) => SPINE_COLORS[n])
   return (
     <section aria-labelledby="mesa-tambien" className="mt-9.5">
       <h2 id="mesa-tambien" className="smallcaps text-text-secondary mb-3.5">
@@ -223,7 +233,7 @@ function BookSpines({ books, onOpen, onUpdate, onSeeAll }: BookSpinesProps) {
                 type="button"
                 onClick={() => onOpen(book.id)}
                 className="book-spine relative w-full flex items-center gap-3.5 min-h-[46px] py-2 pl-7 pr-6 rounded-[3px_4px_4px_3px] text-left transition-[filter] hover:brightness-105"
-                style={{ backgroundColor: spineColor(book.title).bg, color: spineColor(book.title).ink }}
+                style={{ backgroundColor: colors[i].bg, color: colors[i].ink }}
               >
                 <span className="flex-1 min-w-0 font-title text-[16px] leading-tight">{book.title}</span>
                 {surname && <span className="shrink-0 smallcaps text-[10px]! opacity-85">{surname}</span>}

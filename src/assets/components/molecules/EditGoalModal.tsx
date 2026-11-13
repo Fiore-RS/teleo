@@ -47,6 +47,7 @@ export function EditGoalModal({ onClose, currentGoal, completedCount, onSave }: 
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Meta de lectura"
       footer={

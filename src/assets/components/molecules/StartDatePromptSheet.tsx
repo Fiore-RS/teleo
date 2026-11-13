@@ -32,6 +32,7 @@ export function StartDatePromptSheet({ title, message, book, onConfirm, onDismis
 
   return (
     <Sheet
+      corta
       onClose={onDismiss}
       title={title}
       footer={
