@@ -21,14 +21,14 @@ const sections: TutorialSection[] = [
   {
     title: 'Estante',
     points: [
-      'Toca el botón + de abajo para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
+      'Toca el botón + de abajo (en la computadora o la tableta, "Agregar libro" en la tapa del cuaderno) para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
       '¿Ya usas Goodreads? Trae tu biblioteca desde Configuración › Importar desde Goodreads (o desde el atajo del Estante vacío). Las estanterías que coinciden con un género quedan como género, y las demás como etiquetas.',
       'Al terminar un libro, guarda su fecha de inicio y de fin, y escribe la reseña solo si quieres. Todo libro con fecha de fin cuenta para la meta de ese año.',
       'Agrupa libros en sagas, agrega varios a la vez y anota cuántos tendrá en total para ver tu progreso, por ejemplo "2 de 5". Al terminar un libro de una saga, Teleo te propone el siguiente. Ponle género y ánimo a la saga y llegan a todos sus libros; cada libro se puede cambiar en Editar libro.',
       'Cuenta cómo es cada libro: hasta 3 géneros, hasta 3 ánimos (también los tuyos) y su ritmo, desde Editar libro o al terminarlo. En Configuración, "Completar géneros" los sugiere para tu biblioteca (uno por saga) y "Completa tu estante" te pasa tus libros leídos uno por uno.',
       'Si dejas un libro por un tiempo, ponlo En pausa: tu progreso se guarda y lo retomas desde sus detalles.',
       'Marca con Lo tengo los libros que tienes en casa, desde Agregar libro o Editar libro. Los físicos se marcan solos al agregarlos o al sacarlos de Deseados, y en Configuración, "Marcar mis libros físicos" marca de una vez los que ya tenías.',
-      'Usa la barra de búsqueda para buscar por título o autor, y su botón de filtros para ver solo los libros de un estado, idioma, categoría, formato, género, ánimo, ritmo o etiqueta, o solo los que tienes. En Sagas puedes filtrar por estado, categoría, género y ánimo. Al bajar, la barra y las pestañas se quedan fijas; toca Estante en la barra de abajo para volver arriba.',
+      'Usa la barra de búsqueda para buscar por título o autor, y su botón de filtros para ver solo los libros de un estado, idioma, categoría, formato, género, ánimo, ritmo o etiqueta, o solo los que tienes. En Sagas puedes filtrar por estado, categoría, género y ánimo. Al bajar, la barra y las pestañas se quedan fijas; toca Estante en la barra de abajo, o en la tapa del cuaderno, para volver arriba.',
       'Toca el botón de vista de la barra para elegir cómo se ve tu estante: 3 o 4 libros por fila, con o sin título y autor, y con o sin repisa. Se guarda en tu cuenta.',
       'Usa el botón de organizar de la barra para ordenar por título, autor o fecha, o elige "Libre" para reordenar tus repisas arrastrando tus libros o sagas.',
       '¿No sabes qué leer? Toca "¿Qué leo ahora?" y Teleo elegirá uno de tus pendientes; puedes pedirle uno de cierto género, ánimo o ritmo.',
@@ -67,6 +67,15 @@ const sections: TutorialSection[] = [
       'En Ahora mismo ves lo que estás leyendo, el último libro que terminaste y una de tus citas, distinta en cada visita. Organiza Mis próximas lecturas desde sus tres puntos: agrega o quita pendientes con "Agregar libros", cámbiale el nombre o toca "Organizar", arrastra los libros y toca "Listo" al terminar. También puedes empezar a leer desde ahí.',
       'En Estanterías elige Favoritos, Recomendados, Deseados o Abandonados para ver hasta diez libros al azar en cada visita. Toca "Ver todos" para ir a tu Estante con ese filtro.',
       'El botón de compartir muestra tu código de Teleo (tócalo para copiarlo) y te deja invitar a alguien con un enlace o una tarjeta con código QR, enviar tu perfil como una tarjeta para historias o tu lista de deseados como PDF.',
+    ],
+  },
+  {
+    title: 'En la computadora y la tableta',
+    points: [
+      'Teleo se adapta al tamaño de tu pantalla. Desde la computadora se usa en el navegador, en teleo.fiorers.dev, sin instalar nada.',
+      'Las secciones van en la tapa del cuaderno, a la izquierda, junto con el buscador de tu biblioteca, "Agregar libro" y tu perfil.',
+      'En la computadora, La mesa se ve como un libro abierto con lo que estás leyendo. Los demás libros en curso quedan como lomos debajo: toca un lomo para ver sus detalles, o su marcapáginas para actualizar el progreso.',
+      'Los detalles de un libro se abren en una hoja a la derecha, encima de la pantalla. Ciérrala con la X, con la tecla Esc o tocando fuera de ella.',
     ],
   },
   {
