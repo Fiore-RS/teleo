@@ -73,10 +73,12 @@ const sections: TutorialSection[] = [
     title: 'En la computadora y la tableta',
     points: [
       'Teleo se adapta al tamaño de tu pantalla. Desde la computadora se usa en el navegador, en teleo.fiorers.dev, sin instalar nada.',
-      'Las secciones van en la tapa del cuaderno, a la izquierda, junto con el buscador de tu biblioteca, "Agregar libro" y tu perfil.',
+      'Las secciones van en la tapa del cuaderno, a la izquierda, junto con el buscador, "Agregar libro" y tu perfil.',
       'En la computadora, La mesa se ve como un libro abierto con lo que estás leyendo. Los demás libros en curso quedan como lomos debajo: toca un lomo para ver sus detalles, o su marcapáginas para actualizar el progreso.',
       'Los detalles de un libro se abren en una hoja a la derecha, encima de la pantalla. Ciérrala con la X, con la tecla Esc o tocando fuera de ella.',
-      'El Estante es un librero de madera con toda tu biblioteca. Los filtros y la vista se abren en una hoja a la derecha, y el librero cambia detrás mientras eliges. Lo que buscas desde la tapa aparece arriba, con una × para borrarlo.',
+      'El Estante es un librero de madera con toda tu biblioteca. Los filtros y la vista se abren en una hoja a la derecha, y el librero cambia detrás mientras eliges.',
+      'El buscador de la tapa busca mientras escribes y abre la pantalla Buscar, con los libros, sagas, reseñas y citas que encuentra. Toca cualquiera para abrirla.',
+      'En la Bitácora, tu año queda fijo a la izquierda y lo demás va en hojas a la derecha. En el Perfil, tu librero tiene una repisa por estantería, con tus próximas lecturas primero: organízalas arrastrando las portadas.',
     ],
   },
   {
