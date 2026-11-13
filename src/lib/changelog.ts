@@ -15,6 +15,22 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.1.0',
+    announced: true,
+    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
+    date: 'Fecha por definir',
+    title: 'Tu librero',
+    items: [
+      'En la computadora y la tableta, el Estante es un librero de madera con toda tu biblioteca, en el color de repisa de tu tema.',
+      'Tus sagas van en el mismo librero, con su pila de portadas de siempre.',
+      'El encabezado del Estante cuenta tu biblioteca, o cuántos libros ves cuando buscas o filtras, y sus botones dicen qué hacen: Filtros, el orden elegido y Vista.',
+      'Lo que buscas desde la tapa del cuaderno aparece arriba del Estante, con una × para borrarlo.',
+      'Los filtros y la vista del estante se abren en una hoja a la derecha, y el librero cambia detrás mientras eliges. En Vista, los libros por repisa muestran el número real según tu pantalla.',
+      'Mientras carga, o si un filtro no encuentra nada, el mensaje aparece dentro del librero.',
+      'Todas las pantallas comparten el fondo de la mesa, los mismos márgenes y el encabezado de La mesa, con el título a la misma altura.',
+    ],
+  },
+  {
     version: '4.0.0',
     announced: true,
     // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.

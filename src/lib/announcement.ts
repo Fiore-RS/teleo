@@ -2,7 +2,7 @@ import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '4.0.0'
+export const ANNOUNCEMENT_VERSION = '4.1.0'
 
 /** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
  *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
@@ -14,11 +14,11 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'Dirección nueva', text: 'Teleo ahora vive en teleo.fiorers.dev. Tus libros y preferencias te esperan igual en tu cuenta.' },
-  { title: 'En tu computadora', text: 'Teleo se adapta a pantallas grandes: entra desde el navegador, sin instalar nada.' },
-  { title: 'La tapa del cuaderno', text: 'En la computadora y la tableta, las secciones, el buscador y "Agregar libro" van a la izquierda.' },
-  { title: 'La mesa abierta', text: 'Lo que lees, como un libro abierto, con tus otros libros en curso como lomos.' },
-  { title: 'Poco a poco', text: 'Esta es la primera parte: en las próximas versiones el resto de las pantallas estrena su diseño para pantallas grandes.' },
+  { title: 'Tu librero', text: 'En la computadora y la tableta, el Estante es un librero de madera con toda tu biblioteca.' },
+  { title: 'Tus sagas', text: 'Con su pila de portadas de siempre, dentro del mismo librero.' },
+  { title: 'Filtros a la mano', text: 'Los filtros y la vista se abren a la derecha, y el librero cambia detrás mientras eliges.' },
+  { title: 'Todo en su lugar', text: 'Todas las pantallas comparten el fondo de la mesa, los márgenes y el encabezado de La mesa.' },
+  { title: 'Poco a poco', text: 'Siguen Cuaderno, Bitácora y Perfil con su diseño para pantallas grandes.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */

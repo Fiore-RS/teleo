@@ -76,6 +76,7 @@ const sections: TutorialSection[] = [
       'Las secciones van en la tapa del cuaderno, a la izquierda, junto con el buscador de tu biblioteca, "Agregar libro" y tu perfil.',
       'En la computadora, La mesa se ve como un libro abierto con lo que estás leyendo. Los demás libros en curso quedan como lomos debajo: toca un lomo para ver sus detalles, o su marcapáginas para actualizar el progreso.',
       'Los detalles de un libro se abren en una hoja a la derecha, encima de la pantalla. Ciérrala con la X, con la tecla Esc o tocando fuera de ella.',
+      'El Estante es un librero de madera con toda tu biblioteca. Los filtros y la vista se abren en una hoja a la derecha, y el librero cambia detrás mientras eliges. Lo que buscas desde la tapa aparece arriba, con una × para borrarlo.',
     ],
   },
   {
