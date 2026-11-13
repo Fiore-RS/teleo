@@ -4,6 +4,10 @@ import { LoadingScreen } from "./pages/LoadingScreen";
 import { PaletteSync } from "./assets/components/atoms/PaletteSync";
 import { PreferencesSync } from "./assets/components/atoms/PreferencesSync";
 import { routeTransition } from "./lib/motion";
+import { AvisoMudanza } from "./pages/AvisoMudanza";
+import { useMoved } from "./hooks/useMoved";
+import { newAddressUrl } from "./lib/moved";
+import { isRunningStandalone } from "./lib/installPrompt";
 
 /* Cada pantalla se descarga recién cuando se abre (lazy), en vez de venir toda en un solo
  * archivo al abrir la app. La pantalla de carga sí va incluida, porque es la primera que se ve. */
@@ -57,6 +61,15 @@ function RutaDesconocida() {
 function App() {
   const location = useLocation();
   const navigationType = useNavigationType();
+
+  // Mudanza a teleo.fiorers.dev (V.3.8.1): cuando la dirección nueva ya tiene a Teleo, la app
+  // instalada en la dirección vieja muestra un aviso fijo, y en el navegador se pasa sola a
+  // la nueva (con lo que va después del #, para que las invitaciones viejas funcionen).
+  const moved = useMoved();
+  const [isStandalone] = useState(isRunningStandalone);
+  useEffect(() => {
+    if (moved && !isStandalone) window.location.replace(newAddressUrl());
+  }, [moved, isStandalone]);
 
   // Animación del cambio de pantalla (V.3.0.1): se calcula comparando con la pantalla
   // anterior. Se ajusta durante el render (sin efecto) para que la clase ya esté al montar.
@@ -116,6 +129,8 @@ function App() {
     });
     return () => cancelAnimationFrame(frame);
   }, [location.key, navigationType]);
+
+  if (moved) return isStandalone ? <AvisoMudanza /> : null;
 
   return (
     // En el celular la app es una columna de ancho de teléfono. Desde tableta (V.4.0.0) ocupa
