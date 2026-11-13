@@ -4,8 +4,8 @@ import { queryClient } from '../../lib/queryClient'
 import { formatCurrency } from '../../lib/currencies'
 import { StatTile } from '../../assets/components/atoms/StatTile'
 import { MiniCover } from '../../assets/components/atoms/MiniCover'
-import { Skeleton, StatTileSkeleton } from '../../assets/components/atoms/Skeleton'
-import { Card } from '../../assets/components/molecules/Card'
+import { CoverSkeleton, Skeleton, StatTileSkeleton } from '../../assets/components/atoms/Skeleton'
+import { Card, Hoja } from '../../assets/components/molecules/Card'
 import { useHojaMode } from '../../lib/hojaMode'
 import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MONTH_ABBR, MONTH_NAMES } from '../../lib/months'
@@ -154,6 +154,38 @@ export function Compras({ userId, currency }: ComprasProps) {
   }, [summary.owned, filter, sort])
 
   const money = (amount: number) => formatCurrency(amount, currency)
+
+  // Tableta y computadora (V.4.2.0): el esqueleto sigue la forma de las hojas, con el total a
+  // la izquierda y la lista de tus libros a la derecha.
+  if (isLoading && hojaMode) {
+    return (
+      <div className="bitacora-hojas flex flex-col gap-5" aria-label="Cargando">
+        <div className="flex flex-col gap-5">
+          <Hoja title="Total invertido" tone="magenta">
+            <Skeleton className="h-12 w-3/5 rounded-xl" />
+            <Skeleton className="h-3.5 w-4/5 rounded-full mt-3" />
+            <Skeleton className="h-4 w-full rounded-full mt-4" />
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-4 w-3/5 rounded-full mt-3.5" />)}
+          </Hoja>
+        </div>
+        <Hoja title="Tus libros" tone="pink">
+          <div className="flex gap-1.5 mb-4">
+            {['w-16', 'w-24', 'w-18', 'w-20'].map((w) => <Skeleton key={w} className={`h-8 ${w} rounded-full`} />)}
+          </div>
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-center gap-3 py-2.5">
+              <CoverSkeleton className="w-10 shrink-0" />
+              <div className="flex-1">
+                <Skeleton className="h-4 w-1/2 rounded-full" />
+                <Skeleton className="h-3 w-1/3 rounded-full mt-2" />
+              </div>
+              <Skeleton className="h-4 w-16 rounded-full" />
+            </div>
+          ))}
+        </Hoja>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (

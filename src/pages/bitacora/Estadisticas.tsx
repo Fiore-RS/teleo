@@ -105,6 +105,42 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
     setOpenRow((current) => (current === row ? null : row))
   }
 
+  // Tableta y computadora (V.4.2.0): el esqueleto sigue la forma de las hojas, con la hoja de
+  // tu año (fija a la izquierda en computadora) y las hojas de "De toda tu biblioteca".
+  if (isLoading && hojaMode) {
+    return (
+      <div className="bitacora-hojas flex flex-col gap-5" aria-label="Cargando">
+        <Hoja tone="pink">
+          <div className="flex items-center justify-between gap-3">
+            <p className="smallcaps text-pink-text">Tu año</p>
+            <Skeleton className="h-8 w-28 rounded-full" />
+          </div>
+          <Skeleton className="mt-5 h-[78px] w-28 rounded-xl" />
+          <Skeleton className="mt-3 h-4 w-2/5 rounded-full" />
+          <Skeleton className="mt-6 h-4 w-full rounded-full" />
+          <Skeleton className="mt-3 h-4 w-4/5 rounded-full" />
+          <div className="grid gap-2 mt-5">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-11 rounded-[14px]" />)}
+          </div>
+          <Skeleton className="mt-5 h-4 w-1/2 rounded-full" />
+        </Hoja>
+        <div>
+          <h2 className="smallcaps text-text-secondary mb-3">De toda tu biblioteca</h2>
+          <div className="hojas-columnas">
+            {[4, 3, 5, 3, 4, 2].map((lines, i) => (
+              <Hoja key={i} as="div" className="mb-5.5 break-inside-avoid">
+                <Skeleton className="h-5 w-1/2 rounded-full mb-4" />
+                {Array.from({ length: lines }, (_, j) => (
+                  <Skeleton key={j} className={`h-3.5 rounded-full ${j ? 'mt-3' : ''} ${j % 2 ? 'w-3/5' : 'w-4/5'}`} />
+                ))}
+              </Hoja>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-5" aria-label="Cargando">

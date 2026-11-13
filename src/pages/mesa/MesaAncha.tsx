@@ -338,14 +338,16 @@ export function MesaAncha(props: MesaAnchaProps) {
       {layout === 'escritorio' ? (
         // Escritorio: la columna de las tarjetas empieza a la altura de la fecha (la pestaña de
         // la primera tarjeta queda en la misma línea que el encabezado).
-        <div className={`grid grid-cols-[minmax(0,1fr)_350px] gap-13 items-start ${props.staggerClass}`}>
-          <div>
+        // La cascada de entrada va en cada columna, para que el encabezado, el libro, los lomos
+        // y cada tarjeta entren uno por uno, como en el teléfono.
+        <div className="grid grid-cols-[minmax(0,1fr)_350px] gap-13 items-start">
+          <div className={props.staggerClass}>
             {header}
             {props.demoNotice}
             {book}
             {spines}
           </div>
-          <div className="flex flex-col gap-5.5">{cards}</div>
+          <div className={`flex flex-col gap-5.5 ${props.staggerClass}`}>{cards}</div>
         </div>
       ) : (
         // Tableta: el libro abierto, la pila debajo y las tarjetas en una sola columna.

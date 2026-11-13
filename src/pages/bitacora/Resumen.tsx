@@ -272,7 +272,11 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
           />
           <PeriodTransition order={year * 12 + month}>
             {isLoading ? (
-              <Skeleton className="h-20 w-1/2 rounded-lg mt-5" />
+              <div aria-label="Cargando">
+                <Skeleton className="mt-5 h-[72px] w-28 rounded-xl" />
+                <Skeleton className="mt-3 h-4 w-1/2 rounded-full" />
+                <Skeleton className="mt-6 h-11 w-40 rounded-full" />
+              </div>
             ) : (
               <>
                 <p className="mt-5 font-title text-[80px] leading-[0.9] text-pink-text tabular-nums">{reads.length}</p>
@@ -467,6 +471,12 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
         <PeriodTransition order={year}>
           {isLoading ? (
             <div className="mt-4" aria-label="Cargando">
+              {hojaMode && (
+                <>
+                  <Skeleton className="mt-1 mb-3 h-[72px] w-28 rounded-xl" />
+                  <Skeleton className="mb-6 h-4 w-2/5 rounded-full" />
+                </>
+              )}
               <Skeleton className="h-5 w-4/5 rounded-full" />
               <Skeleton className="h-5 w-3/5 rounded-full mt-2" />
             </div>
@@ -626,6 +636,19 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
       </Card>
       )}
 
+      {/* Mientras carga, en tableta y computadora: el lugar de las hojas de "Más de tu año". */}
+      {isLoading && hojaMode && (
+        <div className="hojas-columnas" aria-hidden="true">
+          {[3, 4, 2, 3].map((lines, i) => (
+            <Hoja key={i} as="div" className="mb-5.5 break-inside-avoid">
+              <Skeleton className="h-5 w-1/2 rounded-full mb-4" />
+              {Array.from({ length: lines }, (_, j) => (
+                <Skeleton key={j} className={`h-3.5 rounded-full ${j ? 'mt-3' : ''} ${j % 2 ? 'w-3/5' : 'w-4/5'}`} />
+              ))}
+            </Hoja>
+          ))}
+        </div>
+      )}
       {!isLoading && n > 0 && (
         <Card group tab={{ label: `Más de tu ${year}` }} padding="px-4 py-1">
           <div>
@@ -730,8 +753,8 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
         <PeriodTransition order={year}>
           <div className="mt-3.5">
             {isLoading ? (
-              <div className="flex gap-3.5 items-center" aria-label="Cargando">
-                <CoverSkeleton className="w-[84px] shrink-0" />
+              <div className={`flex gap-3.5 ${hojaMode ? 'flex-col items-start gap-4' : 'items-center'}`} aria-label="Cargando">
+                <CoverSkeleton className={`${hojaMode ? 'w-[150px]' : 'w-[84px]'} shrink-0`} />
                 <div className="flex-1">
                   <Skeleton className="h-3 w-1/3 rounded-full" />
                   <Skeleton className="h-5 w-4/5 rounded-full mt-2" />
@@ -779,7 +802,7 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
         <PeriodTransition order={year}>
           {isLoading ? (
             <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4'}`} aria-label="Cargando">
-              {Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="aspect-2/3 rounded-md" />)}
+              {Array.from({ length: hojaMode ? 12 : 8 }, (_, i) => <Skeleton key={i} className="aspect-2/3 rounded-md" />)}
             </div>
           ) : (
             <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4'}`}>
