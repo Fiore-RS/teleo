@@ -20,6 +20,7 @@ const Tutorial = page(() => import("./pages/Tutorial"), "Tutorial");
 const Mesa = page(() => import("./pages/Mesa"), "Mesa");
 const Estante = page(() => import("./pages/Estante"), "Estante");
 const Cuaderno = page(() => import("./pages/Cuaderno"), "Cuaderno");
+const Buscar = page(() => import("./pages/Buscar"), "Buscar");
 const Bitacora = page(() => import("./pages/Bitacora"), "Bitacora");
 const Login = page(() => import("./pages/Login"), "Login");
 const Registro = page(() => import("./pages/Registro"), "Registro");
@@ -164,6 +165,7 @@ function App() {
           <Route path="/tutorial" element={<Navigate to="/guia" replace />} />
           <Route path="/mesa" element={<Mesa />} />
           <Route path="/estante" element={<Estante />} />
+          <Route path="/buscar" element={<Buscar />} />
           <Route path="/cuaderno" element={<Cuaderno />} />
           <Route path="/bitacora" element={<Bitacora />} />
           <Route path="/lanzamientos" element={<Lanzamientos />} />

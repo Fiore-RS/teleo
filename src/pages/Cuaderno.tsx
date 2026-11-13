@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { columnIndexes, columnsFor } from '../lib/columns'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ImageOff, Search } from 'lucide-react'
+import { ImageOff } from 'lucide-react'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { useAuth } from '../hooks/useAuth'
 import { useReviews, type ReviewWithBook } from '../hooks/useReviews'
@@ -49,7 +49,7 @@ interface ReviewCardProps {
 /** Reseña como hoja rayada (V.3.0.0): portada pequeña, título, autor y estrellas arriba; el
  *  comentario en Fraunces itálica sobre renglones con margen rosa. Toda la
  *  hoja se toca para abrir la reseña. Sin fecha: no hace falta saber cuándo se escribió. */
-function ReviewCard({ review, onOpen, large = false }: ReviewCardProps) {
+export function ReviewCard({ review, onOpen, large = false }: ReviewCardProps) {
   const line = large ? 26 : 22
   return (
     <button
@@ -126,7 +126,8 @@ export function Cuaderno() {
     setDeleteQuoteState(ok ? 'success' : 'error')
   }
 
-  const [search, setSearch] = useState('')
+  // V.4.2.0: se puede llegar desde Buscar ("Ver en el Cuaderno") con lo buscado en ?buscar=.
+  const [search, setSearch] = useState(() => searchParams.get('buscar') ?? '')
   const breakpoint = useBreakpoint()
   // En tableta y computadora (V.4.2.0) las reseñas son las mismas hojas del celular, más
   // grandes y con más aire: tres columnas en tableta y cuatro en computadora.
@@ -264,20 +265,9 @@ export function Cuaderno() {
           ]}
           active={tab}
           onTabChange={changeTab}
+          search={{ query: search, onClear: () => setSearch('') }}
           actions={
             <>
-              {/* El buscador de la tapa busca en el Estante: aquí queda uno propio, chico. */}
-              <label className="relative">
-                <span className="sr-only">{tab === 'citas' ? 'Buscar en tus citas' : 'Buscar en tus reseñas'}</span>
-                <Search size={16} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
-                <input
-                  type="search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder={tab === 'citas' ? 'Buscar en tus citas' : 'Buscar por título o autor'}
-                  className="h-10 w-60 pl-9 pr-3 rounded-button border border-border bg-surface font-body text-body-md text-text placeholder:text-text-muted focus-visible:outline-2 focus-visible:outline-primary-text"
-                />
-              </label>
               {tab === 'resenas' ? (
                 <SortMenu variant="button" buttonLabel={sortLabel(sortMode)} options={sortOptions} activeKey={sortMode} onSelect={handleSortSelect} />
               ) : (

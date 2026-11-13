@@ -15,7 +15,8 @@ const tabs: { key: TabKey; label: string; icon: LucideIcon }[] = [
 ]
 
 interface TabBarProps {
-  active: TabKey
+  /** null: ninguna sección marcada (Buscar, V.4.2.0). */
+  active: TabKey | null
   onChange: (tab: TabKey) => void
   /** Qué hacer al tocar la pestaña marcada. Por defecto vuelve arriba; en las pantallas
    *  secundarias (Configuración) lleva a la sección de la que se viene. */
