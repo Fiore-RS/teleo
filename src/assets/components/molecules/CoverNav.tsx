@@ -125,14 +125,8 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar…"
               aria-keyshortcuts="/"
-              className="w-full h-10 pl-9 pr-9 rounded-field bg-cover-ink/10 border border-cover-ink/25 font-body text-body-md text-cover-ink placeholder:text-cover-ink/60 focus-visible:outline-2 focus-visible:outline-cover-ink"
+              className="w-full h-10 pl-9 pr-3 rounded-field bg-cover-ink/10 border border-cover-ink/25 font-body text-body-md text-cover-ink placeholder:text-cover-ink/60 focus-visible:outline-2 focus-visible:outline-cover-ink"
             />
-            <kbd
-              aria-hidden="true"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 rounded-[5px] border border-cover-ink/30 font-body text-[12px] leading-[18px] opacity-70 pointer-events-none"
-            >
-              /
-            </kbd>
           </form>
         </div>
 
@@ -148,7 +142,7 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
                   data-tour={tour(key)}
                   className={`relative w-[calc(100%+1px)] h-[46px] px-5 flex items-center rounded-l-[12px] font-display text-[18px] text-left transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cover-ink ${
                     isActive
-                      ? 'bg-bg text-primary-text font-semibold shadow-[-3px_2px_6px_-3px_var(--teleo-cover-shadow)]'
+                      ? 'bg-(--tapa-papel) text-primary-text font-semibold shadow-[-3px_2px_6px_-3px_var(--teleo-cover-shadow)]'
                       : 'hover:bg-cover-ink/8'
                   }`}
                 >
@@ -177,7 +171,7 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
             aria-current={perfilActive ? 'page' : undefined}
             data-tour={tour('perfil')}
             className={`w-[calc(100%+1px)] flex items-center gap-3 py-2 pl-2 -ml-2 rounded-l-[12px] text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cover-ink ${
-              perfilActive ? 'bg-bg text-primary-text shadow-[-3px_2px_6px_-3px_var(--teleo-cover-shadow)]' : 'hover:bg-cover-ink/8'
+              perfilActive ? 'bg-(--tapa-papel) text-primary-text shadow-[-3px_2px_6px_-3px_var(--teleo-cover-shadow)]' : 'hover:bg-cover-ink/8'
             }`}
           >
             {avatar}
@@ -192,7 +186,10 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
       {/* ---------- Tableta ---------- */}
       <div className="flex escritorio:hidden flex-col items-end flex-1 min-h-0 pt-6 pb-5 pl-4.5">
         <CoverLogo src={logoIcon} className="self-center mr-4.5 mb-5 w-10 aspect-[412/340]" />
-        <ul className="flex flex-col gap-1.5 w-full">
+        {/* Igual que en escritorio: solo la sección activa es un separador de papel. Cada
+            sección tiene su propio alto y aire entre ellas, para que los nombres escritos de
+            lado no se lean como una sola línea. */}
+        <ul className="flex flex-col gap-2.5 w-full">
           {sections.map(({ key, label }) => {
             const isActive = active === key
             return (
@@ -202,8 +199,10 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
                   onClick={() => go(key)}
                   aria-current={isActive ? 'page' : undefined}
                   data-tour={breakpoint === 'tableta' ? `tab-${key}` : undefined}
-                  className={`w-[calc(100%+1px)] py-4.5 flex items-center justify-center rounded-r-[12px] rotate-180 [writing-mode:vertical-rl] font-display text-[17px] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cover-ink ${
-                    isActive ? 'bg-bg text-primary-text font-semibold' : 'hover:bg-cover-ink/8'
+                  className={`w-[calc(100%+1px)] min-h-[118px] py-5 flex items-center justify-center rounded-r-[12px] rotate-180 [writing-mode:vertical-rl] font-display text-[16px] leading-none transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cover-ink ${
+                    isActive
+                      ? 'bg-(--tapa-papel) text-primary-text font-semibold shadow-[3px_-2px_6px_-3px_var(--teleo-cover-shadow)]'
+                      : 'hover:bg-cover-ink/8'
                   }`}
                 >
                   {label}

@@ -1,4 +1,3 @@
-import { Check, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
@@ -9,12 +8,11 @@ import { getProgressInfo } from "../lib/progress";
 import { StreakRibbon } from "../assets/components/atoms/StreakRibbon";
 import { CoverBand } from "../assets/components/atoms/CoverBand";
 import { Skeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
-import { Card, CardAction } from "../assets/components/molecules/Card";
+import { Card } from "../assets/components/molecules/Card";
 import { BookCardReading } from "../assets/components/molecules/BookCardReading";
-import { ProgressBar } from "../assets/components/atoms/ProgressBar";
 import { Button } from "../assets/components/atoms/Button";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
 import { UnmarkStreakModal } from "../assets/components/molecules/UnmarkStreakModal";
 import { RandomPickSheet } from "../assets/components/molecules/RandomPickSheet";
@@ -31,12 +29,14 @@ import { DemoNotice } from "../assets/components/molecules/DemoNotice";
 import { useTour } from "../context/tourContextValue";
 import { ANNOUNCEMENT_OFFERS_TOUR, ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
 import { LATEST_VERSION, markChangelogSeen } from "../lib/changelog";
-import { getGoalMessage } from "../lib/goalMessage";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
 import { getReadingPace, paceSentence } from '../lib/readingPace'
 import { useStaggerOnce } from '../lib/motion'
 import { queryClient } from '../lib/queryClient'
 import { DetalleLibro } from './DetalleLibro'
+import { GoalCard, StreakCard } from './mesa/MesaCards'
+import { MesaAncha } from './mesa/MesaAncha'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { RecapYearAnnouncement } from '../assets/components/recap/RecapYearAnnouncement'
 import { RecapViewer } from '../assets/components/recap/RecapViewer'
 import { isYearRecapAnnouncementDue, yearRecapSeenPatch } from '../lib/recapAnnouncement'
@@ -119,8 +119,6 @@ export function Mesa() {
     navigate("/configuracion/novedades", { state: { since: seenAtEntry ?? null } })
   }
 
-  const goalPercent =
-    goal > 0 ? Math.min(100, (completedCount / goal) * 100) : 0;
 
   // Meta cumplida (V.3.6.0): la postal sale una vez por año (en la cuenta), también para
   // quien ya la había cumplido antes de esta versión. Nunca a la vez que el anuncio de versión
@@ -160,12 +158,88 @@ export function Mesa() {
     navigate(`/${tab}`);
   }
 
+  // Pantallas grandes (V.4.0.0): La mesa con su propio diseño (mesa/MesaAncha.tsx). El libro
+  // abierto es el último que se actualizó; en el celular se sigue viendo la lista de siempre.
+  const breakpoint = useBreakpoint();
+  const isAncha = breakpoint !== "celular";
+  const booksByProgress = useMemo(
+    () => [...books].sort((a, b) => (b.progress_updated_at ?? "").localeCompare(a.progress_updated_at ?? "")),
+    [books]
+  );
+  // Meta cumplida en pantallas grandes: la estampilla fija lleva el matasellos con el día en
+  // que se cumplió (fecha de fin de la lectura número `goal` del año, como en Resumen › Año).
+  const goalMet = isAncha && goal > 0 && completedCount >= goal;
+  const { reads: goalYearReads } = useYearReads(goalMet ? user?.id : undefined, recapYear);
+  const goalReachedText = goalMet && goalYearReads.length >= goal ? goalYearReads[goal - 1].endDate : null;
+  const goalReachedOn = useMemo(
+    () =>
+      goalReachedText
+        ? new Date(Number(goalReachedText.slice(0, 4)), Number(goalReachedText.slice(5, 7)) - 1, Number(goalReachedText.slice(8, 10)))
+        : null,
+    [goalReachedText]
+  );
+
+  // Con la mesa de fondo, el separador de la tapa toma el color de la mesa (index.css).
+  useLayoutEffect(() => {
+    if (!isAncha) return;
+    document.documentElement.dataset.pantalla = "mesa";
+    return () => {
+      delete document.documentElement.dataset.pantalla;
+    };
+  }, [isAncha]);
+
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";
-  const dayLetters = ["L", "M", "X", "J", "V", "S", "D"];
 
   return (
-    <div className="relative min-h-screen bg-glow-top px-4 pt-4 pagina-media">
+    <div
+      className={
+        isAncha
+          ? "relative min-h-screen bg-mesa px-8 escritorio:px-13 pt-10 pb-14"
+          : "relative min-h-screen bg-glow-top px-4 pt-4"
+      }
+    >
+      {isAncha ? (
+        <MesaAncha
+          layout={breakpoint === "escritorio" ? "escritorio" : "tableta"}
+          greeting={profile?.nickname ? `${greeting}, ${profile.nickname}.` : `${greeting}.`}
+          books={booksByProgress}
+          booksLoading={booksLoading}
+          streak={streak}
+          markedToday={markedToday}
+          streakLoading={streakLoading}
+          dropKey={dropKey}
+          staggerClass={staggerMesa}
+          demoNotice={profile?.is_demo ? <div className="mb-6"><DemoNotice /></div> : null}
+          releaseCard={<NextReleaseCard userId={user?.id} />}
+          goalCard={
+            <GoalCard
+              goal={goal}
+              completedCount={completedCount}
+              isLoading={goalLoading}
+              onEdit={() => setIsGoalModalOpen(true)}
+              showStamp
+              reachedOn={goalReachedOn}
+            />
+          }
+          streakCard={
+            <StreakCard
+              streak={streak}
+              markedToday={markedToday}
+              weekDays={weekDays}
+              isLoading={streakLoading}
+              onCalendar={() => setIsCalendarOpen(true)}
+              onMark={() => void markToday()}
+              onUnmark={() => setIsUnmarkOpen(true)}
+            />
+          }
+          onCalendar={() => setIsCalendarOpen(true)}
+          onUpdate={setUpdatingBookId}
+          onOpen={setSelectedBookId}
+          onRandom={() => setIsRandomPickOpen(true)}
+        />
+      ) : (
+      <>
       <CoverBand />
       <StreakRibbon
         streak={streak}
@@ -240,108 +314,24 @@ export function Mesa() {
         <NextReleaseCard userId={user?.id} />
 
         {/* Racha diaria */}
-        <Card
-          tab={{ label: "Racha diaria de lectura" }}
-          tone="orange"
-          action={<CardAction onClick={() => setIsCalendarOpen(true)}>Calendario</CardAction>}
-        >
-          <div className="flex items-center gap-4">
-            <div className="relative w-[74px] h-[74px] shrink-0 flex items-center justify-center">
-              <span className="absolute inset-0 rounded-full border-[1.5px] border-dashed border-ornament" />
-              <span className="w-[50px] h-[50px] rounded-full bg-orange-soft text-orange flex items-center justify-center">
-                <Flame size={24} fill="currentColor" />
-              </span>
-            </div>
-            {streakLoading ? (
-              <div className="flex-1">
-                <Skeleton className="h-7 w-2/3 rounded-full" />
-                <Skeleton className="h-3.5 w-11/12 mt-2.5 rounded-full" />
-              </div>
-            ) : (
-            <div>
-              <p className="font-display font-semibold text-[28px] leading-none text-text">
-                <span key={streak} className="inline-block animate-fade-in">{streak}</span>{" "}
-                <span className="font-body font-medium text-body-md text-text-secondary">días seguidos</span>
-              </p>
-              <p className="text-body-md text-text-secondary mt-1">
-                {markedToday ? "Sesión de hoy marcada." : "Todavía no marcas la sesión de hoy."}
-              </p>
-            </div>
-            )}
-          </div>
-
-          {weekDays.length > 0 && (
-            <ol className={`grid grid-cols-7 gap-1.5 my-4 ${streakLoading ? "animate-skeleton" : ""}`} aria-label="Esta semana">
-              {weekDays.map((d, i) => (
-                <li
-                  key={d.date}
-                  className={`flex flex-col items-center gap-1 text-[11px] font-semibold ${
-                    d.isToday ? "text-primary-text" : "text-text-muted"
-                  } ${d.isFuture ? "opacity-50" : ""}`}
-                >
-                  <span
-                    className={`w-[30px] h-[30px] rounded-[8px] border-[1.5px] flex items-center justify-center ${
-                      d.read
-                        ? "bg-orange border-orange text-on-orange"
-                        : d.isToday
-                          ? "border-dashed border-primary-text bg-surface-2"
-                          : "border-border bg-surface-2"
-                    }`}
-                  >
-                    {d.read && <Check size={12} strokeWidth={3.5} />}
-                  </span>
-                  {dayLetters[i]}
-                </li>
-              ))}
-            </ol>
-          )}
-
-          <Button
-            variant={markedToday ? "outlineOrange" : "orange"}
-            className={weekDays.length > 0 ? "" : "mt-4"}
-            onClick={() => (markedToday ? setIsUnmarkOpen(true) : markToday())}
-          >
-            {markedToday && <Check size={18} strokeWidth={2.5} />}
-            {markedToday ? "Sesión de hoy marcada" : "Marcar sesión de hoy"}
-          </Button>
-        </Card>
+        <StreakCard
+          streak={streak}
+          markedToday={markedToday}
+          weekDays={weekDays}
+          isLoading={streakLoading}
+          onCalendar={() => setIsCalendarOpen(true)}
+          onMark={() => void markToday()}
+          onUnmark={() => setIsUnmarkOpen(true)}
+        />
 
         {/* Meta anual */}
-        <Card
-          tab={{ label: "Meta anual de lectura" }}
-          tone="pink"
-          action={<CardAction onClick={() => setIsGoalModalOpen(true)}>Editar</CardAction>}
-        >
-          {goalLoading ? (
-            <div aria-label="Cargando">
-              <Skeleton className="h-10 w-3/5 rounded-full" />
-              <Skeleton className="h-3.5 w-full mt-4 rounded-[6px]" />
-              <Skeleton className="h-4 w-1/2 mt-3.5 rounded-full" />
-            </div>
-          ) : (
-          <>
-          {/* V.3.5.0: la cifra grande, la frase en cursiva y "Editar" en la pestaña. */}
-          <div className="flex items-end justify-between gap-3">
-            <p className="font-title text-[40px] leading-none text-text">
-              <span key={completedCount} className="inline-block animate-fade-in tabular-nums">{completedCount}</span>{" "}
-              <span className="font-body font-medium text-body-md text-text-secondary">
-                de {goal} libros del {new Date().getFullYear()}
-              </span>
-            </p>
-            <span className="font-display font-semibold text-[20px] text-pink-text tabular-nums">
-              {Math.round(goalPercent)}%
-            </span>
-          </div>
-          <ProgressBar percent={goalPercent} color="var(--color-pink)" shape="firme" className="mt-3.5 h-3.5" />
-          <p className="font-display italic text-body-lg text-text-secondary mt-3">
-            {getGoalMessage(goalPercent)}
-          </p>
-          </>
-          )}
-        </Card>
+        <GoalCard goal={goal} completedCount={completedCount} isLoading={goalLoading} onEdit={() => setIsGoalModalOpen(true)} />
       </div>
 
       <div className="pb-28" />
+      </>
+      )}
+
       <TabBar active="mesa" onChange={handleTabChange} />
 
       {isGoalModalOpen && (
