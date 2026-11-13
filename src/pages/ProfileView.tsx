@@ -239,6 +239,7 @@ export function ProfileView({
   footer,
 }: ProfileViewProps) {
   const stagger = useStaggerOnce('perfil')
+  const staggerRepisas = useStaggerOnce('perfil-repisas')
   // Computadora y tableta (V.4.2.0, lienzo "Perfil · E"): la portada arriba; debajo, a la
   // izquierda, un librero con una repisa por estantería, y a la derecha las notas (Tu biblioteca,
   // Ahora mismo, la meta y Mis próximas lecturas) como las hojas de Bitácora.
@@ -355,7 +356,8 @@ export function ProfileView({
             <section aria-label="Tu librero" className="escritorio:row-span-6">
               <h2 className="smallcaps text-text-secondary mb-3">Tu librero</h2>
               <Librero>
-                <div className="pb-2">
+                {/* Las repisas entran una por una, como las tarjetas. */}
+                <div className={`pb-2 ${staggerRepisas}`}>
                   {priorityRepisa}
                   {shelves.map((shelf) => (
                     <Repisa

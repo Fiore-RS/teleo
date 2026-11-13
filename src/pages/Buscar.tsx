@@ -8,6 +8,7 @@ import { useReviews } from '../hooks/useReviews'
 import { useQuotes } from '../hooks/useQuotes'
 import { normalizeForSearch } from '../lib/quotes'
 import { useBreakpoint } from '../hooks/useBreakpoint'
+import { useStaggerOnce } from '../lib/motion'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
 import { Shelf, type ShelfItem } from '../assets/components/molecules/Shelf'
@@ -62,6 +63,7 @@ export function Buscar() {
   const query = normalizeForSearch(rawQuery)
   const { user } = useAuth()
   const breakpoint = useBreakpoint()
+  const stagger = useStaggerOnce('buscar')
   const { books, isLoading: booksLoading, refetch: refetchBooks } = useLibraryBooks(user?.id)
   const { sagas, isLoading: sagasLoading, refetch: refetchSagas } = useLibrarySagas(user?.id)
   const { reviews, isLoading: reviewsLoading, refetch: refetchReviews } = useReviews(user?.id)
@@ -143,8 +145,9 @@ export function Buscar() {
     <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-ancha">
       <EncabezadoAncho title="Buscar" subtitle={subtitle} />
 
+      {/* Los grupos entran escalonados; al cambiar la búsqueda, los que aparecen también. */}
       {!isLoading && total > 0 && (
-        <>
+        <div className={stagger}>
           {estanteCount > 0 && (
             <Grupo
               title="En tu estante"
@@ -194,7 +197,7 @@ export function Buscar() {
               </div>
             </Grupo>
           )}
-        </>
+        </div>
       )}
 
       <div className="pb-24" />
