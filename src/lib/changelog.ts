@@ -15,6 +15,23 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.0.0',
+    announced: true,
+    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
+    date: 'Fecha por definir',
+    title: 'Teleo en tu escritorio',
+    items: [
+      'Teleo se muda a teleo.fiorers.dev. Tus libros, reseñas y preferencias están en tu cuenta, así que todo te espera igual. Si tenías Teleo instalada en tu teléfono, instálala otra vez desde la dirección nueva y borra la anterior.',
+      'Teleo llega a la computadora y a la tableta. Se usa desde el navegador, sin instalar nada, y todas las pantallas se acomodan al ancho, sin quedarse en una columna angosta.',
+      'En pantallas grandes, las secciones van en la tapa del cuaderno, a la izquierda, con el buscador de tu biblioteca, "Agregar libro" y tu perfil. En la tableta la tapa es angosta, con las secciones escritas de lado.',
+      'La mesa en la computadora y la tableta: lo que estás leyendo, como un libro abierto con tu avance y la cinta de tu racha. Tus otros libros en curso quedan como lomos, y su marcapáginas te deja actualizar el progreso.',
+      'Cuando cumples tu meta del año, en la computadora su tarjeta lleva la estampilla fija con el matasellos del día en que la cumpliste.',
+      'Los detalles de un libro o de una saga se abren en una hoja a la derecha, encima de la pantalla, sin moverla. Se cierra con la X, con la tecla Esc o tocando fuera de ella.',
+      'Con mouse, botones y portadas reaccionan al pasar por encima, y con el teclado se ve dónde estás. En la computadora, la tecla / te lleva al buscador.',
+      'Es la primera parte: en las próximas versiones Estante, Cuaderno, Bitácora, Perfil y el resto de las pantallas estrenan su diseño para pantallas grandes.',
+    ],
+  },
+  {
     version: '3.8.0',
     date: '12 de noviembre de 2026',
     title: 'Entre tapas',
