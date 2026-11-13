@@ -98,6 +98,10 @@
   --teleo-cover: var(--teleo-primary);
   --teleo-cover-ink: var(--teleo-primary-ink);
   --teleo-cover-shadow: rgba(60, 20, 20, 0.45);
+  /* La mesa en pantallas grandes (V.4.0.0): un tono más oscuro que el fondo. */
+  --teleo-mesa: color-mix(in srgb, var(--teleo-bg) 95%, var(--teleo-text));
+  /* Libro abierto de La mesa: sombra del pliegue. */
+  --teleo-pliegue: rgba(90, 40, 40, 0.13);
 }
 
 /* "Noche con lámpara" */
@@ -161,6 +165,9 @@
   --teleo-cover: color-mix(in srgb, var(--teleo-primary) 42%, var(--teleo-bg));
   --teleo-cover-ink: var(--teleo-text);
   --teleo-cover-shadow: rgba(0, 0, 0, 0.6);
+  --teleo-mesa: color-mix(in srgb, var(--teleo-bg) 78%, black);
+  /* En oscuro, el pliegue sigue siendo sombra (no el color del texto, que es claro). */
+  --teleo-pliegue: rgba(0, 0, 0, 0.38);
 }
 
 @theme {
@@ -219,6 +226,7 @@
   --color-banner-ink: var(--teleo-banner-ink);
   --color-cover: var(--teleo-cover);
   --color-cover-ink: var(--teleo-cover-ink);
+  --color-mesa: var(--teleo-mesa);
 
   /* Tamaños de pantalla (V.4.0.0): tableta (tapa angosta) y escritorio (tapa completa). Los
      mismos valores que useBreakpoint. Debajo de tableta, Teleo es la de siempre. */
@@ -1115,6 +1123,7 @@ html {
    columna de la app (App.tsx, .app-columna) deja ese espacio libre. */
 :root {
   --tapa-ancho: 0px;
+  --tapa-papel: var(--color-bg);
 }
 @media (min-width: 44rem) {
   :root {
@@ -1122,6 +1131,11 @@ html {
   }
   html[data-tapa] .app-columna {
     padding-left: var(--tapa-ancho);
+  }
+  /* En La mesa el fondo es la mesa: el separador de la sección activa toma ese color para
+     seguir unido a la pantalla (Mesa marca <html data-pantalla="mesa">). */
+  html[data-pantalla="mesa"] {
+    --tapa-papel: var(--color-mesa);
   }
 }
 @media (min-width: 70rem) {
@@ -1162,4 +1176,28 @@ html {
     padding-inline: 3rem;
     padding-top: 2.5rem;
   }
+}
+
+/* Lomo de libro acostado (V.4.0.0, "También en tu mesa"): volumen con luz arriba y sombra
+   abajo, las tapas más oscuras en los extremos y dos filetes dorados. El color lo pone quien lo
+   usa. */
+.book-spine {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0) 30%, rgb(255 255 255 / 0) 68%, rgb(0 0 0 / 0.18));
+  box-shadow: inset 7px 0 0 rgb(0 0 0 / 0.14), inset -5px 0 0 rgb(0 0 0 / 0.1), 0 2px 3px rgb(0 0 0 / 0.25);
+}
+.book-spine::before,
+.book-spine::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: rgb(255 236 190 / 0.55);
+  pointer-events: none;
+}
+.book-spine::before {
+  left: 14px;
+}
+.book-spine::after {
+  right: 12px;
 }
