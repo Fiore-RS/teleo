@@ -20,7 +20,8 @@ import { GenreSuggestSheet } from "../assets/components/molecules/GenreSuggestSh
 import { CompleteShelfSheet } from "../assets/components/molecules/CompleteShelfSheet";
 import { BookCover } from "../assets/components/molecules/BookCover";
 import { SagaCover } from "../assets/components/molecules/SagaCover";
-import { Shelf } from "../assets/components/molecules/Shelf";
+import { LibreroVacio, Shelf } from "../assets/components/molecules/Shelf";
+import { CoverSkeleton } from "../assets/components/atoms/Skeleton";
 import { ShelfViewSheet } from "../assets/components/molecules/ShelfViewSheet";
 import { shelfViewFromProfile, shelfViewToProfile, type ShelfView } from "../lib/shelfView";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
@@ -83,7 +84,8 @@ export function Estante() {
   // Libros por repisa (V.4.0.0): la elección de 3 o 4 vale para el celular; en tableta y
   // escritorio caben más, así las portadas no crecen de más con el ancho.
   const breakpoint = useBreakpoint();
-  const perRow = shelfView.columns + (breakpoint === "escritorio" ? 4 : breakpoint === "tableta" ? 2 : 0);
+  const extraColumns = breakpoint === "escritorio" ? 4 : breakpoint === "tableta" ? 2 : 0;
+  const perRow = shelfView.columns + extraColumns;
   // Las portadas chicas solo hacen falta con 4 por repisa en el celular.
   const smallCovers = shelfView.columns === 4 && breakpoint === "celular";
   const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
@@ -354,6 +356,10 @@ export function Estante() {
   // Encabezado de pantallas grandes (V.4.1.0): la línea de debajo del título cuenta la
   // biblioteca completa, o cuántos se ven de cuántos si hay búsqueda o filtros.
   const isAncha = breakpoint !== "celular";
+  // En el librero (tableta y computadora, con repisa) la carga y los mensajes también van
+  // dentro del mueble; las sagas, con pilas más anchas, llevan una menos por repisa.
+  const enLibrero = isAncha && shelfView.planks;
+  const sagaPerRow = isAncha ? perRow - 1 : perRow;
   const isNarrowed = !!search.trim() || hasActiveAdvFilters || (tab === "libros" && quickFlag !== null);
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const estanteSubtitle = isLoading
@@ -465,7 +471,20 @@ export function Estante() {
 
         {/* Biblioteca vacía (V.3.3.0): en vez del aviso de filtro, cómo empezar y el atajo a
             Goodreads para quien llega con su biblioteca. Desaparece con el primer libro. */}
-        {!isLoading && tab === "libros" && books.length === 0 && (
+        {!isLoading && tab === "libros" && books.length === 0 &&
+          (enLibrero ? (
+            <LibreroVacio>
+              <p className="font-title text-[24px] leading-tight">Tu estante está vacío</p>
+              <p className="text-body-md opacity-80 mt-2">Toca “Agregar libro” para agregar tu primer libro.</p>
+              <button
+                type="button"
+                onClick={() => setIsGoodreadsOpen(true)}
+                className="mt-3 text-body-md font-bold underline underline-offset-4 rounded-chip focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF3EA]"
+              >
+                ¿Ya usas Goodreads? Trae tu biblioteca
+              </button>
+            </LibreroVacio>
+          ) : (
           <div className="text-center px-4 py-6">
             <p className="font-title text-[22px] leading-tight text-text">Tu estante está vacío</p>
             <p className="text-body-md text-text-secondary mt-2">
@@ -479,19 +498,43 @@ export function Estante() {
               ¿Ya usas Goodreads? Trae tu biblioteca
             </button>
           </div>
-        )}
-        {!isLoading && tab === "libros" && books.length > 0 && filteredBooks.length === 0 && (
+          ))}
+        {!isLoading && tab === "libros" && books.length > 0 && filteredBooks.length === 0 &&
+          (enLibrero ? (
+            <LibreroVacio>
+              <p className="font-display italic text-[19px]">No hay libros que coincidan con este filtro.</p>
+            </LibreroVacio>
+          ) : (
           <p className="text-body-md text-text-secondary text-center">
             No hay libros que coincidan con este filtro.
           </p>
-        )}
-        {!isLoading && tab === "sagas" && filteredSagas.length === 0 && (
+          ))}
+        {!isLoading && tab === "sagas" && filteredSagas.length === 0 &&
+          (enLibrero ? (
+            <LibreroVacio>
+              <p className="font-display italic text-[19px]">No hay sagas que coincidan con este filtro.</p>
+            </LibreroVacio>
+          ) : (
           <p className="text-body-md text-text-secondary text-center">
             No hay sagas que coincidan con este filtro.
           </p>
-        )}
+          ))}
 
-        {isLoading && (
+        {isLoading && enLibrero && (
+          <div aria-label="Cargando">
+            <Shelf
+              librero
+              perRow={tab === "sagas" ? sagaPerRow : perRow}
+              showNames={false}
+              items={Array.from({ length: (tab === "sagas" ? sagaPerRow : perRow) * 2 }, (_, i) => ({
+                key: `cargando-${i}`,
+                title: "",
+                cover: <CoverSkeleton className="w-full" />,
+              }))}
+            />
+          </div>
+        )}
+        {isLoading && !enLibrero && (
           <div
             className="grid gap-x-3 gap-y-4"
             style={{ gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))` }}
@@ -502,7 +545,7 @@ export function Estante() {
             ))}
           </div>
         )}
-        {tab === "libros" && !isLoading && (
+        {tab === "libros" && !isLoading && !(enLibrero && filteredBooks.length === 0) && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
             <SortableContext items={isReorderingBooks ? sortedBooks.map((b) => b.id) : []} strategy={rectSortingStrategy}>
               <Shelf
@@ -540,12 +583,12 @@ export function Estante() {
           </DndContext>
         )}
 
-        {tab === "sagas" && !isLoading && (
+        {tab === "sagas" && !isLoading && !(enLibrero && filteredSagas.length === 0) && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSagaDragEnd}>
             <SortableContext items={isReorderingSagas ? sortedSagas.map((s) => s.id) : []} strategy={rectSortingStrategy}>
               <Shelf
                 className={staggerSagas}
-                perRow={perRow}
+                perRow={sagaPerRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
                 librero={breakpoint !== "celular"}
@@ -657,7 +700,7 @@ export function Estante() {
       />
 
       {isViewSheetOpen && (
-        <ShelfViewSheet view={shelfView} onChange={changeShelfView} onClose={() => setIsViewSheetOpen(false)} />
+        <ShelfViewSheet view={shelfView} extraColumns={extraColumns} onChange={changeShelfView} onClose={() => setIsViewSheetOpen(false)} />
       )}
 
       <FilterModal

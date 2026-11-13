@@ -157,9 +157,12 @@ export function Shelf({ items, perRow = 3, showNames = true, planks = true, wrap
   )
 
   if (!inLibrero) return grid
+  return <Librero>{grid}</Librero>
+}
 
-  // El mueble: marco del color de repisa del tema y, adentro, el fondo oscuro con sombra
-  // arriba y a los lados, como un librero de pared.
+/** El mueble del librero (V.4.1.0): marco del color de repisa del tema y, adentro, el fondo
+ *  oscuro con sombra arriba y a los lados, como un librero de pared. */
+export function Librero({ children }: { children: ReactNode }) {
   return (
     <div
       className="rounded-[10px] p-3.5 pb-6"
@@ -176,8 +179,25 @@ export function Shelf({ items, perRow = 3, showNames = true, planks = true, wrap
           boxShadow: 'inset 0 10px 18px -8px rgba(0,0,0,0.55)',
         }}
       >
-        {grid}
+        {children}
       </div>
     </div>
+  )
+}
+
+/** Librero con una sola repisa vacía y un mensaje adentro (Estante vacío o sin resultados),
+ *  en letra clara sobre la madera. */
+export function LibreroVacio({ children }: { children: ReactNode }) {
+  return (
+    <Librero>
+      <div className="px-5 pt-12 pb-9 text-center text-[#FBF3EA]">{children}</div>
+      <div className="pb-4">
+        <div
+          aria-hidden="true"
+          className="h-3 border-y border-border shadow-[0_8px_12px_-8px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)]"
+          style={plankBackground}
+        />
+      </div>
+    </Librero>
   )
 }
