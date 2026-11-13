@@ -170,7 +170,7 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
             onClick={() => go('perfil')}
             aria-current={perfilActive ? 'page' : undefined}
             data-tour={tour('perfil')}
-            className={`w-[calc(100%+1px)] flex items-center gap-3 py-2 pl-2 -ml-2 rounded-l-[12px] text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cover-ink ${
+            className={`relative w-[calc(100%+1px)] flex items-center gap-3 py-2 pl-3 rounded-l-[12px] text-left transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cover-ink ${
               perfilActive ? 'bg-(--tapa-papel) text-primary-text shadow-[-3px_2px_6px_-3px_var(--teleo-cover-shadow)]' : 'hover:bg-cover-ink/8'
             }`}
           >
