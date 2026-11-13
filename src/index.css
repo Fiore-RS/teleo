@@ -423,6 +423,9 @@
      de anuncio. Se usa "backwards" (y no "both") para que al terminar la animación no quede un
      transform fijo encima: dnd-kit mueve los elementos con transform al arrastrar y una
      animación con "both" lo pisaría. */
+  /* Entrada de un solo elemento (V.4.3.0: el encabezado de Buscar, que entra cada vez). */
+  .animate-rise-in { animation: teleo-rise-in var(--motion-slow) var(--ease-enter) backwards; }
+
   .stagger-children > * { animation: teleo-rise-in var(--motion-slow) var(--ease-enter) backwards; }
   .stagger-children > *:nth-child(2) { animation-delay: 35ms; }
   .stagger-children > *:nth-child(3) { animation-delay: 70ms; }
@@ -444,7 +447,7 @@
   .separadores-out > *:nth-child(1) { animation-delay: 90ms; }
 
   @media (prefers-reduced-motion: reduce) {
-    .animate-sheet-down, .separadores-in > *, .separadores-out > *, .animate-sheet-out, .animate-hoja-in, .animate-hoja-out, .animate-fade-in, .animate-fade-out,
+    .animate-sheet-down, .animate-rise-in, .separadores-in > *, .separadores-out > *, .animate-sheet-out, .animate-hoja-in, .animate-hoja-out, .animate-fade-in, .animate-fade-out,
     .animate-pop-in, .animate-pop-out, .stagger-children > *, .animate-skeleton,
     .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop,
     .animate-subpage-in, .animate-subpage-back, .animate-float-in {
