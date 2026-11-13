@@ -538,6 +538,7 @@ export function DetalleSaga({
   return (
     <>
       <Sheet
+        side
         onClose={onClose}
         title={isEditing ? "Editar saga" : "Detalles de la saga"}
         footer={!isEditing && saga ? (

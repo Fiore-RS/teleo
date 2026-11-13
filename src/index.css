@@ -285,6 +285,15 @@
   from { transform: translateY(0); }
   to { transform: translateY(-100%); }
 }
+/* Hoja de detalle (V.4.0.0): entra y sale por la derecha, con el margen de la pantalla. */
+@keyframes teleo-hoja-in {
+  from { transform: translateX(calc(100% + 24px)); }
+  to { transform: translateX(0); }
+}
+@keyframes teleo-hoja-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100% + 24px)); }
+}
 @keyframes teleo-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -370,6 +379,8 @@
 @layer utilities {
   .animate-sheet-down { animation: teleo-sheet-down var(--motion-slow) var(--ease-enter); }
   .animate-sheet-out { animation: teleo-sheet-out var(--motion-base) var(--ease-exit) forwards; }
+  .animate-hoja-in { animation: teleo-hoja-in var(--motion-slow) var(--ease-enter); }
+  .animate-hoja-out { animation: teleo-hoja-out var(--motion-base) var(--ease-exit) forwards; }
   .animate-fade-in { animation: teleo-fade-in var(--motion-base) var(--ease-enter); }
   .animate-fade-out { animation: teleo-fade-out var(--motion-base) var(--ease-exit) forwards; }
   .animate-pop-in { animation: teleo-pop-in var(--motion-base) var(--ease-enter); }
@@ -412,7 +423,7 @@
   .stagger-children > *:nth-child(n + 7) { animation-delay: 210ms; }
 
   @media (prefers-reduced-motion: reduce) {
-    .animate-sheet-down, .animate-sheet-out, .animate-fade-in, .animate-fade-out,
+    .animate-sheet-down, .animate-sheet-out, .animate-hoja-in, .animate-hoja-out, .animate-fade-in, .animate-fade-out,
     .animate-pop-in, .animate-pop-out, .stagger-children > *, .animate-skeleton,
     .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop,
     .animate-subpage-in, .animate-subpage-back, .animate-float-in {
@@ -1200,4 +1211,11 @@ html {
 }
 .book-spine::after {
   right: 12px;
+}
+
+/* Al abrir una hoja se bloquea el desplazamiento del fondo; con mouse, eso quitaba la barra de
+   desplazamiento y la pantalla se corría unos píxeles. Reservar su espacio en tableta y
+   escritorio deja todo quieto (V.4.0.0, hoja de detalle). */
+@media (min-width: 44rem) {
+  html { scrollbar-gutter: stable; }
 }
