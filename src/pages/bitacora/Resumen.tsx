@@ -639,6 +639,10 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
       {/* Mientras carga, en tableta y computadora: el lugar de las hojas de "Más de tu año". */}
       {isLoading && hojaMode && (
         <div className="hojas-columnas" aria-hidden="true">
+          {/* Como en las hojas de verdad: van dentro de un envoltorio, porque los hijos directos
+              de .hojas-columnas son "display: contents" y la hoja perdía su caja (y su esquina
+              doblada se salía por la derecha y aparecía la barra horizontal). */}
+          <div>
           {[3, 4, 2, 3].map((lines, i) => (
             <Hoja key={i} as="div" className="mb-5.5 break-inside-avoid">
               <Skeleton className="h-5 w-1/2 rounded-full mb-4" />
@@ -647,6 +651,7 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
               ))}
             </Hoja>
           ))}
+          </div>
         </div>
       )}
       {!isLoading && n > 0 && (

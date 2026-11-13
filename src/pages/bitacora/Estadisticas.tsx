@@ -127,6 +127,10 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
         <div>
           <h2 className="smallcaps text-text-secondary mb-3">De toda tu biblioteca</h2>
           <div className="hojas-columnas">
+            {/* Como en las hojas de verdad: van dentro de un envoltorio, porque los hijos directos
+                de .hojas-columnas son "display: contents" y la hoja perdía su caja (y su esquina
+                doblada se salía por la derecha y aparecía la barra horizontal). */}
+            <div>
             {[4, 3, 5, 3, 4, 2].map((lines, i) => (
               <Hoja key={i} as="div" className="mb-5.5 break-inside-avoid">
                 <Skeleton className="h-5 w-1/2 rounded-full mb-4" />
@@ -135,6 +139,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
                 ))}
               </Hoja>
             ))}
+            </div>
           </div>
         </div>
       </div>
