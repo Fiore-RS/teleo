@@ -36,15 +36,14 @@ function progressDetail(book: Book): string | null {
   return null
 }
 
-/** Colores de los lomos: de la paleta del tema, elegidos por el título (el mismo libro siempre
- *  del mismo color). Con texto on-accent, que en oscuro pasa a oscuro. */
-const SPINE_COLORS = [
-  'var(--color-accent-finished)',
-  'var(--color-state-pending)',
-  'var(--color-state-paused)',
-  'var(--color-accent-reading)',
-  'var(--color-magenta)',
-  'var(--color-orange)',
+/** Colores de los lomos: los del tema elegido (V.4.3.0; antes mezclaba colores de estado, que
+ *  son iguales en todos los temas), elegidos por el título para que el mismo libro siempre
+ *  tenga el mismo color. Cada color va con su texto, que el tema ajusta en claro y oscuro. */
+const SPINE_COLORS: { bg: string; ink: string }[] = [
+  { bg: 'var(--color-primary)', ink: 'var(--color-primary-ink)' },
+  { bg: 'var(--color-orange)', ink: 'var(--color-on-orange)' },
+  { bg: 'var(--color-pink)', ink: 'var(--color-on-pink)' },
+  { bg: 'var(--color-magenta)', ink: 'var(--color-on-magenta)' },
 ]
 function spineColor(title: string) {
   let h = 0
@@ -223,8 +222,8 @@ function BookSpines({ books, onOpen, onUpdate, onSeeAll }: BookSpinesProps) {
               <button
                 type="button"
                 onClick={() => onOpen(book.id)}
-                className="book-spine relative w-full flex items-center gap-3.5 min-h-[46px] py-2 pl-7 pr-6 rounded-[3px_4px_4px_3px] text-left text-on-accent transition-[filter] hover:brightness-105"
-                style={{ backgroundColor: spineColor(book.title) }}
+                className="book-spine relative w-full flex items-center gap-3.5 min-h-[46px] py-2 pl-7 pr-6 rounded-[3px_4px_4px_3px] text-left transition-[filter] hover:brightness-105"
+                style={{ backgroundColor: spineColor(book.title).bg, color: spineColor(book.title).ink }}
               >
                 <span className="flex-1 min-w-0 font-title text-[16px] leading-tight">{book.title}</span>
                 {surname && <span className="shrink-0 smallcaps text-[10px]! opacity-85">{surname}</span>}

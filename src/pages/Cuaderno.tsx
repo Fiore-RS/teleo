@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { columnIndexes, columnsFor } from '../lib/columns'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -166,6 +166,25 @@ export function Cuaderno() {
       normalizeForSearch(`${quote.quote_text} ${quote.book.title} ${quote.book.author ?? ''}`).includes(q)
     )
   }, [quotes, search])
+
+  // Desde el menú Agregar de la tapa (V.4.3.0, tableta y escritorio): ?agregar=cita (con
+  // ?vista=citas) abre Nueva cita y ?agregar=resena abre la elección del libro para reseñar.
+  // Puede pasar estando ya en el Cuaderno, por eso se mira cada vez que cambia la dirección.
+  const agregarParam = searchParams.get('agregar')
+  const [prevAgregar, setPrevAgregar] = useState<string | null>(null)
+  if (agregarParam !== prevAgregar) {
+    setPrevAgregar(agregarParam)
+    if (agregarParam === 'cita') setIsAddingQuote(true)
+    if (agregarParam === 'resena') setIsPickerOpen(true)
+  }
+  // Ya leído, se quita de la dirección para que no vuelva a pasar al recargar.
+  useEffect(() => {
+    if (agregarParam === null) return
+    const next = new URLSearchParams(searchParams)
+    next.delete('agregar')
+    setSearchParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agregarParam])
 
   function changeTab(next: 'resenas' | 'citas') {
     if (next === tab) return

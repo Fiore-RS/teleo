@@ -13,12 +13,12 @@ interface FabProps {
 /** Botón flotante para agregar (V.3.0.0), sobre la barra de pestañas a la derecha. Lleva la
  *  esquina de arriba doblada, como una hoja. Se monta en <body> igual que TabBar, y el
  *  safe-area va como padding del contenedor y no dentro de `bottom` (si env() no resuelve,
- *  un calc() inválido dejaría el botón sin anclar). V.4.0.0: en tableta y escritorio no hay
- *  barra abajo, así que baja a la esquina de la pantalla, a la derecha de la tapa. */
+ *  un calc() inválido dejaría el botón sin anclar). V.4.3.0: en tableta y escritorio no se
+ *  muestra, porque se agrega desde el menú Agregar de la tapa del cuaderno. */
 export function Fab({ label, onClick, icon: Icon = Plus, tourId }: FabProps) {
   return createPortal(
     <div
-      className="fixed inset-x-0 bottom-0 z-30 pointer-events-none"
+      className="fixed inset-x-0 bottom-0 z-30 pointer-events-none tableta:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="relative mx-auto w-full max-w-120 tableta:max-w-none">

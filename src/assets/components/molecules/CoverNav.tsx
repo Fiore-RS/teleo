@@ -23,6 +23,16 @@ function CoverLogo({ src, className }: { src: string; className: string }) {
 }
 
 /** Secciones de la tapa. Perfil no va en la lista: se abre desde tu foto, abajo. */
+/** Menú Agregar (V.4.3.0): separadores que salen del borde de la tapa. Cada opción lleva a la
+ *  pantalla donde vive lo que se agrega y abre ahí su formulario de siempre. Cada separador en
+ *  un color suave del tema elegido (principal y sus tres acentos), que cambia solo en oscuro. */
+const addOptions: { key: string; label: string; to: string; tone: string }[] = [
+  { key: 'libro', label: 'Libro', to: '/estante?agregar=libro', tone: 'bg-primary-soft' },
+  { key: 'saga', label: 'Saga', to: '/estante?agregar=saga', tone: 'bg-orange-soft' },
+  { key: 'cita', label: 'Cita', to: '/cuaderno?vista=citas&agregar=cita', tone: 'bg-pink-soft' },
+  { key: 'resena', label: 'Reseña', to: '/cuaderno?agregar=resena', tone: 'bg-magenta-soft' },
+]
+
 const sections: { key: Exclude<TabKey, 'perfil'>; label: string }[] = [
   { key: 'mesa', label: 'La mesa' },
   { key: 'estante', label: 'Estante' },
@@ -40,9 +50,10 @@ interface CoverNavProps {
  *  misma tapa de la barra de pestañas del teléfono (color principal del tema con textura de
  *  puntos y costura), puesta a la izquierda. La sección activa es un separador de papel del
  *  color del fondo que sale de la tapa y se une con la pantalla.
- *  - Escritorio (260px): el logo completo, buscador, secciones con nombre, "Agregar libro" y tu foto.
+ *  - Escritorio (260px): el logo completo, buscador, secciones con nombre, "Agregar" y tu foto.
  *  - Tableta (76px): el logo del libro solo; las secciones escritas de lado, como lomos; abajo
  *    + y tu foto.
+ *  "Agregar" (y el + de tableta) abre el menú de separadores: Libro, Saga, Cita, Reseña (V.4.3.0).
  *  Se dibuja dentro del portal de TabBar; en el celular está oculta (hidden tableta:flex). */
 export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
   const navigate = useNavigate()
@@ -66,6 +77,71 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
     input.setSelectionRange(input.value.length, input.value.length)
   }, [cameTyping])
   useEffect(() => () => window.clearTimeout(typingTimer.current), [])
+
+  // Menú Agregar (V.4.3.0). Los separadores se alinean con el borde de abajo del botón que lo
+  // abrió (el de escritorio o el + de tableta), así que se mide al abrir.
+  // Al cerrar, los separadores se guardan bajo la tapa (animación de salida) y recién después
+  // se desmonta el menú.
+  const [addOpen, setAddOpen] = useState(false)
+  const [addClosing, setAddClosing] = useState(false)
+  const [addBottom, setAddBottom] = useState(0)
+  const addButtonRef = useRef<HTMLButtonElement | null>(null)
+  const firstAddRef = useRef<HTMLButtonElement>(null)
+  const closeTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(closeTimer.current), [])
+  const addShown = addOpen && !addClosing
+
+  function toggleAdd(button: HTMLButtonElement) {
+    if (addOpen) {
+      closeAdd()
+      return
+    }
+    window.clearTimeout(closeTimer.current)
+    setAddClosing(false)
+    addButtonRef.current = button
+    setAddBottom(window.innerHeight - button.getBoundingClientRect().bottom)
+    setAddOpen(true)
+  }
+
+  function closeAdd({ focus = true }: { focus?: boolean } = {}) {
+    if (!addOpen || addClosing) return
+    if (focus) addButtonRef.current?.focus()
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    setAddClosing(true)
+    closeTimer.current = window.setTimeout(() => {
+      setAddOpen(false)
+      setAddClosing(false)
+    }, reduce ? 0 : 280)
+  }
+
+  function chooseAdd(to: string) {
+    // Si la pantalla cambia, la tapa se vuelve a montar y el menú desaparece; si no, se guarda.
+    closeAdd({ focus: false })
+    navigate(to)
+  }
+
+  useEffect(() => {
+    if (!addShown) return
+    firstAddRef.current?.focus()
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      closeAdd()
+    }
+    // Si cambia el tamaño de la pantalla, el botón se mueve: mejor cerrar sin animación.
+    function onResize() {
+      window.clearTimeout(closeTimer.current)
+      setAddOpen(false)
+      setAddClosing(false)
+    }
+    document.addEventListener('keydown', onKey)
+    window.addEventListener('resize', onResize)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('resize', onResize)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addShown])
 
   function openBuscar(text: string) {
     const q = text.trim()
@@ -142,6 +218,40 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
         className="absolute top-3 bottom-3 right-2 escritorio:right-3 border-r-[1.5px] border-dashed border-stitch pointer-events-none"
       />
 
+      {/* Menú Agregar (V.4.3.0): el velo cubre solo la mesa, la tapa queda a la vista. Los
+          separadores salen de debajo de la tapa, en columna, desde la altura del botón. El
+          contenedor recorta la entrada (y deja aire para la sombra y el hover). Cada separador
+          es 24px más largo de lo que se ve: ese pedazo queda escondido bajo el borde de la tapa,
+          así al pasar el mouse se corre a la derecha y parece que crece, sin despegarse. */}
+      {addOpen && (
+        <>
+          <div
+            aria-hidden="true"
+            className={`fixed inset-y-0 right-0 left-(--tapa-ancho) bg-black/35 ${addClosing ? 'animate-fade-out pointer-events-none' : 'animate-fade-in'}`}
+            onClick={() => closeAdd()}
+          />
+          <div
+            className="fixed left-(--tapa-ancho) w-[200px] overflow-hidden pr-10 pb-6"
+            style={{ bottom: Math.max(0, addBottom - 24) }}
+          >
+            <div id="menu-agregar" role="menu" aria-label="Agregar" className={`flex flex-col gap-2 ${addClosing ? 'separadores-out pointer-events-none' : 'separadores-in'}`}>
+              {addOptions.map(({ key, label, to, tone }, i) => (
+                <button
+                  key={key}
+                  ref={i === 0 ? firstAddRef : undefined}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => chooseAdd(to)}
+                  className={`w-[174px] h-11 -ml-6 pl-6 rounded-r-[10px] ${tone} text-text font-display font-semibold text-[18px] shadow-[6px_8px_16px_-10px_var(--teleo-cover-shadow)] transition-transform duration-150 hover:translate-x-3 focus-visible:translate-x-3 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-primary-text motion-reduce:transition-none`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* ---------- Escritorio ---------- */}
       <div className="hidden escritorio:flex flex-col flex-1 min-h-0 pt-8 pb-6 pl-6.5">
         <div className="pr-10">
@@ -206,10 +316,16 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
           <div className="pr-10">
             <button
               type="button"
-              onClick={() => navigate('/estante?agregar=libro')}
-              className="w-full h-11 rounded-button bg-cover-ink text-cover font-bold text-body-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cover-ink"
+              onClick={(e) => toggleAdd(e.currentTarget)}
+              aria-haspopup="menu"
+              aria-expanded={addShown}
+              aria-controls={addShown ? 'menu-agregar' : undefined}
+              data-tour={breakpoint === 'escritorio' ? 'agregar' : undefined}
+              className={`w-full h-11 rounded-button font-bold text-body-md transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cover-ink ${
+                addShown ? 'bg-cover-ink/12 text-cover-ink border-[1.5px] border-cover-ink/70' : 'bg-cover-ink text-cover'
+              }`}
             >
-              Agregar libro
+              {addShown ? 'Cerrar' : 'Agregar'}
             </button>
           </div>
           <button
@@ -262,11 +378,22 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
         <div className="self-center pr-4.5 flex flex-col items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate('/estante?agregar=libro')}
-            aria-label="Agregar libro"
-            className="w-10 h-10 rounded-button bg-cover-ink text-cover flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cover-ink"
+            onClick={(e) => toggleAdd(e.currentTarget)}
+            aria-label={addShown ? 'Cerrar' : 'Agregar'}
+            aria-haspopup="menu"
+            aria-expanded={addShown}
+            aria-controls={addShown ? 'menu-agregar' : undefined}
+            data-tour={breakpoint === 'tableta' ? 'agregar' : undefined}
+            className={`w-10 h-10 rounded-button flex items-center justify-center transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cover-ink ${
+              addShown ? 'bg-(--tapa-papel) text-primary-text' : 'bg-cover-ink text-cover'
+            }`}
           >
-            <Plus size={20} strokeWidth={2.4} aria-hidden="true" />
+            <Plus
+              size={20}
+              strokeWidth={2.4}
+              aria-hidden="true"
+              className={`transition-transform duration-200 motion-reduce:transition-none ${addShown ? 'rotate-45' : ''}`}
+            />
           </button>
           <button
             type="button"
