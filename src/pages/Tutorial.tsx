@@ -21,7 +21,7 @@ const sections: TutorialSection[] = [
   {
     title: 'Estante',
     points: [
-      'Toca el botón + de abajo (en la computadora o la tableta, "Agregar libro" en la tapa del cuaderno) para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
+      'Toca el botón + de abajo (en la computadora o la tableta, "Agregar" en la tapa del cuaderno y después Libro) para agregar libros buscando por título, autor o ISBN, escaneando el código de barras, o creándolos desde cero si no aparecen en la búsqueda.',
       '¿Ya usas Goodreads? Trae tu biblioteca desde Configuración › Importar desde Goodreads (o desde el atajo del Estante vacío). Las estanterías que coinciden con un género quedan como género, y las demás como etiquetas.',
       'Al terminar un libro, guarda su fecha de inicio y de fin, y escribe la reseña solo si quieres. Todo libro con fecha de fin cuenta para la meta de ese año.',
       'Agrupa libros en sagas, agrega varios a la vez y anota cuántos tendrá en total para ver tu progreso, por ejemplo "2 de 5". Al terminar un libro de una saga, Teleo te propone el siguiente. Ponle género y ánimo a la saga y llegan a todos sus libros; cada libro se puede cambiar en Editar libro.',
@@ -37,8 +37,8 @@ const sections: TutorialSection[] = [
   {
     title: 'Cuaderno',
     points: [
-      'Toca el botón + de abajo para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia, agrega calificaciones personalizadas (por ejemplo, romance o giros de trama) y guarda tus citas favoritas.',
-      'Consulta todas tus reseñas pasadas cuando quieras revivirlas, y en Citas encuentra todas tus citas guardadas, con una al azar arriba; agrega una nueva con el botón + de abajo.',
+      'Toca el botón + de abajo (en la computadora o la tableta, "Agregar" en la tapa y después Reseña) para escribir una reseña de cualquier libro terminado que todavía no tenga una, sin apuro: califica tu experiencia, agrega calificaciones personalizadas (por ejemplo, romance o giros de trama) y guarda tus citas favoritas.',
+      'Consulta todas tus reseñas pasadas cuando quieras revivirlas, y en Citas encuentra todas tus citas guardadas, con una al azar arriba; agrega una nueva con el botón + de abajo (o con "Agregar" en la tapa y después Cita).',
       'Ordena tus reseñas y tus citas por título, autor o fecha con el botón de organizar, o elige "Libre" para acomodarlas arrastrándolas.',
     ],
   },
@@ -73,7 +73,7 @@ const sections: TutorialSection[] = [
     title: 'En la computadora y la tableta',
     points: [
       'Teleo se adapta al tamaño de tu pantalla. Desde la computadora se usa en el navegador, en teleo.fiorers.dev, sin instalar nada.',
-      'Las secciones van en la tapa del cuaderno, a la izquierda, junto con el buscador, "Agregar libro" y tu perfil.',
+      'Las secciones van en la tapa del cuaderno, a la izquierda, junto con el buscador, "Agregar" y tu perfil. "Agregar" abre unos separadores para agregar un libro, una saga, una cita o una reseña desde cualquier pantalla.',
       'En la computadora, La mesa se ve como un libro abierto con lo que estás leyendo. Los demás libros en curso quedan como lomos debajo: toca un lomo para ver sus detalles, o su marcapáginas para actualizar el progreso.',
       'Los detalles de un libro se abren en una hoja a la derecha, encima de la pantalla. Ciérrala con la X, con la tecla Esc o tocando fuera de ella.',
       'El Estante es un librero de madera con toda tu biblioteca. Los filtros y la vista se abren en una hoja a la derecha, y el librero cambia detrás mientras eliges.',

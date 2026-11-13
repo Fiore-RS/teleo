@@ -136,8 +136,8 @@ export function Estante() {
   const [isReorderingBooks, setIsReorderingBooks] = useState(false);
   const [isReorderingSagas, setIsReorderingSagas] = useState(false);
 
-  // Desde la tapa del cuaderno (V.4.0.0, tableta y escritorio): "Agregar libro" llega con
-  // ?agregar=libro y el buscador con ?buscar=texto. Puede pasar estando ya en Estante (la
+  // Desde la tapa del cuaderno (V.4.0.0, tableta y escritorio): el menú Agregar llega con
+  // ?agregar=libro o ?agregar=saga (V.4.3.0) y el buscador con ?buscar=texto. Puede pasar estando ya en Estante (la
   // pantalla no se vuelve a montar), por eso se mira cada vez que cambia la dirección.
   const agregarParam = searchParams.get("agregar");
   const buscarParam = searchParams.get("buscar");
@@ -148,6 +148,10 @@ export function Estante() {
     if (agregarParam === "libro") {
       setTab("libros");
       setIsAddBookOpen(true);
+    }
+    if (agregarParam === "saga") {
+      setTab("sagas");
+      setIsAddSagaOpen(true);
     }
     if (buscarParam !== null) {
       setTab("libros");
@@ -475,7 +479,7 @@ export function Estante() {
           (enLibrero ? (
             <LibreroVacio>
               <p className="font-title text-[24px] leading-tight">Tu estante está vacío</p>
-              <p className="text-body-md opacity-80 mt-2">Toca “Agregar libro” para agregar tu primer libro.</p>
+              <p className="text-body-md opacity-80 mt-2">Toca “Agregar” en la tapa para agregar tu primer libro.</p>
               <button
                 type="button"
                 onClick={() => setIsGoodreadsOpen(true)}
@@ -626,7 +630,7 @@ export function Estante() {
       <div className="pb-24" />
       <Fab
         label={tab === "libros" ? "Agregar libro" : "Agregar saga"}
-        tourId="agregar"
+        tourId={breakpoint === "celular" ? "agregar" : undefined}
         onClick={() => (tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true))}
       />
       <TabBar active="estante" onChange={handleTabBarChange} />

@@ -294,6 +294,15 @@
   from { transform: translateX(0); }
   to { transform: translateX(calc(100% + 24px)); }
 }
+/* Menú Agregar de la tapa (V.4.3.0): los separadores salen de debajo de la tapa. */
+@keyframes teleo-separador-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes teleo-separador-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
 @keyframes teleo-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -422,8 +431,20 @@
   .stagger-children > *:nth-child(6) { animation-delay: 175ms; }
   .stagger-children > *:nth-child(n + 7) { animation-delay: 210ms; }
 
+  /* Separadores del menú Agregar (V.4.3.0), uno detrás del otro. "backwards" para que al
+     terminar no quede un transform fijo y el hover pueda asomarlos un poco más. */
+  .separadores-in > * { animation: teleo-separador-in 240ms var(--ease-enter) backwards; }
+  .separadores-in > *:nth-child(2) { animation-delay: 30ms; }
+  .separadores-in > *:nth-child(3) { animation-delay: 60ms; }
+  .separadores-in > *:nth-child(4) { animation-delay: 90ms; }
+  /* Al cerrar se guardan bajo la tapa en orden inverso: primero el de abajo (Reseña). */
+  .separadores-out > * { animation: teleo-separador-out 180ms var(--ease-exit) forwards; }
+  .separadores-out > *:nth-child(3) { animation-delay: 30ms; }
+  .separadores-out > *:nth-child(2) { animation-delay: 60ms; }
+  .separadores-out > *:nth-child(1) { animation-delay: 90ms; }
+
   @media (prefers-reduced-motion: reduce) {
-    .animate-sheet-down, .animate-sheet-out, .animate-hoja-in, .animate-hoja-out, .animate-fade-in, .animate-fade-out,
+    .animate-sheet-down, .separadores-in > *, .separadores-out > *, .animate-sheet-out, .animate-hoja-in, .animate-hoja-out, .animate-fade-in, .animate-fade-out,
     .animate-pop-in, .animate-pop-out, .stagger-children > *, .animate-skeleton,
     .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop,
     .animate-subpage-in, .animate-subpage-back, .animate-float-in {
