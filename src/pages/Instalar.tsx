@@ -16,7 +16,8 @@ import { detectInAppBrowser, detectPlatform, isRunningStandalone } from '../lib/
  *  - Chrome/Edge/Opera/Samsung (Android o PC): botón que abre el aviso nativo Instalar/Cancelar.
  *  - iPhone/iPad: Apple no permite ese aviso, así que se muestran los 3 pasos a mano.
  *  - Android sin aviso disponible (Firefox, o si ya se canceló): pasos del menú ⋮.
- *  - PC sin aviso: se sugiere abrir el enlace desde el celular.
+ *  - Computadora (V.4.0.0): Teleo se usa desde el navegador; para instalarla en el teléfono
+ *    se ofrece copiar el enlace y abrirlo allá.
  *
  *  V.3.3.0: mismo diseño que las demás pantallas de cuenta (AuthLayout), con los pasos en una
  *  tarjeta con pestaña y el botón abajo. */
@@ -37,7 +38,7 @@ export function Instalar() {
     if (outcome !== 'accepted') setWasDismissed(true)
   }
 
-  const browserLink = !isStandalone && (
+  const browserLink = !isStandalone && platform !== 'desktop' && (
     <button
       type="button"
       onClick={() => navigate('/')}
@@ -56,7 +57,7 @@ export function Instalar() {
   if (isStandalone) {
     centered = true
     title = 'Ya tienes Teleo'
-    subtitle = 'Estás usando la app instalada en tu teléfono.'
+    subtitle = platform === 'desktop' ? 'Estás usando la app instalada.' : 'Estás usando la app instalada en tu teléfono.'
     action = <Button onClick={() => navigate('/')}>Ir a Teleo</Button>
   } else if (justInstalled) {
     centered = true
@@ -80,6 +81,17 @@ export function Instalar() {
       />
     )
     action = <CopyLink />
+  } else if (platform === 'desktop') {
+    // En la computadora no hace falta instalar nada: Teleo funciona igual en el navegador.
+    centered = true
+    title = 'En la computadora, Teleo se usa desde el navegador'
+    subtitle = 'No necesitas instalar nada. Si quieres tenerla en tu teléfono, abre este enlace desde el celular.'
+    action = (
+      <>
+        <Button onClick={() => navigate('/')}>Ir a Teleo</Button>
+        <CopyLink />
+      </>
+    )
   } else if (canPrompt) {
     centered = true
     title = 'Instala Teleo'
@@ -138,10 +150,8 @@ export function Instalar() {
     )
   } else {
     centered = true
-    title = 'Teleo vive en tu celular'
-    subtitle = wasDismissed
-      ? 'Puedes instalarla cuando quieras desde el ícono de instalar en la barra de direcciones, o abrir este enlace desde tu teléfono.'
-      : 'Está pensada para el teléfono. Abre este enlace desde tu celular para instalarla.'
+    title = 'Instala Teleo'
+    subtitle = 'Abre este enlace desde tu celular para instalarla en tu pantalla de inicio.'
     action = <CopyLink />
   }
 

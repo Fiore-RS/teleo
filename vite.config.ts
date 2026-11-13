@@ -5,7 +5,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/teleo/',
+  // V.4.0.0: Teleo se mudó a su propio subdominio (teleo.fiorers.dev), así que vive en la raíz.
+  base: '/',
   plugins: [
     react(),
     tailwindcss(),
@@ -17,10 +18,13 @@ export default defineConfig({
         short_name: 'Teleo',
         description: 'Tu diario de lectura',
         lang: 'es',
-        start_url: '/teleo/',
-        scope: '/teleo/',
+        // id fijo: la identidad de la app instalada no depende de start_url.
+        id: '/',
+        start_url: '/',
+        scope: '/',
         display: 'standalone',
-        orientation: 'portrait',
+        // Sin orientation (V.4.0.0): antes se fijaba en vertical, pero en tableta y computadora
+        // Teleo también se usa a lo ancho.
         // Sin background_color ni theme_color a propósito: así Chrome en Android usa los suyos
         // (claro u oscuro según el modo del teléfono) en la apertura y en la barra de abajo,
         // que salen del manifest y no se pueden cambiar con código. Van en undefined y no
