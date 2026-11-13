@@ -331,7 +331,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   return (
     <>
       <Sheet
-        side
+        alta
         onClose={onClose}
         title={isEditing ? 'Editar libro' : 'Detalles del libro'}
         footer={!isEditing && book ? (

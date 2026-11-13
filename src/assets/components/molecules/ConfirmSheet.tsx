@@ -32,6 +32,7 @@ export function ConfirmSheet({
 }: ConfirmSheetProps) {
   return (
     <Sheet
+      corta
       onClose={onClose}
       title={title}
       footer={

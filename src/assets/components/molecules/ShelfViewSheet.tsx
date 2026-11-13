@@ -54,7 +54,7 @@ function Preview({ view, extra }: { view: ShelfView; extra: number }) {
  *  (se ve detrás de la hoja) y queda guardada en la cuenta, para Libros y Sagas. */
 export function ShelfViewSheet({ view, onChange, onClose, extraColumns = 0 }: ShelfViewSheetProps) {
   return (
-    <Sheet side title="Vista del estante" onClose={onClose}>
+    <Sheet title="Vista del estante" onClose={onClose}>
       <Preview view={view} extra={extraColumns} />
 
       <FormSection label="Cómo se ven tus libros y sagas">
