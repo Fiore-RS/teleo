@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FocusEvent, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Plus, Search, X } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
@@ -68,7 +68,10 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
   const [query, setQuery] = useState(() => (onBuscar ? new URLSearchParams(location.search).get('q') ?? '' : ''))
   const searchRef = useRef<HTMLInputElement>(null)
   const typingTimer = useRef<number | undefined>(undefined)
-  const cameTyping = (location.state as { desdeTapa?: boolean } | null)?.desdeTapa === true
+  const navState = location.state as { desdeTapa?: boolean; alTocar?: boolean } | null
+  const cameTyping = navState?.desdeTapa === true
+  // Buscar se abrió al tocar el buscador (V.4.3.0): si se sale sin escribir, se vuelve atrás.
+  const openedByFocus = onBuscar && navState?.alTocar === true
   useEffect(() => {
     if (!cameTyping) return
     const input = searchRef.current
@@ -145,7 +148,30 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
 
   function openBuscar(text: string) {
     const q = text.trim()
-    navigate(q ? `/buscar?q=${encodeURIComponent(q)}` : '/buscar', { replace: onBuscar, state: { desdeTapa: true } })
+    navigate(q ? `/buscar?q=${encodeURIComponent(q)}` : '/buscar', {
+      replace: onBuscar,
+      state: { desdeTapa: true, alTocar: openedByFocus },
+    })
+  }
+
+  // Al tocar el buscador (o con el atajo "/") se abre Buscar de una vez, sin esperar a que se
+  // escriba (V.4.3.0). La tapa se vuelve a montar en Buscar y el cursor vuelve al buscador.
+  function handleFocus() {
+    if (onBuscar) return
+    window.clearTimeout(typingTimer.current)
+    navigate('/buscar', { state: { desdeTapa: true, alTocar: true } })
+  }
+
+  // Si se sale del buscador sin haber escrito nada, se vuelve a la pantalla de antes, como si
+  // no se hubiera abierto. No cuenta si la ventana pierde el foco (cambiar de programa) ni si se
+  // tocó algo de la tapa (una sección, Agregar), que ya lleva a su lugar.
+  function handleBlur(e: FocusEvent<HTMLInputElement>) {
+    if (!openedByFocus || query.trim()) return
+    if (!document.hasFocus()) return
+    const next = e.relatedTarget as Node | null
+    if (next && e.currentTarget.closest('nav')?.contains(next)) return
+    window.clearTimeout(typingTimer.current)
+    navigate(-1)
   }
 
   function handleType(text: string) {
@@ -269,6 +295,12 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
               autoComplete="off"
               value={query}
               onChange={(e) => handleType(e.target.value)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onKeyDown={(e) => {
+                // Esc con el buscador vacío lo suelta (y handleBlur vuelve atrás si corresponde).
+                if (e.key === 'Escape' && !query.trim()) e.currentTarget.blur()
+              }}
               placeholder="Buscar…"
               aria-keyshortcuts="/"
               className="w-full h-10 pl-9 pr-9 rounded-field bg-cover-ink/10 border border-cover-ink/25 font-body text-body-md text-cover-ink placeholder:text-cover-ink/60 focus-visible:outline-2 focus-visible:outline-cover-ink"

@@ -23,6 +23,8 @@ interface EncabezadoAnchoProps<T extends string> {
   extra?: ReactNode
   /** Botones a la derecha (Filtros, orden, Vista, buscador...). */
   actions?: ReactNode
+  /** Entra con animación cada vez que se monta (V.4.3.0, solo Buscar). */
+  entrada?: boolean
 }
 
 /** Encabezado de las pantallas con pestañas en tableta y computadora (V.4.2.0; nació en el
@@ -39,6 +41,7 @@ export function EncabezadoAncho<T extends string>({
   search,
   extra,
   actions,
+  entrada = false,
 }: EncabezadoAnchoProps<T>) {
   const query = search?.query.trim() ?? ''
 
@@ -61,7 +64,7 @@ export function EncabezadoAncho<T extends string>({
     <>
     <div ref={sentinelRef} aria-hidden="true" className="h-px -mb-px" />
     <header
-      className={`encabezado-fijo sticky top-0 z-20 mb-7 border-b ${anim} ${
+      className={`encabezado-fijo sticky top-0 z-20 mb-7 border-b ${anim} ${entrada ? 'animate-rise-in' : ''} ${
         isStuck ? 'pt-3.5 pb-3.5 border-border shadow-[0_10px_18px_-14px_rgba(0,0,0,0.5)] backdrop-blur-md' : 'pt-0 pb-0 border-transparent'
       }`}
       data-stuck={isStuck || undefined}
