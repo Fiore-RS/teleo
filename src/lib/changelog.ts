@@ -32,6 +32,15 @@ export const changelog: ChangelogEntry[] = [
     ],
   },
   {
+    version: '3.8.1',
+    date: '12 de noviembre de 2026',
+    title: 'Lista para la mudanza',
+    items: [
+      'Pronto Teleo se muda a teleo.fiorers.dev. Cuando pase, esta app te lo va a avisar con los pasos para instalarla otra vez desde la dirección nueva.',
+      'Tus libros, reseñas y preferencias se quedan en tu cuenta, así que en la dirección nueva todo te espera igual.',
+    ],
+  },
+  {
     version: '3.8.0',
     date: '12 de noviembre de 2026',
     title: 'Entre tapas',
