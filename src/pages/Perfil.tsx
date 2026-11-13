@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useAvatarUpload } from '../hooks/useAvatarUpload'
 import { useAnnualGoal } from '../hooks/useAnnualGoal'
+import { useYearReads } from '../hooks/useYearReads'
 import { useProfileLists } from '../hooks/useProfileLists'
 import { EditProfileModal } from '../assets/components/molecules/EditProfileModal'
 import { BannerSheet } from '../assets/components/molecules/BannerSheet'
@@ -39,6 +40,14 @@ export function Perfil() {
   const banner: BannerId = isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER
   const { uploadAvatar, isUploading } = useAvatarUpload(user?.id)
   const { goal: annualGoal, completedCount: annualCompletedCount, updateGoal } = useAnnualGoal(user?.id)
+  // Meta cumplida (V.4.2.0, Perfil en pantallas grandes): el día en que se cumplió, para el
+  // matasellos de la estampilla, como en La mesa (fecha de fin de la lectura número `goal`).
+  const goalMet = annualGoal > 0 && annualCompletedCount >= annualGoal
+  const { reads: goalYearReads } = useYearReads(goalMet ? user?.id : undefined, new Date().getFullYear())
+  const goalReachedText = goalMet && goalYearReads.length >= annualGoal ? goalYearReads[annualGoal - 1].endDate : null
+  const goalReachedOn = goalReachedText
+    ? new Date(Number(goalReachedText.slice(0, 4)), Number(goalReachedText.slice(5, 7)) - 1, Number(goalReachedText.slice(8, 10)))
+    : null
   const { currentlyReading, lastFinished, quotes, favorites, recommended, wishlist, abandoned, counts, refetch: refetchLists, isLoading: listsLoading } = useProfileLists(user?.id)
   const { streak } = useReadingStreak(user?.id)
 
@@ -116,6 +125,7 @@ export function Perfil() {
         }
         annualGoal={annualGoal}
         annualCompletedCount={annualCompletedCount}
+        annualGoalReachedOn={goalReachedOn}
         onEditGoal={() => setIsGoalModalOpen(true)}
         streak={streak}
         currentlyReading={currentlyReading}
@@ -124,6 +134,7 @@ export function Perfil() {
         shelves={shelves}
         counts={counts}
         priorityList={<PriorityListCard userId={user?.id} onOpenBook={setSelectedBookId} />}
+        priorityRepisa={<PriorityListCard variant="repisa" userId={user?.id} onOpenBook={setSelectedBookId} />}
         onBookClick={(id) => setSelectedBookId(id)}
         onSeeAllBooks={(list) => navigate(`/estante?filtro=${list}`)}
         footer={
