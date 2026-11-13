@@ -15,6 +15,24 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.2.0',
+    announced: true,
+    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
+    date: 'Fecha por definir',
+    title: 'Cuaderno, Bitácora y Perfil',
+    items: [
+      'El buscador de la tapa busca mientras escribes y abre su propia pantalla, Buscar, con todo lo que encuentra: los libros y sagas de tu estante en el librero, tus reseñas y tus citas. Toca cualquiera para abrirla, o ve a verlas en el Estante o en el Cuaderno.',
+      'En la computadora y la tableta, el Cuaderno muestra las reseñas como hojas rayadas, más grandes y en varias columnas, y las citas como notas con más aire. Debajo del título, una línea cuenta qué guarda cada pestaña.',
+      'La Bitácora se arma con hojas, como las notas de las citas: tu año queda fijo a la izquierda con el número grande, y a la derecha van las demás hojas, cada una de su propio alto.',
+      'En Resumen, la hoja del mes o del año va a la izquierda, con Mes, Año y Favoritos arriba. Tu año en un estante es un librero con un compartimento por mes, y tus favoritos de cada mes van en seis columnas.',
+      'En Compras, el total queda a la izquierda, grande, junto con el dato curioso, y tus libros a la derecha.',
+      'El Perfil tiene tu librero: una repisa por estantería, con tus próximas lecturas en la primera. Desde su menú ⋯ agregas libros, cambias el nombre de la lista, eliges uno al azar u organizas arrastrando las portadas.',
+      'La meta anual del Perfil lleva la estampilla de La mesa con la fecha en que la cumpliste, y en la computadora los banners tienen un dibujo nuevo que ocupa todo el ancho.',
+      'El encabezado del Estante, el Cuaderno, la Bitácora y Buscar se queda arriba mientras bajas.',
+      'Las pantallas grandes entran con la misma animación del teléfono la primera vez que las abres, y mientras cargan muestran la forma de lo que viene.',
+    ],
+  },
+  {
     version: '4.1.0',
     announced: true,
     // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
