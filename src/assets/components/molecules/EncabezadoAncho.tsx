@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 
 export interface EncabezadoTab<T extends string> {
@@ -41,12 +41,42 @@ export function EncabezadoAncho<T extends string>({
 }: EncabezadoAnchoProps<T>) {
   const query = search?.query.trim() ?? ''
 
-  return (
-    <header className="mb-7">
-      <h1 className="font-title text-[32px] leading-none text-text">{title}</h1>
-      {subtitle && <p className="mt-2 font-display italic text-[19px] leading-snug text-text-secondary">{subtitle}</p>}
+  // Fijo al bajar (V.4.2.0): el encabezado se queda arriba con el fondo de la mesa; al pegarse,
+  // el título se achica y la línea de debajo se esconde para ocupar menos.
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [isStuck, setIsStuck] = useState(false)
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+  const anim = 'transition-all duration-250 ease-out motion-reduce:transition-none'
 
-      <div className={`${subtitle ? 'mt-5' : 'mt-6'} flex items-center justify-between gap-4 flex-wrap`}>
+  return (
+    <>
+    <div ref={sentinelRef} aria-hidden="true" className="h-px -mb-px" />
+    <header
+      className={`encabezado-fijo sticky top-0 z-20 mb-7 border-b ${anim} ${
+        isStuck ? 'pt-3.5 pb-3.5 border-border shadow-[0_10px_18px_-14px_rgba(0,0,0,0.5)] backdrop-blur-md' : 'pt-0 pb-0 border-transparent'
+      }`}
+      data-stuck={isStuck || undefined}
+    >
+      <h1 className={`font-title leading-none text-text ${anim} ${isStuck ? 'text-[24px]' : 'text-[32px]'}`}>{title}</h1>
+      {subtitle && (
+        <p
+          className={`font-display italic text-[19px] leading-snug text-text-secondary overflow-hidden ${anim} ${
+            isStuck ? 'max-h-0 opacity-0 mt-0' : 'max-h-12 opacity-100 mt-2'
+          }`}
+        >
+          {subtitle}
+        </p>
+      )}
+
+      <div className={`${isStuck ? 'mt-3' : subtitle ? 'mt-5' : 'mt-6'} flex items-center justify-between gap-4 flex-wrap ${anim}`}>
         <div className="flex items-center gap-3 flex-wrap">
           <div role="tablist" aria-label={tabsLabel} className="flex gap-1">
             {tabs.map(({ value, label, count }) => {
@@ -91,6 +121,7 @@ export function EncabezadoAncho<T extends string>({
         {actions && <div className="flex items-center gap-2.5 flex-wrap">{actions}</div>}
       </div>
     </header>
+    </>
   )
 }
 

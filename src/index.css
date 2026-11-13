@@ -1260,3 +1260,23 @@ html {
     top: 1.5rem;
   }
 }
+
+/* Encabezado fijo de Estante, Cuaderno y Bitácora en tableta y computadora (V.4.2.0): el fondo
+   se estira hasta los bordes de la pantalla (los márgenes de .pagina-*) con el color de la mesa. */
+.encabezado-fijo {
+  margin-inline: -2rem;
+  padding-inline: 2rem;
+}
+.encabezado-fijo[data-stuck] {
+  background-color: color-mix(in srgb, var(--color-mesa) 90%, transparent);
+}
+@media (min-width: 70rem) {
+  .encabezado-fijo {
+    margin-inline: -3.25rem;
+    padding-inline: 3.25rem;
+  }
+  /* La hoja fija de Bitácora queda debajo del encabezado fijo. */
+  .bitacora-hojas > :first-child {
+    top: 8.5rem;
+  }
+}
