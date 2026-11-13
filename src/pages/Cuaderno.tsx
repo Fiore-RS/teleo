@@ -257,6 +257,7 @@ export function Cuaderno() {
       {isAncha ? (
         <EncabezadoAncho
           title="Cuaderno"
+          subtitle={tab === 'citas' ? 'Las frases que quisiste guardar.' : 'Lo que pensaste de cada libro, hoja por hoja.'}
           tabsLabel="Reseñas o citas"
           tabs={[
             { value: 'resenas' as const, label: 'Reseñas', count: isLoading ? undefined : filtered.length },
