@@ -12,10 +12,11 @@ interface EncabezadoAnchoProps<T extends string> {
   title: string
   /** Línea en cursiva debajo del título (como el saludo de La mesa). Opcional. */
   subtitle?: string
-  tabs: EncabezadoTab<T>[]
-  active: T
-  onTabChange: (tab: T) => void
-  tabsLabel: string
+  /** Sin pestañas (Buscar) el encabezado es solo el título y la línea de debajo. */
+  tabs?: EncabezadoTab<T>[]
+  active?: T
+  onTabChange?: (tab: T) => void
+  tabsLabel?: string
   /** Marca de búsqueda ("Buscando “…” ×"), cuando se buscó desde la tapa del cuaderno. */
   search?: { query: string; onClear: () => void }
   /** Algo más junto a las pestañas (por ejemplo "¿Qué leo ahora?"). */
@@ -76,8 +77,10 @@ export function EncabezadoAncho<T extends string>({
         </p>
       )}
 
+      {(tabs || search || extra || actions) && (
       <div className={`${isStuck ? 'mt-3' : subtitle ? 'mt-5' : 'mt-6'} flex items-center justify-between gap-4 flex-wrap ${anim}`}>
         <div className="flex items-center gap-3 flex-wrap">
+          {tabs && (
           <div role="tablist" aria-label={tabsLabel} className="flex gap-1">
             {tabs.map(({ value, label, count }) => {
               const isActive = value === active
@@ -87,7 +90,7 @@ export function EncabezadoAncho<T extends string>({
                   type="button"
                   role="tab"
                   aria-selected={isActive}
-                  onClick={() => onTabChange(value)}
+                  onClick={() => onTabChange?.(value)}
                   className={`h-[38px] px-4 inline-flex items-center gap-2 rounded-button font-body font-semibold text-body-md transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
                     isActive ? 'bg-primary text-primary-ink' : 'text-text-secondary hover:bg-border hover:text-text'
                   }`}
@@ -100,6 +103,7 @@ export function EncabezadoAncho<T extends string>({
               )
             })}
           </div>
+          )}
 
           {search && query && (
             <span className="inline-flex items-center gap-1.5 h-[34px] pl-3 pr-1.5 rounded-button bg-primary-soft text-primary-text font-body font-bold text-body-sm">
@@ -120,6 +124,7 @@ export function EncabezadoAncho<T extends string>({
 
         {actions && <div className="flex items-center gap-2.5 flex-wrap">{actions}</div>}
       </div>
+      )}
     </header>
     </>
   )

@@ -9,6 +9,7 @@ import { useQuotes } from '../hooks/useQuotes'
 import { normalizeForSearch } from '../lib/quotes'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
+import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
 import { Shelf, type ShelfItem } from '../assets/components/molecules/Shelf'
 import { BookCover } from '../assets/components/molecules/BookCover'
 import { SagaCover } from '../assets/components/molecules/SagaCover'
@@ -140,10 +141,7 @@ export function Buscar() {
 
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-ancha">
-      <header className="mb-8">
-        <h1 className="font-title text-[32px] leading-none text-text">Buscar</h1>
-        <p className="mt-2 font-display italic text-[19px] leading-snug text-text-secondary">{subtitle}</p>
-      </header>
+      <EncabezadoAncho title="Buscar" subtitle={subtitle} />
 
       {!isLoading && total > 0 && (
         <>
