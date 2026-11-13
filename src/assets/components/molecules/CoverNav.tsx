@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Plus, Search } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Plus, Search, X } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
 import { useProfile } from '../../../hooks/useProfile'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
@@ -31,7 +31,7 @@ const sections: { key: Exclude<TabKey, 'perfil'>; label: string }[] = [
 ]
 
 interface CoverNavProps {
-  active: TabKey
+  active: TabKey | null
   onChange: (tab: TabKey) => void
   onActiveTap: () => void
 }
@@ -49,8 +49,43 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
   const { user } = useAuth()
   const { profile } = useProfile(user?.id)
   const breakpoint = useBreakpoint()
-  const [query, setQuery] = useState('')
+  // Buscador (V.4.2.0): busca mientras escribes y abre Buscar. La tapa se vuelve a montar con
+  // cada pantalla, así que en Buscar el texto sale de la dirección (?q=) y, si se llegó
+  // escribiendo, el cursor vuelve al buscador.
+  const location = useLocation()
+  const onBuscar = location.pathname === '/buscar'
+  const [query, setQuery] = useState(() => (onBuscar ? new URLSearchParams(location.search).get('q') ?? '' : ''))
   const searchRef = useRef<HTMLInputElement>(null)
+  const typingTimer = useRef<number | undefined>(undefined)
+  const cameTyping = (location.state as { desdeTapa?: boolean } | null)?.desdeTapa === true
+  useEffect(() => {
+    if (!cameTyping) return
+    const input = searchRef.current
+    if (!input) return
+    input.focus()
+    input.setSelectionRange(input.value.length, input.value.length)
+  }, [cameTyping])
+  useEffect(() => () => window.clearTimeout(typingTimer.current), [])
+
+  function openBuscar(text: string) {
+    const q = text.trim()
+    navigate(q ? `/buscar?q=${encodeURIComponent(q)}` : '/buscar', { replace: onBuscar, state: { desdeTapa: true } })
+  }
+
+  function handleType(text: string) {
+    setQuery(text)
+    window.clearTimeout(typingTimer.current)
+    // Fuera de Buscar se espera a que haya algo escrito; dentro, también borrar actualiza.
+    if (!text.trim() && !onBuscar) return
+    typingTimer.current = window.setTimeout(() => openBuscar(text), 250)
+  }
+
+  function clearSearch() {
+    window.clearTimeout(typingTimer.current)
+    setQuery('')
+    if (onBuscar) openBuscar('')
+    searchRef.current?.focus()
+  }
 
   // Atajo "/" para el buscador (V.4.0.0), en escritorio, donde el buscador está en la tapa. No
   // se activa mientras se escribe en otro campo ni con una hoja abierta.
@@ -81,9 +116,8 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
 
   function search(e: FormEvent) {
     e.preventDefault()
-    const q = query.trim()
-    navigate(q ? `/estante?buscar=${encodeURIComponent(q)}` : '/estante')
-    setQuery('')
+    window.clearTimeout(typingTimer.current)
+    openBuscar(query)
   }
 
   const avatar = (
@@ -120,13 +154,26 @@ export function CoverNav({ active, onChange, onActiveTap }: CoverNavProps) {
             <input
               id="tapa-buscar"
               ref={searchRef}
-              type="search"
+              type="text"
+              enterKeyHint="search"
+              autoComplete="off"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => handleType(e.target.value)}
               placeholder="Buscar…"
               aria-keyshortcuts="/"
-              className="w-full h-10 pl-9 pr-3 rounded-field bg-cover-ink/10 border border-cover-ink/25 font-body text-body-md text-cover-ink placeholder:text-cover-ink/60 focus-visible:outline-2 focus-visible:outline-cover-ink"
+              className="w-full h-10 pl-9 pr-9 rounded-field bg-cover-ink/10 border border-cover-ink/25 font-body text-body-md text-cover-ink placeholder:text-cover-ink/60 focus-visible:outline-2 focus-visible:outline-cover-ink"
             />
+            {/* Borrar, en el color de la tapa (el del navegador salía azul). */}
+            {query && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                aria-label="Borrar la búsqueda"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-cover-ink/80 hover:text-cover-ink hover:bg-cover-ink/10 focus-visible:outline-2 focus-visible:outline-cover-ink"
+              >
+                <X size={15} />
+              </button>
+            )}
           </form>
         </div>
 
