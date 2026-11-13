@@ -2,6 +2,9 @@ import { Fragment, useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
+import { IndicePagina } from '../assets/components/molecules/IndicePagina'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { Card } from '../assets/components/molecules/Card'
 import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
@@ -16,8 +19,16 @@ import { isVersionBefore } from '../lib/announcement'
  *  V.3.6.0: la lista se hacía muy larga, así que cada versión se pliega. Se ve la pestaña con
  *  el número y el título, con una flecha a la derecha para desplegarla; adentro, la fecha va
  *  como primer punto. Abiertas de entrada: la versión más nueva y, si se llega desde el aviso
- *  de novedades acumuladas, todas las que la persona no había visto. */
+ *  de novedades acumuladas, todas las que la persona no había visto.
+ *
+ *  V.4.3.0: en tableta y computadora, la misma lista en una columna de 720px con el encabezado
+ *  fijo; en la computadora, a la derecha, la lista de versiones fija: al tocar una, se despliega
+ *  y la pantalla baja hasta ella. */
+const versionId = (version: string) => `version-${version.replace(/\./g, '-')}`
+const INDICE = changelog.map((e) => ({ id: versionId(e.version), label: `V.${e.version}`, detail: e.title }))
+
 export function Novedades() {
+  const breakpoint = useBreakpoint()
   const location = useLocation()
   const catchUp = (location.state as { since?: string | null } | null) ?? null
   const isCatchUp = catchUp !== null && 'since' in catchUp
@@ -44,11 +55,22 @@ export function Novedades() {
     markChangelogSeen()
   }, [])
 
+  function openFromIndex(id: string) {
+    const entry = changelog.find((e) => versionId(e.version) === id)
+    if (!entry) return
+    setOpen((prev) => (prev.has(entry.version) ? prev : new Set(prev).add(entry.version)))
+  }
+
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
-      <PageHeader title="Novedades" subtitle="Lo que ha cambiado en Teleo, versión por versión." />
+      {breakpoint === 'celular' ? (
+        <PageHeader title="Novedades" subtitle="Lo que ha cambiado en Teleo, versión por versión." />
+      ) : (
+        <EncabezadoAncho title="Novedades" subtitle="Lo que ha cambiado en Teleo, versión por versión." />
+      )}
 
-      <div className="flex flex-col gap-4">
+      <div className="escritorio:grid escritorio:grid-cols-[720px_minmax(0,1fr)] escritorio:gap-14 escritorio:items-start">
+      <div className="flex flex-col gap-4 tableta:max-w-180">
         {changelog.map((entry, i) => {
           const isOpen = open.has(entry.version)
           const panelId = `novedades-${entry.version.replace(/\./g, '-')}`
@@ -59,6 +81,7 @@ export function Novedades() {
               Hasta aquí ya lo habías visto
             </p>
           )}
+          <div id={versionId(entry.version)} className="scroll-mt-24">
           <Card tab={{ label: `V.${entry.version}` }}>
             {isNew(entry.version) && (
               <span className="inline-block mb-2 px-2 py-0.5 rounded-chip bg-magenta-soft text-magenta-text text-[12px] font-bold">Nueva</span>
@@ -104,9 +127,16 @@ export function Novedades() {
               </div>
             </div>
           </Card>
+          </div>
           </Fragment>
           )
         })}
+      </div>
+      {breakpoint === 'escritorio' && (
+        <aside className="sticky top-20">
+          <IndicePagina titulo="Versiones" secciones={INDICE} onSelect={openFromIndex} larga />
+        </aside>
+      )}
       </div>
 
       <SubpageNav tab="perfil" parentPath="/configuracion" />

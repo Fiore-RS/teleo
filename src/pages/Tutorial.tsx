@@ -1,4 +1,7 @@
 import { PageHeader } from '../assets/components/molecules/PageHeader'
+import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
+import { IndicePagina } from '../assets/components/molecules/IndicePagina'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { Card } from '../assets/components/molecules/Card'
 import { SubpageNav } from '../assets/components/molecules/SubpageNav'
 import { Sparkle } from '../assets/components/atoms/Sparkle'
@@ -95,17 +98,28 @@ const sections: TutorialSection[] = [
 /** Guía de Teleo (antes "Tutorial"; V.3.3.0): desde que existe el recorrido sobre la app, que
  *  ahora es el Tutorial, esta pantalla queda como explicación detallada de cada sección. Se
  *  abre solo desde Configuración, con la barra de pestañas y Perfil marcado. */
+/** Id de cada sección, para el índice de la computadora. */
+function sectionId(title: string) {
+  return `guia-${title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '-')}`
+}
+const INDICE = sections.map(({ title }) => ({ id: sectionId(title), label: title }))
+
+/** V.4.3.0: en tableta y computadora, las mismas tarjetas del teléfono en una columna de 720px,
+ *  con el encabezado fijo; en la computadora, el índice de secciones fijo a la derecha (como
+ *  Configuración). */
 export function Tutorial() {
+  const breakpoint = useBreakpoint()
+  const titulo = 'Guía de Teleo'
+  const linea = 'Todo lo que puedes hacer en cada sección de la app, punto por punto.'
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
-      <PageHeader
-        title="Guía de Teleo"
-        subtitle="Todo lo que puedes hacer en cada sección de la app, punto por punto."
-      />
+      {breakpoint === 'celular' ? <PageHeader title={titulo} subtitle={linea} /> : <EncabezadoAncho title={titulo} subtitle={linea} />}
 
-      <div className="flex flex-col gap-4">
+      <div className="escritorio:grid escritorio:grid-cols-[720px_minmax(0,1fr)] escritorio:gap-14 escritorio:items-start">
+      <div className="flex flex-col gap-4 tableta:max-w-180">
         {sections.map(({ title, points }) => (
-          <Card key={title} tab={{ label: title }}>
+          <div key={title} id={sectionId(title)} className="scroll-mt-24">
+          <Card tab={{ label: title }}>
             <ul className="space-y-2.5">
               {points.map((point) => (
                 <li key={point} className="flex gap-2.5 text-body-md text-text-secondary">
@@ -115,7 +129,14 @@ export function Tutorial() {
               ))}
             </ul>
           </Card>
+          </div>
         ))}
+      </div>
+      {breakpoint === 'escritorio' && (
+        <aside className="sticky top-20">
+          <IndicePagina secciones={INDICE} />
+        </aside>
+      )}
       </div>
 
       <SubpageNav tab="perfil" parentPath="/configuracion" />
