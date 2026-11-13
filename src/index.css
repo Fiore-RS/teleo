@@ -1227,3 +1227,36 @@ html {
 @media (min-width: 44rem) {
   html { scrollbar-gutter: stable; }
 }
+
+/* ---------- Bitácora en tableta y computadora (V.4.2.0) ----------
+   Las filas de "Más de…" van como hojas sueltas en dos columnas (cada una con el alto que
+   necesita). En computadora, la primera hoja (tu año, el resumen o el total) queda fija a la
+   izquierda y las demás van a la derecha. */
+@media (min-width: 44rem) {
+  .hojas-columnas {
+    columns: 2;
+    column-gap: 1.375rem;
+  }
+  .hojas-columnas > div {
+    display: contents;
+  }
+}
+@media (min-width: 70rem) {
+  .bitacora-hojas {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    column-gap: 1.625rem;
+    row-gap: 0;
+    align-items: start;
+  }
+  .bitacora-hojas > * {
+    grid-column: 2;
+    margin-bottom: 1.375rem;
+  }
+  .bitacora-hojas > :first-child {
+    grid-column: 1;
+    grid-row: 1 / span 12;
+    position: sticky;
+    top: 1.5rem;
+  }
+}

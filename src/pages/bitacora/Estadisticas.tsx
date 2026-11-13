@@ -6,7 +6,8 @@ import { useReadingStreak } from '../../hooks/useReadingStreak'
 import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { StatTile } from '../../assets/components/atoms/StatTile'
 import { Skeleton } from '../../assets/components/atoms/Skeleton'
-import { Card } from '../../assets/components/molecules/Card'
+import { Card, Hoja } from '../../assets/components/molecules/Card'
+import { useHojaMode } from '../../lib/hojaMode'
 import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MonthCalendar } from '../../assets/components/atoms/MonthCalendar'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
@@ -66,6 +67,7 @@ type RowKey = 'ritmo' | 'coleccion' | 'casa' | 'autores' | 'calificaciones' | 'l
  *  no termina ningún libro ve, en lugar de la tarjeta del año, tres pasos para empezar. */
 export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   const stagger = useStaggerOnce('bitacora-estadisticas')
+  const hojaMode = useHojaMode()
   const { stats, isLoading } = useLibraryStats(userId)
   const { history: goalHistory } = useGoalHistory(userId)
   const { streak: currentStreak } = useReadingStreak(userId)
@@ -223,8 +225,48 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   ]
 
   return (
-    <div className={`flex flex-col gap-5 ${stagger}`}>
-      {hasFinished ? (
+    <div className={`bitacora-hojas flex flex-col gap-5 ${stagger}`}>
+      {hasFinished && hojaMode ? (
+        // Tableta y computadora (V.4.2.0, lienzo "Bitácora · D2"): la hoja de tu año, fija a la
+        // izquierda en computadora, con el número grande, la frase y las cifras debajo.
+        <Hoja tone="pink">
+          <div className="flex items-center justify-between gap-3">
+            <p className="smallcaps text-pink-text">Tu año</p>
+            <PeriodNav
+              label={String(year)}
+              onPrev={() => setYear((y) => y - 1)}
+              onNext={() => setYear((y) => y + 1)}
+              canGoPrev={year > firstYear}
+              canGoNext={year < currentYear}
+              prevLabel="Año anterior"
+              nextLabel="Año siguiente"
+            />
+          </div>
+          <PeriodTransition order={year}>
+            <p className="mt-5 font-title text-[86px] leading-[0.9] text-pink-text tabular-nums">{finished}</p>
+            <p className="mt-1.5 font-display italic text-[19px] text-text-secondary">
+              {finished === 1 ? 'libro terminado' : 'libros terminados'}
+            </p>
+            <p className="mt-5 font-display text-[18px] leading-[32px] text-text">{sentence}</p>
+            <div className="grid gap-2 mt-5">
+              {trio.map((t) => (
+                <div key={t.label} className="rounded-[14px] px-3 py-2.5 flex items-baseline justify-between gap-3" style={{ background: 'color-mix(in srgb, var(--color-surface-2) 70%, transparent)' }}>
+                  <span className="text-body-sm text-text-secondary">{t.label}</span>
+                  <b className={`font-display font-semibold text-[22px] leading-none tabular-nums ${t.color}`}>{t.value}</b>
+                </div>
+              ))}
+            </div>
+          </PeriodTransition>
+          <button
+            type="button"
+            onClick={() => onOpenYear(year)}
+            className="mt-5 inline-flex items-center gap-0.5 font-body font-bold text-body-md text-pink-text rounded-chip hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary-text"
+          >
+            Ver tu {year} en Resumen
+            <ChevronRight size={16} aria-hidden="true" />
+          </button>
+        </Hoja>
+      ) : hasFinished ? (
         // Mismo relleno que la hoja de Resumen, para que las dos pantallas de Bitácora coincidan.
         <Card tab={{ label: 'Tu año' }} tone="pink" padding="px-3.5 pt-4 pb-[18px]">
           {/* V.3.6.0: la misma fila de Resumen (flecha, año, flecha) en vez de las flechas sueltas
@@ -291,7 +333,7 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
       )}
 
       {hasRows && (
-        <Card tab={{ label: 'Más de tu bitácora' }} padding="px-4 py-1">
+        <Card group groupTitle="De toda tu biblioteca" tab={{ label: 'Más de tu bitácora' }} padding="px-4 py-1">
           {/* Envoltorio propio: así "first:" apunta a la primera fila y no a la pestaña, y no
               queda una línea justo debajo de "Más de tu bitácora". */}
           <div>

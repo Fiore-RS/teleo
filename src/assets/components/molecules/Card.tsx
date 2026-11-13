@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
+import { HojaNestContext, useHojaMode } from '../../../lib/hojaMode'
 
 /** Fondo de la tarjeta: el de siempre, o un tinte casi imperceptible de un acento. */
 export type CardTint = 'none' | 'orange' | 'pink' | 'magenta'
@@ -50,12 +51,73 @@ interface CardProps {
   action?: ReactNode
   /** Relleno de la tarjeta con pestaña. Por defecto 18px; las listas plegables usan menos. */
   padding?: string
+  /** Tarjeta que solo agrupa filas plegables ("Más de tu bitácora"): en modo hoja no se
+   *  dibuja, y sus filas van como hojas sueltas en dos columnas. */
+  group?: boolean
+  /** Título sobre las hojas del grupo en modo hoja (por ejemplo "De toda tu biblioteca"). */
+  groupTitle?: string
 }
 
-/** Tarjeta base: esquinas de 24px, borde fino y sombra casi imperceptible. V.3.0.0: puede
- *  llevar una pestaña de separador, como las hojas de un cuaderno con índice. La pestaña
- *  comparte fondo y borde con la tarjeta y tapa la línea de arriba para verse de una pieza;
- *  por eso la esquina superior izquierda queda recta. */
+const hojaToneText: Record<CardTone, string> = {
+  brand: 'text-primary-text',
+  orange: 'text-orange-text',
+  pink: 'text-pink-text',
+  magenta: 'text-magenta-text',
+}
+
+const hojaToneSoft: Record<CardTone, string> = {
+  brand: 'var(--color-primary-soft)',
+  orange: 'var(--color-orange-soft)',
+  pink: 'var(--color-pink-soft)',
+  magenta: 'var(--color-magenta-soft)',
+}
+
+/** Hoja de Bitácora (V.4.2.0), como las notas de las citas del Cuaderno: papel con esquinas
+ *  redondeadas, borde fino, sombra suave y la esquina de arriba a la derecha doblada, del
+ *  color del tono. El título va arriba en Fraunces. La usan las tarjetas de Bitácora en tableta
+ *  y computadora. */
+export function Hoja({
+  title,
+  tone = 'brand',
+  action,
+  children,
+  className = '',
+  as: Tag = 'section',
+}: {
+  title?: ReactNode
+  tone?: CardTone
+  action?: ReactNode
+  children: ReactNode
+  className?: string
+  as?: 'section' | 'div' | 'article'
+}) {
+  const titleId = useId()
+  return (
+    <Tag
+      aria-labelledby={title ? titleId : undefined}
+      className={`relative bg-surface border border-border rounded-2xl shadow-card px-4 pt-4 pb-4 ${className}`}
+    >
+      {/* Esquina doblada; el pedazo de fuera toma el color de lo que hay detrás (la mesa). */}
+      <span
+        aria-hidden="true"
+        className="absolute -top-px -right-px w-[22px] h-[22px] rounded-tr-2xl"
+        style={{ background: `linear-gradient(45deg, ${hojaToneSoft[tone]} 50%, var(--tapa-papel) 50%)` }}
+      />
+      {(title || action) && (
+        <div className="flex items-start justify-between gap-3 mb-3 pr-5">
+          {title && (
+            <h2 id={titleId} className={`font-display font-semibold text-[18px] leading-tight ${hojaToneText[tone]}`}>
+              {title}
+            </h2>
+          )}
+          {action && <div className={`-mt-1 shrink-0 ${hojaToneText[tone]}`}>{action}</div>}
+        </div>
+      )}
+      <HojaNestContext.Provider value={true}>{children}</HojaNestContext.Provider>
+    </Tag>
+  )
+}
+
 export function Card({
   children,
   className = '',
@@ -66,8 +128,27 @@ export function Card({
   tone = 'brand',
   action,
   padding = 'p-[18px]',
+  group = false,
+  groupTitle,
 }: CardProps) {
   const tabId = useId()
+  const hojaMode = useHojaMode()
+
+  if (hojaMode && group) {
+    return (
+      <div className={className}>
+        {groupTitle && <h2 className="smallcaps text-text-secondary mb-3">{groupTitle}</h2>}
+        <div className="hojas-columnas">{children}</div>
+      </div>
+    )
+  }
+  if (hojaMode && tab) {
+    return (
+      <Hoja title={tab.label} tone={tone} action={action} as={Tag} className={className}>
+        {children}
+      </Hoja>
+    )
+  }
   const bg = tintStyles[tint ?? (tab ? toneTint[tone] : 'none')]
 
   if (!tab) {

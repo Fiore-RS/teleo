@@ -76,8 +76,8 @@ function QuoteCard({
       {/* Esquina doblada magenta, como una nota. */}
       <span
         aria-hidden="true"
-        className="absolute top-0 right-0 w-[18px] h-[18px] rounded-tr-2xl"
-        style={{ background: 'linear-gradient(45deg, var(--color-magenta-soft) 50%, var(--color-bg) 50%)' }}
+        className="absolute top-0 right-0 tableta:-top-px tableta:-right-px w-[18px] h-[18px] tableta:w-[22px] tableta:h-[22px] rounded-tr-2xl"
+        style={{ background: 'linear-gradient(45deg, var(--color-magenta-soft) 50%, var(--tapa-papel) 50%)' }}
       />
       <span aria-hidden="true" className="block h-3.5 font-title text-[30px] leading-[0.6] text-ornament">“</span>
       <p className="font-display italic text-[14.5px] tableta:text-[16px] leading-[1.4] tableta:leading-[1.45] text-text whitespace-pre-line mt-1">{quote.quote_text}</p>

@@ -2,6 +2,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { ScreenHeader } from '../assets/components/molecules/ScreenHeader'
+import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { HojaModeContext } from '../lib/hojaMode'
 import { CoverBand } from '../assets/components/atoms/CoverBand'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { Estadisticas } from './bitacora/Estadisticas'
@@ -27,6 +30,7 @@ export function Bitacora() {
 
   const tabParam = searchParams.get('vista')
   const tab: BitacoraTab = tabParam === 'resumen' || tabParam === 'compras' ? tabParam : 'estadisticas'
+  const isAncha = useBreakpoint() !== 'celular'
   const viewParam = searchParams.get('ver')
   const resumenView: ResumenView = viewParam === 'anio' || viewParam === 'favoritos' ? viewParam : 'mes'
   const currentYear = new Date().getFullYear()
@@ -49,6 +53,20 @@ export function Bitacora() {
   return (
     <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-media">
       <CoverBand />
+      {isAncha ? (
+        <EncabezadoAncho
+          title="Bitácora"
+          subtitle={subtitles[tab]}
+          tabsLabel="Secciones de la bitácora"
+          tabs={[
+            { value: 'estadisticas' as const, label: 'Estadísticas' },
+            { value: 'resumen' as const, label: 'Resumen' },
+            { value: 'compras' as const, label: 'Compras' },
+          ]}
+          active={tab}
+          onTabChange={(t) => updateParams({ vista: t === 'estadisticas' ? null : t })}
+        />
+      ) : (
       <ScreenHeader
         title="Bitácora"
         lead={subtitles[tab]}
@@ -61,7 +79,10 @@ export function Bitacora() {
         active={tab}
         onTabChange={(t) => updateParams({ vista: t === 'estadisticas' ? null : t })}
       />
+      )}
 
+      {/* En tableta y computadora (V.4.2.0) las tarjetas de Bitácora son hojas del Cuaderno. */}
+      <HojaModeContext.Provider value={isAncha}>
       {tab === 'estadisticas' && (
         <Estadisticas
           userId={user?.id}
@@ -78,6 +99,7 @@ export function Bitacora() {
         />
       )}
       {tab === 'compras' && <Compras userId={user?.id} currency={profile?.currency} />}
+      </HojaModeContext.Provider>
 
       <div className="pb-28" />
       <TabBar active="bitacora" onChange={handleTabBarChange} />
