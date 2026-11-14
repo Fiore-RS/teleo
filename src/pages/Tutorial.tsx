@@ -76,6 +76,7 @@ const sections: TutorialSection[] = [
     title: 'En la computadora y la tableta',
     points: [
       'Teleo se adapta al tamaño de tu pantalla. Desde la computadora se usa en el navegador, en teleo.fiorers.dev, sin instalar nada.',
+      'Lo que haces en un dispositivo aparece solo en los demás que tengan Teleo abierto, sin recargar: tu progreso, tu meta, tus listas y hasta el tema.',
       'Las secciones van en la tapa del cuaderno, a la izquierda, junto con el buscador, "Agregar" y tu perfil. "Agregar" abre unos separadores para agregar un libro, una saga, una cita o una reseña desde cualquier pantalla.',
       'En la computadora, La mesa se ve como un libro abierto con lo que estás leyendo. Los demás libros en curso quedan como lomos debajo: toca un lomo para ver sus detalles, o su marcapáginas para actualizar el progreso.',
       'Los detalles de un libro, los formularios y las demás hojas se abren a la derecha, encima de la pantalla. Las cortas, como terminar un libro, son de papel más grueso. Ciérralas con la X, con la tecla Esc o tocando fuera de ellas.',

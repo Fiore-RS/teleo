@@ -15,6 +15,20 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.4.0',
+    announced: true,
+    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
+    date: 'Fecha por definir',
+    title: 'Siempre al día',
+    items: [
+      'Lo que haces en un dispositivo aparece solo en los demás que tengan Teleo abierto, sin recargar: actualiza tu progreso en el teléfono y lo ves al momento en la computadora.',
+      'Tu meta, tu racha, tu estante, tus listas, tus reseñas y tus citas se ponen al día solas en todas partes.',
+      'Si cambias el tema o el modo de color en un dispositivo, cambia también en los demás.',
+      'Si se corta la conexión o el teléfono se duerme, al volver Teleo se pone al día con lo que cambió mientras tanto.',
+      'En la computadora y la tableta, el porcentaje del libro abierto y de sus lomos cambia con la misma animación del teléfono, y la barra de progreso avanza suave.',
+    ],
+  },
+  {
     version: '4.3.0',
     announced: true,
     // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
