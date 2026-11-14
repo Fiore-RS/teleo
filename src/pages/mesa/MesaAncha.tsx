@@ -118,7 +118,8 @@ function OpenBook({ book, onUpdate, onOpen }: { book: Book; onUpdate: () => void
           {book.author && <p className="mt-2 font-display italic text-body-lg text-text-secondary">{book.author}</p>}
           <div className="mt-auto pt-6">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="font-title text-[48px] leading-none text-text tabular-nums">
+              {/* Como en el teléfono: al cambiar el progreso, el número aparece con un fundido. */}
+              <p key={Math.round(percent)} className="font-title text-[48px] leading-none text-text tabular-nums animate-fade-in">
                 {Math.round(percent)}
                 <span className="text-[26px]">%</span>
               </p>
@@ -132,7 +133,7 @@ function OpenBook({ book, onUpdate, onOpen }: { book: Book; onUpdate: () => void
               aria-valuemax={100}
               className="h-3 rounded-[6px] bg-reading-soft mt-3 overflow-hidden"
             >
-              <div className="h-full rounded-[6px] bg-accent-reading" style={{ width: `${Math.min(100, percent)}%` }} />
+              <div className="h-full rounded-[6px] bg-accent-reading transition-all motion-reduce:transition-none" style={{ width: `${Math.min(100, percent)}%` }} />
             </div>
             {pace && <p className="mt-2.5 text-body-sm text-text-secondary">{paceSentence(pace)}</p>}
           </div>
@@ -249,7 +250,7 @@ function BookSpines({ books, onOpen, onUpdate, onSeeAll }: BookSpinesProps) {
                   aria-hidden="true"
                   className="absolute inset-0 bg-reading-soft transition-[filter] group-hover:brightness-95 [clip-path:polygon(0_0,100%_0,calc(100%-7px)_50%,100%_100%,0_100%)]"
                 />
-                <span className="relative tabular-nums">{Math.round(percent)}%</span>
+                <span key={Math.round(percent)} className="relative tabular-nums animate-fade-in">{Math.round(percent)}%</span>
                 <span aria-hidden="true" className="relative opacity-50">·</span>
                 <span className="relative text-primary-text">Actualizar</span>
               </button>
