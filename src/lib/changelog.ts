@@ -15,6 +15,23 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.3.0',
+    announced: true,
+    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
+    date: 'Fecha por definir',
+    title: 'El cuaderno completo',
+    items: [
+      'El botón "Agregar" de la tapa abre unos separadores para elegir qué agregar: un libro, una saga, una cita o una reseña, desde cualquier pantalla.',
+      'Al tocar el buscador de la tapa se abre Buscar de una vez. Si sales sin escribir nada, vuelves a donde estabas.',
+      'Los formularios y las demás hojas se abren a la derecha, como los detalles de un libro, y miden lo que llevan. Las hojas cortas, como terminar un libro o actualizar el progreso, son de papel más grueso.',
+      'En Configuración eliges el tema tocando su muestra. A la derecha ves cómo queda Teleo con ese tema, y un índice para saltar entre secciones.',
+      'La Guía y las Novedades también tienen su índice a la derecha. En Novedades, toca una versión para abrirla.',
+      'Iniciar sesión, crear tu cuenta y las demás pantallas de entrada se abren con la tapa del cuaderno de Teleo, y la bienvenida es la primera hoja de tu cuaderno.',
+      'Los libros de "También en tu mesa" usan los colores de tu tema, bien distintos entre sí.',
+      'Con esta versión, Teleo queda completo en la computadora y la tableta.',
+    ],
+  },
+  {
     version: '4.2.0',
     announced: true,
     // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
