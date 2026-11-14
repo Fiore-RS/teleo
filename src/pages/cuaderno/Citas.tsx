@@ -73,10 +73,12 @@ function QuoteCard({
     <article
       className={`relative ${isMenuOpen ? 'z-20' : ''} bg-surface border border-border rounded-2xl shadow-card px-3 pt-3.5 pb-3 tableta:px-4 tableta:pt-4`}
     >
-      {/* Esquina doblada magenta, como una nota. */}
+      {/* Esquina doblada magenta, como una nota. Va sobre el borde (-top-px -right-px) y toma el
+          color de lo de atrás (--tapa-papel), así no se ve la línea clara del borde (V.4.5.0
+          en el teléfono; V.4.2.0 en tableta y computadora). */}
       <span
         aria-hidden="true"
-        className="absolute top-0 right-0 tableta:-top-px tableta:-right-px w-[18px] h-[18px] tableta:w-[22px] tableta:h-[22px] rounded-tr-2xl"
+        className="absolute -top-px -right-px w-[18px] h-[18px] tableta:w-[22px] tableta:h-[22px] rounded-tr-2xl"
         style={{ background: 'linear-gradient(45deg, var(--color-magenta-soft) 50%, var(--tapa-papel) 50%)' }}
       />
       <span aria-hidden="true" className="block h-3.5 font-title text-[30px] leading-[0.6] text-ornament">“</span>
