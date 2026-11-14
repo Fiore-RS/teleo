@@ -4,13 +4,8 @@ import { useCurrentlyReading } from "../hooks/useCurrentlyReading";
 import { useReadingStreak } from "../hooks/useReadingStreak";
 import { useAnnualGoal } from "../hooks/useAnnualGoal";
 import { useProfile } from "../hooks/useProfile";
-import { getProgressInfo } from "../lib/progress";
 import { StreakRibbon } from "../assets/components/atoms/StreakRibbon";
 import { CoverBand } from "../assets/components/atoms/CoverBand";
-import { Skeleton, CoverSkeleton } from "../assets/components/atoms/Skeleton";
-import { Card } from "../assets/components/molecules/Card";
-import { BookCardReading } from "../assets/components/molecules/BookCardReading";
-import { Button } from "../assets/components/atoms/Button";
 import { TabBar, type TabKey } from "../assets/components/molecules/TabBar";
 import { useEffect, useMemo, useState } from "react";
 import { EditGoalModal } from "../assets/components/molecules/EditGoalModal";
@@ -30,12 +25,12 @@ import { useTour } from "../context/tourContextValue";
 import { ANNOUNCEMENT_OFFERS_TOUR, ANNOUNCEMENT_VERSION, isVersionBefore, missedAnnouncedVersions } from "../lib/announcement";
 import { LATEST_VERSION, markChangelogSeen } from "../lib/changelog";
 import { UpdateProgressModal } from '../assets/components/molecules/UpdateProgressModal'
-import { getReadingPace, paceSentence } from '../lib/readingPace'
 import { useStaggerOnce } from '../lib/motion'
 import { queryClient } from '../lib/queryClient'
 import { DetalleLibro } from './DetalleLibro'
 import { GoalCard, StreakCard } from './mesa/MesaCards'
-import { MesaAncha } from './mesa/MesaAncha'
+import { BookSpines, MesaAncha } from './mesa/MesaAncha'
+import { HojaLeyendo } from './mesa/MesaTelefono'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { RecapYearAnnouncement } from '../assets/components/recap/RecapYearAnnouncement'
 import { RecapViewer } from '../assets/components/recap/RecapViewer'
@@ -43,7 +38,6 @@ import { isYearRecapAnnouncementDue, yearRecapSeenPatch } from '../lib/recapAnno
 import { useYearReads } from '../hooks/useYearReads'
 export function Mesa() {
   const staggerMesa = useStaggerOnce("mesa");
-  const staggerLeyendo = useStaggerOnce("mesa-leyendo");
   const navigate = useNavigate();
   const { start: startTour } = useTour();
   const { user } = useAuth();
@@ -159,16 +153,18 @@ export function Mesa() {
   }
 
   // Pantallas grandes (V.4.0.0): La mesa con su propio diseño (mesa/MesaAncha.tsx). El libro
-  // abierto es el último que se actualizó; en el celular se sigue viendo la lista de siempre.
+  // abierto es el último que se actualizó. Desde la V.4.5.0, en el celular también: va en la
+  // hoja de Leyendo ahora y los demás como lomos.
   const breakpoint = useBreakpoint();
   const isAncha = breakpoint !== "celular";
   const booksByProgress = useMemo(
     () => [...books].sort((a, b) => (b.progress_updated_at ?? "").localeCompare(a.progress_updated_at ?? "")),
     [books]
   );
-  // Meta cumplida en pantallas grandes: la estampilla fija lleva el matasellos con el día en
+  // Meta cumplida (pantallas grandes desde la V.4.0.0, celular desde la V.4.5.0): la estampilla
+  // fija lleva el matasellos con el día en
   // que se cumplió (fecha de fin de la lectura número `goal` del año, como en Resumen › Año).
-  const goalMet = isAncha && goal > 0 && completedCount >= goal;
+  const goalMet = goal > 0 && completedCount >= goal;
   const { reads: goalYearReads } = useYearReads(goalMet ? user?.id : undefined, recapYear);
   const goalReachedText = goalMet && goalYearReads.length >= goal ? goalYearReads[goal - 1].endDate : null;
   const goalReachedOn = useMemo(
@@ -251,55 +247,31 @@ export function Mesa() {
         </h1>
       </header>
 
-      <div className={`flex flex-col gap-5 ${staggerMesa}`}>
+      {/* V.4.5.0: el mismo aire (28px) entre la hoja, la pila y cada tarjeta (la pestaña de las
+          tarjetas cuenta como parte de la tarjeta). */}
+      <div className={`flex flex-col gap-7 ${staggerMesa}`}>
         {profile?.is_demo && <DemoNotice />}
 
-        {/* Leyendo ahora */}
-        <Card tab={{ label: "Leyendo ahora" }}>
-
-          {booksLoading && (
-            <div className="flex gap-3.5" aria-label="Cargando">
-              <CoverSkeleton className="w-26 shrink-0" />
-              <div className="flex-1 pt-1">
-                <Skeleton className="h-5 w-4/5 rounded-full" />
-                <Skeleton className="h-3.5 w-1/2 mt-2 rounded-full" />
-                <Skeleton className="h-2.5 w-full mt-8 rounded-full" />
-                <Skeleton className="h-8 w-full mt-3 rounded-full" />
-              </div>
-            </div>
-          )}
-          {!booksLoading && books.length === 0 && (
-            <>
-              <p className="text-body-md text-text-secondary">
-                No tienes libros en progreso todavía.
-              </p>
-              <Button variant="soft" className="mt-3.5" onClick={() => setIsRandomPickOpen(true)}>
-                Elegir un pendiente al azar
-              </Button>
-            </>
-          )}
-          <div className={`divide-y divide-dashed divide-border ${staggerLeyendo}`}>
-            {books.map((book) => {
-              const { percent, label } = getProgressInfo(book);
-              const pace = getReadingPace(book);
-              return (
-                <div key={book.id} className="py-3.5 first:pt-0 last:pb-0">
-                  <BookCardReading
-                    title={book.title}
-                    author={book.author ?? undefined}
-                    coverUrl={book.cover_url ?? undefined}
-                    progressPercent={percent}
-                    progressLabel={label}
-                    missingStartDate={!book.start_date}
-                    paceText={pace ? paceSentence(pace) : null}
-                    onUpdateClick={() => setUpdatingBookId(book.id)}
-                    onOpen={() => setSelectedBookId(book.id)}
-                  />
-                </div>
-              );
-            })}
+        {/* Leyendo ahora (V.4.5.0): el último libro avanzado en una hoja de cuaderno, como el
+            libro abierto de las pantallas grandes, y los demás en curso como lomos debajo. */}
+        <HojaLeyendo
+          book={booksByProgress[0]}
+          isLoading={booksLoading}
+          onUpdate={() => booksByProgress[0] && setUpdatingBookId(booksByProgress[0].id)}
+          onOpen={() => booksByProgress[0] && setSelectedBookId(booksByProgress[0].id)}
+          onRandom={() => setIsRandomPickOpen(true)}
+          onPending={() => navigate('/estante?filtro=pendiente')}
+        />
+        {!booksLoading && booksByProgress.length > 1 && (
+          <div>
+            <BookSpines
+              compacto
+              books={booksByProgress.slice(1)}
+              onOpen={setSelectedBookId}
+              onUpdate={setUpdatingBookId}
+            />
           </div>
-        </Card>
+        )}
 
         {/* Próximo lanzamiento: ocupa el lugar que dejó la lista de temporada */}
         <NextReleaseCard userId={user?.id} />
@@ -316,7 +288,14 @@ export function Mesa() {
         />
 
         {/* Meta anual */}
-        <GoalCard goal={goal} completedCount={completedCount} isLoading={goalLoading} onEdit={() => setIsGoalModalOpen(true)} />
+        <GoalCard
+          goal={goal}
+          completedCount={completedCount}
+          isLoading={goalLoading}
+          onEdit={() => setIsGoalModalOpen(true)}
+          showStamp
+          reachedOn={goalReachedOn}
+        />
       </div>
 
       <div className="pb-28" />

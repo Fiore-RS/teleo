@@ -102,9 +102,10 @@ interface GoalCardProps {
   goal: number
   completedCount: number
   isLoading: boolean
-  onEdit: () => void
-  /** Pantallas grandes (V.4.0.0): con la meta cumplida, la estampilla queda fija en la tarjeta.
-   *  En el celular no hay espacio; ahí la estampilla sale solo en la postal. */
+  /** Sin `onEdit` no se muestra "Editar" en la pestaña. */
+  onEdit?: () => void
+  /** Con la meta cumplida, la estampilla queda fija en la tarjeta (pantallas grandes desde la
+   *  V.4.0.0; en el celular desde la V.4.5.0, un poco más chica). */
   showStamp?: boolean
   /** Día en que se cumplió la meta: va en el matasellos sobre la estampilla y en una línea
    *  debajo de la frase, como en Bitácora › Resumen › Año. */
@@ -117,7 +118,7 @@ export function GoalCard({ goal, completedCount, isLoading, onEdit, showStamp = 
   const stamped = showStamp && goal > 0 && completedCount >= goal
 
   return (
-    <Card tab={{ label: 'Meta anual de lectura' }} tone="pink" action={<CardAction onClick={onEdit}>Editar</CardAction>}>
+    <Card tab={{ label: 'Meta anual de lectura' }} tone="pink" action={onEdit ? <CardAction onClick={onEdit}>Editar</CardAction> : undefined}>
       {isLoading ? (
         <div aria-label="Cargando">
           <Skeleton className="h-10 w-3/5 rounded-full" />
@@ -151,9 +152,12 @@ export function GoalCard({ goal, completedCount, isLoading, onEdit, showStamp = 
           </div>
           {stamped && (
             // La estampilla quieta, con el matasellos del día en que se cumplió (si ya se sabe).
-            <span className="postcard-static relative shrink-0 w-[96px] h-[120px] mr-1">
-              <GoalStamp goal={goal} />
-              {reachedOn && <Postmark date={reachedOn} className="absolute -left-8 -bottom-4 w-[112px] h-[60px]" />}
+            // En el celular va al 80% (77 × 96) para dejarle lugar a la cifra y la frase.
+            <span className="postcard-static relative shrink-0 w-[77px] h-[96px] tableta:w-[96px] tableta:h-[120px] mr-1">
+              <span className="absolute top-0 left-0 w-[96px] h-[120px] origin-top-left scale-80 tableta:scale-100">
+                <GoalStamp goal={goal} />
+                {reachedOn && <Postmark date={reachedOn} className="absolute -left-8 -bottom-4 w-[112px] h-[60px]" />}
+              </span>
             </span>
           )}
         </div>

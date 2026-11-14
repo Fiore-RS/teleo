@@ -12,7 +12,6 @@ import type { Database } from '../types/database'
 import type { LastFinishedBook, ProfileCounts, ProfileQuote } from '../hooks/useProfileLists'
 import type { ReadingStatus } from '../lib/status'
 import { getProgressInfo } from '../lib/progress'
-import { getGoalMessage } from '../lib/goalMessage'
 import { useStaggerOnce } from '../lib/motion'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { GoalCard } from './mesa/MesaCards'
@@ -245,7 +244,6 @@ export function ProfileView({
   // Ahora mismo, la meta y Mis próximas lecturas) como las hojas de Bitácora.
   const isAncha = useBreakpoint() !== 'celular'
   const currentYear = new Date().getFullYear()
-  const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
   const displayName = nickname?.trim() || username
   const initial = displayName?.trim().charAt(0).toUpperCase() ?? ''
   const [activeShelfKey, setActiveShelfKey] = useState<ProfileShelf['key']>('favoritos')
@@ -465,7 +463,7 @@ export function ProfileView({
                       <button
                         type="button"
                         onClick={() => onSeeAllBooks('leyendo')}
-                        className="mt-2.5 ml-[98px] font-body font-bold text-body-sm text-orange-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
+                        className="block w-fit mt-2.5 ml-auto font-body font-bold text-body-sm text-orange-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
                       >
                         {moreReading === 1 ? 'Y 1 más en Estante' : `Y ${moreReading} más en Estante`}
                       </button>
@@ -508,39 +506,20 @@ export function ProfileView({
             </Card>
           ) : null}
 
-          {/* Meta anual (V.3.5.0): igual que en La mesa, con "Editar" en la pestaña. */}
-          {/* En pantallas grandes (V.4.2.0), la tarjeta de la meta es la de La mesa, con la
-              estampilla fija al cumplirla (fuera del modo hoja, en su carpeta). */}
-          {annualGoal > 0 && isAncha && (
+          {/* Meta anual (V.3.5.0): igual que en La mesa, con "Editar" en la pestaña y la
+              estampilla fija al cumplirla (pantallas grandes desde la V.4.2.0, fuera del modo
+              hoja, en su carpeta; celular desde la V.4.5.0). */}
+          {annualGoal > 0 && (
             <HojaModeContext.Provider value={false}>
               <GoalCard
                 goal={annualGoal}
                 completedCount={annualCompletedCount}
                 isLoading={false}
-                onEdit={onEditGoal ?? (() => {})}
+                onEdit={onEditGoal}
                 showStamp
                 reachedOn={annualGoalReachedOn}
               />
             </HojaModeContext.Provider>
-          )}
-          {annualGoal > 0 && !isAncha && (
-            <Card
-              tab={{ label: 'Meta anual de lectura' }}
-              tone="pink"
-              action={onEditGoal ? <CardAction onClick={onEditGoal}>Editar</CardAction> : undefined}
-            >
-              <div className="flex items-end justify-between gap-3">
-                <p className="font-title text-[40px] leading-none text-text">
-                  <span className="tabular-nums">{annualCompletedCount}</span>{' '}
-                  <span className="font-body font-medium text-body-md text-text-secondary">
-                    de {annualGoal} libros del {currentYear}
-                  </span>
-                </p>
-                <span className="font-display font-semibold text-[20px] text-pink-text tabular-nums">{Math.round(goalPercent)}%</span>
-              </div>
-              <ProgressBar percent={goalPercent} color="var(--color-pink)" shape="firme" className="mt-3.5 h-3.5" />
-              <p className="font-display italic text-body-lg text-text-secondary mt-3">{getGoalMessage(goalPercent)}</p>
-            </Card>
           )}
 
           {/* Estanterías (V.3.5.0): Favoritos, Recomendados, Deseados y Abandonados en una sola
