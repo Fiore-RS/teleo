@@ -6,6 +6,7 @@ import { useFinishIntro } from '../hooks/useFinishIntro'
 import { useTour } from '../context/tourContextValue'
 import { TOUR_STEPS } from '../lib/tour'
 import { DEFAULT_BANNER, isBannerId } from '../lib/banners'
+import { useBreakpoint } from '../hooks/useBreakpoint'
 import { Button } from '../assets/components/atoms/Button'
 import { BannerArt } from '../assets/components/atoms/BannerArt'
 
@@ -18,6 +19,7 @@ export function Bienvenida() {
   const { profile } = useProfile(user?.id)
   const { finishIntro, isSaving } = useFinishIntro()
   const { start } = useTour()
+  const breakpoint = useBreakpoint()
   const [choice, setChoice] = useState<'tour' | 'skip' | null>(null)
 
   const displayName = profile?.nickname?.trim() || profile?.username || ''
@@ -28,6 +30,67 @@ export function Bienvenida() {
     setChoice(withTour ? 'tour' : 'skip')
     await finishIntro()
     if (withTour) start()
+  }
+
+  const foto = (size: string, text: string) => (
+    <div className={`relative z-[2] mx-auto ${size} rounded-[34px] border-4 border-bg bg-linear-to-br from-primary to-rose rotate-[4deg] shadow-[0_14px_26px_-14px_rgba(40,20,10,0.6)] flex items-center justify-center overflow-hidden`}>
+      {profile?.avatar_url ? (
+        <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <span className={`font-title ${text} leading-none text-primary-ink`}>{initial}</span>
+      )}
+    </div>
+  )
+
+  const saludo = (
+    <>
+      <h1 className="font-title text-[36px] tableta:text-[40px] leading-[1.05] text-text text-balance">
+        {displayName ? `¡Hola, ${displayName}!` : '¡Hola!'}
+      </h1>
+      {profile?.username && <p className="text-body-md text-text-secondary mt-1">@{profile.username}</p>}
+      <p className="font-body text-body-lg text-text-secondary mt-4 text-pretty">
+        Tu rincón de lectura está listo. ¿Te mostramos cómo funciona Teleo? Es un tutorial corto, de {TOUR_STEPS.length}{' '}
+        pasos, sobre la misma app.
+      </p>
+    </>
+  )
+
+  const botones = (
+    <div className="mt-14 tableta:mt-10 flex flex-col gap-2.5">
+      <p className="text-body-sm text-text-muted mb-0.5">Puedes verlo cuando quieras desde Configuración.</p>
+      <Button variant="primary" onClick={() => handleStart(true)} isLoading={isSaving && choice === 'tour'} disabled={isSaving}>
+        Empezar el tutorial
+      </Button>
+      <Button variant="outline" onClick={() => handleStart(false)} isLoading={isSaving && choice === 'skip'} disabled={isSaving}>
+        Ahora no
+      </Button>
+    </div>
+  )
+
+  // Tableta y computadora (V.4.3.0, lienzo "Tapa · Bienvenida"): solo la primera hoja de
+  // cuaderno, con margen rojo y renglones, centrada sobre el fondo de la mesa. Sin banner ni tapa
+  // (Fiorella, 14 nov 2026).
+  if (breakpoint !== 'celular') {
+    return (
+      <div className="min-h-dvh bg-mesa flex items-center justify-center p-10">
+        <div
+          className="relative w-full max-w-160 bg-surface rounded-[10px] shadow-[0_30px_50px_-28px_rgba(60,30,20,0.6)] pt-14 pb-12 pl-21 pr-16 text-center"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(180deg, transparent 0 31px, color-mix(in srgb, var(--color-border) 60%, transparent) 31px 32px)',
+          }}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-0 left-14 w-[1.5px]"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--color-rose) 60%, transparent)' }}
+          />
+          {foto('w-[112px] h-[112px]', 'text-[52px]')}
+          <div className="mt-6">{saludo}</div>
+          <div className="max-w-90 mx-auto">{botones}</div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -48,36 +111,14 @@ export function Bienvenida() {
         </div>
 
         {/* Foto centrada, montada sobre el borde del banner. */}
-        <div className="relative z-[2] -mt-16 mx-auto w-[120px] h-[120px] rounded-[34px] border-4 border-bg bg-linear-to-br from-primary to-rose rotate-[4deg] shadow-[0_14px_26px_-14px_rgba(40,20,10,0.6)] flex items-center justify-center overflow-hidden">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <span className="font-title text-[56px] leading-none text-primary-ink">{initial}</span>
-          )}
-        </div>
+        <div className="-mt-16">{foto('w-[120px] h-[120px]', 'text-[56px]')}</div>
 
         <div
           className="flex flex-col px-6 pt-5 text-center"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
         >
-          <h1 className="font-title text-[36px] leading-[1.05] text-text text-balance">
-            {displayName ? `¡Hola, ${displayName}!` : '¡Hola!'}
-          </h1>
-          {profile?.username && <p className="text-body-md text-text-secondary mt-1">@{profile.username}</p>}
-          <p className="font-body text-body-lg text-text-secondary mt-4 text-pretty">
-            Tu rincón de lectura está listo. ¿Te mostramos cómo funciona Teleo? Es un tutorial corto, de {TOUR_STEPS.length}{' '}
-            pasos, sobre la misma app.
-          </p>
-
-          <div className="mt-14 flex flex-col gap-2.5">
-            <p className="text-body-sm text-text-muted mb-0.5">Puedes verlo cuando quieras desde Configuración.</p>
-            <Button variant="primary" onClick={() => handleStart(true)} isLoading={isSaving && choice === 'tour'} disabled={isSaving}>
-              Empezar el tutorial
-            </Button>
-            <Button variant="outline" onClick={() => handleStart(false)} isLoading={isSaving && choice === 'skip'} disabled={isSaving}>
-              Ahora no
-            </Button>
-          </div>
+          {saludo}
+          {botones}
         </div>
       </div>
     </div>
