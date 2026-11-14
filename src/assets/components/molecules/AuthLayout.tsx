@@ -1,5 +1,6 @@
 import type { FormEvent, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { TapaPortada } from './TapaPortada'
 import { Logo } from '../atoms/Logo'
 
 interface AuthLayoutProps {
@@ -40,24 +41,29 @@ export function AuthLayout({ title, subtitle, children, footer, onSubmit, center
     </>
   )
 
+  // Tableta y computadora (V.4.3.0): la tapa del cuaderno a la izquierda, fija, y a la derecha
+  // la misma columna del teléfono, centrada a lo alto. El logo chico de arriba ya está en la tapa.
   return (
-    <div className="min-h-dvh bg-glow-top">
+    <div className="min-h-dvh bg-glow-top tableta:grid tableta:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] escritorio:grid-cols-[600px_minmax(0,1fr)]">
+      <div className="hidden tableta:block sticky top-0 h-dvh">
+        <TapaPortada />
+      </div>
       <div
-        className="mx-auto w-full max-w-120 min-h-dvh flex flex-col px-6"
+        className="mx-auto w-full max-w-120 min-h-dvh flex flex-col px-6 tableta:max-w-[468px] tableta:justify-center tableta:py-12"
         style={{
           paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
         }}
       >
-        <div className="-ml-0.5">
+        <div className="-ml-0.5 tableta:hidden">
           <Logo variant="full" className="h-7 w-auto" onClick={() => navigate('/')} />
         </div>
         {onSubmit ? (
-          <form onSubmit={onSubmit} noValidate className="flex-1 flex flex-col">
+          <form onSubmit={onSubmit} noValidate className="flex-1 tableta:flex-none flex flex-col">
             {body}
           </form>
         ) : (
-          <div className="flex-1 flex flex-col">{body}</div>
+          <div className="flex-1 tableta:flex-none flex flex-col">{body}</div>
         )}
       </div>
     </div>

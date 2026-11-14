@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { HeroIllustration } from '../assets/components/atoms/HeroIllustration'
+import { TapaPortada } from '../assets/components/molecules/TapaPortada'
 import { Logo } from '../assets/components/atoms/Logo'
 import { Button } from '../assets/components/atoms/Button'
 import { InviterCard } from '../assets/components/molecules/InviterCard'
@@ -15,15 +16,26 @@ export function Inicio() {
   const [inviteCode] = useState(() => saveInviteCode(searchParams.get('codigo')) ?? readInviteCode())
   const { inviter } = useInviterPreview(inviteCode)
 
+  // Tableta y computadora (V.4.3.0): la tapa del cuaderno a la izquierda, sin la ilustración, y
+  // el texto con los botones a la derecha (como las demás pantallas de cuenta, AuthLayout).
   return (
-    <div className="min-h-screen bg-glow-top flex flex-col">
-      <div className="p-4">
+    <div className="min-h-screen bg-glow-top tableta:grid tableta:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] escritorio:grid-cols-[600px_minmax(0,1fr)]">
+      <div className="hidden tableta:block sticky top-0 h-dvh">
+        <TapaPortada />
+      </div>
+      <div className="min-h-screen flex flex-col tableta:justify-center tableta:mx-auto tableta:w-full tableta:max-w-[468px]">
+      <div className="p-4 tableta:hidden">
         <Logo variant="full" className="h-8" onClick={() => navigate('/')} />
       </div>
 
       {/* V.3.3.0: con invitación, la tarjeta flota encima de la ilustración, que conserva su
-          tamaño. */}
-      <div className="relative">
+          tamaño. En tableta y computadora no hay ilustración: la tarjeta va arriba del título. */}
+      {inviter && (
+        <div className="hidden tableta:block px-6 animate-float-in drop-shadow-[0_14px_18px_rgba(40,20,10,0.22)]">
+          <InviterCard inviter={inviter} />
+        </div>
+      )}
+      <div className="relative tableta:hidden">
         <HeroIllustration className="w-full" />
         {inviter && (
           <div className="absolute inset-x-5 top-8 animate-float-in drop-shadow-[0_14px_18px_rgba(40,20,10,0.22)]">
@@ -32,7 +44,7 @@ export function Inicio() {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col justify-between p-6 pb-20">
+      <div className="flex-1 tableta:flex-none flex flex-col justify-between p-6 pb-20 tableta:pb-6">
         <div>
           <h1 className="font-title leading-none text-text">
             <span className="text-[clamp(40px,12vw,56px)]">Teleo,</span>{' '}
@@ -55,6 +67,7 @@ export function Inicio() {
             Sin ads, sin rastreo; tu privacidad es sagrada
           </p>
         </div>
+      </div>
       </div>
     </div>
   )
