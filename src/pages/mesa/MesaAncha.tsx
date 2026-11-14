@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
 import type { Database } from '../../types/database'
 import { CoverImage } from '../../assets/components/atoms/CoverImage'
 import { Skeleton, CoverSkeleton } from '../../assets/components/atoms/Skeleton'
 import { Button } from '../../assets/components/atoms/Button'
 import { StreakRibbon } from '../../assets/components/atoms/StreakRibbon'
-import { getProgressInfo, formatDuration } from '../../lib/progress'
+import { getProgressInfo } from '../../lib/progress'
+import { progressDetail, shortDate } from './libroEnCurso'
 import { getReadingPace, paceSentence } from '../../lib/readingPace'
 
 type Book = Database['public']['Tables']['books']['Row']
@@ -18,22 +18,6 @@ const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes
  *  un diario. */
 function diaryDate(date = new Date()) {
   return `${WEEKDAYS[date.getDay()]} ${date.getDate()} de ${MONTHS[date.getMonth()]}`
-}
-
-/** "2 de noviembre" a partir de una fecha guardada como AAAA-MM-DD (sin pasar por UTC). */
-function shortDate(value: string) {
-  const [y, m, d] = value.slice(0, 10).split('-').map((n) => parseInt(n, 10))
-  const sameYear = y === new Date().getFullYear()
-  return `${d} de ${MONTHS[m - 1]}${sameYear ? '' : ` de ${y}`}`
-}
-
-/** "Página 312 de 502", "01:20:00 de 09:15:00" o nada (digital: solo el porcentaje). */
-function progressDetail(book: Book): string | null {
-  if (book.format === 'audiolibro' && book.total_duration_seconds) {
-    return `${formatDuration(book.current_duration_seconds ?? 0)} de ${formatDuration(book.total_duration_seconds)}`
-  }
-  if (book.format !== 'digital' && book.total_pages) return `Página ${book.current_page ?? 0} de ${book.total_pages}`
-  return null
 }
 
 /** Colores de los lomos (V.4.3.0): tres colores del tema elegido que se distinguen bien entre
@@ -59,16 +43,17 @@ function spineIndexes(titles: string[]) {
   })
   return out
 }
-/** Ancho del lomo entre 500 y 600px, también por el título: la pila no se ve pareja. */
+/** Ancho del lomo entre 540 y 580px, también por el título: parecidos entre sí, pero sin que
+ *  la pila se vea pareja (V.4.5.0; antes de 500 a 600px). */
 function spineWidth(title: string) {
   let h = 7
   for (let i = 0; i < title.length; i++) h = (h * 17 + title.charCodeAt(i)) >>> 0
-  return 500 + (h % 101)
+  return 540 + (h % 41)
 }
 
 /** Los botones de borde sobre la hoja con renglones llevan el fondo de la hoja, para que las
  *  rayas no se vean a través (con ! porque la variante outline trae fondo transparente). */
-const ON_PAPER = 'bg-surface! hover:bg-surface-2!'
+export const ON_PAPER = 'bg-surface! hover:bg-surface-2!'
 
 const PAPER_SHADE_LEFT = 'linear-gradient(270deg, var(--teleo-pliegue), transparent 46px)'
 const PAPER_SHADE_RIGHT = 'linear-gradient(90deg, var(--teleo-pliegue), transparent 46px)'
@@ -197,29 +182,38 @@ function LoadingBook() {
   )
 }
 
-/** "También en tu mesa": los demás libros en curso, acostados en una pila. Máximo dos lomos;
- *  si el título es largo, el lomo se hace más grueso en vez de cortarlo. Tocar el lomo abre sus
+/** "También en tu mesa": los demás libros en curso, acostados en una pila. Desde la V.4.5.0 van
+ *  todos (antes eran dos y un botón "y N más"), así la pila crece con lo que estás leyendo;
+ *  si el título es largo, el lomo se hace más grueso, hasta dos renglones; desde el tercero se
+ *  corta con "…" (V.4.5.0). Tocar el lomo abre sus
  *  detalles; el marcapáginas que asoma ("18% · Actualizar") actualiza su progreso, porque el
  *  libro abierto siempre es el último actualizado y estos no tendrían otra forma de avanzar. */
 interface BookSpinesProps {
   books: Book[]
   onOpen: (id: string) => void
   onUpdate: (id: string) => void
-  onSeeAll: () => void
+  /** Celular (V.4.5.0): todos los lomos del mismo largo, aprovechando el ancho de lado a lado
+   *  (uno sí y uno no corrido a la derecha, así la pila no se ve perfecta), un poco más
+   *  delgados, y el marcapáginas solo con el porcentaje (tocarlo sigue actualizando). */
+  compacto?: boolean
 }
 
-function BookSpines({ books, onOpen, onUpdate, onSeeAll }: BookSpinesProps) {
-  const shown = books.slice(0, 2)
-  const rest = books.length - shown.length
-  const colors = spineIndexes(shown.map((b) => b.title)).map((n) => SPINE_COLORS[n])
+export function BookSpines({ books, onOpen, onUpdate, compacto = false }: BookSpinesProps) {
+  const colors = spineIndexes(books.map((b) => b.title)).map((n) => SPINE_COLORS[n])
   return (
-    <section aria-labelledby="mesa-tambien" className="mt-9.5">
+    <section aria-labelledby="mesa-tambien" className={compacto ? '' : 'mt-9.5'}>
       <h2 id="mesa-tambien" className="smallcaps text-text-secondary mb-3.5">
         También en tu mesa
       </h2>
-      {/* pr-34: lugar para el marcapáginas que asoma a la derecha. */}
-      <ul className="flex flex-col items-start w-fit max-w-full pr-34 drop-shadow-[0_10px_10px_rgba(0,0,0,0.16)]">
-        {shown.map((book, i) => {
+      {/* pr-34 (pr-13 en el celular): lugar para el marcapáginas que asoma a la derecha. En el
+          celular la pila se corre 10px a la derecha (sin cambiar el largo de los lomos) para que
+          se vea más centrada en la pantalla. */}
+      <ul
+        className={`flex flex-col items-start drop-shadow-[0_10px_10px_rgba(0,0,0,0.16)] ${
+          compacto ? 'w-full pr-13 translate-x-2.5' : 'w-fit max-w-full pr-34'
+        }`}
+      >
+        {books.map((book, i) => {
           const { percent } = getProgressInfo(book)
           const surname = book.author?.trim().split(/\s+/).pop()
           return (
@@ -227,23 +221,26 @@ function BookSpines({ books, onOpen, onUpdate, onSeeAll }: BookSpinesProps) {
               key={book.id}
               style={{
                 // Corridos entre sí para que la pila no se vea pareja.
-                marginLeft: i % 2 === 1 ? 32 : 0,
-                width: `min(${spineWidth(book.title)}px, 100%)`,
-              }} className="relative min-w-0 tableta:min-w-[min(500px,100%)]">
+                marginLeft: i % 2 === 1 ? (compacto ? 22 : 32) : 0,
+                width: compacto ? 'calc(100% - 22px)' : `min(${spineWidth(book.title)}px, 100%)`,
+              }} className="relative min-w-0 tableta:min-w-[min(540px,100%)]">
               <button
                 type="button"
                 onClick={() => onOpen(book.id)}
-                className="book-spine relative w-full flex items-center gap-3.5 min-h-[46px] py-2 pl-7 pr-6 rounded-[3px_4px_4px_3px] text-left transition-[filter] hover:brightness-105"
+                className={`book-spine relative w-full flex items-center rounded-[3px_4px_4px_3px] text-left transition-[filter] hover:brightness-105 ${
+                  compacto ? 'gap-2.5 min-h-[40px] py-1.5 pl-6 pr-5' : 'gap-3.5 min-h-[46px] py-2 pl-7 pr-6'
+                }`}
                 style={{ backgroundColor: colors[i].bg, color: colors[i].ink }}
               >
-                <span className="flex-1 min-w-0 font-title text-[16px] leading-tight">{book.title}</span>
+                {/* Hasta dos renglones y después "…" (V.4.5.0, también en pantallas grandes). */}
+                <span className={`flex-1 min-w-0 font-title leading-tight line-clamp-2 ${compacto ? 'text-[14.5px]' : 'text-[16px]'}`}>{book.title}</span>
                 {surname && <span className="shrink-0 smallcaps text-[10px]! opacity-85">{surname}</span>}
               </button>
               <button
                 type="button"
                 onClick={() => onUpdate(book.id)}
                 aria-label={`Actualizar progreso de ${book.title} (${Math.round(percent)}%)`}
-                className="group absolute left-full top-1/2 -translate-y-1/2 h-[26px] pl-2.5 pr-4 flex items-center gap-1.5 whitespace-nowrap text-text text-[12px] font-bold rounded-r-[4px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+                className="group absolute left-full top-1/2 -translate-y-1/2 h-[26px] pl-2 pr-3.5 tableta:pl-2.5 tableta:pr-4 flex items-center gap-1.5 whitespace-nowrap text-text text-[12px] font-bold rounded-r-[4px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
               >
                 {/* El papel del marcapáginas, con el corte en V al final. */}
                 <span
@@ -251,19 +248,17 @@ function BookSpines({ books, onOpen, onUpdate, onSeeAll }: BookSpinesProps) {
                   className="absolute inset-0 bg-reading-soft transition-[filter] group-hover:brightness-95 [clip-path:polygon(0_0,100%_0,calc(100%-7px)_50%,100%_100%,0_100%)]"
                 />
                 <span key={Math.round(percent)} className="relative tabular-nums animate-fade-in">{Math.round(percent)}%</span>
-                <span aria-hidden="true" className="relative opacity-50">·</span>
-                <span className="relative text-primary-text">Actualizar</span>
+                {!compacto && (
+                  <>
+                    <span aria-hidden="true" className="relative opacity-50">·</span>
+                    <span className="relative text-primary-text">Actualizar</span>
+                  </>
+                )}
               </button>
             </li>
           )
         })}
       </ul>
-      {rest > 0 && (
-        <button type="button" onClick={onSeeAll} className="mt-3 ml-1 inline-flex items-center gap-0.5 font-bold text-body-md text-primary-text hover:underline underline-offset-4">
-          y {rest} más
-          <ChevronRight size={16} aria-hidden="true" />
-        </button>
-      )}
     </section>
   )
 }
@@ -324,7 +319,6 @@ export function MesaAncha(props: MesaAnchaProps) {
       books={others}
       onOpen={props.onOpen}
       onUpdate={props.onUpdate}
-      onSeeAll={() => navigate('/estante?filtro=leyendo')}
     />
   )
 

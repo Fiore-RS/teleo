@@ -42,7 +42,8 @@ export function StreakRibbon({ streak, marked, isLoading, dropKey = 0, onClick, 
         onBook
           ? { height: 100, paddingTop: 24 }
           : {
-              height: `calc(${COVER_BAND_HEIGHT + 96}px + env(safe-area-inset-top, 0px))`,
+              // V.4.5.0: un poco más corta (antes + 96).
+              height: `calc(${COVER_BAND_HEIGHT + 82}px + env(safe-area-inset-top, 0px))`,
               paddingTop: `calc(${COVER_BAND_HEIGHT + 16}px + env(safe-area-inset-top, 0px))`,
             }
       }
