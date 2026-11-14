@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation, useNavigationType } from "react-r
 import { LoadingScreen } from "./pages/LoadingScreen";
 import { PaletteSync } from "./assets/components/atoms/PaletteSync";
 import { PreferencesSync } from "./assets/components/atoms/PreferencesSync";
+import { LiveSync } from "./assets/components/atoms/LiveSync";
 import { routeTransition } from "./lib/motion";
 import { AvisoMudanza } from "./pages/AvisoMudanza";
 import { useMoved } from "./hooks/useMoved";
@@ -141,6 +142,7 @@ function App() {
     <div className="app-fondo min-h-screen bg-border tableta:bg-bg">
       <PaletteSync />
       <PreferencesSync />
+      <LiveSync />
       {/* overflow-x-clip: mientras una pantalla secundaria entra desde el costado no aparece
           desplazamiento horizontal (clip, y no hidden, para no romper los elementos sticky). */}
       <div className="app-columna mx-auto w-full max-w-120 tableta:max-w-none min-h-screen bg-bg overflow-x-clip">
