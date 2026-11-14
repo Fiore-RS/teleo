@@ -2,7 +2,7 @@ import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '4.2.0'
+export const ANNOUNCEMENT_VERSION = '4.3.0'
 
 /** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
  *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
@@ -14,11 +14,11 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'Busca de todo', text: 'El buscador de la tapa busca mientras escribes y abre su propia pantalla, con los libros, sagas, reseñas y citas que encuentre.' },
-  { title: 'Tu Cuaderno', text: 'Las reseñas como hojas rayadas y las citas como notas, más grandes y con más aire.' },
-  { title: 'Tu Bitácora en hojas', text: 'Tu año queda fijo a la izquierda, y lo demás va en hojas como notas, con la esquina doblada.' },
-  { title: 'Tu librero en el Perfil', text: 'Una repisa por estantería, empezando por tus próximas lecturas, y un banner que ocupa todo el ancho.' },
-  { title: 'Poco a poco', text: 'Sigue un menú nuevo para agregar libros, sagas, citas y reseñas desde la tapa.' },
+  { title: 'Agrega desde la tapa', text: 'Un libro, una saga, una cita o una reseña, desde cualquier pantalla.' },
+  { title: 'Hojas a la derecha', text: 'Los formularios se abren a la derecha, y las hojas cortas son de papel más grueso.' },
+  { title: 'Tu tema, a la vista', text: 'En Configuración eliges el tema tocando su muestra y ves cómo queda.' },
+  { title: 'La tapa al entrar', text: 'Iniciar sesión y crear tu cuenta empiezan con la tapa del cuaderno.' },
+  { title: 'El cuaderno completo', text: 'Con esta versión, Teleo queda completo en la computadora y la tableta.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */
