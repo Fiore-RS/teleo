@@ -15,6 +15,25 @@ export interface ChangelogEntry {
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.5.0',
+    announced: true,
+    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
+    date: 'Fecha por definir',
+    title: 'De vuelta al teléfono',
+    items: [
+      'En el teléfono, La mesa muestra el libro que estás leyendo en una hoja de tu cuaderno, con su avance en grande. Toca la portada o el título para ver sus detalles.',
+      'Los demás libros que estás leyendo quedan debajo como lomos, todos a la vista. Toca un lomo para ver sus detalles, o su marcapáginas para actualizar el progreso. El botón "y N más" ya no está, tampoco en la computadora, y los títulos largos se cortan en dos renglones.',
+      'Al cumplir tu meta anual, la estampilla queda en su tarjeta de La mesa y del Perfil, también en el teléfono.',
+      'El Estante es un librero de madera también en el teléfono.',
+      'Las hojas que bajan desde arriba ahora son hojas de cuaderno, con renglones y la esquina doblada. Las cortas, como los avisos o actualizar el progreso, son de papel más grueso.',
+      'En la Bitácora, tu año va en una hoja, y debajo tus géneros y cómo lees. Lo demás sigue en "Más de tu bitácora".',
+      'En el Perfil, las estanterías van primero, en el librero de madera, con Mis próximas lecturas como primera pestaña. Para empezar uno de tus próximos libros, toca "Leer" en su portada. Tu biblioteca y Ahora mismo ahora son hojas.',
+      'Iniciar sesión, crear tu cuenta y las demás pantallas de entrada se abren con la tapa del cuaderno de Teleo, y la bienvenida es una hoja de tu cuaderno.',
+      'Las novedades llegan en una carta sobre la mesa, como en la computadora.',
+      'Pequeños detalles: la cinta de la racha es un poco más corta, el espacio entre las tarjetas de La mesa es parejo y la esquina de las notas de tus citas se ve limpia.',
+    ],
+  },
+  {
     version: '4.4.0',
     announced: true,
     // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.

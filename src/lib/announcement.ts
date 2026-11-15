@@ -2,7 +2,7 @@ import { changelog, type ChangelogEntry } from './changelog'
 
 /** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
  *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '4.4.0'
+export const ANNOUNCEMENT_VERSION = '4.5.0'
 
 /** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
  *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
@@ -14,10 +14,11 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'En todas partes', text: 'Lo que haces en un dispositivo aparece solo en los demás, sin recargar.' },
-  { title: 'Tu progreso, al momento', text: 'Actualiza en el teléfono y la meta y la racha cambian en la computadora.' },
-  { title: 'Tu tema te sigue', text: 'Cambia el tema o el modo en uno y cambia en todos.' },
-  { title: 'Al volver, al día', text: 'Si se corta la conexión, Teleo se pone al día cuando vuelve.' },
+  { title: 'Tu cuaderno, en el teléfono', text: 'Lo que estás leyendo, las hojas y tu Bitácora ahora son hojas de cuaderno.' },
+  { title: 'Tu pila de libros', text: 'Los demás libros que estás leyendo quedan como lomos en La mesa.' },
+  { title: 'Tu librero', text: 'El Estante y las estanterías del Perfil son un librero de madera.' },
+  { title: 'La tapa al entrar', text: 'Las pantallas de entrada se abren con la tapa de Teleo.' },
+  { title: 'Una carta para ti', text: 'Las novedades llegan en una carta, como esta.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */
