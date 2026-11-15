@@ -29,6 +29,7 @@ import { TraitStatsRow } from '../../assets/components/molecules/TraitStatsRow'
 import { CompleteShelfSheet } from '../../assets/components/molecules/CompleteShelfSheet'
 import { computeTraitStats } from '../../lib/traitStats'
 import type { RecapPeriod } from '../../lib/recap'
+import { formatListenTime } from '../../lib/progress'
 import { RecapEntryRow } from '../../assets/components/recap/RecapEntryRow'
 import { RecapViewer } from '../../assets/components/recap/RecapViewer'
 
@@ -51,39 +52,13 @@ function ResumenSheet({ view, onViewChange, children }: {
   onViewChange: (view: ResumenView) => void
   children: ReactNode
 }) {
-  // Modo hoja (V.4.2.0, tableta y computadora): la hoja del Cuaderno con Mes, Año y Favoritos
-  // como un selector arriba, en vez de pestañas de separador.
-  if (useHojaMode()) {
-    return (
-      <Hoja as="section">
-        <div role="tablist" aria-label="Vista del resumen" className="flex p-[3px] rounded-[11px] bg-surface-2 mb-4">
-          {views.map(({ key, label }) => {
-            const isActive = view === key
-            return (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => onViewChange(key)}
-                className={`flex-1 h-[34px] rounded-[8px] font-body text-[15px] focus-visible:outline-2 focus-visible:outline-primary-text ${
-                  isActive ? 'bg-surface text-primary-text font-bold shadow-[0_1px_2px_rgba(0,0,0,0.15)]' : 'text-text-secondary font-semibold hover:text-text'
-                }`}
-              >
-                {label}
-              </button>
-            )
-          })}
-        </div>
-        {children}
-      </Hoja>
-    )
-  }
+  // V.4.5.1: la carpeta con pestañas también en tableta y computadora (antes, ahí era la hoja
+  // del Cuaderno con un selector segmentado arriba).
   return (
     // El espacio de las pestañas va como padding de un contenedor y no como margen: un margen
     // se juntaba con el de la barra de arriba en Mes y la hoja quedaba pegada a ella.
     <div className="pt-[34px]">
-    <section className="relative bg-pink-tint border border-border rounded-card rounded-tl-none shadow-card px-3.5 pt-4 pb-[18px]">
+    <section className="relative bg-pink-tint border border-border rounded-card rounded-tl-none shadow-card px-3.5 pt-4 pb-[18px] tableta:px-5 tableta:pt-5 tableta:pb-6">
       <div role="tablist" aria-label="Vista del resumen" className="absolute -top-[34px] -left-px flex items-end">
         {views.map(({ key, label }) => {
           const isActive = view === key
@@ -253,6 +228,8 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
   const breakpoint = useBreakpoint()
   const hojaMode = useHojaMode()
   const perRow = breakpoint === 'escritorio' ? 6 : breakpoint === 'tableta' ? 5 : 3
+  // V.4.5.1: el tiempo de los audiolibros del mes (no tienen páginas).
+  const audioSeconds = reads.reduce((sum, r) => sum + (r.audioSeconds ?? 0), 0)
 
   // Tableta y computadora (V.4.2.0, lienzo "Resumen · Mes"): a la izquierda la hoja del mes con
   // el número grande y Compartir; a la derecha "Lo que terminaste", con la fecha de cada libro.
@@ -283,10 +260,13 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
                 <p className="mt-1.5 font-display italic text-[19px] text-text-secondary">
                   {reads.length === 1 ? 'libro terminado' : 'libros terminados'} en {monthName.toLowerCase()}
                 </p>
+                {audioSeconds > 0 && (
+                  <p className="mt-1 text-body-md font-bold text-orange-text">{formatListenTime(audioSeconds)} escuchando</p>
+                )}
                 {reads.length > 0 && (
-                  <Button className="mt-5" onClick={onOpenRecap}>
-                    Compartir mi mes
-                  </Button>
+                  <div className="mt-5">
+                    <RecapEntryRow label="Compartir mi mes" onClick={onOpenRecap} />
+                  </div>
                 )}
               </>
             )}
@@ -344,6 +324,7 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
           <>
             <p className="text-body-md text-text-secondary text-center mt-1 mb-3">
               {reads.length} {reads.length === 1 ? 'libro terminado' : 'libros terminados'}
+              {audioSeconds > 0 && <> · <b className="font-bold text-orange-text">{formatListenTime(audioSeconds)} escuchando</b></>}
             </p>
             <Shelf
               className={staggerLibros}
@@ -394,7 +375,7 @@ const SPINE_TONES = [
 
 /** Año: una frase con lo esencial dentro de la hoja; debajo "Tu año en un estante" (un lomo
  *  por mes, más alto mientras más libros; tocarlo abre el mes) y "Más de tu año", plegado. */
-function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoading, canGoNext, onPrev, onNext, onMonthClick, onOpenRecap }: YearViewProps) {
+function YearView({ userId, view, onViewChange, year, reads, totalPages, totalAudioSeconds, isLoading, canGoNext, onPrev, onNext, onMonthClick, onOpenRecap }: YearViewProps) {
   const stagger = useStaggerOnce('resumen-anio')
   const hojaMode = useHojaMode()
   const now = new Date()
@@ -451,6 +432,13 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
         {isCurrentYear ? 'Llevas' : 'Terminaste'}{' '}
         <b className="font-semibold text-magenta-text">{n} {n === 1 ? 'libro' : 'libros'}</b>
         {totalPages > 0 && <>, unas <b className="font-semibold text-pink-text">{fmt(totalPages)} páginas</b></>}
+        {/* V.4.5.1: el tiempo de los audiolibros, que no tienen páginas. */}
+        {totalAudioSeconds > 0 && (
+          <>
+            {totalPages > 0 ? ' y ' : ', '}
+            <b className="font-semibold text-orange-text">{formatListenTime(totalAudioSeconds)} escuchando</b>
+          </>
+        )}
         {isCurrentYear ? ` en ${year}` : ''}.
         {bestMonth >= 0 && <> {MONTH_NAMES[bestMonth]} fue tu mejor mes.</>}
       </>
@@ -515,16 +503,11 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
                   </button>
                 )}
               </div>
-              {n > 0 &&
-                (hojaMode ? (
-                  <Button className="mt-5" onClick={onOpenRecap}>
-                    Compartir mi año
-                  </Button>
-                ) : (
-                  <div className="mt-5">
-                    <RecapEntryRow label="Compartir mi año" onClick={onOpenRecap} />
-                  </div>
-                ))}
+              {n > 0 && (
+                <div className="mt-5">
+                  <RecapEntryRow label="Compartir mi año" onClick={onOpenRecap} />
+                </div>
+              )}
             </>
           )}
         </PeriodTransition>
@@ -543,12 +526,14 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
         />
       )}
 
-      {hojaMode ? (
-        // Tableta y computadora (V.4.2.0): el librero del Estante, un compartimento por mes con
-        // sus lomos parados. Tocar un mes lo abre.
-        <Hoja title="Tu año en un estante">
-          <PeriodTransition order={year}>
-            <Librero>
+      {/* "Tu año en un estante" (V.4.5.1): fuera de la hoja, con el título como el de "De toda tu
+          biblioteca" y debajo el librero de madera del Estante. Tocar un mes lo abre. */}
+      <section aria-label="Tu año en un estante">
+        <h2 className="smallcaps text-text-secondary mb-3">Tu año en un estante</h2>
+        <PeriodTransition order={year}>
+          <Librero>
+            {hojaMode ? (
+              // Tableta y computadora (V.4.2.0): un compartimento por mes con sus lomos parados.
               <div className="grid grid-cols-6 gap-x-2 gap-y-1 px-2.5 pt-4">
                 {counts.map((c, i) => {
                   const month = i + 1
@@ -585,56 +570,55 @@ function YearView({ userId, view, onViewChange, year, reads, totalPages, isLoadi
                   )
                 })}
               </div>
-            </Librero>
-          </PeriodTransition>
-          <p className="text-[12.5px] text-text-muted text-center mt-2.5">Toca un mes para ver sus libros.</p>
-        </Hoja>
-      ) : (
-      <Card tab={{ label: 'Tu año en un estante' }}>
-        <PeriodTransition order={year}>
-          <div className="flex items-end gap-1 h-[150px] px-0.5">
-            {counts.map((c, i) => {
-              const month = i + 1
-              const isFuture = month > lastMonth
-              const tone = SPINE_TONES[i % SPINE_TONES.length]
-              const label = `${MONTH_NAMES[i]}: ${isFuture ? 'todavía no llega' : c === 0 ? 'sin libros' : `${c} ${c === 1 ? 'libro' : 'libros'}`}`
-              return c === 0 ? (
-                <button
-                  key={month}
-                  type="button"
-                  disabled={isFuture}
-                  onClick={() => onMonthClick(month)}
-                  aria-label={label}
-                  className={`flex-1 h-[26px] rounded-t-[5px] rounded-b-[2px] border-[1.5px] border-dashed border-border flex items-end justify-center pb-1 text-[10px] font-bold text-text-muted uppercase focus-visible:outline-2 focus-visible:outline-primary-text ${
-                    isFuture ? 'opacity-30' : ''
-                  }`}
-                >
-                  {MONTH_ABBR[i][0]}
-                </button>
-              ) : (
-                <button
-                  key={month}
-                  type="button"
-                  onClick={() => onMonthClick(month)}
-                  aria-label={label}
-                  className="flex-1 rounded-t-[5px] rounded-b-[2px] flex flex-col items-center justify-between pt-[5px] pb-1 shadow-[inset_-3px_0_0_rgba(0,0,0,0.15)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary-text"
-                  style={{
-                    height: 30 + c * unit,
-                    color: tone.ink,
-                    background: `linear-gradient(160deg, ${tone.bg}, color-mix(in srgb, ${tone.bg} 72%, #000))`,
-                  }}
-                >
-                  <b className="font-display font-semibold text-[13px] leading-none tabular-nums">{c}</b>
-                  <span className="text-[10px] font-bold opacity-90 uppercase">{MONTH_ABBR[i][0]}</span>
-                </button>
-              )
-            })}
-          </div>
+            ) : (
+              // Celular: los 12 meses como 12 lomos parados sobre el tablón, más altos mientras más
+              // libros; los meses sin libros, solo el contorno.
+              <div className="pt-4 pb-2">
+                <div className="flex items-end gap-1 h-[150px] px-2">
+                  {counts.map((c, i) => {
+                    const month = i + 1
+                    const isFuture = month > lastMonth
+                    const tone = SPINE_TONES[i % SPINE_TONES.length]
+                    const label = `${MONTH_NAMES[i]}: ${isFuture ? 'todavía no llega' : c === 0 ? 'sin libros' : `${c} ${c === 1 ? 'libro' : 'libros'}`}`
+                    return c === 0 ? (
+                      <button
+                        key={month}
+                        type="button"
+                        disabled={isFuture}
+                        onClick={() => onMonthClick(month)}
+                        aria-label={label}
+                        className={`flex-1 h-[26px] rounded-t-[5px] rounded-b-[2px] border-[1.5px] border-dashed border-[#FBF3EA]/35 flex items-end justify-center pb-1 text-[10px] font-bold text-[#FBF3EA]/70 uppercase focus-visible:outline-2 focus-visible:outline-[#FBF3EA] ${
+                          isFuture ? 'opacity-40' : ''
+                        }`}
+                      >
+                        {MONTH_ABBR[i][0]}
+                      </button>
+                    ) : (
+                      <button
+                        key={month}
+                        type="button"
+                        onClick={() => onMonthClick(month)}
+                        aria-label={label}
+                        className="flex-1 rounded-t-[5px] rounded-b-[2px] flex flex-col items-center justify-between pt-[5px] pb-1 shadow-[inset_-3px_0_0_rgba(0,0,0,0.15)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#FBF3EA]"
+                        style={{
+                          height: 30 + c * unit,
+                          color: tone.ink,
+                          background: `linear-gradient(160deg, ${tone.bg}, color-mix(in srgb, ${tone.bg} 72%, #000))`,
+                        }}
+                      >
+                        <b className="font-display font-semibold text-[13px] leading-none tabular-nums">{c}</b>
+                        <span className="text-[10px] font-bold opacity-90 uppercase">{MONTH_ABBR[i][0]}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <ShelfPlank className="mx-0! rounded-none!" />
+              </div>
+            )}
+          </Librero>
         </PeriodTransition>
-        <ShelfPlank />
         <p className="text-[12.5px] text-text-muted text-center mt-2.5">Toca un mes para ver sus libros.</p>
-      </Card>
-      )}
+      </section>
 
       {/* Mientras carga, en tableta y computadora: el lugar de las hojas de "Más de tu año". */}
       {isLoading && hojaMode && (
@@ -757,34 +741,40 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
         />
         <PeriodTransition order={year}>
           <div className="mt-3.5">
+            {/* V.4.5.1: en todos los tamaños, la portada a un lado y los datos al otro (desde la
+                tableta, más grande, para no dejar tanto espacio vacío). "Cambiar" es un botón
+                propio, de lado a lado bajo los datos. */}
             {isLoading ? (
-              <div className={`flex gap-3.5 ${hojaMode ? 'flex-col items-start gap-4' : 'items-center'}`} aria-label="Cargando">
-                <CoverSkeleton className={`${hojaMode ? 'w-[150px]' : 'w-[84px]'} shrink-0`} />
+              <div className="flex items-center gap-3.5 tableta:gap-5" aria-label="Cargando">
+                <CoverSkeleton className="w-[84px] tableta:w-[120px] shrink-0" />
                 <div className="flex-1">
                   <Skeleton className="h-3 w-1/3 rounded-full" />
                   <Skeleton className="h-5 w-4/5 rounded-full mt-2" />
                 </div>
               </div>
             ) : yearFavoriteBook ? (
-              <button
-                type="button"
-                onClick={() => setPicking(0)}
-                className={`w-full flex text-left rounded-xl focus-visible:outline-2 focus-visible:outline-primary-text ${
-                  hojaMode ? 'flex-col items-start gap-4' : 'items-center gap-3.5'
-                }`}
-              >
-                <MiniCover
-                  src={yearFavoriteBook.coverUrl}
-                  title={yearFavoriteBook.title}
-                  className={`${hojaMode ? 'w-[150px]' : 'w-[84px]'} shrink-0 rounded-lg! shadow-[0_10px_18px_-10px_rgba(0,0,0,0.6)]`}
-                />
-                <span className="min-w-0">
+              <div className="flex items-center gap-3.5 tableta:gap-5">
+                <button
+                  type="button"
+                  onClick={() => setPicking(0)}
+                  aria-label={`Cambiar el favorito del año: ${yearFavoriteBook.title}`}
+                  className="shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text"
+                >
+                  <MiniCover
+                    src={yearFavoriteBook.coverUrl}
+                    title={yearFavoriteBook.title}
+                    className="w-[84px] tableta:w-[120px] rounded-lg! shadow-[0_10px_18px_-10px_rgba(0,0,0,0.6)]"
+                  />
+                </button>
+                <div className="flex-1 min-w-0">
                   <span className="seal mb-2 text-magenta-text">Favorito del año</span>
-                  <span className="block font-display font-semibold text-[20px] leading-[1.2] text-text">{yearFavoriteBook.title}</span>
-                  {yearFavoriteBook.author && <span className="block text-body-md text-text-secondary mt-0.5">{yearFavoriteBook.author}</span>}
-                  <span className="block text-[13px] font-bold text-magenta-text mt-2.5">Cambiar</span>
-                </span>
-              </button>
+                  <p className="font-display font-semibold text-[20px] leading-[1.2] text-text">{yearFavoriteBook.title}</p>
+                  {yearFavoriteBook.author && <p className="text-body-md text-text-secondary mt-0.5">{yearFavoriteBook.author}</p>}
+                  <Button variant="magenta" size="sm" className="mt-3" onClick={() => setPicking(0)}>
+                    Cambiar
+                  </Button>
+                </div>
+              </div>
             ) : monthlyFavoriteBooks.length === 0 ? (
               <p className="text-body-md text-text-secondary text-center">
                 Elige el favorito de cada mes y después, entre ellos, el del año.
@@ -803,14 +793,15 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
         </PeriodTransition>
       </ResumenSheet>
 
-      <Card tab={{ label: 'Uno por mes' }}>
+      {/* V.4.5.1: la hoja de escritorio también en el celular, con cuatro meses por fila. */}
+      <Hoja title="Uno por mes">
         <PeriodTransition order={year}>
           {isLoading ? (
-            <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4'}`} aria-label="Cargando">
+            <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4 gap-x-3 gap-y-4'}`} aria-label="Cargando">
               {Array.from({ length: hojaMode ? 12 : 8 }, (_, i) => <Skeleton key={i} className="aspect-2/3 rounded-md" />)}
             </div>
           ) : (
-            <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4'}`}>
+            <div className={`grid gap-x-2 gap-y-3 ${hojaMode ? 'grid-cols-6 gap-x-4 gap-y-5' : 'grid-cols-4 gap-x-3 gap-y-4'}`}>
               {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
                 const isFuture = month > lastMonth
                 const monthReads = reads.filter((r) => r.month === month)
@@ -844,7 +835,7 @@ function FavoritesView({ view, onViewChange, userId, year, reads, isLoading, can
             </div>
           )}
         </PeriodTransition>
-      </Card>
+      </Hoja>
 
       {picking !== null && (
         <Sheet

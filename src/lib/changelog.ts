@@ -29,6 +29,20 @@ const FECHA_V4 = '15 de noviembre de 2026'
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.5.1',
+    date: '15 de noviembre de 2026',
+    title: 'También se escucha',
+    items: [
+      'Los audiolibros tienen su propia historia en Tu lectura del mes y del año, con las horas que escuchaste y sus portadas.',
+      'El tiempo escuchado aparece en Resumen, en el ticket de tu lectura y en la hoja de tu año en Estadísticas, junto a las páginas.',
+      'En las historias, los números grandes son un poco más chicos y ya no se montan sobre lo que tienen debajo.',
+      'En Resumen, Tu año en un estante es un librero de madera también en el teléfono, y Uno por mes es una hoja. En la computadora y la tableta, Mes, Año y Favoritos vuelven a ser una carpeta con pestañas.',
+      'El favorito del año muestra la portada a un lado y sus datos al otro en todos los tamaños, con un botón más visible para cambiarlo.',
+      'El botón para compartir tu mes o tu año se ve igual en todos los tamaños.',
+      'En el Perfil, "Ver todos" de las estanterías ya no se pierde en modo oscuro.',
+    ],
+  },
+  {
     version: '4.5.0',
     announced: true,
     date: FECHA_V4,
