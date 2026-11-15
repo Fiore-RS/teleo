@@ -31,7 +31,7 @@ import { PageHeader } from '../assets/components/molecules/PageHeader'
 import { EncabezadoAncho } from '../assets/components/molecules/EncabezadoAncho'
 import { TabBar, type TabKey } from '../assets/components/molecules/TabBar'
 import { supabase } from '../lib/supabase'
-import { LATEST_VERSION, hasUnseenChangelog } from '../lib/changelog'
+import { LATEST_VERSION, hasUnseenChangelog, majorOf } from '../lib/changelog'
 
 const SCROLL_KEY = 'teleo-config-scroll'
 
@@ -176,7 +176,7 @@ export function Configuracion() {
       <div className="flex flex-col gap-5 tableta:max-w-180">
         <SettingsGroup id="cfg-teleo" title="Teleo">
           <SettingsRow label="Detrás de Teleo" description="Quién hace Teleo y por qué" onClick={() => openSubpage('/configuracion/detras-de-teleo')} />
-          <SettingsRow label="Novedades" description={`Versión ${LATEST_VERSION} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
+          <SettingsRow label="Novedades" description={`Versión ${majorOf(LATEST_VERSION)} y anteriores`} dot={hasNews} onClick={() => openSubpage('/configuracion/novedades')} />
         </SettingsGroup>
 
         <SettingsGroup id="cfg-apariencia" title="Apariencia">

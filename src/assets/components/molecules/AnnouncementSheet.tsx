@@ -3,14 +3,14 @@ import { createPortal } from 'react-dom'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { Button } from '../atoms/Button'
 import { ANNOUNCEMENT_VERSION, announcementItems, CATCH_UP_MIN } from '../../../lib/announcement'
-import { changelog, type ChangelogEntry } from '../../../lib/changelog'
+import { majorOf, versionOf, type ChangelogVersion } from '../../../lib/changelog'
 
 interface AnnouncementSheetProps {
   /** Se llama al tocar "Empezar" o al cerrar la hoja: en los dos casos queda como vista. */
   onDone: () => void
-  /** Versiones con anuncio que la persona no vio (de la más nueva a la más vieja). */
-  missed?: ChangelogEntry[]
-  /** Última versión que la persona vio, si se sabe. */
+  /** Versiones grandes con anuncio que la persona no vio (de la más nueva a la más vieja). */
+  missed?: ChangelogVersion[]
+  /** Última versión que la persona vio, si se sabe (ya no se muestra: el aviso nombra versiones grandes). */
   lastSeen?: string | null
   /** Botón "Ver todas las novedades" del aviso de novedades acumuladas. */
   onSeeAll?: () => void
@@ -19,8 +19,9 @@ interface AnnouncementSheetProps {
 }
 
 /** Aviso de novedades acumuladas (V.2.1.2): si la persona se perdió varias versiones con
- *  anuncio, se le cuenta cuáles fueron y se le invita a verlas en Novedades. */
-function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[]; lastSeen: string | null; onSeeAll: () => void }) {
+ *  anuncio, se le cuenta cuáles fueron y se le invita a verlas en Novedades. Desde que
+ *  Novedades agrupa por versión grande, se cuentan y se nombran versiones grandes. */
+function CatchUpCard({ missed, onSeeAll }: { missed: ChangelogVersion[]; onSeeAll: () => void }) {
   const celular = useBreakpoint() === 'celular'
   // Celular (V.4.5.0): dentro de la carta, más compacto, a todo el ancho y con un enlace en vez
   // del botón grande; las versiones en una sola columna, más chicas.
@@ -29,14 +30,13 @@ function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[];
       <section className="bg-magenta-tint border border-border rounded-xl px-3.5 py-3 mb-4">
         <h3 className="font-display font-semibold text-body-md text-text">¡Cuánto tiempo!</h3>
         <p className="text-[13px] leading-snug text-text-secondary mt-1 text-pretty">
-          {lastSeen ? <>Desde la <span className="font-bold text-text">V.{lastSeen}</span> hubo </> : <>Desde tu última visita hubo </>}
-          <span className="font-bold text-text">{missed.length} actualizaciones importantes</span>:
+          Desde tu última visita hubo novedades importantes en <span className="font-bold text-text">{missed.length} versiones</span>:
         </p>
         <ul className="flex flex-col gap-1 mt-2">
-          {missed.map((entry) => (
-            <li key={entry.version} className="flex items-baseline gap-2 text-[13px] text-text min-w-0">
-              <span className="shrink-0 font-bold text-magenta-text tabular-nums">V.{entry.version}</span>
-              <span className="min-w-0 truncate">{entry.title}</span>
+          {missed.map((v) => (
+            <li key={v.major} className="flex items-baseline gap-2 text-[13px] text-text min-w-0">
+              <span className="shrink-0 font-bold text-magenta-text tabular-nums">Versión {v.major}</span>
+              <span className="min-w-0 truncate">{v.title}</span>
             </li>
           ))}
         </ul>
@@ -56,20 +56,15 @@ function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[];
         ¡Cuánto tiempo!
       </h3>
       <p className="text-body-sm text-text-secondary mt-1.5 text-pretty">
-        {lastSeen ? (
-          <>La última versión que viste fue la <span className="font-bold text-text">V.{lastSeen}</span>. Desde entonces hubo </>
-        ) : (
-          <>Desde tu última visita hubo </>
-        )}
-        <span className="font-bold text-text">{missed.length} actualizaciones importantes</span>:
+        Desde tu última visita hubo novedades importantes en <span className="font-bold text-text">{missed.length} versiones</span>:
       </p>
       <ul className="flex flex-col gap-1.5 mt-2.5">
-        {missed.map((entry) => (
-          <li key={entry.version} className="flex items-center gap-2 text-body-sm text-text">
+        {missed.map((v) => (
+          <li key={v.major} className="flex items-center gap-2 text-body-sm text-text">
             <span className="shrink-0 px-2 py-0.5 rounded-chip bg-magenta-soft text-magenta-text text-[12px] font-bold tabular-nums">
-              V.{entry.version}
+              Versión {v.major}
             </span>
-            <span className="min-w-0 truncate">{entry.title}</span>
+            <span className="min-w-0 truncate">{v.title}</span>
           </li>
         ))}
       </ul>
@@ -83,9 +78,9 @@ function CatchUpCard({ missed, lastSeen, onSeeAll }: { missed: ChangelogEntry[];
 /** "Novedades de Teleo": aparece una sola vez por cuenta al entrar a La mesa después de un
  *  lanzamiento grande (V.2.0.0). Una tarjeta por novedad con su título y una línea (sin
  *  ícono desde la V.3.3.0). */
-export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeAll, onStartTour }: AnnouncementSheetProps) {
+export function AnnouncementSheet({ onDone, missed = [], onSeeAll, onStartTour }: AnnouncementSheetProps) {
   const showCatchUp = missed.length >= CATCH_UP_MIN && !!onSeeAll
-  const announcedTitle = changelog.find((e) => e.version === ANNOUNCEMENT_VERSION)?.title
+  const announcedTitle = versionOf(ANNOUNCEMENT_VERSION)?.title
 
   // La carta sobre la mesa en todos los tamaños (tableta y computadora desde la V.4.3.0;
   // celular desde la V.4.5.0, en lugar de la hoja que bajaba).
@@ -93,7 +88,7 @@ export function AnnouncementSheet({ onDone, missed = [], lastSeen = null, onSeeA
     <AnnouncementLetter
       onDone={onDone}
       title={announcedTitle}
-      catchUp={showCatchUp && onSeeAll ? <CatchUpCard missed={missed} lastSeen={lastSeen} onSeeAll={onSeeAll} /> : null}
+      catchUp={showCatchUp && onSeeAll ? <CatchUpCard missed={missed} onSeeAll={onSeeAll} /> : null}
       onStartTour={onStartTour}
     />
   )
@@ -120,8 +115,8 @@ function AnnouncementLetter({
   onStartTour?: () => void
 }) {
   const breakpoint = useBreakpoint()
-  // "4.3.0" › "4.3" para la estampilla.
-  const stamp = ANNOUNCEMENT_VERSION.split('.').slice(0, 2).join('.')
+  // La estampilla lleva solo el número de la versión grande: "4.5.0" › "4".
+  const stamp = String(majorOf(ANNOUNCEMENT_VERSION))
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -174,7 +169,7 @@ function AnnouncementLetter({
             {/* En pantallas grandes el aviso de varias versiones va arriba, al lado de la
                 estampilla; en el celular, debajo del título y a todo el ancho. */}
             {catchUp && breakpoint !== 'celular' && <div className="mr-24">{catchUp}</div>}
-            <p className="smallcaps text-text-muted pr-14 tableta:pr-0">Novedades de Teleo · V.{ANNOUNCEMENT_VERSION}</p>
+            <p className="smallcaps text-text-muted pr-14 tableta:pr-0">Novedades de Teleo · Versión {stamp}</p>
             {title && <h2 className="mt-2 font-title text-[28px] tableta:text-[38px] leading-tight text-text pr-14 tableta:pr-24">{title}</h2>}
             {catchUp && breakpoint === 'celular' && <div className="mt-4">{catchUp}</div>}
             <p className="mt-2 tableta:mt-2.5 mb-5 tableta:mb-6.5 font-display italic text-[16.5px] tableta:text-[18px] text-text-secondary">
