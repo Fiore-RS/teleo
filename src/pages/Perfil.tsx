@@ -11,6 +11,7 @@ import { EditProfileModal } from '../assets/components/molecules/EditProfileModa
 import { BannerSheet } from '../assets/components/molecules/BannerSheet'
 import { DEFAULT_BANNER, isBannerId, type BannerId } from '../lib/banners'
 import { PriorityListCard } from '../assets/components/molecules/PriorityListCard'
+import { getPriorityListName } from '../lib/priorityList'
 import { EditGoalModal } from '../assets/components/molecules/EditGoalModal'
 import { useReadingStreak } from '../hooks/useReadingStreak'
 import { ShareProfileModal } from '../assets/components/molecules/ShareProfileModal'
@@ -133,7 +134,8 @@ export function Perfil() {
         quote={quote}
         shelves={shelves}
         counts={counts}
-        priorityList={<PriorityListCard userId={user?.id} onOpenBook={setSelectedBookId} />}
+        priorityList={(tabs) => <PriorityListCard variant="celular" tabs={tabs} userId={user?.id} onOpenBook={setSelectedBookId} />}
+        priorityListName={getPriorityListName(profile?.priority_list_name)}
         priorityRepisa={<PriorityListCard variant="repisa" userId={user?.id} onOpenBook={setSelectedBookId} />}
         onBookClick={(id) => setSelectedBookId(id)}
         onSeeAllBooks={(list) => navigate(`/estante?filtro=${list}`)}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import {
@@ -14,11 +14,7 @@ import { usePriorityBooks } from '../../../hooks/usePriorityBooks'
 import { useProfile } from '../../../hooks/useProfile'
 import { DEFAULT_PRIORITY_LIST_NAME, getPriorityListName } from '../../../lib/priorityList'
 import { queryClient } from '../../../lib/queryClient'
-import { BookTileSkeleton } from '../atoms/Skeleton'
 import { SortableItem } from '../atoms/SortableItem'
-import { HorizontalScroller } from '../atoms/HorizontalScroller'
-import { Card } from './Card'
-import { BookCardPriority } from './BookCardPriority'
 import { PriorityListMenu } from './PriorityListMenu'
 import { EditListNameModal } from './EditListNameModal'
 import { StartReadingDateModal } from './StartReadingDateModal'
@@ -28,6 +24,7 @@ import { Button } from '../atoms/Button'
 import { CoverImage } from '../atoms/CoverImage'
 import { CoverSkeleton } from '../atoms/Skeleton'
 import { ShelfPlank } from './Shelf'
+import { EstanteriaCelular, RepisaCelular } from './EstanteriaCelular'
 import { DogEar } from '../atoms/DogEar'
 import type { ReadingStatus } from '../../../lib/status'
 
@@ -36,8 +33,12 @@ interface PriorityListCardProps {
   /** Tocar la portada de un libro abre Detalles del libro (V.3.0.1). */
   onOpenBook?: (bookId: string) => void
   /** 'repisa' (V.4.2.0, Perfil en computadora y tableta): la primera repisa del librero de
-   *  Perfil, con el nombre de la lista en la etiqueta y el menú al lado. */
-  variant?: 'card' | 'repisa'
+   *  Perfil, con el nombre de la lista en la etiqueta y el menú al lado.
+   *  'celular' (V.4.5.0): la pestaña "Mis próximas lecturas" de las estanterías del Perfil en el
+   *  celular, con la repisa de madera; `tabs` son las pestañas de las estanterías. (La tarjeta
+   *  aparte de antes ya no se usa.) */
+  variant: 'repisa' | 'celular'
+  tabs?: ReactNode
 }
 
 /** Libros por repisa en el librero de Perfil. */
@@ -47,7 +48,7 @@ const REPISA_COLS = 7
  *  nombre, elegir uno al azar, organizar, ver en Estante), reordenamiento con mantener presionado y "Empezar a
  *  leer". Vivía en La mesa; en la fase 4 se mudó a Tu rincón (Perfil). Todo su estado va
  *  adentro para poder ubicarla en cualquier pantalla. */
-export function PriorityListCard({ userId, onOpenBook, variant = 'card' }: PriorityListCardProps) {
+export function PriorityListCard({ userId, onOpenBook, variant, tabs }: PriorityListCardProps) {
   const navigate = useNavigate()
   const { books, isLoading, reorderBook, startReading, saveListBooks } = usePriorityBooks(userId)
   const { profile, updateProfile } = useProfile(userId)
@@ -81,17 +82,6 @@ export function PriorityListCard({ userId, onOpenBook, variant = 'card' }: Prior
     // El libro pasa a Leyendo: se refrescan Leyendo ahora, los números del perfil, etc.
     await queryClient.invalidateQueries()
   }
-
-  const cards = books.map((book, i) => (
-    <BookCardPriority
-      title={book.title}
-      author={book.author ?? undefined}
-      coverUrl={book.cover_url ?? undefined}
-      position={i + 1}
-      onStartReading={() => setPendingStartId(book.id)}
-      onOpen={onOpenBook && !isReordering ? () => onOpenBook(book.id) : undefined}
-    />
-  ))
 
   const menu = isReordering ? (
     // Mientras se organiza, el menú se cambia por un botón para terminar. El orden ya se guarda
@@ -146,9 +136,10 @@ export function PriorityListCard({ userId, onOpenBook, variant = 'card' }: Prior
         <button
           type="button"
           onClick={() => setPendingStartId(book.id)}
+          aria-label={`Empezar a leer ${book.title}`}
           className="absolute inset-x-1.5 bottom-1.5 h-7 rounded-[7px] bg-surface/95 text-primary-text font-body font-bold text-[12px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-primary-text"
         >
-          Empezar a leer
+          Leer
         </button>
       )}
     </div>
@@ -214,62 +205,89 @@ export function PriorityListCard({ userId, onOpenBook, variant = 'card' }: Prior
     </section>
   )
 
+  // Celular (V.4.5.0): las portadas en la repisa de madera, con su número y "Leer" siempre a la
+  // vista (no hay mouse para que aparezca al pasar). En todos los tamaños el botón dice solo
+  // "Leer" (antes "Empezar a leer", muy grande sobre la portada).
+  const celularCell = (book: (typeof books)[number], i: number) => (
+    <div className="relative w-[88px] shrink-0">
+      <button
+        type="button"
+        onClick={onOpenBook && !isReordering ? () => onOpenBook(book.id) : undefined}
+        aria-label={`${i + 1}. ${book.title}`}
+        className="relative block w-full aspect-2/3 rounded-[3px_6px_6px_3px] overflow-hidden bg-surface-2 shadow-[0_1px_1.5px_rgba(0,0,0,0.2),0_8px_14px_-6px_rgba(0,0,0,0.55)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF3EA]"
+      >
+        {book.cover_url ? (
+          <CoverImage src={book.cover_url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <span className="w-full h-full flex items-end p-2 bg-accent-finished text-on-accent font-title text-[12px] leading-tight text-left">{book.title}</span>
+        )}
+        <DogEar status={(book.status ?? 'pendiente') as ReadingStatus} size={18} className="absolute top-0 right-0" />
+      </button>
+      <span
+        aria-hidden="true"
+        className="absolute -top-1 left-1.5 min-w-5.5 h-6.5 px-1 pb-1 flex items-center justify-center bg-magenta text-on-magenta font-display font-semibold text-[12px] tabular-nums shadow-[0_2px_3px_rgba(0,0,0,0.3)]"
+        style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%)' }}
+      >
+        {i + 1}
+      </span>
+      {!isReordering && (
+        <button
+          type="button"
+          onClick={() => setPendingStartId(book.id)}
+          aria-label={`Empezar a leer ${book.title}`}
+          className="absolute inset-x-1 bottom-1 h-6 rounded-[6px] bg-surface/95 text-primary-text font-body font-bold text-[11.5px] focus-visible:outline-2 focus-visible:outline-primary-text"
+        >
+          Leer
+        </button>
+      )}
+    </div>
+  )
+
+  const celular = (
+    <EstanteriaCelular action={<div className="text-magenta-text">{menu}</div>} tabs={tabs}>
+      {isReordering && (
+        <p className="px-4 pt-3 text-body-sm text-[#FBF3EA]/80">Mantén presionado unos instantes para arrastrar y organizar tu lista.</p>
+      )}
+      {isLoading ? (
+        <RepisaCelular>
+          {Array.from({ length: 4 }, (_, i) => <CoverSkeleton key={i} className="w-[88px] shrink-0" />)}
+        </RepisaCelular>
+      ) : books.length === 0 ? (
+        <RepisaCelular
+          message={
+            <>
+              <p className="font-display italic text-[16px] text-[#FBF3EA]/85">Elige los pendientes que quieres leer pronto y ordénalos a tu manera.</p>
+              <Button variant="soft" fullWidth={false} className="mt-3 px-4" onClick={() => setIsAddBooksOpen(true)}>
+                Agregar libros
+              </Button>
+            </>
+          }
+        />
+      ) : isReordering ? (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={books.map((b) => b.id)} strategy={horizontalListSortingStrategy}>
+            <RepisaCelular>
+              {books.map((book, i) => (
+                <SortableItem key={book.id} id={book.id} axis="x">
+                  {celularCell(book, i)}
+                </SortableItem>
+              ))}
+            </RepisaCelular>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <RepisaCelular>
+          {books.map((book, i) => (
+            <div key={book.id}>{celularCell(book, i)}</div>
+          ))}
+        </RepisaCelular>
+      )}
+    </EstanteriaCelular>
+  )
+
   return (
     <>
-      {variant === 'repisa' ? repisa : (
-      <Card
-        tab={{ label: listName }}
-        tone="magenta"
-        action={menu}
-      >
-
-        {isLoading ? (
-          <div className="flex gap-4 overflow-hidden" aria-label="Cargando">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="w-26 shrink-0">
-                <BookTileSkeleton />
-              </div>
-            ))}
-          </div>
-        ) : books.length === 0 ? (
-          <>
-            <p className="text-body-md text-text-secondary">
-              Elige los pendientes que quieres leer pronto y ordénalos a tu manera.
-            </p>
-            <Button variant="soft" className="mt-3.5" onClick={() => setIsAddBooksOpen(true)}>
-              Agregar libros
-            </Button>
-          </>
-        ) : isReordering ? (
-          <>
-            <p className="text-body-sm text-text-secondary text-center mb-3">
-              Mantén presionado unos instantes para arrastrar y organizar tu lista.
-            </p>
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={books.map((b) => b.id)} strategy={horizontalListSortingStrategy}>
-                <HorizontalScroller className="-mx-[18px] px-[18px] gap-4!">
-                  {books.map((book, i) => (
-                    <div key={book.id} className="w-26 shrink-0">
-                      <SortableItem id={book.id} axis="x">
-                        {cards[i]}
-                      </SortableItem>
-                    </div>
-                  ))}
-                </HorizontalScroller>
-              </SortableContext>
-            </DndContext>
-          </>
-        ) : (
-          <HorizontalScroller className="-mx-[18px] px-[18px] gap-4!">
-            {books.map((book, i) => (
-              <div key={book.id} className="w-26 shrink-0">
-                {cards[i]}
-              </div>
-            ))}
-          </HorizontalScroller>
-        )}
-      </Card>
-      )}
+      {variant === 'repisa' ? repisa : celular}
 
       {/* Fuera de la tarjeta: los diálogos no deben quedar dentro de un contenedor animado. */}
       <EditListNameModal
