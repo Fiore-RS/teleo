@@ -48,6 +48,7 @@ function ChangeUsernameSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Cambiar usuario"
       footer={
@@ -115,6 +116,7 @@ function ChangeNicknameSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Cambiar nickname"
       footer={
@@ -188,6 +190,7 @@ function ChangeEmailSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Cambiar correo"
       footer={
@@ -246,6 +249,7 @@ function ChangePasswordSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Cambiar contraseña"
       footer={

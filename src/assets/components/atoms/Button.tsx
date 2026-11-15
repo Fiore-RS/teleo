@@ -14,14 +14,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 // Rediseño 2026; desde la V.3.5.0 rectángulos con esquinas redondeadas (rounded-button). "primary" usa el vino de marca; "soft" es el
 // botón suave (fondo rubor, texto vino) para acciones secundarias dentro de una tarjeta.
+// V.4.0.0: con mouse, los rellenos se oscurecen apenas y los de borde toman un fondo suave
+// (hover: de Tailwind solo aplica en pantallas con puntero, no al tocar en el teléfono).
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-primary-ink',
-  soft: 'bg-primary-soft text-primary-text',
+  primary: 'bg-primary text-primary-ink hover:brightness-[0.93]',
+  soft: 'bg-primary-soft text-primary-text hover:brightness-[0.96]',
   // Acentos de la paleta: naranja (racha, empezar a leer) y magenta (terminar un libro).
-  orange: 'bg-orange-button text-on-orange-button',
-  magenta: 'bg-magenta text-on-magenta',
-  outline: 'bg-transparent border-[1.5px] border-border text-primary-text',
-  outlineOrange: 'bg-transparent border-[1.5px] border-orange-text text-orange-text',
+  orange: 'bg-orange-button text-on-orange-button hover:brightness-[0.93]',
+  magenta: 'bg-magenta text-on-magenta hover:brightness-[0.93]',
+  outline: 'bg-transparent border-[1.5px] border-border text-primary-text hover:bg-primary-soft/60',
+  outlineOrange: 'bg-transparent border-[1.5px] border-orange-text text-orange-text hover:bg-orange-soft/60',
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -45,7 +47,7 @@ export function Button({
     <button
       {...props}
       disabled={isDisabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-button font-body font-bold transition-[background-color,color,border-color,opacity,transform] duration-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
+      className={`inline-flex items-center justify-center gap-2 rounded-button font-body font-bold transition-[background-color,color,border-color,opacity,transform,filter] duration-200 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
         sizeStyles[size]
       } ${fullWidth ? 'w-full' : ''} ${variantStyles[variant]} ${
         isDisabled ? 'opacity-50 cursor-not-allowed active:scale-100' : 'active:opacity-85'

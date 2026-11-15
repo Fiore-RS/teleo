@@ -31,6 +31,7 @@ export function EditListNameModal({ isOpen, onClose, currentName, defaultName, o
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Nombre de tu lista"
       footer={

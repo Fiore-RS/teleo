@@ -1,6 +1,6 @@
 import type { FormEvent, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Logo } from '../atoms/Logo'
+import { TapaPortada, TapaPortadaCelular } from './TapaPortada'
 
 interface AuthLayoutProps {
   title: string
@@ -40,24 +40,27 @@ export function AuthLayout({ title, subtitle, children, footer, onSubmit, center
     </>
   )
 
+  // Tableta y computadora (V.4.3.0): la tapa del cuaderno a la izquierda, fija, y a la derecha
+  // la misma columna del teléfono, centrada a lo alto. Celular (V.4.5.0): la tapa arriba, de lado
+  // a lado, en lugar del logo chico; tocarla lleva al inicio.
   return (
-    <div className="min-h-dvh bg-glow-top">
+    <div className="min-h-dvh bg-glow-top flex flex-col tableta:grid tableta:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] escritorio:grid-cols-[600px_minmax(0,1fr)]">
+      <div className="hidden tableta:block sticky top-0 h-dvh">
+        <TapaPortada />
+      </div>
+      <div className="tableta:hidden mx-auto w-full max-w-120">
+        <TapaPortadaCelular onClick={() => navigate('/')} />
+      </div>
       <div
-        className="mx-auto w-full max-w-120 min-h-dvh flex flex-col px-6"
-        style={{
-          paddingTop: 'calc(env(safe-area-inset-top) + 16px)',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
-        }}
+        className="mx-auto w-full max-w-120 flex-1 tableta:min-h-dvh flex flex-col px-6 tableta:max-w-[468px] tableta:justify-center tableta:py-12"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
       >
-        <div className="-ml-0.5">
-          <Logo variant="full" className="h-7 w-auto" onClick={() => navigate('/')} />
-        </div>
         {onSubmit ? (
-          <form onSubmit={onSubmit} noValidate className="flex-1 flex flex-col">
+          <form onSubmit={onSubmit} noValidate className="flex-1 tableta:flex-none flex flex-col">
             {body}
           </form>
         ) : (
-          <div className="flex-1 flex flex-col">{body}</div>
+          <div className="flex-1 tableta:flex-none flex flex-col">{body}</div>
         )}
       </div>
     </div>

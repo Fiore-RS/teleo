@@ -13,7 +13,7 @@ const paragraphs = [
 /** "Detrás de Teleo" (Configuración): la historia de la app contada por Fiorella. */
 export function DetrasDeTeleo() {
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
       <PageHeader title="Detrás de Teleo" />
 
       <article className="bg-surface border border-border rounded-card shadow-card p-[22px] animate-fade-in">

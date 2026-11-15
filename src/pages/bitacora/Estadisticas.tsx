@@ -6,7 +6,8 @@ import { useReadingStreak } from '../../hooks/useReadingStreak'
 import { BreakdownList } from '../../assets/components/molecules/BreakdownList'
 import { StatTile } from '../../assets/components/atoms/StatTile'
 import { Skeleton } from '../../assets/components/atoms/Skeleton'
-import { Card } from '../../assets/components/molecules/Card'
+import { Card, Hoja } from '../../assets/components/molecules/Card'
+import { useHojaMode } from '../../lib/hojaMode'
 import { MoreRow } from '../../assets/components/molecules/MoreRow'
 import { MonthCalendar } from '../../assets/components/atoms/MonthCalendar'
 import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition'
@@ -66,6 +67,7 @@ type RowKey = 'ritmo' | 'coleccion' | 'casa' | 'autores' | 'calificaciones' | 'l
  *  no termina ningún libro ve, en lugar de la tarjeta del año, tres pasos para empezar. */
 export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   const stagger = useStaggerOnce('bitacora-estadisticas')
+  const hojaMode = useHojaMode()
   const { stats, isLoading } = useLibraryStats(userId)
   const { history: goalHistory } = useGoalHistory(userId)
   const { streak: currentStreak } = useReadingStreak(userId)
@@ -103,26 +105,94 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
     setOpenRow((current) => (current === row ? null : row))
   }
 
+  // Tableta y computadora (V.4.2.0): el esqueleto sigue la forma de las hojas, con la hoja de
+  // tu año (fija a la izquierda en computadora) y las hojas de "De toda tu biblioteca".
+  if (isLoading && hojaMode) {
+    return (
+      <div className="bitacora-hojas flex flex-col gap-5" aria-label="Cargando">
+        <Hoja tone="pink">
+          <div className="flex items-center justify-between gap-3">
+            <p className="smallcaps text-pink-text">Tu año</p>
+            <Skeleton className="h-8 w-28 rounded-full" />
+          </div>
+          <Skeleton className="mt-5 h-[78px] w-28 rounded-xl" />
+          <Skeleton className="mt-3 h-4 w-2/5 rounded-full" />
+          <Skeleton className="mt-6 h-4 w-full rounded-full" />
+          <Skeleton className="mt-3 h-4 w-4/5 rounded-full" />
+          <div className="grid gap-2 mt-5">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-11 rounded-[14px]" />)}
+          </div>
+          <Skeleton className="mt-5 h-4 w-1/2 rounded-full" />
+        </Hoja>
+        <div>
+          <h2 className="smallcaps text-text-secondary mb-3">De toda tu biblioteca</h2>
+          <div className="hojas-columnas">
+            {/* Como en las hojas de verdad: van dentro de un envoltorio, porque los hijos directos
+                de .hojas-columnas son "display: contents" y la hoja perdía su caja (y su esquina
+                doblada se salía por la derecha y aparecía la barra horizontal). */}
+            <div>
+            {[4, 3, 5, 3, 4, 2].map((lines, i) => (
+              <Hoja key={i} as="div" className="mb-5.5 break-inside-avoid">
+                <Skeleton className="h-5 w-1/2 rounded-full mb-4" />
+                {Array.from({ length: lines }, (_, j) => (
+                  <Skeleton key={j} className={`h-3.5 rounded-full ${j ? 'mt-3' : ''} ${j % 2 ? 'w-3/5' : 'w-4/5'}`} />
+                ))}
+              </Hoja>
+            ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Celular (V.4.5.0): con la forma de lo que viene, la hoja de tu año, las dos hojas de "De
+  // toda tu biblioteca" y la carpeta "Más de tu bitácora" con sus filas.
   if (isLoading) {
     return (
       <div className="flex flex-col gap-5" aria-label="Cargando">
-        <div className="bg-surface border border-border rounded-card shadow-card p-[18px]">
-          <Skeleton className="h-5 w-4/5 rounded-full" />
-          <Skeleton className="h-5 w-3/5 rounded-full mt-2" />
-          <div className="grid grid-cols-3 gap-2 mt-4">
-            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-14 rounded-[14px]" />)}
+        <Hoja tone="pink">
+          <div className="flex items-center justify-between gap-3">
+            <p className="smallcaps text-pink-text">Tu año</p>
+            <Skeleton className="h-8 w-28 rounded-full" />
+          </div>
+          <Skeleton className="mt-5 h-[60px] w-24 rounded-xl" />
+          <Skeleton className="mt-3 h-4 w-2/5 rounded-full" />
+          <Skeleton className="mt-6 h-4 w-full rounded-full" />
+          <Skeleton className="mt-3 h-4 w-4/5 rounded-full" />
+          <div className="grid gap-2 mt-5">
+            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-11 rounded-[14px]" />)}
+          </div>
+          <Skeleton className="mt-5 h-4 w-1/2 rounded-full" />
+        </Hoja>
+        <div>
+          <h2 className="smallcaps text-text-secondary mb-3">De toda tu biblioteca</h2>
+          <div className="flex flex-col gap-4">
+            {(['orange', 'magenta'] as const).map((tone) => (
+              <Hoja key={tone} tone={tone} as="div">
+                <Skeleton className="h-5 w-1/2 rounded-full mb-4" />
+                {[0, 1, 2].map((j) => (
+                  <div key={j} className={j ? 'mt-3.5' : ''}>
+                    <Skeleton className={`h-3.5 rounded-full ${j % 2 ? 'w-2/5' : 'w-1/2'}`} />
+                    <Skeleton className="h-2.5 w-full rounded-full mt-1.5" />
+                  </div>
+                ))}
+              </Hoja>
+            ))}
           </div>
         </div>
-        <div className="bg-surface border border-border rounded-card shadow-card px-4 py-2">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center gap-3 py-3">
-              <Skeleton className="w-9 h-9 rounded-full shrink-0" />
-              <div className="flex-1">
-                <Skeleton className="h-3.5 w-2/5 rounded-full" />
-                <Skeleton className="h-3 w-3/5 rounded-full mt-1.5" />
+        <div className="pt-[31px] relative">
+          <span className="absolute top-0 left-0 h-[31px] w-44 rounded-t-[14px] bg-surface border border-border border-b-0 flex items-center px-4">
+            <Skeleton className="h-3.5 w-32 rounded-full" />
+          </span>
+          <div className="bg-surface border border-border rounded-card rounded-tl-none shadow-card px-4 py-1">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="py-3.5 border-t border-border first:border-t-0">
+                <Skeleton className="h-4 w-2/5 rounded-full" />
+                <Skeleton className="h-3 w-3/5 rounded-full mt-2" />
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -223,13 +293,14 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
   ]
 
   return (
-    <div className={`flex flex-col gap-5 ${stagger}`}>
+    <div className={`bitacora-hojas flex flex-col gap-5 ${stagger}`}>
       {hasFinished ? (
-        // Mismo relleno que la hoja de Resumen, para que las dos pantallas de Bitácora coincidan.
-        <Card tab={{ label: 'Tu año' }} tone="pink" padding="px-3.5 pt-4 pb-[18px]">
-          {/* V.3.6.0: la misma fila de Resumen (flecha, año, flecha) en vez de las flechas sueltas
-              arriba a la derecha. */}
-          <div className="mb-3">
+        // La hoja de tu año (V.4.2.0 en tableta y computadora, lienzo "Bitácora · D2"; V.4.5.0 en
+        // el celular): fija a la izquierda en computadora, con el número grande, la frase y las
+        // cifras debajo.
+        <Hoja tone="pink">
+          <div className="flex items-center justify-between gap-3">
+            <p className="smallcaps text-pink-text">Tu año</p>
             <PeriodNav
               label={String(year)}
               onPrev={() => setYear((y) => y - 1)}
@@ -241,12 +312,16 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
             />
           </div>
           <PeriodTransition order={year}>
-            <p className="font-display text-[20px] leading-[1.4] text-text">{sentence}</p>
-            <div className="grid grid-cols-3 gap-2 mt-3.5">
+            <p className="mt-5 font-title text-[68px] tableta:text-[86px] leading-[0.9] text-pink-text tabular-nums">{finished}</p>
+            <p className="mt-1.5 font-display italic text-[19px] text-text-secondary">
+              {finished === 1 ? 'libro terminado' : 'libros terminados'}
+            </p>
+            <p className="mt-5 font-display text-[18px] leading-[32px] text-text">{sentence}</p>
+            <div className="grid gap-2 mt-5">
               {trio.map((t) => (
-                <div key={t.label} className="rounded-[14px] p-2.5 text-center" style={{ background: 'color-mix(in srgb, var(--color-surface-2) 70%, transparent)' }}>
-                  <b className={`block font-display font-semibold text-[22px] leading-none tabular-nums ${t.color}`}>{t.value}</b>
-                  <span className="text-[11.5px] text-text-secondary">{t.label}</span>
+                <div key={t.label} className="rounded-[14px] px-3 py-2.5 flex items-baseline justify-between gap-3" style={{ background: 'color-mix(in srgb, var(--color-surface-2) 70%, transparent)' }}>
+                  <span className="text-body-sm text-text-secondary">{t.label}</span>
+                  <b className={`font-display font-semibold text-[22px] leading-none tabular-nums ${t.color}`}>{t.value}</b>
                 </div>
               ))}
             </div>
@@ -254,12 +329,12 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
           <button
             type="button"
             onClick={() => onOpenYear(year)}
-            className="mt-3.5 mx-auto flex items-center gap-0.5 font-body font-bold text-body-md text-pink-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
+            className="mt-5 inline-flex items-center gap-0.5 font-body font-bold text-body-md text-pink-text rounded-chip hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-primary-text"
           >
             Ver tu {year} en Resumen
             <ChevronRight size={16} aria-hidden="true" />
           </button>
-        </Card>
+        </Hoja>
       ) : (
         <Card tab={{ label: 'Tu bitácora' }}>
           <div className="text-center px-1.5 pt-2 pb-1">
@@ -290,8 +365,30 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
         </Card>
       )}
 
+      {/* Celular (V.4.5.0): "De toda tu biblioteca" empieza con dos hojas a la vista, los
+          géneros que más lees y cómo lees (formato de lo terminado); el resto sigue en la
+          carpeta "Más de tu bitácora", que se despliega por tema. En pantallas grandes, todas
+          las filas ya son hojas (Card group). */}
+      {!hojaMode && (stats.rasgos.genres.length > 0 || coleccion.readByFormat.length > 0) && (
+        <div>
+          <h2 className="smallcaps text-text-secondary mb-3">De toda tu biblioteca</h2>
+          <div className="flex flex-col gap-4">
+            {stats.rasgos.genres.length > 0 && (
+              <Hoja title="Géneros que más lees" tone="orange">
+                <BreakdownList entries={stats.rasgos.genres.slice(0, 5)} />
+              </Hoja>
+            )}
+            {coleccion.readByFormat.length > 0 && (
+              <Hoja title="Cómo lees" tone="magenta">
+                <BreakdownList entries={coleccion.readByFormat} />
+              </Hoja>
+            )}
+          </div>
+        </div>
+      )}
+
       {hasRows && (
-        <Card tab={{ label: 'Más de tu bitácora' }} padding="px-4 py-1">
+        <Card group groupTitle="De toda tu biblioteca" tab={{ label: 'Más de tu bitácora' }} padding="px-4 py-1">
           {/* Envoltorio propio: así "first:" apunta a la primera fila y no a la pestaña, y no
               queda una línea justo debajo de "Más de tu bitácora". */}
           <div>

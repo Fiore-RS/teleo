@@ -132,6 +132,7 @@ export function FilterModal({
 
   return (
     <Sheet
+      alta
       onClose={onClose}
       title="Filtros"
       footer={

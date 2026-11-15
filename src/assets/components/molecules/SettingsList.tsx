@@ -7,14 +7,16 @@ interface SettingsGroupProps {
   children: ReactNode
   /** Texto de ayuda debajo de la tarjeta. */
   note?: string
+  /** Para saltar a la sección desde el índice de Configuración en la computadora (V.4.3.0). */
+  id?: string
 }
 
 /** Grupo de Configuración. V.3.0.0: cada sección es una tarjeta con pestaña de separador y las
  *  filas separadas por líneas finas. Desde el 26 oct 2026 la pestaña es solo texto y desde la
  *  V.3.5.0 las filas también: nombre, descripción y flecha, sin ícono. */
-export function SettingsGroup({ title, children, note }: SettingsGroupProps) {
+export function SettingsGroup({ title, children, note, id }: SettingsGroupProps) {
   return (
-    <div>
+    <div id={id} className="scroll-mt-24">
       <Card tab={{ label: title }} padding="py-1">
         <div className="divide-y divide-border">{children}</div>
       </Card>
@@ -42,7 +44,7 @@ export function SettingsRow({ label, description, onClick, disabled = false, dan
       type="button"
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left first:rounded-t-card last:rounded-b-card focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-text ${
+      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left first:rounded-t-card last:rounded-b-card hover:bg-surface-2 transition-colors motion-reduce:transition-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-text ${
         disabled ? 'opacity-50 cursor-not-allowed' : 'active:bg-surface-2'
       }`}
     >

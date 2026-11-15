@@ -7,12 +7,16 @@ interface ShelfViewSheetProps {
   view: ShelfView
   onChange: (view: ShelfView) => void
   onClose: () => void
+  /** Libros de más por repisa según la pantalla (V.4.1.0): 0 en el celular, 2 en tableta y 4
+   *  en computadora. Las opciones muestran el número real (3 o 4 en el celular, 5 o 6 en
+   *  tableta, 7 u 8 en computadora), aunque se guarde la elección de siempre (3 o 4). */
+  extraColumns?: number
 }
 
 const previewColors = ['var(--color-primary)', 'var(--color-orange)', 'var(--color-pink)', 'var(--color-magenta)']
 
-function previewItems(columns: 3 | 4): ShelfItem[] {
-  return previewColors.slice(0, columns).map((color, i) => ({
+function previewItems(columns: number): ShelfItem[] {
+  return Array.from({ length: columns }, (_, i) => previewColors[i % previewColors.length]).map((color, i) => ({
     key: String(i),
     title: 'Título del libro',
     subtitle: 'Autor',
@@ -25,13 +29,22 @@ function previewItems(columns: 3 | 4): ShelfItem[] {
  *  esa versión va invisible en la misma celda y la vista elegida se centra encima, así la
  *  hoja no cambia de tamaño al tocar las opciones. */
 function Preview({ view }: { view: ShelfView }) {
+  // La vista previa es el librero, como en el Estante (en el celular desde la V.4.5.0). En
+  // pantallas grandes muestra 3 o 4 portadas (un pedazo de la repisa): con 7 u 8 en el ancho
+  // de la hoja no se distinguían.
   return (
     <div aria-hidden="true" className="grid bg-bg border border-border rounded-[18px] px-3 py-3 mb-5.5 pointer-events-none">
       <div className="invisible [grid-area:1/1]">
-        <Shelf items={previewItems(3)} perRow={3} />
+        <Shelf items={previewItems(3)} perRow={3} librero />
       </div>
       <div className="self-center [grid-area:1/1]">
-        <Shelf items={previewItems(view.columns)} perRow={view.columns} showNames={view.showNames} planks={view.planks} />
+        <Shelf
+          items={previewItems(view.columns)}
+          perRow={view.columns}
+          showNames={view.showNames}
+          planks={view.planks}
+          librero
+        />
       </div>
     </div>
   )
@@ -39,7 +52,7 @@ function Preview({ view }: { view: ShelfView }) {
 
 /** "Vista del estante" (V.3.0.0): columnas, título y autor, y repisa. Se aplica al instante
  *  (se ve detrás de la hoja) y queda guardada en la cuenta, para Libros y Sagas. */
-export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps) {
+export function ShelfViewSheet({ view, onChange, onClose, extraColumns = 0 }: ShelfViewSheetProps) {
   return (
     <Sheet title="Vista del estante" onClose={onClose}>
       <Preview view={view} />
@@ -59,7 +72,7 @@ export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps)
                     view.columns === n ? 'bg-primary text-primary-ink' : 'bg-surface border border-border text-text-secondary'
                   }`}
                 >
-                  {n}
+                  {n + extraColumns}
                 </button>
               ))}
             </div>
@@ -72,7 +85,7 @@ export function ShelfViewSheet({ view, onChange, onClose }: ShelfViewSheetProps)
           />
           <FormSwitchRow
             label="Repisa"
-            hint="Un tablón bajo cada fila de libros"
+            hint="El librero de madera, con un tablón bajo cada fila"
             checked={view.planks}
             onChange={(planks) => onChange({ ...view, planks })}
           />

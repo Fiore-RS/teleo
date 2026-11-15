@@ -98,6 +98,10 @@
   --teleo-cover: var(--teleo-primary);
   --teleo-cover-ink: var(--teleo-primary-ink);
   --teleo-cover-shadow: rgba(60, 20, 20, 0.45);
+  /* La mesa en pantallas grandes (V.4.0.0): un tono más oscuro que el fondo. */
+  --teleo-mesa: color-mix(in srgb, var(--teleo-bg) 95%, var(--teleo-text));
+  /* Libro abierto de La mesa: sombra del pliegue. */
+  --teleo-pliegue: rgba(90, 40, 40, 0.13);
 }
 
 /* "Noche con lámpara" */
@@ -161,6 +165,9 @@
   --teleo-cover: color-mix(in srgb, var(--teleo-primary) 42%, var(--teleo-bg));
   --teleo-cover-ink: var(--teleo-text);
   --teleo-cover-shadow: rgba(0, 0, 0, 0.6);
+  --teleo-mesa: color-mix(in srgb, var(--teleo-bg) 78%, black);
+  /* En oscuro, el pliegue sigue siendo sombra (no el color del texto, que es claro). */
+  --teleo-pliegue: rgba(0, 0, 0, 0.38);
 }
 
 @theme {
@@ -219,6 +226,12 @@
   --color-banner-ink: var(--teleo-banner-ink);
   --color-cover: var(--teleo-cover);
   --color-cover-ink: var(--teleo-cover-ink);
+  --color-mesa: var(--teleo-mesa);
+
+  /* Tamaños de pantalla (V.4.0.0): tableta (tapa angosta) y escritorio (tapa completa). Los
+     mismos valores que useBreakpoint. Debajo de tableta, Teleo es la de siempre. */
+  --breakpoint-tableta: 44rem;
+  --breakpoint-escritorio: 70rem;
 
   --radius-card: 24px;
   /* Formas (V.3.5.0, "Firme"): lo que antes era píldora pasa a rectángulo con esquinas
@@ -271,6 +284,29 @@
 @keyframes teleo-sheet-out {
   from { transform: translateY(0); }
   to { transform: translateY(-100%); }
+}
+/* Hoja de detalle (V.4.0.0): entra y sale por la derecha, con el margen de la pantalla. */
+@keyframes teleo-hoja-in {
+  from { transform: translateX(calc(100% + 24px)); }
+  to { transform: translateX(0); }
+}
+@keyframes teleo-hoja-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100% + 24px)); }
+}
+/* Menú Agregar de la tapa (V.4.3.0): los separadores salen de debajo de la tapa. */
+/* Ventana de novedades en pantallas grandes (V.4.3.0): la carta sube un poco al salir del sobre. */
+@keyframes teleo-carta-in {
+  from { opacity: 0; transform: translateY(48px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes teleo-separador-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+@keyframes teleo-separador-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
 }
 @keyframes teleo-fade-in {
   from { opacity: 0; }
@@ -327,12 +363,42 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
+/* ---------- Mouse y teclado (V.4.0.0) ----------
+   Tailwind 4 deja los botones con la flecha normal: en la computadora, todo lo que se puede
+   tocar muestra la manito. Y un foco visible por defecto para los botones y enlaces que se
+   recorren con el teclado y no traen el suyo (las clases focus-visible: de cada componente le
+   ganan a esto). Los campos de texto no: ya marcan el foco con su borde. */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  [role="tab"],
+  [role="radio"],
+  [role="switch"],
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [role="radio"]:focus-visible,
+  [role="switch"]:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-primary-text);
+    outline-offset: 2px;
+  }
+}
+
 @layer utilities {
   .animate-sheet-down { animation: teleo-sheet-down var(--motion-slow) var(--ease-enter); }
   .animate-sheet-out { animation: teleo-sheet-out var(--motion-base) var(--ease-exit) forwards; }
+  .animate-hoja-in { animation: teleo-hoja-in var(--motion-slow) var(--ease-enter); }
+  .animate-hoja-out { animation: teleo-hoja-out var(--motion-base) var(--ease-exit) forwards; }
   .animate-fade-in { animation: teleo-fade-in var(--motion-base) var(--ease-enter); }
   .animate-fade-out { animation: teleo-fade-out var(--motion-base) var(--ease-exit) forwards; }
   .animate-pop-in { animation: teleo-pop-in var(--motion-base) var(--ease-enter); }
+  .animate-carta-in { animation: teleo-carta-in 420ms var(--ease-enter) backwards; }
   .animate-pop-out { animation: teleo-pop-out var(--motion-fast) var(--ease-exit) forwards; }
   .animate-slide-next { animation: teleo-slide-next var(--motion-slow) var(--ease-enter); }
   .animate-slide-prev { animation: teleo-slide-prev var(--motion-slow) var(--ease-enter); }
@@ -363,6 +429,9 @@
      de anuncio. Se usa "backwards" (y no "both") para que al terminar la animación no quede un
      transform fijo encima: dnd-kit mueve los elementos con transform al arrastrar y una
      animación con "both" lo pisaría. */
+  /* Entrada de un solo elemento (V.4.3.0: el encabezado de Buscar, que entra cada vez). */
+  .animate-rise-in { animation: teleo-rise-in var(--motion-slow) var(--ease-enter) backwards; }
+
   .stagger-children > * { animation: teleo-rise-in var(--motion-slow) var(--ease-enter) backwards; }
   .stagger-children > *:nth-child(2) { animation-delay: 35ms; }
   .stagger-children > *:nth-child(3) { animation-delay: 70ms; }
@@ -371,8 +440,20 @@
   .stagger-children > *:nth-child(6) { animation-delay: 175ms; }
   .stagger-children > *:nth-child(n + 7) { animation-delay: 210ms; }
 
+  /* Separadores del menú Agregar (V.4.3.0), uno detrás del otro. "backwards" para que al
+     terminar no quede un transform fijo y el hover pueda asomarlos un poco más. */
+  .separadores-in > * { animation: teleo-separador-in 240ms var(--ease-enter) backwards; }
+  .separadores-in > *:nth-child(2) { animation-delay: 30ms; }
+  .separadores-in > *:nth-child(3) { animation-delay: 60ms; }
+  .separadores-in > *:nth-child(4) { animation-delay: 90ms; }
+  /* Al cerrar se guardan bajo la tapa en orden inverso: primero el de abajo (Reseña). */
+  .separadores-out > * { animation: teleo-separador-out 180ms var(--ease-exit) forwards; }
+  .separadores-out > *:nth-child(3) { animation-delay: 30ms; }
+  .separadores-out > *:nth-child(2) { animation-delay: 60ms; }
+  .separadores-out > *:nth-child(1) { animation-delay: 90ms; }
+
   @media (prefers-reduced-motion: reduce) {
-    .animate-sheet-down, .animate-sheet-out, .animate-fade-in, .animate-fade-out,
+    .animate-sheet-down, .animate-rise-in, .animate-carta-in, .separadores-in > *, .separadores-out > *, .animate-sheet-out, .animate-hoja-in, .animate-hoja-out, .animate-fade-in, .animate-fade-out,
     .animate-pop-in, .animate-pop-out, .stagger-children > *, .animate-skeleton,
     .animate-slide-next, .animate-slide-prev, .animate-ribbon-drop,
     .animate-subpage-in, .animate-subpage-back, .animate-float-in {
@@ -1071,8 +1152,181 @@
   --teleo-on-accent: #1A0F1E;
 }
 
+/* Lomos de "También en tu mesa" (V.4.3.0): tres colores del tema que se distinguen bien entre
+   sí. Por defecto el principal, el naranja y el rosa; en los temas donde el rosa se parece al
+   principal, el tercero es el magenta. Cada uno con su color de texto. */
+:root {
+  --teleo-lomo-1: var(--teleo-primary);
+  --teleo-lomo-1-ink: var(--teleo-primary-ink);
+  --teleo-lomo-2: var(--teleo-orange);
+  --teleo-lomo-2-ink: var(--teleo-on-orange);
+  --teleo-lomo-3: var(--teleo-pink);
+  --teleo-lomo-3-ink: var(--teleo-on-pink);
+}
+:root[data-palette="aurora"],
+:root[data-palette="algodon"],
+:root[data-palette="margarita"],
+:root[data-palette="arrecife"],
+:root.dark[data-palette="ciruela"] {
+  --teleo-lomo-3: var(--teleo-magenta);
+  --teleo-lomo-3-ink: var(--teleo-on-magenta);
+}
+
 /* Fondo de la página detrás de la app. Sin esto, en el teléfono las zonas del sistema (debajo
    de la barra de pestañas, la rayita del iPhone, el rebote al deslizar) mostraban otro color. */
 html {
   background-color: var(--teleo-bg);
+}
+
+/* ---------- Tapa del cuaderno lateral (V.4.0.0) ----------
+   En tableta y escritorio, las pantallas con secciones (las que muestran TabBar) llevan la
+   tapa del cuaderno a la izquierda. TabBar marca <html data-tapa> mientras está montada, y la
+   columna de la app (App.tsx, .app-columna) deja ese espacio libre. */
+:root {
+  --tapa-ancho: 0px;
+  --tapa-papel: var(--color-bg);
+}
+@media (min-width: 44rem) {
+  :root {
+    --tapa-ancho: 76px;
+  }
+  html[data-tapa] .app-columna {
+    padding-left: var(--tapa-ancho);
+  }
+  /* V.4.1.0: en tableta y computadora todas las pantallas con la tapa tienen el fondo de la
+     mesa (antes solo La mesa), y el separador de la sección activa toma ese mismo color para
+     seguir unido a la pantalla. Va fuera de las capas de Tailwind para ganarle al fondo que
+     cada pantalla trae para el celular (bg-glow-top, bg-paper). */
+  html[data-tapa] {
+    --tapa-papel: var(--color-mesa);
+    background-color: var(--color-mesa);
+  }
+  html[data-tapa] .app-columna,
+  html[data-tapa] .app-fondo {
+    background-color: var(--color-mesa);
+  }
+  html[data-tapa] .pagina-ancha,
+  html[data-tapa] .pagina-media,
+  html[data-tapa] .pagina-lectura {
+    background: transparent;
+  }
+  /* La barra fija de Cuaderno y Bitácora, cuando queda pegada arriba. */
+  html[data-tapa] .barra-fija-pegada {
+    background-color: color-mix(in srgb, var(--color-mesa) 88%, transparent);
+  }
+}
+@media (min-width: 70rem) {
+  :root {
+    --tapa-ancho: 260px;
+  }
+}
+
+/* ---------- Pantallas a lo ancho (V.4.0.0; V.4.1.0 igual que La mesa) ----------
+   En el celular no cambian nada. Desde tableta, todas las pantallas con la tapa tienen el
+   mismo aire que La mesa (Fiorella, 12 nov 2026): 32px a cada lado en tableta y 52px en
+   computadora, entre la tapa y el contenido y entre el contenido y el borde derecho, con el
+   contenido hasta 1180px y centrado en monitores grandes. Las tres clases quedan por si
+   alguna pantalla necesita después un ancho propio.
+   Van fuera de las capas de Tailwind para ganarle al px-4 del celular. */
+@media (min-width: 44rem) {
+  .pagina-ancha,
+  .pagina-media,
+  .pagina-lectura {
+    margin-inline: auto;
+    padding-inline: 2rem;
+    padding-top: 2.5rem;
+    max-width: calc(1180px + 4rem);
+  }
+}
+@media (min-width: 70rem) {
+  .pagina-ancha,
+  .pagina-media,
+  .pagina-lectura {
+    padding-inline: 3.25rem;
+    max-width: calc(1180px + 6.5rem);
+  }
+}
+
+/* Lomo de libro acostado (V.4.0.0, "También en tu mesa"): volumen con luz arriba y sombra
+   abajo, las tapas más oscuras en los extremos y dos filetes dorados. El color lo pone quien lo
+   usa. */
+.book-spine {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0) 30%, rgb(255 255 255 / 0) 68%, rgb(0 0 0 / 0.18));
+  box-shadow: inset 7px 0 0 rgb(0 0 0 / 0.14), inset -5px 0 0 rgb(0 0 0 / 0.1), 0 2px 3px rgb(0 0 0 / 0.25);
+}
+.book-spine::before,
+.book-spine::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: rgb(255 236 190 / 0.55);
+  pointer-events: none;
+}
+.book-spine::before {
+  left: 14px;
+}
+.book-spine::after {
+  right: 12px;
+}
+
+/* Al abrir una hoja se bloquea el desplazamiento del fondo; con mouse, eso quitaba la barra de
+   desplazamiento y la pantalla se corría unos píxeles. Reservar su espacio en tableta y
+   escritorio deja todo quieto (V.4.0.0, hoja de detalle). */
+@media (min-width: 44rem) {
+  html { scrollbar-gutter: stable; }
+}
+
+/* ---------- Bitácora en tableta y computadora (V.4.2.0) ----------
+   Las filas de "Más de…" van como hojas sueltas en dos columnas (cada una con el alto que
+   necesita). En computadora, la primera hoja (tu año, el resumen o el total) queda fija a la
+   izquierda y las demás van a la derecha. */
+@media (min-width: 44rem) {
+  .hojas-columnas {
+    columns: 2;
+    column-gap: 1.375rem;
+  }
+  .hojas-columnas > div {
+    display: contents;
+  }
+}
+@media (min-width: 70rem) {
+  .bitacora-hojas {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    column-gap: 1.625rem;
+    row-gap: 0;
+    align-items: start;
+  }
+  .bitacora-hojas > * {
+    grid-column: 2;
+    margin-bottom: 1.375rem;
+  }
+  .bitacora-hojas > :first-child {
+    grid-column: 1;
+    grid-row: 1 / span 12;
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+/* Encabezado fijo de Estante, Cuaderno y Bitácora en tableta y computadora (V.4.2.0): el fondo
+   se estira hasta los bordes de la pantalla (los márgenes de .pagina-*) con el color de la mesa. */
+.encabezado-fijo {
+  margin-inline: -2rem;
+  padding-inline: 2rem;
+}
+.encabezado-fijo[data-stuck] {
+  background-color: color-mix(in srgb, var(--color-mesa) 90%, transparent);
+}
+@media (min-width: 70rem) {
+  .encabezado-fijo {
+    margin-inline: -3.25rem;
+    padding-inline: 3.25rem;
+  }
+  /* La hoja fija de Bitácora queda debajo del encabezado fijo. */
+  .bitacora-hojas > :first-child {
+    top: 8.5rem;
+  }
 }

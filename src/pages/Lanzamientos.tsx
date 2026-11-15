@@ -54,7 +54,7 @@ export function Lanzamientos() {
   }
 
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-lectura">
       <ScreenHeader
         title="Lanzamientos"
         lead="Los libros que estás esperando y cuánto falta para que salgan."

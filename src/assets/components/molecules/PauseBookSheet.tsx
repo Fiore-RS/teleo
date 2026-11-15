@@ -25,6 +25,7 @@ export function PauseBookSheet({ book, onClose, onConfirm }: PauseBookSheetProps
 
   return (
     <Sheet
+      corta
       onClose={onClose}
       title="Pausar libro"
       footer={

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { HeroIllustration } from '../assets/components/atoms/HeroIllustration'
-import { Logo } from '../assets/components/atoms/Logo'
+import { TapaPortada, TapaPortadaCelular } from '../assets/components/molecules/TapaPortada'
 import { Button } from '../assets/components/atoms/Button'
 import { InviterCard } from '../assets/components/molecules/InviterCard'
 import { useInviterPreview } from '../hooks/useInviterPreview'
@@ -15,24 +14,30 @@ export function Inicio() {
   const [inviteCode] = useState(() => saveInviteCode(searchParams.get('codigo')) ?? readInviteCode())
   const { inviter } = useInviterPreview(inviteCode)
 
+  // Tableta y computadora (V.4.3.0): la tapa del cuaderno a la izquierda, sin la ilustración, y
+  // el texto con los botones a la derecha (como las demás pantallas de cuenta, AuthLayout).
+  // Celular (V.4.5.0): la tapa arriba, de lado a lado, en lugar del logo y la ilustración.
   return (
-    <div className="min-h-screen bg-glow-top flex flex-col">
-      <div className="p-4">
-        <Logo variant="full" className="h-8" onClick={() => navigate('/')} />
+    <div className="min-h-screen bg-glow-top tableta:grid tableta:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] escritorio:grid-cols-[600px_minmax(0,1fr)]">
+      <div className="hidden tableta:block sticky top-0 h-dvh">
+        <TapaPortada />
+      </div>
+      <div className="min-h-screen flex flex-col tableta:justify-center tableta:mx-auto tableta:w-full tableta:max-w-[468px]">
+      <div className="tableta:hidden">
+        <TapaPortadaCelular larga />
       </div>
 
-      {/* V.3.3.0: con invitación, la tarjeta flota encima de la ilustración, que conserva su
-          tamaño. */}
-      <div className="relative">
-        <HeroIllustration className="w-full" />
-        {inviter && (
-          <div className="absolute inset-x-5 top-8 animate-float-in drop-shadow-[0_14px_18px_rgba(40,20,10,0.22)]">
-            <InviterCard inviter={inviter} />
-          </div>
-        )}
-      </div>
+      {/* V.3.3.0: con invitación, la tarjeta de quien invita va arriba del título (en el celular,
+          desde la V.4.5.0, debajo de la tapa). */}
+      {inviter && (
+        <div className="px-6 pt-6 tableta:pt-0 animate-float-in drop-shadow-[0_14px_18px_rgba(40,20,10,0.22)]">
+          <InviterCard inviter={inviter} />
+        </div>
+      )}
 
-      <div className="flex-1 flex flex-col justify-between p-6 pb-20">
+      {/* Los botones van justo después del texto (V.4.5.0): con la tapa arriba, empujarlos al
+          fondo dejaba un hueco grande en medio. */}
+      <div className="flex flex-col p-6 pt-8 pb-10 tableta:pb-6">
         <div>
           <h1 className="font-title leading-none text-text">
             <span className="text-[clamp(40px,12vw,56px)]">Teleo,</span>{' '}
@@ -44,7 +49,7 @@ export function Inicio() {
           </p>
         </div>
 
-        <div className="space-y-3 mt-8">
+        <div className="space-y-3 mt-10">
           <Button variant="primary" onClick={() => navigate('/registro')}>
             Crear cuenta gratis
           </Button>
@@ -55,6 +60,7 @@ export function Inicio() {
             Sin ads, sin rastreo; tu privacidad es sagrada
           </p>
         </div>
+      </div>
       </div>
     </div>
   )

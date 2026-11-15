@@ -5,15 +5,19 @@ import { Skeleton, CoverSkeleton } from '../assets/components/atoms/Skeleton'
 import { BannerArt } from '../assets/components/atoms/BannerArt'
 import { CoverImage } from '../assets/components/atoms/CoverImage'
 import { DogEar } from '../assets/components/atoms/DogEar'
-import { HorizontalScroller } from '../assets/components/atoms/HorizontalScroller'
 import { DEFAULT_BANNER, type BannerId } from '../lib/banners'
 import { Card, CardAction } from '../assets/components/molecules/Card'
+import { DEFAULT_PRIORITY_LIST_NAME } from '../lib/priorityList'
+import { EstanteriaCelular, EstanteriaTabs, RepisaCelular } from '../assets/components/molecules/EstanteriaCelular'
 import type { Database } from '../types/database'
 import type { LastFinishedBook, ProfileCounts, ProfileQuote } from '../hooks/useProfileLists'
 import type { ReadingStatus } from '../lib/status'
 import { getProgressInfo } from '../lib/progress'
-import { getGoalMessage } from '../lib/goalMessage'
 import { useStaggerOnce } from '../lib/motion'
+import { useBreakpoint } from '../hooks/useBreakpoint'
+import { GoalCard } from './mesa/MesaCards'
+import { HojaModeContext } from '../lib/hojaMode'
+import { Librero, ShelfPlank } from '../assets/components/molecules/Shelf'
 
 type BookRow = Database['public']['Tables']['books']['Row']
 type Book = Pick<BookRow, 'id' | 'title' | 'cover_url' | 'status'>
@@ -72,8 +76,15 @@ interface ProfileViewProps {
   shelves?: ProfileShelf[]
   counts?: ProfileCounts
 
-  /** Mis próximas lecturas, que arma Perfil con sus propios datos. */
-  priorityList?: ReactNode
+  /** Mis próximas lecturas en el celular (V.4.5.0), que arma Perfil con sus propios datos: es la
+   *  primera pestaña de las estanterías y recibe las pestañas para dibujarlas encima. */
+  priorityList?: (tabs: ReactNode) => ReactNode
+  /** Nombre de la lista, para su pestaña. */
+  priorityListName?: string
+  /** La misma lista como primera repisa del librero (computadora y tableta, V.4.2.0). */
+  priorityRepisa?: ReactNode
+  /** Día en que se cumplió la meta del año (pantallas grandes: matasellos de la estampilla). */
+  annualGoalReachedOn?: Date | null
 
   onBookClick?: (bookId: string) => void
   onSeeAllBooks?: (list: ProfileFilter) => void
@@ -84,7 +95,7 @@ interface ProfileViewProps {
 /** Portada chica de una fila (estanterías), con su doblez de estado. */
 function ShelfCover({ book, onBookClick }: { book: Book; onBookClick?: (bookId: string) => void }) {
   const classes =
-    'relative w-24 shrink-0 aspect-2/3 rounded-[10px] overflow-hidden bg-surface-2 shadow-[0_6px_14px_-8px_rgba(60,30,10,0.5)]'
+    'relative w-[88px] shrink-0 aspect-2/3 rounded-[3px_6px_6px_3px] overflow-hidden bg-surface-2 shadow-[0_1px_1.5px_rgba(0,0,0,0.2),0_8px_14px_-6px_rgba(0,0,0,0.55)]'
   const cover = (
     <>
       {book.cover_url ? (
@@ -101,7 +112,7 @@ function ShelfCover({ book, onBookClick }: { book: Book; onBookClick?: (bookId: 
     <button
       onClick={() => onBookClick(book.id)}
       aria-label={book.title}
-      className={`${classes} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text`}
+      className={`${classes} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF3EA]`}
     >
       {cover}
     </button>
@@ -133,6 +144,69 @@ function progressText(book: BookRow): string {
   return 'Recién empezado'
 }
 
+/** Una repisa del librero de Perfil (V.4.2.0, computadora y tableta): la etiqueta de la
+ *  estantería, hasta 7 portadas paradas sobre el tablón y "Ver todos". */
+function Repisa({ shelf, isLoading, onBookClick, onSeeAll }: {
+  shelf: ProfileShelf
+  isLoading: boolean
+  onBookClick?: (bookId: string) => void
+  onSeeAll?: () => void
+}) {
+  const books = shelf.books.slice(0, 7)
+  return (
+    <section aria-label={shelf.label} className="relative px-5 pt-16">
+      <div className="absolute top-3 left-5 right-5 flex items-center justify-between gap-3">
+        <h3 className="h-6 px-3 rounded-[4px] bg-surface text-primary-text font-body font-bold text-[13px] inline-flex items-center gap-1.5 shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
+          {shelf.label}
+          <span className="font-semibold opacity-75 tabular-nums">{shelf.total}</span>
+        </h3>
+        {onSeeAll && shelf.total > 0 && (
+          <button
+            type="button"
+            onClick={onSeeAll}
+            className="font-body font-bold text-[13px] text-[#FBF3EA] hover:underline underline-offset-4 rounded-chip focus-visible:outline-2 focus-visible:outline-[#FBF3EA]"
+          >
+            Ver todos ›
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-7 gap-3.5 items-end min-h-[60px]">
+        {isLoading
+          ? Array.from({ length: 5 }, (_, i) => <CoverSkeleton key={i} className="w-full" />)
+          : books.length === 0
+            ? <p className="col-span-7 pb-3 font-display italic text-[16px] text-[#FBF3EA]/75">Nada por aquí todavía.</p>
+            : books.map((book) => {
+                const inner = (
+                  <>
+                    {book.cover_url ? (
+                      <CoverImage src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="w-full h-full flex items-end p-2 bg-accent-finished text-on-accent font-title text-[12px] leading-tight text-left">{book.title}</span>
+                    )}
+                    <DogEar status={book.status as ReadingStatus} size={20} className="absolute top-0 right-0" />
+                  </>
+                )
+                const cls = 'relative block w-full aspect-2/3 rounded-[3px_6px_6px_3px] overflow-hidden bg-surface-2 shadow-[0_1px_1.5px_rgba(0,0,0,0.2),0_8px_14px_-6px_rgba(0,0,0,0.55)]'
+                return onBookClick ? (
+                  <button
+                    key={book.id}
+                    type="button"
+                    onClick={() => onBookClick(book.id)}
+                    aria-label={book.title}
+                    className={`${cls} transition-transform duration-200 hover:-translate-y-1 motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF3EA]`}
+                  >
+                    {inner}
+                  </button>
+                ) : (
+                  <div key={book.id} className={cls}>{inner}</div>
+                )
+              })}
+      </div>
+      <ShelfPlank className="-mx-5! rounded-none!" />
+    </section>
+  )
+}
+
 /** Rincón personal del usuario. Solo lo ve el dueño de la cuenta (la página pública se retiró
  *  en septiembre 2026); en la V.5.0.0 también lo verán las amistades, en solo lectura.
  *
@@ -153,6 +227,7 @@ export function ProfileView({
   headerRight,
   annualGoal = 0,
   annualCompletedCount = 0,
+  annualGoalReachedOn = null,
   onEditGoal,
   streak = 0,
   currentlyReading = [],
@@ -161,17 +236,36 @@ export function ProfileView({
   shelves = [],
   counts,
   priorityList,
+  priorityListName,
+  priorityRepisa,
   onBookClick,
   onSeeAllBooks,
   footer,
 }: ProfileViewProps) {
   const stagger = useStaggerOnce('perfil')
+  const staggerRepisas = useStaggerOnce('perfil-repisas')
+  // Computadora y tableta (V.4.2.0, lienzo "Perfil · E"): la portada arriba; debajo, a la
+  // izquierda, un librero con una repisa por estantería, y a la derecha las notas (Tu biblioteca,
+  // Ahora mismo, la meta y Mis próximas lecturas) como las hojas de Bitácora.
+  const isAncha = useBreakpoint() !== 'celular'
   const currentYear = new Date().getFullYear()
-  const goalPercent = annualGoal > 0 ? Math.min(100, (annualCompletedCount / annualGoal) * 100) : 0
   const displayName = nickname?.trim() || username
   const initial = displayName?.trim().charAt(0).toUpperCase() ?? ''
-  const [activeShelfKey, setActiveShelfKey] = useState<ProfileShelf['key']>('favoritos')
+  // Celular: la pestaña elegida de las estanterías; Mis próximas lecturas va primero y es la
+  // que se ve al abrir el Perfil (V.4.5.0).
+  const [activeShelfKey, setActiveShelfKey] = useState<string>(priorityList ? 'proximas' : 'favoritos')
+  const showingPriority = !!priorityList && activeShelfKey === 'proximas'
   const activeShelf = shelves.find((s) => s.key === activeShelfKey) ?? shelves[0]
+  const shelfTabs = (
+    <EstanteriaTabs
+      tabs={[
+        ...(priorityList ? [{ key: 'proximas', label: priorityListName ?? DEFAULT_PRIORITY_LIST_NAME, tone: 'magenta' as const }] : []),
+        ...shelves.map((s) => ({ key: s.key, label: s.label, total: s.total })),
+      ]}
+      active={showingPriority ? 'proximas' : activeShelf?.key ?? ''}
+      onChange={setActiveShelfKey}
+    />
+  )
 
   const avatarInner = avatarUrl ? (
     <img src={avatarUrl} alt="Tu foto de perfil" className="w-full h-full object-cover" />
@@ -196,25 +290,31 @@ export function ProfileView({
   ]
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-paper pagina-media">
       {/* Portada (V.3.0.0): banner grande con el nombre encima a la izquierda, oscurecido abajo
           para que el texto se lea en cualquier tema; la foto va a la derecha, algo torcida,
           montada sobre el borde. El dibujo se muestra completo en su proporción (360 × 140)
           arriba, sin recortarse, y se desvanece hacia abajo; el degradado sigue debajo para
           dar lugar al nombre. */}
       <div className="relative">
-        <div className="relative flex flex-col rounded-b-[28px] bg-linear-to-br from-primary to-rose overflow-hidden">
-          <div
-            className="relative aspect-18/7"
-            style={{
-              maskImage: 'linear-gradient(to bottom, #000 55%, transparent)',
-              WebkitMaskImage: 'linear-gradient(to bottom, #000 55%, transparent)',
-            }}
-          >
-            <BannerArt banner={banner} />
+        <div className="relative flex flex-col rounded-b-[28px] tableta:rounded-[24px] bg-linear-to-br from-primary to-rose overflow-hidden">
+          {/* En el celular, el dibujo ocupa todo el ancho y se desvanece hacia abajo. En la tableta
+              (V.4.2.0) ese mismo arreglo lo recortaba (el banner es mucho más ancho que alto): ahí
+              el dibujo va completo, en su proporción, a la derecha del banner, y se funde con el
+              degradado hacia la izquierda, donde va tu nombre. En escritorio usa su versión ancha. */}
+          <div className="relative aspect-18/7 tableta:aspect-auto tableta:h-[230px] [mask-image:linear-gradient(to_bottom,#000_55%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,#000_55%,transparent)] tableta:[mask-image:none] tableta:[-webkit-mask-image:none]">
+            <div className="absolute inset-0 tableta:left-auto tableta:aspect-18/7 tableta:[mask-image:linear-gradient(to_right,transparent,#000_35%)] tableta:[-webkit-mask-image:linear-gradient(to_right,transparent,#000_35%)] escritorio:hidden">
+              <BannerArt banner={banner} />
+            </div>
+            {/* En escritorio, la versión ancha del dibujo ocupa todo el banner, sin desvanecerse. */}
+            <div className="absolute inset-0 hidden escritorio:block">
+              <BannerArt banner={banner} ancho />
+            </div>
           </div>
-          <div className="h-[52px]" />
-          <span aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-transparent from-40% to-[rgba(20,12,10,0.75)]" />
+          <div className="h-[52px] tableta:hidden" />
+          {/* Oscurece donde va el nombre para que se lea en cualquier tema: abajo en el celular; a la
+              izquierda en pantallas grandes, sin tapar el dibujo. */}
+          <span aria-hidden="true" className="absolute inset-0 bg-linear-to-b from-transparent from-40% to-[rgba(20,12,10,0.75)] tableta:bg-linear-to-r tableta:from-[rgba(20,12,10,0.5)] tableta:from-0% tableta:to-transparent tableta:to-55%" />
           <div
             className="absolute right-4 z-[2] flex items-center gap-2"
             style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
@@ -247,7 +347,7 @@ export function ProfileView({
         </div>
       </div>
 
-      <div className="px-4">
+      <div className="px-4 tableta:px-0">
         {/* Bio: texto suelto bajo la portada, con lugar a la derecha para la foto. */}
         {isProfileLoading ? (
           <div className="px-1 pr-[150px] mt-3.5" aria-label="Cargando">
@@ -260,7 +360,72 @@ export function ProfileView({
           </p>
         )}
 
-        <div className={`flex flex-col gap-5 mt-5 ${stagger}`}>
+        {/* Tu biblioteca y Ahora mismo van como hojas, como en Bitácora (pantallas grandes desde la
+            V.4.2.0; celular desde la V.4.5.0). La meta sigue en su carpeta. */}
+        <HojaModeContext.Provider value={true}>
+        <div
+          className={
+            isAncha
+              ? `grid escritorio:grid-cols-[minmax(0,1fr)_330px] gap-6.5 items-start mt-5 ${stagger}`
+              : `flex flex-col gap-5 mt-5 ${stagger}`
+          }
+        >
+          {isAncha && (
+            <section aria-label="Tu librero" className="escritorio:row-span-6">
+              <h2 className="smallcaps text-text-secondary mb-3">Tu librero</h2>
+              <Librero>
+                {/* Las repisas entran una por una, como las tarjetas. */}
+                <div className={`pb-2 ${staggerRepisas}`}>
+                  {priorityRepisa}
+                  {shelves.map((shelf) => (
+                    <Repisa
+                      key={shelf.key}
+                      shelf={shelf}
+                      isLoading={areListsLoading}
+                      onBookClick={onBookClick}
+                      onSeeAll={onSeeAllBooks ? () => onSeeAllBooks(shelf.filter) : undefined}
+                    />
+                  ))}
+                </div>
+              </Librero>
+            </section>
+          )}
+          {/* Estanterías en el celular (V.4.5.0): sin carpeta, las pestañas encima y el librero de
+              madera con una repisa que se desliza de lado. Mis próximas lecturas es la primera
+              pestaña. Van primero, como el librero en pantallas grandes. */}
+          {/* Un solo envoltorio que no cambia: la cascada de entrada anima a cada hijo nuevo de
+              esta columna, y sin él la estantería se volvía a animar en cada cambio de pestaña. */}
+          {!isAncha && (
+          <div>
+          {showingPriority && priorityList(shelfTabs)}
+          {!showingPriority && activeShelf && (
+            <EstanteriaCelular
+              tabs={shelfTabs}
+              action={
+                onSeeAllBooks && activeShelf.total > 0 ? (
+                  <CardAction onClick={() => onSeeAllBooks(activeShelf.filter)}>Ver todos</CardAction>
+                ) : undefined
+              }
+            >
+              {areListsLoading ? (
+                <RepisaCelular>
+                  {[0, 1, 2, 3].map((i) => (
+                    <CoverSkeleton key={i} className="w-[88px] shrink-0" />
+                  ))}
+                </RepisaCelular>
+              ) : activeShelf.books.length === 0 ? (
+                <RepisaCelular message={<p className="font-display italic text-[16px] opacity-80">Nada por aquí todavía.</p>} />
+              ) : (
+                <RepisaCelular>
+                  {activeShelf.books.map((book) => (
+                    <ShelfCover key={book.id} book={book} onBookClick={onBookClick} />
+                  ))}
+                </RepisaCelular>
+              )}
+            </EstanteriaCelular>
+          )}
+          </div>
+          )}
           {/* Tu biblioteca (V.3.5.0): tres cifras arriba; debajo la barra por estado y la
               leyenda. Cada estado abre Estante con ese filtro. */}
           <Card tab={{ label: 'Tu biblioteca' }}>
@@ -354,7 +519,7 @@ export function ProfileView({
                       <button
                         type="button"
                         onClick={() => onSeeAllBooks('leyendo')}
-                        className="mt-2.5 ml-[98px] font-body font-bold text-body-sm text-orange-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
+                        className="block w-fit mt-2.5 ml-auto font-body font-bold text-body-sm text-orange-text rounded-chip focus-visible:outline-2 focus-visible:outline-primary-text"
                       >
                         {moreReading === 1 ? 'Y 1 más en Estante' : `Y ${moreReading} más en Estante`}
                       </button>
@@ -397,78 +562,24 @@ export function ProfileView({
             </Card>
           ) : null}
 
-          {/* Meta anual (V.3.5.0): igual que en La mesa, con "Editar" en la pestaña. */}
+          {/* Meta anual (V.3.5.0): igual que en La mesa, con "Editar" en la pestaña y la
+              estampilla fija al cumplirla (pantallas grandes desde la V.4.2.0, fuera del modo
+              hoja, en su carpeta; celular desde la V.4.5.0). */}
           {annualGoal > 0 && (
-            <Card
-              tab={{ label: 'Meta anual de lectura' }}
-              tone="pink"
-              action={onEditGoal ? <CardAction onClick={onEditGoal}>Editar</CardAction> : undefined}
-            >
-              <div className="flex items-end justify-between gap-3">
-                <p className="font-title text-[40px] leading-none text-text">
-                  <span className="tabular-nums">{annualCompletedCount}</span>{' '}
-                  <span className="font-body font-medium text-body-md text-text-secondary">
-                    de {annualGoal} libros del {currentYear}
-                  </span>
-                </p>
-                <span className="font-display font-semibold text-[20px] text-pink-text tabular-nums">{Math.round(goalPercent)}%</span>
-              </div>
-              <ProgressBar percent={goalPercent} color="var(--color-pink)" shape="firme" className="mt-3.5 h-3.5" />
-              <p className="font-display italic text-body-lg text-text-secondary mt-3">{getGoalMessage(goalPercent)}</p>
-            </Card>
+            <HojaModeContext.Provider value={false}>
+              <GoalCard
+                goal={annualGoal}
+                completedCount={annualCompletedCount}
+                isLoading={false}
+                onEdit={onEditGoal}
+                showStamp
+                reachedOn={annualGoalReachedOn}
+              />
+            </HojaModeContext.Provider>
           )}
 
-          {/* Estanterías (V.3.5.0): Favoritos, Recomendados, Deseados y Abandonados en una sola
-              tarjeta, con un selector de pestañas de texto que se puede deslizar. */}
-          {activeShelf && (
-            <Card
-              tab={{ label: 'Estanterías' }}
-              action={
-                onSeeAllBooks && activeShelf.total > 0 ? (
-                  <CardAction onClick={() => onSeeAllBooks(activeShelf.filter)}>Ver todos</CardAction>
-                ) : undefined
-              }
-            >
-              <div role="tablist" aria-label="Estanterías" className="flex gap-4 overflow-x-auto scrollbar-hide border-b border-border -mt-1 mb-3.5">
-                {shelves.map((s) => {
-                  const isActive = s.key === activeShelf.key
-                  return (
-                    <button
-                      key={s.key}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      onClick={() => setActiveShelfKey(s.key)}
-                      className={`shrink-0 pb-2 pt-1 font-body text-body-md whitespace-nowrap border-b-2 -mb-px transition-colors focus-visible:outline-2 focus-visible:outline-primary-text ${
-                        isActive ? 'border-primary text-primary-text font-bold' : 'border-transparent text-text-secondary font-semibold'
-                      }`}
-                    >
-                      {s.label}
-                      <span className={`ml-1.5 tabular-nums ${isActive ? 'text-primary-text' : 'text-text-muted'}`}>{s.total}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              {areListsLoading ? (
-                <div className="flex gap-3 -mx-[18px] px-[18px] overflow-hidden pb-1" aria-label="Cargando">
-                  {[0, 1, 2, 3].map((i) => (
-                    <CoverSkeleton key={i} className="w-24 shrink-0" />
-                  ))}
-                </div>
-              ) : activeShelf.books.length === 0 ? (
-                <p className="text-body-md text-text-secondary">Nada por aquí todavía.</p>
-              ) : (
-                <HorizontalScroller key={activeShelf.key} className="-mx-[18px] px-[18px] gap-3! pb-1 animate-fade-in">
-                  {activeShelf.books.map((book) => (
-                    <ShelfCover key={book.id} book={book} onBookClick={onBookClick} />
-                  ))}
-                </HorizontalScroller>
-              )}
-            </Card>
-          )}
-
-          {priorityList}
         </div>
+        </HojaModeContext.Provider>
       </div>
 
       {footer}

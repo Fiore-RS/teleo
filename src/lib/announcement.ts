@@ -1,8 +1,10 @@
-import { changelog, type ChangelogEntry } from './changelog'
+import { versiones, type ChangelogVersion } from './changelog'
 
-/** Versión que se anuncia con la hoja "Novedades de Teleo" al entrar a La mesa. Cuando haya
- *  otro lanzamiento grande, se cambia esta versión y sus puntos destacados. */
-export const ANNOUNCEMENT_VERSION = '3.7.0'
+/** Versión que se anuncia con la carta "Novedades de Teleo" al entrar a La mesa (número
+ *  interno; en la carta se ve como "Versión 4"). Cuando haya otro lanzamiento grande, se cambia
+ *  esta versión y sus puntos destacados. La Versión 4 sale toda junta, así que su carta cuenta
+ *  todo lo de escritorio y teléfono. */
+export const ANNOUNCEMENT_VERSION = '4.5.0'
 
 /** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
  *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
@@ -14,10 +16,12 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'Lo tengo', text: 'Una marca para los libros que tienes en casa. Los físicos se marcan solos al agregarlos.' },
-  { title: 'Tu biblioteca de antes', text: 'Teleo te ofrece marcar de una vez los libros físicos que ya tenías.' },
-  { title: 'Tu pila por leer', text: 'Filtra tu Estante por Lo tengo y mira en Bitácora cuántos te faltan por leer.' },
-  { title: 'Compras más justas', text: 'Cuentan los libros que tienes y los que compraste, no los prestados ni los de biblioteca.' },
+  { title: 'Teleo en la computadora', text: 'Ábrela desde el navegador, con cada pantalla pensada para pantallas grandes.' },
+  { title: 'Una dirección nueva', text: 'Teleo ahora vive en teleo.fiorers.dev, con todo lo tuyo en tu cuenta.' },
+  { title: 'Tu cuaderno, en el teléfono', text: 'Lo que estás leyendo, las hojas y tu Bitácora ahora son hojas de cuaderno.' },
+  { title: 'Tu librero', text: 'El Estante y las estanterías del Perfil son un librero de madera.' },
+  { title: 'Siempre al día', text: 'Lo que cambias en un dispositivo aparece solo en los demás.' },
+  { title: 'Una carta para ti', text: 'Las novedades llegan en una carta, como esta.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */
@@ -32,11 +36,13 @@ export function isVersionBefore(seen: string | null | undefined, target: string)
   return false
 }
 
-/** Versiones con anuncio que la persona no vio desde `lastSeen` (de la más nueva a la más
- *  vieja). Si son 2 o más, la hoja de La mesa muestra el aviso de novedades acumuladas. */
-export function missedAnnouncedVersions(lastSeen: string | null | undefined): ChangelogEntry[] {
-  return changelog.filter((entry) => entry.announced && isVersionBefore(lastSeen, entry.version))
+/** Versiones grandes con alguna parte con anuncio que la persona no vio desde `lastSeen` (de la
+ *  más nueva a la más vieja). Si son 2 o más, la carta de La mesa muestra el aviso de novedades
+ *  acumuladas. Se cuentan versiones grandes, no partes: quien venía de la 3.8.1 y abre la
+ *  Versión 4 no ve "¡Cuánto tiempo!" aunque la 4 tenga varias partes. */
+export function missedAnnouncedVersions(lastSeen: string | null | undefined): ChangelogVersion[] {
+  return versiones.filter((v) => v.entries.some((entry) => entry.announced && isVersionBefore(lastSeen, entry.version)))
 }
 
-/** Desde cuántas versiones con anuncio se muestra el aviso de novedades acumuladas. */
+/** Desde cuántas versiones grandes con anuncio se muestra el aviso de novedades acumuladas. */
 export const CATCH_UP_MIN = 2

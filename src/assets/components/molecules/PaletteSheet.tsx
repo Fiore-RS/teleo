@@ -29,9 +29,19 @@ function PalettePreview({ palette, mode }: { palette: Palette; mode: 'light' | '
   )
 }
 
-/** Hoja "Tema" de Configuración › Apariencia (V.2.1.0): los temas en dos columnas. Al tocar
- *  uno se aplica al instante (se ve detrás de la hoja) y queda guardado en la cuenta. */
-export function PaletteSheet({ onClose, onSave }: PaletteSheetProps) {
+/** Los temas para elegir (V.2.1.0; V.4.3.0 aparte de la hoja). Al tocar uno se aplica al
+ *  instante y queda guardado en la cuenta. Lo usan la hoja "Tema" (celular, dos columnas) y
+ *  Configuración › Apariencia en tableta y computadora, donde se elige ahí mismo (cuatro
+ *  columnas, sin la descripción). */
+export function PaletteGrid({
+  onSave,
+  columns = 2,
+  withDescription = true,
+}: {
+  onSave: (palette: PaletteId) => void
+  columns?: 2 | 4
+  withDescription?: boolean
+}) {
   const { palette: active, setPalette, resolvedTheme } = useTheme()
 
   function choose(id: PaletteId) {
@@ -41,38 +51,48 @@ export function PaletteSheet({ onClose, onSave }: PaletteSheetProps) {
   }
 
   return (
+    <div className={`grid ${columns === 4 ? 'grid-cols-4' : 'grid-cols-2'} gap-3`} role="radiogroup" aria-label="Temas de color">
+      {palettes.map((p) => {
+        const isActive = p.id === active
+        return (
+          <button
+            key={p.id}
+            type="button"
+            role="radio"
+            aria-checked={isActive}
+            onClick={() => choose(p.id)}
+            className={`text-left rounded-2xl p-2 border-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
+              isActive ? 'border-primary-text bg-surface-2' : 'border-transparent hover:bg-surface-2'
+            }`}
+          >
+            <PalettePreview palette={p} mode={resolvedTheme} />
+            <span className="flex items-center justify-between gap-2 mt-2 px-0.5">
+              <span className="font-body font-bold text-body-md text-text">{p.name}</span>
+              {isActive && (
+                <span className="w-5 h-5 shrink-0 rounded-full bg-primary text-primary-ink flex items-center justify-center">
+                  <Check size={13} strokeWidth={3} />
+                </span>
+              )}
+            </span>
+            {withDescription && (
+              <span className="block text-body-sm text-text-secondary leading-snug px-0.5 mt-0.5">{p.description}</span>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Hoja "Tema" de Configuración › Apariencia (V.2.1.0), en el celular: los temas en dos
+ *  columnas, y el tema elegido se ve detrás de la hoja. */
+export function PaletteSheet({ onClose, onSave }: PaletteSheetProps) {
+  return (
     <Sheet onClose={onClose} title="Tema">
       <p className="text-body-sm text-text-secondary mb-4">
         Cambia los colores de toda la app. Cada tema tiene su versión clara y oscura.
       </p>
-      <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Temas de color">
-        {palettes.map((p) => {
-          const isActive = p.id === active
-          return (
-            <button
-              key={p.id}
-              type="button"
-              role="radio"
-              aria-checked={isActive}
-              onClick={() => choose(p.id)}
-              className={`text-left rounded-2xl p-2 border-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-text ${
-                isActive ? 'border-primary-text bg-surface-2' : 'border-transparent'
-              }`}
-            >
-              <PalettePreview palette={p} mode={resolvedTheme} />
-              <span className="flex items-center justify-between gap-2 mt-2 px-0.5">
-                <span className="font-body font-bold text-body-md text-text">{p.name}</span>
-                {isActive && (
-                  <span className="w-5 h-5 shrink-0 rounded-full bg-primary text-primary-ink flex items-center justify-center">
-                    <Check size={13} strokeWidth={3} />
-                  </span>
-                )}
-              </span>
-              <span className="block text-body-sm text-text-secondary leading-snug px-0.5 mt-0.5">{p.description}</span>
-            </button>
-          )
-        })}
-      </div>
+      <PaletteGrid onSave={onSave} />
     </Sheet>
   )
 }

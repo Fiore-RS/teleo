@@ -14,14 +14,17 @@ interface SortMenuProps<T extends string> {
   /** 'pill': botón ancho con texto "Organizar". 'icon': botón redondo solo con ícono, para
    *  la fila de acciones del encabezado (rediseño 2026). 'bar': botón redondo sin borde,
    *  dentro de la barra de búsqueda del encabezado fijo (V.3.0.0). */
-  variant?: 'pill' | 'icon' | 'bar'
+  variant?: 'pill' | 'icon' | 'bar' | 'button'
+  /** Texto del botón con la variante 'button' (V.4.1.0, Estante en pantallas grandes): el
+   *  orden elegido, por ejemplo "Título". */
+  buttonLabel?: string
 }
 
 /** Botón "Organizar" que despliega un menú de modos de orden — mismo patrón que
  *  `StatusMenu`/`PriorityListMenu` (botón + panel absoluto que se cierra al tocar afuera).
  *  Reemplaza el toggle simple de arrastrar que tenían Estante y (nuevo) Cuaderno, dando
  *  variedad para organizar por título, autor, fecha agregado o el modo libre de siempre. */
-export function SortMenu<T extends string>({ options, activeKey, onSelect, className = '', variant = 'pill' }: SortMenuProps<T>) {
+export function SortMenu<T extends string>({ options, activeKey, onSelect, className = '', variant = 'pill', buttonLabel }: SortMenuProps<T>) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -42,7 +45,18 @@ export function SortMenu<T extends string>({ options, activeKey, onSelect, class
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
-      {variant === 'bar' ? (
+      {variant === 'button' ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen((o) => !o)}
+          aria-label={`Organizar: ${buttonLabel ?? ''}`}
+          aria-expanded={isOpen}
+          className="h-10 px-3.5 inline-flex items-center gap-2 rounded-button border border-border bg-surface text-text font-body font-semibold text-body-md hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-primary-text"
+        >
+          <ArrowUpDown size={17} aria-hidden="true" />
+          {buttonLabel}
+        </button>
+      ) : variant === 'bar' ? (
         <button
           type="button"
           onClick={() => setIsOpen((o) => !o)}

@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SlidersHorizontal, X, LayoutGrid } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { useLibraryBooks } from "../hooks/useLibraryBooks";
 import { useLibrarySagas } from "../hooks/useLibrarySagas";
 import { useProfile } from "../hooks/useProfile";
 import { getPriorityListName } from "../lib/priorityList";
 import { ScreenHeader, HeaderBarButton } from "../assets/components/molecules/ScreenHeader";
+import { EstanteEncabezado } from "./estante/EstanteEncabezado";
 import { CoverBand } from "../assets/components/atoms/CoverBand";
 import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
@@ -18,7 +20,8 @@ import { GenreSuggestSheet } from "../assets/components/molecules/GenreSuggestSh
 import { CompleteShelfSheet } from "../assets/components/molecules/CompleteShelfSheet";
 import { BookCover } from "../assets/components/molecules/BookCover";
 import { SagaCover } from "../assets/components/molecules/SagaCover";
-import { Shelf } from "../assets/components/molecules/Shelf";
+import { LibreroVacio, Shelf } from "../assets/components/molecules/Shelf";
+import { CoverSkeleton } from "../assets/components/atoms/Skeleton";
 import { ShelfViewSheet } from "../assets/components/molecules/ShelfViewSheet";
 import { shelfViewFromProfile, shelfViewToProfile, type ShelfView } from "../lib/shelfView";
 import { AddBookModal } from "../assets/components/molecules/AddBookModal";
@@ -78,6 +81,13 @@ export function Estante() {
   // guarda en la cuenta.
   const [viewOverride, setViewOverride] = useState<ShelfView | null>(null);
   const shelfView = viewOverride ?? shelfViewFromProfile(profile);
+  // Libros por repisa (V.4.0.0): la elección de 3 o 4 vale para el celular; en tableta y
+  // escritorio caben más, así las portadas no crecen de más con el ancho.
+  const breakpoint = useBreakpoint();
+  const extraColumns = breakpoint === "escritorio" ? 4 : breakpoint === "tableta" ? 2 : 0;
+  const perRow = shelfView.columns + extraColumns;
+  // Las portadas chicas solo hacen falta con 4 por repisa en el celular.
+  const smallCovers = shelfView.columns === 4 && breakpoint === "celular";
   const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
   function changeShelfView(view: ShelfView) {
     setViewOverride(view);
@@ -125,6 +135,38 @@ export function Estante() {
   const [sagaSortMode, setSagaSortMode] = useSortMode("estante-sagas");
   const [isReorderingBooks, setIsReorderingBooks] = useState(false);
   const [isReorderingSagas, setIsReorderingSagas] = useState(false);
+
+  // Desde la tapa del cuaderno (V.4.0.0, tableta y escritorio): el menú Agregar llega con
+  // ?agregar=libro o ?agregar=saga (V.4.3.0) y el buscador con ?buscar=texto. Puede pasar estando ya en Estante (la
+  // pantalla no se vuelve a montar), por eso se mira cada vez que cambia la dirección.
+  const agregarParam = searchParams.get("agregar");
+  const buscarParam = searchParams.get("buscar");
+  const tapaRequest = `${agregarParam ?? ""}|${buscarParam ?? ""}`;
+  const [prevTapaRequest, setPrevTapaRequest] = useState("|");
+  if (tapaRequest !== prevTapaRequest) {
+    setPrevTapaRequest(tapaRequest);
+    if (agregarParam === "libro") {
+      setTab("libros");
+      setIsAddBookOpen(true);
+    }
+    if (agregarParam === "saga") {
+      setTab("sagas");
+      setIsAddSagaOpen(true);
+    }
+    if (buscarParam !== null) {
+      setTab("libros");
+      setSearch(buscarParam);
+    }
+  }
+  // Ya leído, se quita de la dirección para que no vuelva a pasar al recargar.
+  useEffect(() => {
+    if (agregarParam === null && buscarParam === null) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("agregar");
+    next.delete("buscar");
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agregarParam, buscarParam]);
 
   // Ya aplicado el filtro de la URL, se limpia para que no vuelva a aplicarse al recargar.
   useEffect(() => {
@@ -315,9 +357,53 @@ export function Estante() {
 
   const isLoading = tab === "libros" ? booksLoading : sagasLoading;
 
+  // Encabezado de pantallas grandes (V.4.1.0): la línea de debajo del título cuenta la
+  // biblioteca completa, o cuántos se ven de cuántos si hay búsqueda o filtros.
+  const isAncha = breakpoint !== "celular";
+  // En el librero (con repisa; en el celular desde la V.4.5.0) la carga y los mensajes también
+  // van dentro del mueble. En pantallas grandes, las sagas, con pilas más anchas, llevan una
+  // menos por repisa.
+  const enLibrero = shelfView.planks;
+  const sagaPerRow = isAncha ? perRow - 1 : perRow;
+  const isNarrowed = !!search.trim() || hasActiveAdvFilters || (tab === "libros" && quickFlag !== null);
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const estanteSubtitle = isLoading
+    ? "Toda tu biblioteca"
+    : tab === "libros"
+      ? isNarrowed
+        ? `${filteredBooks.length} de ${plural(books.length, "libro", "libros")}`
+        : `Toda tu biblioteca, ${plural(books.length, "libro", "libros")}`
+      : isNarrowed
+        ? `${filteredSagas.length} de ${plural(sagas.length, "saga", "sagas")}`
+        : `Tus sagas, ${plural(sagas.length, "saga", "sagas")}`;
+  const sortLabel = (mode: LibrarySortMode) =>
+    mode === "titulo" ? "Título" : mode === "autor" ? "Autor" : mode === "fecha" ? "Fecha agregado" : "Libre";
+
   return (
-    <div className="min-h-screen bg-glow-top px-4 pt-4">
+    <div className="min-h-screen bg-glow-top px-4 pt-4 pagina-ancha">
       <CoverBand />
+      {isAncha ? (
+        <EstanteEncabezado
+          tab={tab}
+          onTabChange={handleTabSwitch}
+          bookCount={booksLoading ? undefined : filteredBooks.length}
+          sagaCount={sagasLoading ? undefined : filteredSagas.length}
+          subtitle={estanteSubtitle}
+          search={search}
+          onClearSearch={() => setSearch("")}
+          hasFilters={hasActiveAdvFilters}
+          onFilters={() => setIsFilterModalOpen(true)}
+          onView={() => setIsViewSheetOpen(true)}
+          onRandomPick={tab === "libros" ? () => setIsRandomPickOpen(true) : undefined}
+          sortMenu={
+            tab === "libros" ? (
+              <SortMenu variant="button" buttonLabel={sortLabel(bookSortMode)} options={bookSortOptions} activeKey={bookSortMode} onSelect={handleBookSortSelect} />
+            ) : (
+              <SortMenu variant="button" buttonLabel={sortLabel(sagaSortMode)} options={sagaSortOptions} activeKey={sagaSortMode} onSelect={handleSagaSortSelect} />
+            )
+          }
+        />
+      ) : (
       <ScreenHeader
         title="Estante"
         tabsLabel="Libros o sagas"
@@ -359,6 +445,7 @@ export function Estante() {
           )
         }
       />
+      )}
 
       <div className="space-y-5">
         {quickFlag && (
@@ -389,7 +476,22 @@ export function Estante() {
 
         {/* Biblioteca vacía (V.3.3.0): en vez del aviso de filtro, cómo empezar y el atajo a
             Goodreads para quien llega con su biblioteca. Desaparece con el primer libro. */}
-        {!isLoading && tab === "libros" && books.length === 0 && (
+        {!isLoading && tab === "libros" && books.length === 0 &&
+          (enLibrero ? (
+            <LibreroVacio>
+              <p className="font-title text-[24px] leading-tight">Tu estante está vacío</p>
+              <p className="text-body-md opacity-80 mt-2">
+                {isAncha ? "Toca “Agregar” en la tapa para agregar tu primer libro." : "Toca el botón + para agregar tu primer libro."}
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsGoodreadsOpen(true)}
+                className="mt-3 text-body-md font-bold underline underline-offset-4 rounded-chip focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FBF3EA]"
+              >
+                ¿Ya usas Goodreads? Trae tu biblioteca
+              </button>
+            </LibreroVacio>
+          ) : (
           <div className="text-center px-4 py-6">
             <p className="font-title text-[22px] leading-tight text-text">Tu estante está vacío</p>
             <p className="text-body-md text-text-secondary mt-2">
@@ -403,37 +505,62 @@ export function Estante() {
               ¿Ya usas Goodreads? Trae tu biblioteca
             </button>
           </div>
-        )}
-        {!isLoading && tab === "libros" && books.length > 0 && filteredBooks.length === 0 && (
+          ))}
+        {!isLoading && tab === "libros" && books.length > 0 && filteredBooks.length === 0 &&
+          (enLibrero ? (
+            <LibreroVacio>
+              <p className="font-display italic text-[19px]">No hay libros que coincidan con este filtro.</p>
+            </LibreroVacio>
+          ) : (
           <p className="text-body-md text-text-secondary text-center">
             No hay libros que coincidan con este filtro.
           </p>
-        )}
-        {!isLoading && tab === "sagas" && filteredSagas.length === 0 && (
+          ))}
+        {!isLoading && tab === "sagas" && filteredSagas.length === 0 &&
+          (enLibrero ? (
+            <LibreroVacio>
+              <p className="font-display italic text-[19px]">No hay sagas que coincidan con este filtro.</p>
+            </LibreroVacio>
+          ) : (
           <p className="text-body-md text-text-secondary text-center">
             No hay sagas que coincidan con este filtro.
           </p>
-        )}
+          ))}
 
-        {isLoading && (
+        {isLoading && enLibrero && (
+          <div aria-label="Cargando">
+            <Shelf
+              librero
+              perRow={tab === "sagas" ? sagaPerRow : perRow}
+              showNames={false}
+              items={Array.from({ length: (tab === "sagas" ? sagaPerRow : perRow) * 2 }, (_, i) => ({
+                key: `cargando-${i}`,
+                title: "",
+                cover: <CoverSkeleton className="w-full" />,
+              }))}
+            />
+          </div>
+        )}
+        {isLoading && !enLibrero && (
           <div
             className="grid gap-x-3 gap-y-4"
-            style={{ gridTemplateColumns: `repeat(${shelfView.columns}, minmax(0, 1fr))` }}
+            style={{ gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))` }}
             aria-label="Cargando"
           >
-            {Array.from({ length: shelfView.columns * 3 }, (_, i) => (
+            {Array.from({ length: perRow * 3 }, (_, i) => (
               <BookTileSkeleton key={i} />
             ))}
           </div>
         )}
-        {tab === "libros" && !isLoading && (
+        {tab === "libros" && !isLoading && !(enLibrero && filteredBooks.length === 0) && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleBookDragEnd}>
             <SortableContext items={isReorderingBooks ? sortedBooks.map((b) => b.id) : []} strategy={rectSortingStrategy}>
               <Shelf
                 className={staggerLibros}
-                perRow={shelfView.columns}
+                perRow={perRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
+                librero
                 items={sortedBooks.map((book) => ({
                   key: book.id,
                   title: book.title,
@@ -445,7 +572,7 @@ export function Estante() {
                       coverUrl={book.cover_url ?? undefined}
                       status={book.status as ReadingStatus}
                       isFavorite={book.is_favorite ?? false}
-                      small={shelfView.columns === 4}
+                      small={smallCovers}
                     />
                   ),
                 }))}
@@ -463,14 +590,15 @@ export function Estante() {
           </DndContext>
         )}
 
-        {tab === "sagas" && !isLoading && (
+        {tab === "sagas" && !isLoading && !(enLibrero && filteredSagas.length === 0) && (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSagaDragEnd}>
             <SortableContext items={isReorderingSagas ? sortedSagas.map((s) => s.id) : []} strategy={rectSortingStrategy}>
               <Shelf
                 className={staggerSagas}
-                perRow={shelfView.columns}
+                perRow={sagaPerRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
+                librero
                 items={sortedSagas.map((saga) => ({
                   key: saga.id,
                   title: saga.title,
@@ -483,7 +611,7 @@ export function Estante() {
                       bookCount={saga.bookCount}
                       status={(saga.status ?? "pendiente") as ReadingStatus}
                       isFavorite={saga.is_favorite ?? false}
-                      small={shelfView.columns === 4}
+                      small={smallCovers}
                     />
                   ),
                 }))}
@@ -505,7 +633,7 @@ export function Estante() {
       <div className="pb-24" />
       <Fab
         label={tab === "libros" ? "Agregar libro" : "Agregar saga"}
-        tourId="agregar"
+        tourId={breakpoint === "celular" ? "agregar" : undefined}
         onClick={() => (tab === "libros" ? setIsAddBookOpen(true) : setIsAddSagaOpen(true))}
       />
       <TabBar active="estante" onChange={handleTabBarChange} />
@@ -579,7 +707,7 @@ export function Estante() {
       />
 
       {isViewSheetOpen && (
-        <ShelfViewSheet view={shelfView} onChange={changeShelfView} onClose={() => setIsViewSheetOpen(false)} />
+        <ShelfViewSheet view={shelfView} extraColumns={extraColumns} onChange={changeShelfView} onClose={() => setIsViewSheetOpen(false)} />
       )}
 
       <FilterModal

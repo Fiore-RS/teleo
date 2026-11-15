@@ -7,12 +7,12 @@ export interface BreakdownEntry {
 
 /** Lista con barras para un desglose (por categoría, formato, idioma...), de mayor a menor.
  *  Se usa en Estadísticas y en el Resumen del año de Bitácora. */
-export function BreakdownList({ title, entries }: { title: string; entries: BreakdownEntry[] }) {
+export function BreakdownList({ title, entries }: { title?: string; entries: BreakdownEntry[] }) {
   if (entries.length === 0) return null
   const total = entries.reduce((sum, e) => sum + e.count, 0)
   return (
     <div>
-      <p className="font-body font-semibold text-body-md text-text mb-2.5">{title}</p>
+      {title && <p className="font-body font-semibold text-body-md text-text mb-2.5">{title}</p>}
       <div className="space-y-2.5">
         {entries.map((e) => (
           <div key={e.label}>

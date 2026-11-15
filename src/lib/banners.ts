@@ -6,6 +6,8 @@
  *  Diseñados en el prototipo "Teleo: temas y banners": las coordenadas son de un lienzo de
  *  360 × 140 que se recorta al tamaño de cada lugar (preserveAspectRatio slice). */
 
+import { WIDE_BANNERS } from './bannersAnchos'
+
 export type BannerId =
   | 'destellos'
   | 'estanteria'
@@ -312,10 +314,11 @@ export function isBannerId(value: unknown): value is BannerId {
 
 /** SVG completo del banner. `uid` hace únicos los ids internos (filtros, degradados), porque
  *  en el catálogo se dibujan varios banners a la vez en la misma página. */
-export function bannerSvg(id: BannerId, uid: string): string {
+export function bannerSvg(id: BannerId, uid: string, ancho = false): string {
   const art = BANNERS.find((b) => b.id === id) ?? BANNERS[0]
-  return art
-    .draw()
+  /* `ancho` (V.4.2.0): la versión de 1080 × 230 para el perfil en escritorio (bannersAnchos.ts). */
+  const draw = ancho ? WIDE_BANNERS[art.id] : art.draw
+  return draw()
     .replace(/id="([^"]+)"/g, `id="$1-${uid}"`)
     .replace(/url\(#([^)]+)\)/g, `url(#$1-${uid})`)
 }

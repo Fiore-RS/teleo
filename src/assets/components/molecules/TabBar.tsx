@@ -1,5 +1,8 @@
+import { useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { Coffee, BookOpen, NotebookPen, ScrollText, User, type LucideIcon } from 'lucide-react'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
+import { CoverNav } from './CoverNav'
 
 export type TabKey = 'mesa' | 'estante' | 'cuaderno' | 'bitacora' | 'perfil'
 
@@ -12,12 +15,17 @@ const tabs: { key: TabKey; label: string; icon: LucideIcon }[] = [
 ]
 
 interface TabBarProps {
-  active: TabKey
+  /** null: ninguna sección marcada (Buscar, V.4.2.0). */
+  active: TabKey | null
   onChange: (tab: TabKey) => void
   /** Qué hacer al tocar la pestaña marcada. Por defecto vuelve arriba; en las pantallas
    *  secundarias (Configuración) lleva a la sección de la que se viene. */
   onActiveTap?: () => void
 }
+
+/** Cuántas barras hay montadas. Al cambiar de pantalla la vieja se desmonta y la nueva se monta
+ *  en el mismo paso, así que se cuenta para no quitar la marca entre una y otra. */
+let mountedBars = 0
 
 /** Vuelve al inicio de la pantalla; sin animación si el sistema pide reducir movimiento. */
 function scrollToTop() {
@@ -29,12 +37,27 @@ function scrollToTop() {
  *  al botón de subir). V.3.8.0: es la tapa del cuaderno, del color principal del tema (como la
  *  barra lateral de escritorio), pegada de lado a lado y abajo, con las esquinas de arriba
  *  redondeadas, textura de puntos y costura punteada. La pestaña activa es un cuadro del color
- *  del fondo con el ícono de acento, como el separador de papel de escritorio. */
+ *  del fondo con el ícono de acento, como el separador de papel de escritorio.
+ *  V.4.0.0: en tableta y escritorio la barra de abajo se oculta y la navegación es la tapa del
+ *  cuaderno lateral (CoverNav). Mientras hay una barra montada, <html data-tapa> le avisa a la
+ *  columna de la app que deje libre el espacio de la tapa (index.css). */
 export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
+  const breakpoint = useBreakpoint()
+
+  useLayoutEffect(() => {
+    mountedBars++
+    document.documentElement.dataset.tapa = ''
+    return () => {
+      mountedBars = Math.max(0, mountedBars - 1)
+      if (mountedBars === 0) delete document.documentElement.dataset.tapa
+    }
+  }, [])
+
   // Se monta en <body> con un portal para que quede fuera del contenedor que se desliza al
   // entrar a una pantalla secundaria: así la barra se queda quieta y solo cambia la pestaña activa.
   return createPortal(
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-120 pointer-events-none z-30">
+    <>
+    <div className="tableta:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-120 pointer-events-none z-30">
       <nav
         aria-label="Secciones"
         className="relative pointer-events-auto bg-cover text-cover-ink rounded-t-[22px] flex justify-between items-center px-2 pt-2.5"
@@ -57,7 +80,7 @@ export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
               type="button"
               onClick={() => (isActive ? (onActiveTap ?? scrollToTop)() : onChange(key))}
               aria-current={isActive ? 'page' : undefined}
-              data-tour={`tab-${key}`}
+              data-tour={breakpoint === 'celular' ? `tab-${key}` : undefined}
               className={`relative flex flex-col items-center gap-0.5 flex-1 rounded-2xl focus-visible:outline-2 focus-visible:outline-cover-ink ${
                 isActive ? '' : 'opacity-75'
               }`}
@@ -76,7 +99,9 @@ export function TabBar({ active, onChange, onActiveTap }: TabBarProps) {
           )
         })}
       </nav>
-    </div>,
+    </div>
+    <CoverNav active={active} onChange={onChange} onActiveTap={onActiveTap ?? scrollToTop} />
+    </>,
     document.body
   )
 }

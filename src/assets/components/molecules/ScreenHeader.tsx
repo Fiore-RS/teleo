@@ -67,11 +67,17 @@ export function ScreenHeader<T extends string>({
 
   return (
     <>
-      <header className="px-1 pt-4 pb-3.5">
-        <h1 className="font-title text-[clamp(34px,10.5vw,42px)] leading-none tracking-[-0.01em] text-text whitespace-nowrap">
+      {/* V.4.1.0: en tableta y computadora, el encabezado de La mesa: título de 32px a la
+          misma altura que en las demás pantallas y la línea de debajo en cursiva. */}
+      <header className="px-1 pt-4 pb-3.5 tableta:px-0 tableta:pt-0 tableta:pb-6">
+        <h1 className="font-title text-[clamp(34px,10.5vw,42px)] tableta:text-[32px] leading-none tracking-[-0.01em] text-text whitespace-nowrap">
           {title}
         </h1>
-        {lead && <p className="font-body text-[15px] leading-[1.45] text-text-secondary mt-2">{lead}</p>}
+        {lead && (
+          <p className="font-body text-[15px] leading-[1.45] tableta:font-display tableta:italic tableta:text-[19px] tableta:leading-snug text-text-secondary mt-2">
+            {lead}
+          </p>
+        )}
       </header>
 
       <div ref={sentinelRef} aria-hidden="true" className="h-px -mb-px" />
@@ -82,7 +88,7 @@ export function ScreenHeader<T extends string>({
         // fondo (con fondo propio y desenfoque se notaba como una franja lisa). Pegada arriba
         // lleva fondo, desenfoque y el mismo grano.
         className={`sticky top-0 z-20 -mx-4 px-4 mb-5 flex flex-col gap-3.5 border-b ${anim} ${
-          isStuck ? 'bg-bg/88 bg-grain backdrop-blur-md border-border shadow-[0_10px_18px_-14px_rgba(0,0,0,0.6)]' : 'bg-transparent border-transparent'
+          isStuck ? 'barra-fija-pegada bg-bg/88 bg-grain backdrop-blur-md border-border shadow-[0_10px_18px_-14px_rgba(0,0,0,0.6)]' : 'bg-transparent border-transparent'
         }`}
         style={{ paddingTop: isStuck ? 'calc(10px + env(safe-area-inset-top, 0px))' : '10px' }}
       >

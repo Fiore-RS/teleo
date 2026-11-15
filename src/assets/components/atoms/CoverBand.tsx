@@ -8,14 +8,16 @@
  *  safe-area de arriba se suma al alto, así la tapa también pinta detrás de la barra de estado.
  *
  *  La cinta de la racha (StreakRibbon) usa COVER_BAND_HEIGHT para empezar arriba de la tapa y
- *  pasarle por encima. */
+ *  pasarle por encima.
+ *
+ *  V.4.0.0: desde tableta no se muestra, porque la tapa del cuaderno ya está a la izquierda. */
 export const COVER_BAND_HEIGHT = 22
 
 export function CoverBand() {
   return (
     <div
       aria-hidden="true"
-      className="relative -mx-4 -mt-4 bg-cover"
+      className="tableta:hidden relative -mx-4 -mt-4 bg-cover"
       style={{
         height: `calc(${COVER_BAND_HEIGHT}px + env(safe-area-inset-top, 0px))`,
         boxShadow: '0 6px 14px -8px var(--teleo-cover-shadow)',
