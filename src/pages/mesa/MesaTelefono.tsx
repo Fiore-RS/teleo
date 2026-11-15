@@ -161,14 +161,10 @@ export function HojaLeyendo({ book, isLoading, onUpdate, onOpen, onRandom, onPen
       </div>
       {pace && <p className="mt-2 text-body-sm text-text-secondary">{paceSentence(pace)}</p>}
 
-      <div className="grid grid-cols-[3fr_2fr] gap-2 mt-4.5">
-        <Button size="sm" onClick={onUpdate} className="h-11 px-2">
-          Actualizar progreso
-        </Button>
-        <Button size="sm" variant="outline" onClick={onOpen} className={`h-11 px-2 ${ON_PAPER}`}>
-          Ver detalles
-        </Button>
-      </div>
+      {/* Solo "Actualizar progreso": la portada y el título ya abren los detalles. */}
+      <Button size="sm" onClick={onUpdate} className="h-11 mt-4.5 w-full">
+        Actualizar progreso
+      </Button>
     </Hoja>
   )
 }
