@@ -25,7 +25,7 @@ export interface ChangelogEntry {
 
 /** La Versión 4 (escritorio y teléfono) sale toda junta: todas sus partes llevan la misma
  *  fecha, que se pone aquí al publicar. */
-const FECHA_V4 = 'Fecha por definir'
+const FECHA_V4 = '15 de noviembre de 2026'
 
 export const changelog: ChangelogEntry[] = [
   {

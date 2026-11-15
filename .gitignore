@@ -25,3 +25,6 @@ dist-ssr
 
 # Archivos que deja la app de Claude (maquetas, borradores)
 Claude outputs/
+
+# Lista de correos para el aviso de la mudanza (datos personales, no se sube)
+scripts/aviso-mudanza/*.csv
