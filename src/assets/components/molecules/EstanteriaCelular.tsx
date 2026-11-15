@@ -61,7 +61,7 @@ export function EstanteriaCelular({ action, tabs, children }: { action?: ReactNo
     <section aria-label="Estanterías">
       <div className="flex items-center justify-between gap-3 mb-1 min-h-8">
         <h2 className="smallcaps text-text-secondary">Estanterías</h2>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="shrink-0 text-primary-text">{action}</div>}
       </div>
       {tabs}
       <Librero>{children}</Librero>
