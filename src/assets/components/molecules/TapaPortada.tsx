@@ -45,3 +45,59 @@ export function TapaPortada() {
     </div>
   )
 }
+
+/** La tapa del cuaderno en el celular (V.4.5.0, lienzo "Pantallas de entrada", tableros
+ *  "2 · Teléfono" y "Teléfono · Iniciar sesión"): arriba, de lado a lado, con las esquinas de
+ *  abajo redondeadas, la costura cerca del borde de abajo, la cinta colgando y el logo. Debajo
+ *  va el texto o el formulario. Con `onClick` la tapa lleva al inicio (como el logo de antes).
+ *  `larga`: más alta y con el logo más grande, para Inicio. */
+export function TapaPortadaCelular({ onClick, larga = false }: { onClick?: () => void; larga?: boolean }) {
+  const mask = `url("${logoIcon}") center / contain no-repeat`
+  const inner = (
+    <>
+      {/* Costura recta cerca del borde de abajo. */}
+      <span aria-hidden="true" className="absolute left-3 right-3 bottom-3 border-b-[1.5px] border-dashed border-stitch pointer-events-none" />
+      {/* Cinta marcapáginas que cuelga desde arriba, con la punta en V y su costura. */}
+      <span
+        aria-hidden="true"
+        className="absolute top-0 right-[16%] w-[30px] bg-pink shadow-[0_2px_6px_rgba(0,0,0,0.25)]"
+        style={{
+          height: `calc(env(safe-area-inset-top) + ${larga ? 150 : 104}px)`,
+          clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 13px), 0 100%)',
+        }}
+      >
+        <span
+          className="absolute inset-x-[4px] top-0 bottom-[14px] border-x-[1.5px] border-dashed"
+          style={{ borderColor: 'color-mix(in srgb, var(--color-on-pink) 50%, transparent)' }}
+        />
+      </span>
+      <span
+        aria-hidden="true"
+        className={`block ${larga ? 'w-[96px]' : 'w-[70px]'} aspect-[412/340] bg-current opacity-90`}
+        style={{
+          mask,
+          WebkitMask: mask,
+          filter: 'drop-shadow(0 1px 0 rgba(255,255,255,0.12)) drop-shadow(0 -1px 0 rgba(0,0,0,0.25))',
+        }}
+      />
+      <span aria-hidden="true" className={`block font-title leading-none tracking-[0.08em] ${larga ? 'mt-4 text-[38px]' : 'mt-3 text-[30px]'}`}>
+        TELEO
+      </span>
+      <span aria-hidden="true" className={`block font-body font-medium tracking-[0.04em] opacity-80 ${larga ? 'mt-1.5 text-[15px]' : 'mt-1 text-[13px]'}`}>
+        Diario de Lectura
+      </span>
+    </>
+  )
+  const className =
+    'relative w-full bg-cover text-cover-ink rounded-b-[30px] flex flex-col items-center justify-center shadow-[0_14px_30px_-18px_var(--teleo-cover-shadow)]'
+  const style = { paddingTop: `calc(env(safe-area-inset-top) + ${larga ? 84 : 40}px)`, paddingBottom: larga ? 88 : 44 }
+  return onClick ? (
+    <button type="button" onClick={onClick} aria-label="Teleo: Diario de Lectura. Ir al inicio" className={`${className} focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-cover-ink`} style={style}>
+      {inner}
+    </button>
+  ) : (
+    <div role="img" aria-label="Teleo: Diario de Lectura" className={className} style={style}>
+      {inner}
+    </div>
+  )
+}

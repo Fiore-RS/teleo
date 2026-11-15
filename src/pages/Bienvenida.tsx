@@ -1,17 +1,14 @@
 import { useState } from 'react'
-import logoFullCream from '../assets/images/logo/logo-full-dark.svg'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useFinishIntro } from '../hooks/useFinishIntro'
 import { useTour } from '../context/tourContextValue'
 import { TOUR_STEPS } from '../lib/tour'
-import { DEFAULT_BANNER, isBannerId } from '../lib/banners'
-import { useBreakpoint } from '../hooks/useBreakpoint'
 import { Button } from '../assets/components/atoms/Button'
-import { BannerArt } from '../assets/components/atoms/BannerArt'
 
 /** Bienvenida de una cuenta nueva. V.3.3.0 (propuesta C, "saludo personal", con la foto
- *  centrada): el banner de marca y la foto (o la inicial) ladeada como en Perfil, "¡Hola,
+ *  centrada; desde la V.4.5.0 en una hoja de cuaderno en todos los tamaños): la foto (o la
+ *  inicial) ladeada como en Perfil, "¡Hola,
  *  nombre!" y la invitación al Tutorial, que ahora es el recorrido sobre la app. El detalle de
  *  cada sección vive en la Guía de Teleo. Los dos botones marcan has_seen_intro. */
 export function Bienvenida() {
@@ -19,12 +16,10 @@ export function Bienvenida() {
   const { profile } = useProfile(user?.id)
   const { finishIntro, isSaving } = useFinishIntro()
   const { start } = useTour()
-  const breakpoint = useBreakpoint()
   const [choice, setChoice] = useState<'tour' | 'skip' | null>(null)
 
   const displayName = profile?.nickname?.trim() || profile?.username || ''
   const initial = displayName.charAt(0).toUpperCase()
-  const banner = isBannerId(profile?.banner) ? profile.banner : DEFAULT_BANNER
 
   async function handleStart(withTour: boolean) {
     setChoice(withTour ? 'tour' : 'skip')
@@ -56,7 +51,7 @@ export function Bienvenida() {
   )
 
   const botones = (
-    <div className="mt-14 tableta:mt-10 flex flex-col gap-2.5">
+    <div className="mt-8 tableta:mt-10 flex flex-col gap-2.5">
       <p className="text-body-sm text-text-muted mb-0.5">Puedes verlo cuando quieras desde Configuración.</p>
       <Button variant="primary" onClick={() => handleStart(true)} isLoading={isSaving && choice === 'tour'} disabled={isSaving}>
         Empezar el tutorial
@@ -67,59 +62,33 @@ export function Bienvenida() {
     </div>
   )
 
-  // Tableta y computadora (V.4.3.0, lienzo "Tapa · Bienvenida"): solo la primera hoja de
-  // cuaderno, con margen rojo y renglones, centrada sobre el fondo de la mesa. Sin banner ni tapa
-  // (Fiorella, 14 nov 2026).
-  if (breakpoint !== 'celular') {
-    return (
-      <div className="min-h-dvh bg-mesa flex items-center justify-center p-10">
-        <div
-          className="relative w-full max-w-160 bg-surface rounded-[10px] shadow-[0_30px_50px_-28px_rgba(60,30,20,0.6)] pt-14 pb-12 pl-21 pr-16 text-center"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(180deg, transparent 0 31px, color-mix(in srgb, var(--color-border) 60%, transparent) 31px 32px)',
-          }}
-        >
-          <span
-            aria-hidden="true"
-            className="absolute inset-y-0 left-14 w-[1.5px]"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--color-rose) 60%, transparent)' }}
-          />
-          {foto('w-[112px] h-[112px]', 'text-[52px]')}
-          <div className="mt-6">{saludo}</div>
-          <div className="max-w-90 mx-auto">{botones}</div>
-        </div>
-      </div>
-    )
-  }
-
+  // La primera hoja de cuaderno, con margen rojo y renglones, centrada sobre el fondo de la mesa
+  // y del alto de lo que lleva (tableta y computadora desde la V.4.3.0, lienzo "Tapa ·
+  // Bienvenida"; celular desde la V.4.5.0, en lugar del banner). Sin banner ni tapa (Fiorella,
+  // 14 nov 2026).
   return (
-    <div className="min-h-dvh bg-glow-top">
-      <div className="mx-auto w-full max-w-120 min-h-dvh flex flex-col">
-        {/* Banner con el dibujo completo (360 × 140) y el logo claro encima. */}
-        <div className="relative shrink-0 rounded-b-[30px] overflow-hidden bg-linear-to-br from-primary to-rose">
-          <div className="relative aspect-18/7">
-            <BannerArt banner={banner} />
-          </div>
-          <div className="h-10" />
-          <img
-            src={logoFullCream}
-            alt="Teleo"
-            className="absolute left-5 h-7 w-auto"
-            style={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
-          />
-        </div>
-
-        {/* Foto centrada, montada sobre el borde del banner. */}
-        <div className="-mt-16">{foto('w-[120px] h-[120px]', 'text-[56px]')}</div>
-
-        <div
-          className="flex flex-col px-6 pt-5 text-center"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}
-        >
-          {saludo}
-          {botones}
-        </div>
+    <div
+      className="min-h-dvh bg-mesa flex items-center justify-center px-4 tableta:p-10"
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top) + 24px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)',
+      }}
+    >
+      <div
+        className="relative w-full max-w-120 tableta:max-w-160 bg-surface rounded-[10px] shadow-[0_30px_50px_-28px_rgba(60,30,20,0.6)] pt-10 pb-8 pl-13 pr-6 tableta:pt-14 tableta:pb-12 tableta:pl-21 tableta:pr-16 text-center"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(180deg, transparent 0 31px, color-mix(in srgb, var(--color-border) 60%, transparent) 31px 32px)',
+        }}
+      >
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 left-8 tableta:left-14 w-[1.5px]"
+          style={{ backgroundColor: 'color-mix(in srgb, var(--color-rose) 60%, transparent)' }}
+        />
+        {foto('w-[100px] h-[100px] tableta:w-[112px] tableta:h-[112px]', 'text-[46px] tableta:text-[52px]')}
+        <div className="mt-6">{saludo}</div>
+        <div className="max-w-90 mx-auto">{botones}</div>
       </div>
     </div>
   )
