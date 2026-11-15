@@ -35,7 +35,8 @@ interface SheetProps {
   footer?: ReactNode
   /** Hoja corta (V.4.3.0): en tableta y escritorio es de papel más grueso, como una hoja de
    *  libreta de notas (terminar, pausar, progreso, meta, avisos, cuenta), para distinguirla
-   *  cuando sale encima de otra. En el celular es la hoja de siempre. */
+   *  cuando sale encima de otra. En el celular (V.4.5.0) también es de papel grueso: el canto
+   *  se ve debajo. */
   corta?: boolean
   /** Alto completo en tableta y escritorio (V.4.3.0): para las hojas cuyo contenido cambia
    *  mucho mientras se usan (Detalles del libro y de la saga, Agregar libro, Filtros, Reseña),
@@ -51,13 +52,16 @@ const HOJA_LINES =
   'repeating-linear-gradient(180deg, transparent 0 31px, color-mix(in srgb, var(--color-border) 60%, transparent) 31px 32px)'
 /** Tamaño de la esquina doblada (arriba a la derecha). */
 const HOJA_FOLD = 26
+/** Esquina doblada de la hoja del celular (V.4.5.0), abajo a la derecha. */
+const HOJA_FOLD_CELULAR = 22
+const HOJA_FOLD_ABAJO = `polygon(0 0, 100% 0, 100% calc(100% - ${HOJA_FOLD_CELULAR}px), calc(100% - ${HOJA_FOLD_CELULAR}px) 100%, 0 100%)`
 
 /** Hoja del rediseño 2026. En tableta y escritorio (V.4.3.0) es la hoja de cuaderno de la derecha
- *  (ver `corta` y `abajo`); lo que sigue describe la del celular: baja desde arriba de la pantalla, con esquinas redondeadas abajo,
- *  una "manija" al pie y el título a la izquierda con un botón redondo para cerrar. Se abre
- *  desde arriba (y no desde abajo) para que en el celular el teclado no tape los campos al
- *  escribir. Se usa para pantallas de contenido (detalle de libro, reseña, filtros...); las
- *  confirmaciones cortas siguen siendo diálogos centrados (Modal). Escape también la cierra. */
+ *  (ver `corta` y `abajo`). En el celular baja desde arriba de la pantalla, de lado a lado, y
+ *  desde la V.4.5.0 también es hoja de cuaderno: renglones, margen rojo y la esquina doblada
+ *  abajo a la derecha (ya sin la "manija" al pie), con el título a la izquierda y un botón para
+ *  cerrar. Se abre desde arriba (y no desde abajo) para que en el celular el teclado no tape
+ *  los campos al escribir. Escape también la cierra. */
 export function Sheet({ onClose, title, children, headerRight, footer, corta = false, alta = false, abajo = false }: SheetProps) {
   const breakpoint = useBreakpoint()
   // V.4.0.0 empezó con Detalles del libro y de la saga; desde la V.4.3.0 todas las hojas son
@@ -172,32 +176,67 @@ export function Sheet({ onClose, title, children, headerRight, footer, corta = f
     )
   }
 
+  // Celular (V.4.5.0): también es hoja de cuaderno (renglones, margen rojo y esquina doblada),
+  // pero sigue bajando desde arriba de lado a lado. La esquina doblada va abajo a la derecha,
+  // porque arriba está el borde de la pantalla. Las cortas son de papel más grueso: el canto se
+  // ve debajo, como en las pantallas grandes.
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center" role="dialog" aria-modal="true" aria-label={title}>
       <div className={`absolute inset-0 bg-black/50 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}`} onClick={requestClose} />
+      {/* La sombra va en un envoltorio: el recorte de la esquina doblada se la comería. */}
       <div
-        className={`relative w-full max-w-120 tableta:max-w-[560px] max-h-[92vh] flex flex-col bg-surface rounded-b-[28px] shadow-sheet ${
-          isClosing ? 'animate-sheet-out' : 'animate-sheet-down'
-        }`}
-        // Aire arriba: la zona segura del teléfono (muesca, barra de estado) más 16px, para que
-        // el título no quede pegado al borde de la pantalla.
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}
+        className={`relative w-full max-w-120 tableta:max-w-[560px] max-h-[92vh] flex flex-col ${
+          corta ? 'drop-shadow-[0_22px_26px_rgba(0,0,0,0.42)]' : 'drop-shadow-[0_20px_24px_rgba(0,0,0,0.32)]'
+        } ${isClosing ? 'animate-sheet-out' : 'animate-sheet-down'}`}
       >
-        <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3 shrink-0">
-          <h2 className="font-display font-semibold text-display-md text-text truncate">{title}</h2>
-          <div className="flex items-center gap-2 shrink-0">
-            {headerRight}
-            {closeButton}
-          </div>
-        </div>
-        <div className="overflow-y-auto px-5 pb-4 pt-1">{children}</div>
-        {footer && (
-          <div className="relative shrink-0 px-5 pt-2 pb-1 before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-linear-to-t before:from-surface before:to-transparent before:pointer-events-none">
-            {footer}
-          </div>
+        {corta && (
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 translate-y-[5px] rounded-b-[16px] bg-surface-2 border border-t-0 border-border"
+            style={{ clipPath: HOJA_FOLD_ABAJO }}
+          />
         )}
-        <div className="pt-1 pb-2.5 flex justify-center shrink-0" aria-hidden="true">
-          <span className="w-10 h-1 rounded-full bg-border" />
+        <div
+          className={`relative min-h-0 flex flex-col bg-surface rounded-b-[16px] overflow-hidden ${corta ? 'border-b border-x border-border' : ''}`}
+          // Aire arriba: la zona segura del teléfono (muesca, barra de estado) más 16px, para que
+          // el título no quede pegado al borde de la pantalla.
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', clipPath: HOJA_FOLD_ABAJO }}
+        >
+          {/* Margen rojo del cuaderno, de arriba abajo. */}
+          <span
+            aria-hidden="true"
+            className="absolute inset-y-0 left-6 w-[1.5px] pointer-events-none z-10"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--color-rose) 60%, transparent)' }}
+          />
+          {/* Esquina doblada, abajo a la derecha. */}
+          <span
+            aria-hidden="true"
+            className="absolute bottom-0 right-0 z-10"
+            style={{
+              width: HOJA_FOLD_CELULAR,
+              height: HOJA_FOLD_CELULAR,
+              background: 'linear-gradient(315deg, transparent 50%, var(--color-surface-2) 50%)',
+              boxShadow: '-2px -2px 4px -2px rgba(0,0,0,0.25)',
+            }}
+          />
+          <div className="flex items-center justify-between gap-3 pl-10 pr-5 pt-5 pb-3 shrink-0">
+            <h2 className="font-display font-semibold text-display-md text-text truncate">{title}</h2>
+            <div className="flex items-center gap-2 shrink-0">
+              {headerRight}
+              {closeButton}
+            </div>
+          </div>
+          <div
+            className={`min-h-0 overflow-y-auto pl-10 pr-6 pt-1 ${footer ? 'pb-4' : 'pb-7'}`}
+            style={{ backgroundImage: HOJA_LINES, backgroundAttachment: 'local' }}
+          >
+            {children}
+          </div>
+          {footer && (
+            <div className="relative shrink-0 pl-10 pr-6 pt-2 pb-6 bg-surface before:absolute before:inset-x-0 before:-top-6 before:h-6 before:bg-linear-to-t before:from-surface before:to-transparent before:pointer-events-none">
+              {footer}
+            </div>
+          )}
         </div>
       </div>
     </div>,
