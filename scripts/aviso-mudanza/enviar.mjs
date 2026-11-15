@@ -34,7 +34,7 @@ function escapar(texto) {
 
 function htmlPara(nombre) {
   const saludo = nombre ? `¡Hola, ${escapar(nombre)}!` : '¡Hola!'
-  return plantilla.replace('{{SALUDO}}', saludo)
+  return plantilla.replaceAll('{{SALUDO}}', saludo)
 }
 
 function textoPara(nombre) {
@@ -42,8 +42,6 @@ function textoPara(nombre) {
     nombre ? `¡Hola, ${nombre}!` : '¡Hola!',
     '',
     'Teleo se mudó a su propia dirección: teleo.fiorers.dev. Tus libros, reseñas, citas y preferencias están guardados en tu cuenta, así que todo te espera igual.',
-    '',
-    'Con la mudanza llega la Versión 4, En cualquier mesa: Teleo ahora también se usa en la computadora y la tableta, y en el teléfono estrena hojas de cuaderno, un librero de madera y cambios que aparecen al momento en todos tus dispositivos.',
     '',
     'Si tienes Teleo instalada en tu teléfono:',
     '1. Abre https://teleo.fiorers.dev/ en el navegador de tu teléfono.',
