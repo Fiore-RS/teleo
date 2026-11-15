@@ -28,14 +28,14 @@ function previewItems(columns: number): ShelfItem[] {
  *  El recuadro tiene siempre el alto de la vista más alta (3 por fila, con nombres y repisa):
  *  esa versión va invisible en la misma celda y la vista elegida se centra encima, así la
  *  hoja no cambia de tamaño al tocar las opciones. */
-function Preview({ view, extra }: { view: ShelfView; extra: number }) {
-  // En tableta y computadora la vista previa es el librero, como en el Estante. Muestra 3 o 4
-  // portadas (un pedazo de la repisa): con 7 u 8 en el ancho de la hoja no se distinguían.
-  const librero = extra > 0
+function Preview({ view }: { view: ShelfView }) {
+  // La vista previa es el librero, como en el Estante (en el celular desde la V.4.5.0). En
+  // pantallas grandes muestra 3 o 4 portadas (un pedazo de la repisa): con 7 u 8 en el ancho
+  // de la hoja no se distinguían.
   return (
     <div aria-hidden="true" className="grid bg-bg border border-border rounded-[18px] px-3 py-3 mb-5.5 pointer-events-none">
       <div className="invisible [grid-area:1/1]">
-        <Shelf items={previewItems(3)} perRow={3} librero={librero} />
+        <Shelf items={previewItems(3)} perRow={3} librero />
       </div>
       <div className="self-center [grid-area:1/1]">
         <Shelf
@@ -43,7 +43,7 @@ function Preview({ view, extra }: { view: ShelfView; extra: number }) {
           perRow={view.columns}
           showNames={view.showNames}
           planks={view.planks}
-          librero={librero}
+          librero
         />
       </div>
     </div>
@@ -55,7 +55,7 @@ function Preview({ view, extra }: { view: ShelfView; extra: number }) {
 export function ShelfViewSheet({ view, onChange, onClose, extraColumns = 0 }: ShelfViewSheetProps) {
   return (
     <Sheet title="Vista del estante" onClose={onClose}>
-      <Preview view={view} extra={extraColumns} />
+      <Preview view={view} />
 
       <FormSection label="Cómo se ven tus libros y sagas">
         <FormCard>
@@ -85,7 +85,7 @@ export function ShelfViewSheet({ view, onChange, onClose, extraColumns = 0 }: Sh
           />
           <FormSwitchRow
             label="Repisa"
-            hint={extraColumns > 0 ? 'El librero de madera, con un tablón bajo cada fila' : 'Un tablón bajo cada fila de libros'}
+            hint="El librero de madera, con un tablón bajo cada fila"
             checked={view.planks}
             onChange={(planks) => onChange({ ...view, planks })}
           />
