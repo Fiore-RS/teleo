@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { useBreakpoint } from '../../../hooks/useBreakpoint'
 
 export interface ShelfItem {
   key: string
@@ -21,9 +22,9 @@ interface ShelfProps {
   /** Envoltorio de cada libro, por ejemplo para arrastrarlo (SortableItem). Debe dejar que
    *  el contenido ocupe todo el alto de la celda. */
   wrap?: (item: ShelfItem, cell: ReactNode) => ReactNode
-  /** Librero de pared (V.4.1.0, tableta y computadora): las repisas van dentro de un mueble
-   *  de madera del color de repisa del tema, con el fondo oscuro y los nombres en letra clara.
-   *  Solo aplica con tablón. */
+  /** Librero de pared (V.4.1.0 en tableta y computadora; V.4.5.0 también en el celular): las
+   *  repisas van dentro de un mueble de madera del color de repisa del tema, con el fondo
+   *  oscuro y los nombres en letra clara. Solo aplica con tablón. */
   librero?: boolean
   className?: string
 }
@@ -33,6 +34,8 @@ interface ShelfProps {
 const SPACING = {
   normal: { gap: 12, pad: 10 },
   librero: { gap: 20, pad: 20 },
+  /** El librero en el celular (V.4.5.0): menos aire, para que las portadas no se achiquen. */
+  libreroCelular: { gap: 12, pad: 12 },
 }
 
 // V.3.6.0: el tablón usa el color de repisa de cada tema (--color-shelf); antes era el
@@ -106,17 +109,19 @@ function Names({ item, compact, onWood = false }: { item?: ShelfItem; compact: b
  *  La portada es el botón (con título y autor como nombre accesible); los nombres de abajo
  *  también abren, pero quedan ocultos para lectores de pantalla para no leerse dos veces. */
 export function Shelf({ items, perRow = 3, showNames = true, planks = true, wrap, librero = false, className = '' }: ShelfProps) {
+  const celular = useBreakpoint() === 'celular'
   const inLibrero = librero && planks
-  const { gap, pad } = inLibrero ? SPACING.librero : SPACING.normal
+  const { gap, pad } = inLibrero ? (celular ? SPACING.libreroCelular : SPACING.librero) : SPACING.normal
   // Las celdas vacías solo hacen falta para que el tablón llegue de lado a lado.
   const fillers = planks ? (perRow - (items.length % perRow)) % perRow : 0
-  // En el librero las celdas son anchas: el título puede ocupar dos renglones.
-  const compact = perRow >= 4 && !inLibrero
-  const rowGap = inLibrero ? 'gap-y-7' : planks ? 'gap-y-5' : 'gap-y-3'
+  // En el librero de pantallas grandes las celdas son anchas: el título puede ocupar dos
+  // renglones. En el celular, con 4 por fila, va en uno, como fuera del librero.
+  const compact = perRow >= 4 && (!inLibrero || celular)
+  const rowGap = inLibrero ? (celular ? 'gap-y-5' : 'gap-y-7') : planks ? 'gap-y-5' : 'gap-y-3'
 
   const grid = (
     <div
-      className={`grid ${rowGap} ${inLibrero ? 'pt-7 pb-4' : ''} ${className}`}
+      className={`grid ${rowGap} ${inLibrero ? (celular ? 'pt-5 pb-3' : 'pt-7 pb-4') : ''} ${className}`}
       style={{
         gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))`,
         columnGap: gap,
@@ -161,11 +166,12 @@ export function Shelf({ items, perRow = 3, showNames = true, planks = true, wrap
 }
 
 /** El mueble del librero (V.4.1.0): marco del color de repisa del tema y, adentro, el fondo
- *  oscuro con sombra arriba y a los lados, como un librero de pared. */
+ *  oscuro con sombra arriba y a los lados, como un librero de pared. En el celular (V.4.5.0)
+ *  el marco es más delgado. */
 export function Librero({ children }: { children: ReactNode }) {
   return (
     <div
-      className="rounded-[10px] p-3.5 pb-6"
+      className="rounded-[8px] p-2 pb-4 tableta:rounded-[10px] tableta:p-3.5 tableta:pb-6"
       style={{
         background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-shelf) 82%, #000), color-mix(in srgb, var(--color-shelf) 70%, #000))',
         boxShadow: '0 30px 50px -26px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.15)',
@@ -190,7 +196,7 @@ export function Librero({ children }: { children: ReactNode }) {
 export function LibreroVacio({ children }: { children: ReactNode }) {
   return (
     <Librero>
-      <div className="px-5 pt-12 pb-9 text-center text-[#FBF3EA]">{children}</div>
+      <div className="px-4 pt-10 pb-8 tableta:px-5 tableta:pt-12 tableta:pb-9 text-center text-[#FBF3EA]">{children}</div>
       <div className="pb-4">
         <div
           aria-hidden="true"

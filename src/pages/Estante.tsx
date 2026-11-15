@@ -360,9 +360,10 @@ export function Estante() {
   // Encabezado de pantallas grandes (V.4.1.0): la línea de debajo del título cuenta la
   // biblioteca completa, o cuántos se ven de cuántos si hay búsqueda o filtros.
   const isAncha = breakpoint !== "celular";
-  // En el librero (tableta y computadora, con repisa) la carga y los mensajes también van
-  // dentro del mueble; las sagas, con pilas más anchas, llevan una menos por repisa.
-  const enLibrero = isAncha && shelfView.planks;
+  // En el librero (con repisa; en el celular desde la V.4.5.0) la carga y los mensajes también
+  // van dentro del mueble. En pantallas grandes, las sagas, con pilas más anchas, llevan una
+  // menos por repisa.
+  const enLibrero = shelfView.planks;
   const sagaPerRow = isAncha ? perRow - 1 : perRow;
   const isNarrowed = !!search.trim() || hasActiveAdvFilters || (tab === "libros" && quickFlag !== null);
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -479,7 +480,9 @@ export function Estante() {
           (enLibrero ? (
             <LibreroVacio>
               <p className="font-title text-[24px] leading-tight">Tu estante está vacío</p>
-              <p className="text-body-md opacity-80 mt-2">Toca “Agregar” en la tapa para agregar tu primer libro.</p>
+              <p className="text-body-md opacity-80 mt-2">
+                {isAncha ? "Toca “Agregar” en la tapa para agregar tu primer libro." : "Toca el botón + para agregar tu primer libro."}
+              </p>
               <button
                 type="button"
                 onClick={() => setIsGoodreadsOpen(true)}
@@ -557,7 +560,7 @@ export function Estante() {
                 perRow={perRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
-                librero={breakpoint !== "celular"}
+                librero
                 items={sortedBooks.map((book) => ({
                   key: book.id,
                   title: book.title,
@@ -595,7 +598,7 @@ export function Estante() {
                 perRow={sagaPerRow}
                 showNames={shelfView.showNames}
                 planks={shelfView.planks}
-                librero={breakpoint !== "celular"}
+                librero
                 items={sortedSagas.map((saga) => ({
                   key: saga.id,
                   title: saga.title,
