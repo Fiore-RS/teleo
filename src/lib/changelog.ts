@@ -1,6 +1,16 @@
 /** Historial de versiones de Teleo para la pantalla Novedades (Configuración).
- *  La primera de la lista es la más nueva. Al publicar una versión nueva, se agrega arriba:
- *  el puntito de "hay novedades" aparece solo para quien todavía no la vio. */
+ *
+ *  Desde noviembre de 2026, Novedades agrupa por versión grande: "Versión 1" a "Versión 4",
+ *  cada una con su título, un resumen y lo destacado (`versiones`, abajo). Las entradas de
+ *  `changelog` quedan como el desglose de cada versión grande y conservan su número interno
+ *  (4.0.0, 4.5.1…): con él se sabe qué vio cada persona y qué versión anuncia La mesa, pero en
+ *  pantalla solo se ve "Versión N".
+ *
+ *  Al publicar algo nuevo se agrega arriba de `changelog`, con su número interno y su fecha:
+ *  - Un parche o un agregado chico: el siguiente número de la versión grande actual (por
+ *    ejemplo 4.5.1). En Novedades aparece dentro de su versión grande, marcado como nuevo.
+ *  - Una versión grande nueva: X.0.0, y su título, resumen y destacados en `versiones`.
+ *  El puntito de "hay novedades" aparece solo para quien todavía no la vio. */
 
 export interface ChangelogEntry {
   version: string
@@ -13,12 +23,15 @@ export interface ChangelogEntry {
   announced?: boolean
 }
 
+/** La Versión 4 (escritorio y teléfono) sale toda junta: todas sus partes llevan la misma
+ *  fecha, que se pone aquí al publicar. */
+const FECHA_V4 = 'Fecha por definir'
+
 export const changelog: ChangelogEntry[] = [
   {
     version: '4.5.0',
     announced: true,
-    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
-    date: 'Fecha por definir',
+    date: FECHA_V4,
     title: 'De vuelta al teléfono',
     items: [
       'En el teléfono, La mesa muestra el libro que estás leyendo en una hoja de tu cuaderno, con su avance en grande. Toca la portada o el título para ver sus detalles.',
@@ -36,8 +49,7 @@ export const changelog: ChangelogEntry[] = [
   {
     version: '4.4.0',
     announced: true,
-    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
-    date: 'Fecha por definir',
+    date: FECHA_V4,
     title: 'Siempre al día',
     items: [
       'Lo que haces en un dispositivo aparece solo en los demás que tengan Teleo abierto, sin recargar: actualiza tu progreso en el teléfono y lo ves al momento en la computadora.',
@@ -50,8 +62,7 @@ export const changelog: ChangelogEntry[] = [
   {
     version: '4.3.0',
     announced: true,
-    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
-    date: 'Fecha por definir',
+    date: FECHA_V4,
     title: 'El cuaderno completo',
     items: [
       'El botón "Agregar" de la tapa abre unos separadores para elegir qué agregar: un libro, una saga, una cita o una reseña, desde cualquier pantalla.',
@@ -61,14 +72,12 @@ export const changelog: ChangelogEntry[] = [
       'La Guía y las Novedades también tienen su índice a la derecha. En Novedades, toca una versión para abrirla.',
       'Iniciar sesión, crear tu cuenta y las demás pantallas de entrada se abren con la tapa del cuaderno de Teleo, y la bienvenida es la primera hoja de tu cuaderno.',
       'Los libros de "También en tu mesa" usan los colores de tu tema, bien distintos entre sí.',
-      'Con esta versión, Teleo queda completo en la computadora y la tableta.',
     ],
   },
   {
     version: '4.2.0',
     announced: true,
-    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
-    date: 'Fecha por definir',
+    date: FECHA_V4,
     title: 'Cuaderno, Bitácora y Perfil',
     items: [
       'El buscador de la tapa busca mientras escribes y abre su propia pantalla, Buscar, con todo lo que encuentra: los libros y sagas de tu estante en el librero, tus reseñas y tus citas. Toca cualquiera para abrirla, o ve a verlas en el Estante o en el Cuaderno.',
@@ -85,8 +94,7 @@ export const changelog: ChangelogEntry[] = [
   {
     version: '4.1.0',
     announced: true,
-    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
-    date: 'Fecha por definir',
+    date: FECHA_V4,
     title: 'Tu librero',
     items: [
       'En la computadora y la tableta, el Estante es un librero de madera con toda tu biblioteca, en el color de repisa de tu tema.',
@@ -101,8 +109,7 @@ export const changelog: ChangelogEntry[] = [
   {
     version: '4.0.0',
     announced: true,
-    // La fecha se pone al publicar: la serie 4 se termina completa y después se sube poco a poco.
-    date: 'Fecha por definir',
+    date: FECHA_V4,
     title: 'Teleo en tu escritorio',
     items: [
       'Teleo se muda a teleo.fiorers.dev. Tus libros, reseñas y preferencias están en tu cuenta, así que todo te espera igual. Si tenías Teleo instalada en tu teléfono, instálala otra vez desde la dirección nueva y borra la anterior.',
@@ -112,7 +119,6 @@ export const changelog: ChangelogEntry[] = [
       'Cuando cumples tu meta del año, en la computadora su tarjeta lleva la estampilla fija con el matasellos del día en que la cumpliste.',
       'Los detalles de un libro o de una saga se abren en una hoja a la derecha, encima de la pantalla, sin moverla. Se cierra con la X, con la tecla Esc o tocando fuera de ella.',
       'Con mouse, botones y portadas reaccionan al pasar por encima, y con el teclado se ve dónde estás. En la computadora, la tecla / te lleva al buscador.',
-      'Es la primera parte: en las próximas versiones Estante, Cuaderno, Bitácora, Perfil y el resto de las pantallas estrenan su diseño para pantallas grandes.',
     ],
   },
   {
@@ -517,7 +523,100 @@ export const changelog: ChangelogEntry[] = [
 
 export const LATEST_VERSION = changelog[0].version
 
+/** Número de la versión grande: "4.5.1" › 4. */
+export function majorOf(version: string): number {
+  return Number(version.split('.')[0])
+}
+
+/** Una versión grande de Novedades ("Versión 4"), con su desglose. */
+export interface ChangelogVersion {
+  major: number
+  title: string
+  /** Meses que abarca, como se muestran. */
+  period: string
+  /** Una línea que cuenta de qué se trató. */
+  summary: string
+  /** Lo más importante (3 a 5 puntos), siempre a la vista. */
+  highlights: string[]
+  /** Las partes de la versión, de la más vieja a la más nueva (se arma sola con `changelog`). */
+  entries: ChangelogEntry[]
+}
+
+const datosVersiones: Omit<ChangelogVersion, 'entries'>[] = [
+  {
+    major: 4,
+    title: 'En cualquier mesa',
+    period: FECHA_V4,
+    summary: 'Teleo llega a la computadora y a la tableta, y lo mejor de las pantallas grandes vuelve al teléfono.',
+    highlights: [
+      'Teleo se usa desde el navegador en la computadora y la tableta, con cada pantalla pensada para su tamaño.',
+      'Teleo se muda a teleo.fiorers.dev. Tus libros, reseñas y preferencias te esperan igual en tu cuenta.',
+      'El Estante y las estanterías del Perfil son un librero de madera, también en el teléfono.',
+      'En el teléfono, lo que estás leyendo, las hojas y la Bitácora son hojas de tu cuaderno.',
+      'Lo que haces en un dispositivo aparece al momento en los demás.',
+    ],
+  },
+  {
+    major: 3,
+    title: 'Pasando la página',
+    period: 'Octubre y noviembre de 2026',
+    summary: 'Teleo estrena cara, conoce mejor lo que lees y abre la puerta a gente nueva.',
+    highlights: [
+      'Un diseño nuevo, como un cuaderno: la cinta de tu racha, repisas para tus libros y hojas para tus reseñas.',
+      'Géneros, ánimos y ritmo para tus libros y sagas, con filtros y estadísticas.',
+      'Tu mes y tu año en tarjetas para compartir en historias.',
+      'Invitaciones, tu código de Teleo y un tutorial para conocer la app.',
+      'Logo nuevo, dos temas más y la marca Lo tengo para los libros que tienes en casa.',
+    ],
+  },
+  {
+    major: 2,
+    title: 'Abrir el diario',
+    period: 'Septiembre y octubre de 2026',
+    summary: 'Teleo deja de ser solo un registro y se vuelve tu diario de lectura.',
+    highlights: [
+      'Calendario de lectura, lanzamientos y "¿Qué leo ahora?".',
+      'La Bitácora suma tu Resumen y tus Compras.',
+      'Temas de color, banners para tu perfil y una tarjeta para compartir en historias.',
+      'Mis citas, avisos de contenido en tus reseñas e importar tu biblioteca desde Goodreads.',
+      'Formularios y detalles de libros con un diseño más ordenado.',
+    ],
+  },
+  {
+    major: 1,
+    title: 'Primer capítulo',
+    period: 'Agosto y septiembre de 2026',
+    summary: 'El comienzo de Teleo: de la primera mesa al primer rediseño.',
+    highlights: [
+      'La mesa, Estante, Cuaderno, Bitácora y tu perfil.',
+      'Sagas, relecturas, racha diaria y meta anual.',
+      'Teleo se instala como app en el teléfono.',
+      'Un diseño nuevo, con el vino del ícono como color de marca.',
+    ],
+  },
+]
+
+/** Las versiones grandes, de la más nueva a la más vieja, cada una con sus partes. */
+export const versiones: ChangelogVersion[] = datosVersiones.map((v) => ({
+  ...v,
+  entries: changelog.filter((e) => majorOf(e.version) === v.major).reverse(),
+}))
+
+/** La versión grande a la que pertenece un número interno. */
+export function versionOf(version: string): ChangelogVersion | undefined {
+  return versiones.find((v) => v.major === majorOf(version))
+}
+
 const SEEN_KEY = 'teleo-novedades-vistas'
+
+/** Última versión (número interno) que se abrió en Novedades en este dispositivo. */
+export function lastSeenChangelog(): string | null {
+  try {
+    return localStorage.getItem(SEEN_KEY)
+  } catch {
+    return null
+  }
+}
 
 /** true si la versión más nueva todavía no se abrió en Novedades en este dispositivo. */
 export function hasUnseenChangelog(): boolean {
