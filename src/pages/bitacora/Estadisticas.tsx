@@ -14,7 +14,7 @@ import { PeriodTransition } from '../../assets/components/atoms/PeriodTransition
 import { PeriodNav } from '../../assets/components/molecules/PeriodNav'
 import { StreakTiles } from '../../assets/components/molecules/StreakTiles'
 import { RatingRow } from '../../assets/components/molecules/RatingRow'
-import { formatDuration } from '../../lib/progress'
+import { formatDuration, formatListenTime } from '../../lib/progress'
 import { MONTH_NAMES } from '../../lib/months'
 import { categoryPlural } from '../../lib/options'
 import { useStaggerOnce } from '../../lib/motion'
@@ -236,9 +236,13 @@ export function Estadisticas({ userId, onOpenYear }: EstadisticasProps) {
       )
   }
 
+  // V.4.5.1: el tiempo escuchado va junto a las páginas, en naranja como en Resumen, cuando ese
+  // año hay audiolibros terminados con duración.
+  const audioSeconds = yearData?.audioSeconds ?? 0
   const trio: { value: string; label: string; color: string }[] = [
     { value: fmt(yearData?.pages ?? 0), label: 'páginas', color: 'text-pink-text' },
-    { value: fmt(daysRead), label: daysRead === 1 ? 'día leído' : 'días leídos', color: 'text-orange-text' },
+    ...(audioSeconds > 0 ? [{ value: formatListenTime(audioSeconds), label: 'tiempo escuchado', color: 'text-orange-text' }] : []),
+    { value: fmt(daysRead), label: daysRead === 1 ? 'día leído' : 'días leídos', color: audioSeconds > 0 ? 'text-primary-text' : 'text-orange-text' },
     { value: yearData?.avgRating != null ? oneDecimal(yearData.avgRating) : '—', label: 'promedio', color: 'text-magenta-text' },
   ]
 

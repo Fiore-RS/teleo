@@ -23,6 +23,15 @@ export function getProgressInfo(book: ProgressFields): { percent: number; label?
 /** Formatea segundos como hh:mm:ss, siempre con las 3 unidades (para que "tiempo
  *  escuchado" se lea igual en toda la app: stat de Perfil, progreso de audiolibro
  *  en Mesa/DetalleSaga, totales del modal "Libros leídos en 20XX", etc.) */
+/** V.4.5.1: "14 h 32 min", "14 h" o "45 min", para el tiempo escuchado en Resumen y el ticket. */
+export function formatListenTime(totalSeconds: number): string {
+  const totalMinutes = Math.round(Math.max(0, totalSeconds) / 60)
+  const h = Math.floor(totalMinutes / 60)
+  const m = totalMinutes % 60
+  if (h === 0) return `${m} min`
+  return m === 0 ? `${h} h` : `${h} h ${m} min`
+}
+
 export function formatDuration(totalSeconds: number): string {
   const total = Math.max(0, Math.floor(totalSeconds))
   const h = Math.floor(total / 3600)

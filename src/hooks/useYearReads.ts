@@ -12,6 +12,8 @@ export interface YearRead {
   month: number // 1-12
   /** Páginas del libro (0 si no se sabe). */
   pages: number
+  /** V.4.5.1: duración si es audiolibro (0 si no lo es o no se sabe). */
+  audioSeconds: number
   category: string | null
   format: string | null
   /** Rasgos del libro (V.3.1.0), para "Géneros y ánimos" del año. */
@@ -79,6 +81,7 @@ export function useYearReads(userId: string | undefined, year: number) {
           endDate: row.end_date,
           month: parseInt(row.end_date.slice(5, 7), 10),
           pages: row.books.total_pages ?? 0,
+          audioSeconds: row.books.format === 'audiolibro' ? row.books.total_duration_seconds ?? 0 : 0,
           category: row.books.category,
           format: row.books.format,
           genres: row.books.genres ?? [],

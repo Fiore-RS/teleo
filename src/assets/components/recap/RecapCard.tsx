@@ -4,6 +4,7 @@ import { formatStackHeight, type RecapBook, type RecapCardId, type RecapData } f
 import { shareSafeImageUrl } from '../../../lib/shareImage'
 import { upgradedSrc } from '../../../lib/coverSrc'
 import type { RecapTone } from '../../../lib/recapTones'
+import { formatListenTime } from '../../../lib/progress'
 import './recapCards.css'
 
 /** Tamaño en pantalla. Se exporta con pixelRatio 3,6: 1080 × 1920 (historia). */
@@ -25,6 +26,8 @@ const STACK_BOOKS = [
   { h: 11, w: 88, c: '#8E5A7A' },
   { h: 13, w: 92, c: '#7FA7A0' },
 ]
+/** Alturas de la onda de sonido de la tarjeta de audiolibros (V.4.5.1): siempre las mismas. */
+const WAVE = Array.from({ length: 36 }, (_, i) => Math.round(Math.min(92, 18 + Math.abs(Math.sin(i * 1.7) * 52 + Math.sin(i * 0.45) * 22)) * 0.7))
 const PLAIN_COVERS = ['#7A2E3A', '#C68A3D', '#3F5B4E', '#B85C6E', '#5B7A88', '#8E5A7A', '#6B4E3D', '#4E6B5A', '#3D4E6B', '#B07A2E']
 
 const numberFormat = new Intl.NumberFormat('es', { useGrouping: 'always' } as Intl.NumberFormatOptions)
@@ -345,6 +348,53 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       break
     }
 
+    case 'audio': {
+      // V.4.5.1: los audiolibros con su propia tarjeta (lienzo "Historia de audiolibros", D · Ondas):
+      // la cifra grande de horas, una onda de sonido de papel y debajo hasta 3 portadas; si hay
+      // más, la cuarta es "+N" (la historia de portadas ya las muestra todas).
+      className += ' audio'
+      const audio = recap.audio!
+      const totalMinutes = Math.round(audio.seconds / 60)
+      const hours = Math.floor(totalMinutes / 60)
+      const minutes = totalMinutes % 60
+      const big = hours > 0 ? hours : minutes
+      const bigLabel = hours > 0 ? (hours === 1 ? 'hora' : 'horas') : minutes === 1 ? 'minuto' : 'minutos'
+      const kicker = isYear ? (recap.isOngoing ? 'Este año, hasta ahora' : 'Este año') : recap.isOngoing ? 'Este mes, hasta hoy' : 'Este mes'
+      const shown = audio.books.length > 3 ? audio.books.slice(0, 3) : audio.books
+      const more = audio.books.length - shown.length
+      body = (
+        <>
+          <span className="rc-kicker">{kicker} escuché</span>
+          <div className="rc-gwrap">
+            <div className={`rc-giant${big >= 100 ? ' long' : ''}`}>{big}</div>
+            <div className="rc-giant-l">{bigLabel}</div>
+          </div>
+          {hours > 0 && minutes > 0 && <p className="rc-audio-min">y {minutes} {minutes === 1 ? 'minuto' : 'minutos'}</p>}
+          <div className="rc-onda" aria-hidden="true">
+            {WAVE.map((h, k) => (
+              <i key={k} style={{ height: h, opacity: k < WAVE.length - 10 ? 1 : 0.4 }} />
+            ))}
+          </div>
+          {/* Con 3 o menos, la misma cuadrícula de "Mis lecturas de…": las portadas crecen hasta
+              llenar el espacio que queda y se inclinan un poco. Con más, 3 chicas y "+N". */}
+          {more > 0 ? (
+            <div className="rc-audio-covers">
+              {shown.map((b) => (
+                <Cover key={b.bookId} book={b} showTitle={false} upgrade={false} width={240} style={{ width: 50 }} />
+              ))}
+              <div className="rc-pg-more" style={{ width: 50 }}>
+                <b style={{ fontSize: 18 }}>+{more}</b>
+              </div>
+            </div>
+          ) : (
+            <CoverGrid books={shown} />
+          )}
+          {foot}
+        </>
+      )
+      break
+    }
+
     case 'meta': {
       // V.3.6.0: la misma postal con estampilla de la meta cumplida en La mesa, en formato
       // historia y en primera persona.
@@ -630,6 +680,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       className += ' cierre'
       const lines: [string, string | number][] = [['Libros', recap.readCount]]
       if (recap.pages > 0) lines.push(['Páginas', fmt(recap.pages)])
+      if (recap.audio) lines.push(['Escuchado', formatListenTime(recap.audio.seconds)])
       if (recap.bestMonth) lines.push(['Mes lector', MONTH_NAMES[recap.bestMonth.month - 1]])
       if (!isYear) lines.push(['Días con lectura', recap.readDays.length])
       if (recap.cards.includes('generos')) {

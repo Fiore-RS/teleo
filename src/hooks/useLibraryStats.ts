@@ -74,7 +74,7 @@ export interface LibraryStats {
     previousYearCount: number
     /** V.3.0.0, tarjeta del año en Estadísticas: por cada año con lecturas terminadas, las
      *  páginas de esas lecturas y la calificación promedio de esos libros. */
-    porAnio: { year: number; finished: number; pages: number; avgRating: number | null }[]
+    porAnio: { year: number; finished: number; pages: number; audioSeconds: number; avgRating: number | null }[]
   }
 }
 
@@ -240,11 +240,15 @@ export function useLibraryStats(userId: string | undefined) {
     const porAnio = yearsBreakdown.map(({ year, count }) => {
       const yearReads = reads.filter((h) => h.end_date.startsWith(String(year)))
       const pages = yearReads.reduce((sum, h) => sum + (bookById.get(h.book_id)?.total_pages ?? 0), 0)
+      // V.4.5.1: el tiempo de los audiolibros terminados ese año (una relectura suma otra vez).
+      const audioSeconds = yearReads
+        .filter((h) => bookById.get(h.book_id)?.format === 'audiolibro')
+        .reduce((sum, h) => sum + (bookById.get(h.book_id)?.total_duration_seconds ?? 0), 0)
       const ratings = [...new Set(yearReads.map((h) => h.book_id))]
         .map((id) => ratingByBook.get(id))
         .filter((v): v is number => typeof v === 'number')
       const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null
-      return { year, finished: count, pages, avgRating: avg }
+      return { year, finished: count, pages, audioSeconds, avgRating: avg }
     })
     const monthlyThisYear = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, count: monthCounts.get(i + 1) ?? 0 }))
 

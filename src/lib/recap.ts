@@ -13,6 +13,7 @@ export type RecapCardId =
   | 'portada'
   | 'libros'
   | 'portadas'
+  | 'audio'
   | 'meta'
   | 'meses'
   | 'generos'
@@ -65,6 +66,9 @@ export interface RecapData {
   /** Libros sin repetir, en el orden en que se terminaron. */
   books: RecapBook[]
   pages: number
+  /** V.4.5.1: tiempo escuchado (una relectura suma otra vez, como las páginas) y los audiolibros
+   *  sin repetir, en orden de fin. null si en el periodo no hay audiolibros con duración. */
+  audio: { seconds: number; books: RecapBook[] } | null
   /** Centímetros de las páginas apiladas. */
   stackCm: number
   /** Solo en el año: páginas por día, redondeado. */
@@ -140,6 +144,11 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
   // Como en Resumen: una relectura suma sus páginas otra vez.
   const pages = reads.reduce((sum, r) => sum + r.pages, 0)
 
+  // Audiolibros (V.4.5.1): su propia tarjeta, con el tiempo escuchado.
+  const audioReads = reads.filter((r) => (r.audioSeconds ?? 0) > 0)
+  const audioSeconds = audioReads.reduce((sum, r) => sum + (r.audioSeconds ?? 0), 0)
+  const audio = audioSeconds > 0 ? { seconds: audioSeconds, books: [...new Map(audioReads.map((r) => [r.bookId, toBook(r)])).values()] } : null
+
   // Mes más lector (solo en el año).
   let months: (number | null)[] | null = null
   let bestMonth: RecapData['bestMonth'] = null
@@ -200,6 +209,7 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
   const cards: RecapCardId[] = ['portada', 'libros']
   // Portadas (V.3.3.1): cada libro una vez, aunque se haya releído en el periodo.
   if (books.length > 0) cards.push('portadas')
+  if (audio) cards.push('audio')
   if (goal) cards.push('meta')
   if (bestMonth) cards.push('meses')
   if (traitBooks >= minTraits) cards.push('generos')
@@ -220,6 +230,7 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
     readCount: reads.length,
     books,
     pages,
+    audio,
     stackCm: Math.round((pages * MM_PER_PAGE) / 10),
     pagesPerDay: period.kind === 'anio' && pages > 0 ? Math.round(pages / elapsedDays) : null,
     readDays: periodSessions,
