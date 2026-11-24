@@ -29,6 +29,14 @@ const FECHA_V4 = '15 de noviembre de 2026'
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.5.2',
+    date: '24 de noviembre de 2026',
+    title: 'Con espacio para escuchar',
+    items: [
+      'En Actualizar progreso de un audiolibro, el tiempo escuchado va debajo de su nombre en el teléfono y ya no se monta sobre él.',
+    ],
+  },
+  {
     version: '4.5.1',
     date: '15 de noviembre de 2026',
     title: 'También se escucha',

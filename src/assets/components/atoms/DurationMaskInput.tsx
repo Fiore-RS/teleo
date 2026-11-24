@@ -13,9 +13,10 @@ interface DurationMaskInputProps {
   onChange: (value: string) => void
   bare?: boolean
   className?: string
+  id?: string
 }
 
-export function DurationMaskInput({ value, onChange, bare, className }: DurationMaskInputProps) {
+export function DurationMaskInput({ value, onChange, bare, className, id }: DurationMaskInputProps) {
   const [digits, setDigits] = useState(() => value.replace(/\D/g, '').slice(0, 6))
 
   // Si el valor cambia desde afuera (ej. al abrir con el progreso guardado), los dígitos se
@@ -44,6 +45,7 @@ export function DurationMaskInput({ value, onChange, bare, className }: Duration
 
   return (
     <Input
+      id={id}
       value={formatDurationDigits(digits)}
       onChange={handleChange}
       placeholder="00:00:00"
