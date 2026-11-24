@@ -246,6 +246,8 @@ export function useDataImport(userId: string | undefined) {
               book_id: bookIdMap.get(h.book_id!)!,
               start_date: h.start_date ?? null,
               end_date: h.end_date,
+              // V.4.6.0: respaldos nuevos traen el formato de cada lectura; los viejos, no.
+              format: h.format ?? null,
               ...withCreatedAt(h.created_at),
             }))
         : importedBooks
@@ -255,6 +257,7 @@ export function useDataImport(userId: string | undefined) {
               book_id: bookIdMap.get(b.id!)!,
               start_date: b.start_date ?? null,
               end_date: b.end_date,
+              format: b.format ?? null,
             }))
       await insertAll('reading_history', historyRows)
 

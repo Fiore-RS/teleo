@@ -6,21 +6,23 @@ import { useBook } from '../hooks/useBook'
 import { useCoverUpload } from '../hooks/useCoverUpload'
 import { useReviewExists } from '../hooks/useReviewExists'
 import { useBookReadCount } from '../hooks/useBookReadCount'
-import { recordBookCompletion, syncLatestReading } from '../lib/readingHistory'
+import { recordBookCompletion, syncLatestReading, updateReadingFormat } from '../lib/readingHistory'
 import { DogEar } from '../assets/components/atoms/DogEar'
 import { Tag } from '../assets/components/atoms/Tag'
 import { Sheet } from '../assets/components/atoms/Sheet'
 import { DetailSkeleton } from '../assets/components/atoms/Skeleton'
 import { Button } from '../assets/components/atoms/Button'
 import { ConfirmDialog } from '../assets/components/molecules/ConfirmDialog'
-import { StartReadingDateModal } from '../assets/components/molecules/StartReadingDateModal'
+import { StartReadingDateModal, type ReadingStartPatch } from '../assets/components/molecules/StartReadingDateModal'
+import { useBookHistory } from '../hooks/useBookHistory'
+import { formatListenTime } from '../lib/progress'
 import { StatusMenu } from '../assets/components/molecules/StatusMenu'
 import { AbandonarLibroModal } from '../assets/components/molecules/AbandonarLibroModal'
 import { FinishBookSheet } from '../assets/components/molecules/FinishBookSheet'
 import { EditBookForm, type BookDraft } from '../assets/components/molecules/EditBookForm'
 import { FormActions, FormCard, FormSection } from '../assets/components/molecules/FormLayout'
 import { readingDatesAreValid, type ReadingDates } from '../lib/readingDates'
-import { type ReadingStatus } from '../lib/status'
+import { statusHasReading, type ReadingStatus } from '../lib/status'
 import { formatOptions, type BookFormat } from '../lib/options'
 import { languageLabel, languageOptionsFrom, normalizeLanguage } from '../lib/languages'
 import { useBookLanguages } from '../hooks/useBookLanguages'
@@ -41,7 +43,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
 import { useUserTags } from '../hooks/useUserTags'
 import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
-import { ownedOnLeavingWishlist } from '../lib/owned'
+import { ownedOnLeavingWishlist, ownedOnStartingPhysical } from '../lib/owned'
 
 /** En Editar libro, al pasar el estado de Deseado a otro, un libro físico queda con "Lo tengo"
  *  (V.3.7.0). Después se puede quitar con el interruptor. */
@@ -71,6 +73,11 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   const { addQuote } = useQuotes(user?.id)
   const [isAddingQuote, setIsAddingQuote] = useState(false)
   const { count: readCount, refetch: refetchReadCount } = useBookReadCount(bookId)
+  // V.4.6.0: la última lectura terminada, para "La leíste en físico en 2025" al leer de nuevo.
+  const { history: readHistory, refetch: refetchHistory } = useBookHistory(bookId)
+  const lastReading = readHistory[0]
+    ? { format: readHistory[0].format, year: parseInt(readHistory[0].end_date.slice(0, 4), 10) }
+    : null
   const { uploadCover, isUploading } = useCoverUpload(user?.id)
   const { profile } = useProfile(user?.id)
   // Saga del libro (V.3.0.1): nombre y número del libro dentro de la saga para la fila "Saga".
@@ -130,7 +137,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     setDraft({
       title: book.title,
       author: book.author ?? '',
-      format: (book.format ?? 'fisico') as BookFormat,
+      format: (book.format ?? readHistory[0]?.format ?? 'fisico') as BookFormat,
       category: book.category ?? 'Novela',
       status: book.status as ReadingStatus,
       // Los idiomas escritos a mano ("Español") se reconocen y pasan a su código.
@@ -148,6 +155,14 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       owned: book.owned ?? false,
       isPriority: book.is_priority ?? false,
       traits: bookTraits,
+      // V.4.6.0: en Terminado, la lectura más reciente es la del libro (sus fechas y formato
+      // se editan arriba); las anteriores van aparte, cada una con su formato.
+      pastReadings: (book.status === 'terminado' ? readHistory.slice(1) : readHistory).map((r) => ({
+        id: r.id,
+        startDate: r.start_date,
+        endDate: r.end_date,
+        format: (r.format as BookFormat | null) ?? null,
+      })),
     })
     setIsEditing(true)
   }
@@ -158,9 +173,11 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   async function handleSave() {
     if (!draft || !book || !canSave) return
 
-    const totalDurationSeconds = draft.format === 'audiolibro'
-      ? parseDurationInput(draft.totalDuration)
-      : null
+    // V.4.6.0: páginas y duración son del libro; se guardan las dos.
+    const totalDurationSeconds = draft.totalDuration ? parseDurationInput(draft.totalDuration) : null
+    // El formato solo cambia si el libro tiene una lectura; en Pendiente y Deseados se deja
+    // como estaba (se elige al empezar).
+    const format = statusHasReading(draft.status) ? draft.format : book.format
 
     // Próxima lectura solo se muestra en Pendiente; en otro estado se deja como estaba. Si
     // recién se marca, se le da un orden inicial al final de la lista.
@@ -170,9 +187,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
     const updates = {
       title: draft.title.trim(), author: draft.author.trim() || null,
-      format: draft.format, category: draft.category, status: draft.status,
+      format, category: draft.category, status: draft.status,
       language: draft.language || null,
-      total_pages: draft.format !== 'audiolibro' && draft.totalPages ? parseInt(draft.totalPages, 10) : null,
+      total_pages: draft.totalPages ? parseInt(draft.totalPages, 10) : null,
       total_duration_seconds: totalDurationSeconds,
       // Un regalo cuenta como ₡0: no suma al total invertido de Compras.
       price: draft.isGift ? 0 : draft.price ? parseFloat(draft.price) : null,
@@ -203,9 +220,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       // de lecturas (fuente del reto anual) queda igual a ellas.
       await updateBook({ ...updates, start_date: startDate, end_date: endDate })
       if (book.status === 'terminado') {
-        await syncLatestReading({ bookId, userId: user?.id, startDate, endDate })
+        await syncLatestReading({ bookId, userId: user?.id, startDate, endDate, format: draft.format })
       } else {
-        await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
+        await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate, format: draft.format })
       }
       refetchReadCount()
     } else if (draft.status === 'abandonado') {
@@ -219,12 +236,19 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       await updateBook(updates)
     }
 
+    // Lecturas anteriores cuyo formato se cambió (V.4.6.0).
+    const changedPast = draft.pastReadings.filter((r) => r.format !== (readHistory.find((h) => h.id === r.id)?.format ?? null))
+    if (changedPast.length > 0) {
+      await Promise.all(changedPast.map((r) => updateReadingFormat(r.id, r.format)))
+    }
+    void refetchHistory()
+
     void queryClient.invalidateQueries({ queryKey: ['userCustomMoods'] })
     setIsSaving(false)
     setIsEditing(false)
   }
 
-  async function applyPendingLeyendoUpdate(startDate: string | null) {
+  async function applyPendingLeyendoUpdate(startDate: string | null, patch: ReadingStartPatch) {
     if (!pendingLeyendoUpdate) return
 
     // Si el libro ya estaba "terminado", esto es una relectura (por el botón "Leer de
@@ -237,6 +261,9 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
 
     await updateBook({
       ...pendingLeyendoUpdate,
+      // V.4.6.0: el formato de esta lectura (y las páginas o la duración, si se escribieron).
+      ...patch,
+      ...(book ? ownedOnStartingPhysical(book, patch) : {}),
       ...(isReread ? { current_page: 0, progress_percent: 0, current_duration_seconds: 0, end_date: null } : {}),
       ...(startDate ? { start_date: startDate } : {}),
     })
@@ -290,13 +317,13 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
-    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
+    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate, format: book?.format ?? null })
     refetchReadCount()
   }
 
   // Sigue en la saga (V.3.1.0): se refresca todo porque el siguiente libro cambia de estado.
   async function handleAdvanceNext(next: NextInSaga) {
-    await advanceNextInSaga(next)
+    await advanceNextInSaga(next, book?.format ?? null)
     void queryClient.invalidateQueries()
   }
 
@@ -305,13 +332,21 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
     if (writeReview) setIsResenaOpen(true)
   }
 
+  // V.4.6.0: los formatos en que se leyó (la lectura de ahora y las del historial), sin repetir.
+  const readFormats = book
+    ? [...new Set([
+        ...(statusHasReading(book.status as ReadingStatus) && book.format ? [book.format] : []),
+        ...readHistory.map((r) => r.format).filter((f): f is string => !!f),
+      ])].map((f) => formatOptions.find((o) => o.value === f)?.label ?? f)
+    : []
   const sagaPosition = book && saga ? sagaBooks.findIndex((b) => b.id === book.id) + 1 : 0
   const traitTexts = traitsSummary(bookTraits)
   const infoRows: { label: string; value: string; onClick?: () => void }[] = book
     ? [
         ...(book.total_pages ? [{ label: 'Páginas', value: String(book.total_pages) }] : []),
+        ...(book.total_duration_seconds ? [{ label: 'Duración', value: formatListenTime(book.total_duration_seconds) }] : []),
         ...(book.language ? [{ label: 'Idioma', value: languageLabel(book.language) }] : []),
-        ...(book.format ? [{ label: 'Formato', value: formatOptions.find((f) => f.value === book.format)?.label ?? book.format }] : []),
+        ...(readFormats.length > 0 ? [{ label: readFormats.length > 1 ? 'Formatos' : 'Formato', value: readFormats.join(', ') }] : []),
         ...(book.category ? [{ label: 'Categoría', value: book.category }] : []),
         ...(saga
           ? [{
@@ -547,8 +582,10 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       <StartReadingDateModal
         isOpen={pendingLeyendoUpdate !== null}
         book={book}
-        onConfirm={(startDate) => applyPendingLeyendoUpdate(startDate)}
-        onDismiss={() => applyPendingLeyendoUpdate(null)}
+        isReread={book?.status === 'terminado'}
+        lastReading={book?.status === 'terminado' ? lastReading : null}
+        onConfirm={(startDate, patch) => applyPendingLeyendoUpdate(startDate, patch)}
+        onDismiss={(patch) => applyPendingLeyendoUpdate(null, patch)}
       />
 
       {book && (

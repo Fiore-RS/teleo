@@ -21,3 +21,9 @@ export const statusLabel: Record<ReadingStatus, string> = {
   abandonado: 'Abandonado',
   pausado: 'En pausa',
 }
+
+/** Estados con una lectura en marcha o hecha, que llevan formato (V.4.6.0): el formato es de
+ *  cada lectura y en Pendiente y Deseados todavía no se eligió. */
+export function statusHasReading(status: ReadingStatus | string) {
+  return status === 'leyendo' || status === 'pausado' || status === 'terminado' || status === 'abandonado'
+}

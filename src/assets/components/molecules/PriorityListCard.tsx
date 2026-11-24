@@ -17,7 +17,7 @@ import { queryClient } from '../../../lib/queryClient'
 import { SortableItem } from '../atoms/SortableItem'
 import { PriorityListMenu } from './PriorityListMenu'
 import { EditListNameModal } from './EditListNameModal'
-import { StartReadingDateModal } from './StartReadingDateModal'
+import { StartReadingDateModal, type ReadingStartPatch } from './StartReadingDateModal'
 import { RandomPickSheet } from './RandomPickSheet'
 import { NextReadsSheet } from './NextReadsSheet'
 import { Button } from '../atoms/Button'
@@ -75,9 +75,9 @@ export function PriorityListCard({ userId, onOpenBook, variant, tabs }: Priority
     reorderBook(active.id as string, beforeId, afterId)
   }
 
-  async function confirmStartReading(startDate: string | null) {
+  async function confirmStartReading(startDate: string | null, patch: ReadingStartPatch) {
     if (!pendingStartId) return
-    await startReading(pendingStartId, startDate)
+    await startReading(pendingStartId, startDate, patch)
     setPendingStartId(null)
     // El libro pasa a Leyendo: se refrescan Leyendo ahora, los números del perfil, etc.
     await queryClient.invalidateQueries()
@@ -311,8 +311,8 @@ export function PriorityListCard({ userId, onOpenBook, variant, tabs }: Priority
       <StartReadingDateModal
         isOpen={pendingStartId !== null}
         book={books.find((b) => b.id === pendingStartId)}
-        onConfirm={(startDate) => confirmStartReading(startDate)}
-        onDismiss={() => confirmStartReading(null)}
+        onConfirm={(startDate, patch) => confirmStartReading(startDate, patch)}
+        onDismiss={(patch) => confirmStartReading(null, patch)}
       />
     </>
   )

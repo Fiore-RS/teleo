@@ -5,6 +5,7 @@ import { tally, formatLabel, type CountEntry } from '../lib/tally'
 import { computeTraitStats, type TraitStats } from '../lib/traitStats'
 import { languageLabel } from '../lib/languages'
 import { isReviewWritten, REVIEW_CONTENT_COLUMNS } from '../lib/reviews'
+import { readingAmounts, readingFormatOf } from '../lib/readingHistory'
 
 export type { CountEntry }
 
@@ -109,7 +110,7 @@ export function useLibraryStats(userId: string | undefined) {
         .eq('user_id', userId),
       supabase.from('sagas').select('id, status').eq('user_id', userId),
       supabase.from('reviews').select(`id, book_id, ${REVIEW_CONTENT_COLUMNS}`).eq('user_id', userId),
-      supabase.from('reading_history').select('book_id, end_date').eq('user_id', userId),
+      supabase.from('reading_history').select('book_id, end_date, format').eq('user_id', userId),
       supabase.from('reading_sessions').select('session_date').eq('user_id', userId),
     ])
 
@@ -145,10 +146,14 @@ export function useLibraryStats(userId: string | undefined) {
       if (!b.created_at) return oldest
       return !oldest || b.created_at < oldest ? b.created_at : oldest
     }, null)
-    const pagesRead = reads.reduce((sum, h) => sum + (bookById.get(h.book_id)?.total_pages ?? 0), 0)
-    const audioSeconds = reads
-      .filter((h) => bookById.get(h.book_id)?.format === 'audiolibro')
-      .reduce((sum, h) => sum + (bookById.get(h.book_id)?.total_duration_seconds ?? 0), 0)
+    // V.4.6.0: cada lectura suma según su propio formato (páginas o tiempo escuchado).
+    const readFormat = (h: { book_id: string; format: string | null }) => readingFormatOf(h.format, bookById.get(h.book_id)?.format)
+    const amountsOf = (h: { book_id: string; format: string | null }) => {
+      const b = bookById.get(h.book_id)
+      return b ? readingAmounts(readFormat(h), b) : { pages: 0, audioSeconds: 0 }
+    }
+    const pagesRead = reads.reduce((sum, h) => sum + amountsOf(h).pages, 0)
+    const audioSeconds = reads.reduce((sum, h) => sum + amountsOf(h).audioSeconds, 0)
 
     // Ritmo y hábito — 2026-08-30: se dejó esta sección enfocada solo en racha + heatmap
     // (feedback de Fiorella). "Promedio pág./día" y su reemplazo "Libros por mes" se
@@ -161,7 +166,7 @@ export function useLibraryStats(userId: string | undefined) {
     const byCategory = tally(books.map((b) => b.category))
     const byFormat = tally(books.map((b) => formatLabel(b.format)))
     const readByCategory = tally(reads.map((h) => bookById.get(h.book_id)?.category))
-    const readByFormat = tally(reads.map((h) => formatLabel(bookById.get(h.book_id)?.format)))
+    const readByFormat = tally(reads.map((h) => formatLabel(readFormat(h))))
     const byLanguage = tally(books.map((b) => languageLabel(b.language) || null))
     const booksWithPages = books.filter((b) => typeof b.total_pages === 'number' && b.total_pages! > 0)
     const longestBook = booksWithPages.length > 0
@@ -239,11 +244,9 @@ export function useLibraryStats(userId: string | undefined) {
     )
     const porAnio = yearsBreakdown.map(({ year, count }) => {
       const yearReads = reads.filter((h) => h.end_date.startsWith(String(year)))
-      const pages = yearReads.reduce((sum, h) => sum + (bookById.get(h.book_id)?.total_pages ?? 0), 0)
+      const pages = yearReads.reduce((sum, h) => sum + amountsOf(h).pages, 0)
       // V.4.5.1: el tiempo de los audiolibros terminados ese año (una relectura suma otra vez).
-      const audioSeconds = yearReads
-        .filter((h) => bookById.get(h.book_id)?.format === 'audiolibro')
-        .reduce((sum, h) => sum + (bookById.get(h.book_id)?.total_duration_seconds ?? 0), 0)
+      const audioSeconds = yearReads.reduce((sum, h) => sum + amountsOf(h).audioSeconds, 0)
       const ratings = [...new Set(yearReads.map((h) => h.book_id))]
         .map((id) => ratingByBook.get(id))
         .filter((v): v is number => typeof v === 'number')

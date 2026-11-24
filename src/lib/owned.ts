@@ -12,6 +12,15 @@ export function ownedOnLeavingWishlist(
   return (changes.format ?? book.format) === 'fisico' ? { owned: true } : {}
 }
 
+/** V.4.6.0: empezar una lectura en físico marca "Lo tengo" (si no estaba marcado), igual que
+ *  sacar un libro físico de Deseados. "Lo tengo" sigue siendo del libro, no de la lectura. */
+export function ownedOnStartingPhysical(
+  book: { owned?: boolean | null },
+  patch: { format?: string | null }
+): { owned?: true } {
+  return patch.format === 'fisico' && !book.owned ? { owned: true } : {}
+}
+
 /** Hoja de Mesa que ofrece marcar con "Lo tengo" los libros físicos que ya estaban en la
  *  biblioteca (V.3.7.0). Sale una sola vez; después queda el atajo en Configuración › Tus
  *  datos. Desde la V.3.7.2 se recuerda en la cuenta (ui_marks.loTengoOfrecido). */

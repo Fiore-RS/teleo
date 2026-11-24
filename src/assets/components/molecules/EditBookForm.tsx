@@ -15,7 +15,7 @@ import { FormCard, FormCollapsible, FormRow, FormSection, FormSwitchRow } from '
 import { categoryOptions, type BookFormat } from '../../../lib/options'
 import { formatCurrency } from '../../../lib/currencies'
 import { formatShortDate, todayLocalDate } from '../../../lib/date'
-import type { ReadingStatus } from '../../../lib/status'
+import { statusHasReading, type ReadingStatus } from '../../../lib/status'
 import type { BookTraits } from '../../../lib/bookTraits'
 import { useIsDemo } from '../../../hooks/useIsDemo'
 
@@ -44,6 +44,20 @@ export interface BookDraft {
   isPriority: boolean
   /** Género, ánimo y ritmo (V.3.1.0). */
   traits: BookTraits
+  /** Lecturas anteriores ya terminadas, de la más reciente a la más vieja, con su formato
+   *  (V.4.6.0). No incluye la lectura actual (en Terminado, la última va con el libro). */
+  pastReadings: PastReadingDraft[]
+}
+
+export interface PastReadingDraft {
+  id: string
+  startDate: string | null
+  endDate: string
+  format: BookFormat | null
+}
+
+function readingRange(r: PastReadingDraft): string {
+  return r.startDate ? `${formatShortDate(r.startDate)} – ${formatShortDate(r.endDate)}` : formatShortDate(r.endDate)
 }
 
 const formatChoices: { value: BookFormat; label: string }[] = [
@@ -109,7 +123,8 @@ interface EditBookFormProps {
 }
 
 /** Cuerpo de la hoja Editar libro (V.2.2.0): ficha arriba (portada, título, autor, estado) y
- *  secciones Tu lectura, El libro, Género / Ánimo / Ritmo (V.3.1.0), Etiquetas y Compra. Los
+ *  secciones Tu lectura (con el formato de esta lectura desde la V.4.6.0), Lecturas anteriores,
+ *  El libro, Género / Ánimo / Ritmo (V.3.1.0), Etiquetas y Compra. Los
  *  botones van en el pie de la hoja. */
 export function EditBookForm({
   coverUrl,
@@ -136,6 +151,7 @@ export function EditBookForm({
   }
 
   const hasDates = draft.status === 'terminado' || draft.status === 'abandonado'
+  const hasReading = statusHasReading(draft.status)
 
   return (
     <>
@@ -201,6 +217,13 @@ export function EditBookForm({
       </div>
 
       <FormSection label="Tu lectura">
+        {/* V.4.6.0: el formato es de cada lectura, no del libro. */}
+        {hasReading && (
+          <div className="animate-fade-in">
+            <p className="mb-2 px-1 font-body font-semibold text-body-md text-text-secondary">Formato de esta lectura</p>
+            <FormatPicker value={draft.format} onChange={(format) => onChange({ format })} />
+          </div>
+        )}
         {hasDates && (
           <div key={draft.status} className="animate-fade-in">
             <ReadingDatesFields
@@ -251,28 +274,46 @@ export function EditBookForm({
         </FormCard>
       </FormSection>
 
+      {draft.pastReadings.length > 0 && (
+        <FormSection label="Lecturas anteriores">
+          <FormCard>
+            {/* Solo las fechas y el formato de cada lectura (Fiorella, 24 nov 2026). */}
+            {draft.pastReadings.map((r) => (
+              <FormRow key={r.id} label={readingRange(r)}>
+                <Select
+                  bare
+                  placeholder="Sin formato"
+                  options={formatChoices}
+                  value={r.format ?? ''}
+                  onChange={(e) => onChange({
+                    pastReadings: draft.pastReadings.map((p) => (p.id === r.id ? { ...p, format: e.target.value as BookFormat } : p)),
+                  })}
+                />
+              </FormRow>
+            ))}
+          </FormCard>
+          <p className="mt-2 px-1 text-body-sm text-text-muted">Cada lectura cuenta en tus estadísticas con su formato.</p>
+        </FormSection>
+      )}
+
       <FormSection label="El libro">
-        <FormatPicker value={draft.format} onChange={(format) => onChange({ format })} />
         <FormCard>
-          {draft.format === 'fisico' && (
-            <FormRow label="Páginas" optional htmlFor="edit-pages">
-              <Input
-                bare
-                id="edit-pages"
-                type="number"
-                inputMode="numeric"
-                placeholder="000"
-                value={draft.totalPages}
-                onChange={(e) => onChange({ totalPages: e.target.value })}
-                className="text-right text-body-lg"
-              />
-            </FormRow>
-          )}
-          {draft.format === 'audiolibro' && (
-            <FormRow label="Duración" optional>
-              <DurationMaskInput bare value={draft.totalDuration} onChange={(totalDuration) => onChange({ totalDuration })} className="text-right text-body-lg" />
-            </FormRow>
-          )}
+          {/* V.4.6.0: páginas y duración son del libro; cada lectura usa la de su formato. */}
+          <FormRow label="Páginas" optional htmlFor="edit-pages">
+            <Input
+              bare
+              id="edit-pages"
+              type="number"
+              inputMode="numeric"
+              placeholder="000"
+              value={draft.totalPages}
+              onChange={(e) => onChange({ totalPages: e.target.value })}
+              className="text-right text-body-lg"
+            />
+          </FormRow>
+          <FormRow label="Duración" optional>
+            <DurationMaskInput bare value={draft.totalDuration} onChange={(totalDuration) => onChange({ totalDuration })} className="text-right text-body-lg" />
+          </FormRow>
           <FormRow label="Idioma" optional>
             <Select
               bare

@@ -111,7 +111,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
     // Se guarda esta lectura en el historial (primera vez o relectura) para que el reto anual,
     // "Mis años en libros" y el Resumen la cuenten en el año de la fecha de fin.
-    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
+    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate, format: book?.format ?? null })
     onUpdated()
   }
 
@@ -121,7 +121,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   }
 
   async function handleAdvanceNext(next: NextInSaga) {
-    await advanceNextInSaga(next)
+    await advanceNextInSaga(next, book?.format ?? null)
     void queryClient.invalidateQueries()
   }
 

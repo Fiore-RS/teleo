@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { readingAmounts, readingFormatOf } from '../lib/readingHistory'
 import { useCachedQuery } from './useCachedQuery'
 
 export interface YearRead {
@@ -35,6 +36,7 @@ interface HistoryRow {
   id: string
   book_id: string
   end_date: string
+  format: string | null
   books: {
     title: string
     author: string | null
@@ -58,7 +60,7 @@ export function useYearReads(userId: string | undefined, year: number) {
     async () => {
       const { data: rows } = await supabase
         .from('reading_history')
-        .select('id, book_id, end_date, books(title, author, cover_url, total_pages, total_duration_seconds, format, category, genres, moods, custom_moods, pace)')
+        .select('id, book_id, end_date, format, books(title, author, cover_url, total_pages, total_duration_seconds, format, category, genres, moods, custom_moods, pace)')
         .eq('user_id', userId!)
         .gte('end_date', `${year}-01-01`)
         .lte('end_date', `${year}-12-31`)
@@ -70,8 +72,11 @@ export function useYearReads(userId: string | undefined, year: number) {
       const reads: YearRead[] = []
       for (const row of history) {
         if (!row.books) continue
-        totalPages += row.books.total_pages ?? 0
-        if (row.books.format === 'audiolibro') totalAudioSeconds += row.books.total_duration_seconds ?? 0
+        // V.4.6.0: cada lectura suma según su propio formato.
+        const format = readingFormatOf(row.format, row.books.format)
+        const amounts = readingAmounts(format, row.books)
+        totalPages += amounts.pages
+        totalAudioSeconds += amounts.audioSeconds
         reads.push({
           id: row.id,
           bookId: row.book_id,
@@ -80,10 +85,10 @@ export function useYearReads(userId: string | undefined, year: number) {
           coverUrl: row.books.cover_url,
           endDate: row.end_date,
           month: parseInt(row.end_date.slice(5, 7), 10),
-          pages: row.books.total_pages ?? 0,
-          audioSeconds: row.books.format === 'audiolibro' ? row.books.total_duration_seconds ?? 0 : 0,
+          pages: amounts.pages,
+          audioSeconds: amounts.audioSeconds,
           category: row.books.category,
-          format: row.books.format,
+          format,
           genres: row.books.genres ?? [],
           moods: row.books.moods ?? [],
           custom_moods: row.books.custom_moods ?? [],
