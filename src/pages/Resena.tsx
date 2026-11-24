@@ -176,7 +176,7 @@ export function Resena({ bookId, onClose }: ResenaProps) {
     // anual) se ajusta a estas fechas. Antes solo cambiaba el libro y el reto seguía contando
     // la fecha vieja.
     if (book?.status === 'terminado') {
-      await syncLatestReading({ bookId, userId: user?.id, startDate, endDate })
+      await syncLatestReading({ bookId, userId: user?.id, startDate, endDate, format: book?.format ?? null })
       await refetchHistory()
     }
 

@@ -14,7 +14,7 @@ import { FormatPicker } from './EditBookForm'
 import { FormActions, FormCard, FormRow, FormSection, FormSwitchRow } from './FormLayout'
 import { readingDatesAreValid, type ReadingDates } from '../../../lib/readingDates'
 import { searchBooks, searchBookByIsbn, type BookSearchResult } from '../../../lib/bookSearch'
-import type { ReadingStatus } from '../../../lib/status'
+import { statusHasReading, type ReadingStatus } from '../../../lib/status'
 import { categoryOptions, type BookFormat } from '../../../lib/options'
 import { languageLabel, languageOptionsFrom } from '../../../lib/languages'
 import { useCoverUpload } from '../../../hooks/useCoverUpload'
@@ -184,8 +184,14 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   }
 
   /** Un libro de Deseados nunca queda con "Lo tengo". */
-  function ownedFor(bookStatus: ReadingStatus, bookFormat: BookFormat) {
+  function ownedFor(bookStatus: ReadingStatus, bookFormat: BookFormat | null) {
     return bookStatus !== 'deseado' && (ownedOverride ?? bookFormat === 'fisico')
+  }
+
+  /** V.4.6.0: el formato es de la lectura. Solo se guarda si el libro entra con una lectura
+   *  (Leyendo, En pausa, Terminado o Abandonado); en Pendiente y Deseados se elige al empezar. */
+  function formatFor(bookStatus: ReadingStatus, bookFormat: BookFormat): BookFormat | null {
+    return statusHasReading(bookStatus) ? bookFormat : null
   }
 
   async function handleAdd() {
@@ -201,9 +207,9 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
       language: result.language ?? null,
       category: category || null,
       isbn: result.isbn ?? null,
-      format,
+      format: formatFor(resolvedStatus, format),
       status: resolvedStatus,
-      owned: ownedFor(resolvedStatus, format),
+      owned: ownedFor(resolvedStatus, formatFor(resolvedStatus, format)),
       saga_id: sagaId,
       ...(resolvedStatus === 'pendiente' && isPriority
         ? { is_priority: true, priority_sort_order: Date.now() }
@@ -217,22 +223,23 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
   async function handleManualCreate() {
     if (!manualDraft.title.trim()) return
-    const isAudiobook = manualDraft.format === 'audiolibro'
     const resolvedStatus = canPickStatus ? manualDraft.status : initialStatus
     if (resolvedStatus === 'terminado' && !readingDatesAreValid(finishDates)) return
+    const manualFormat = formatFor(resolvedStatus, manualDraft.format)
     setIsSaving(true)
     const { error } = await onAdd({
       title: manualDraft.title.trim(),
       author: manualDraft.author.trim() || null,
       cover_url: manualDraft.coverUrl,
-      total_pages: !isAudiobook && manualDraft.totalPages ? parseInt(manualDraft.totalPages, 10) : null,
-      total_duration_seconds: isAudiobook ? parseDurationInput(manualDraft.totalDuration) : null,
+      // V.4.6.0: páginas y duración son del libro; las dos se pueden guardar.
+      total_pages: manualDraft.totalPages ? parseInt(manualDraft.totalPages, 10) : null,
+      total_duration_seconds: manualDraft.totalDuration ? parseDurationInput(manualDraft.totalDuration) : null,
       language: manualDraft.language || null,
       category: manualDraft.category || null,
       isbn: manualDraft.isbn.trim() || null,
-      format: manualDraft.format,
+      format: manualFormat,
       status: resolvedStatus,
-      owned: ownedFor(resolvedStatus, manualDraft.format),
+      owned: ownedFor(resolvedStatus, manualFormat),
       saga_id: sagaId,
       ...(resolvedStatus === 'pendiente' && isPriority
         ? { is_priority: true, priority_sort_order: Date.now() }
@@ -249,7 +256,7 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
   const datesInvalid = canPickStatus && activeStatus === 'terminado' && !readingDatesAreValid(finishDates)
 
   const activeFormat = isManual ? manualDraft.format : format
-  const isOwned = ownedFor(activeStatus, activeFormat)
+  const isOwned = ownedFor(activeStatus, formatFor(activeStatus, activeFormat))
   const ownedRow = activeStatus !== 'deseado' ? (
     <FormSwitchRow
       label="Lo tengo"
@@ -272,12 +279,23 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
     <Badge status={initialStatus} />
   )
 
-  // Tu lectura: fechas si se agrega ya terminado; Próxima lectura si queda pendiente.
-  const readingSection = canPickStatus && (activeStatus === 'terminado' || activeStatus === 'pendiente') ? (
+  function setActiveFormat(next: BookFormat) {
+    if (isManual) setManualDraft((prev) => ({ ...prev, format: next }))
+    else setFormat(next)
+  }
+
+  // Tu lectura: formato (V.4.6.0) si entra con una lectura, más las fechas si se agrega ya
+  // terminado; Próxima lectura si queda pendiente.
+  const readingSection = canPickStatus && (statusHasReading(activeStatus) || activeStatus === 'pendiente') ? (
     <FormSection label="Tu lectura" className="mb-2">
       <div key={activeStatus} className="animate-fade-in">
-        {activeStatus === 'terminado' ? (
-          <ReadingDatesFields startDate={finishDates.startDate} endDate={finishDates.endDate} onChange={setFinishDates} />
+        {statusHasReading(activeStatus) ? (
+          <>
+            <FormatPicker value={activeFormat} onChange={setActiveFormat} />
+            {activeStatus === 'terminado' && (
+              <ReadingDatesFields startDate={finishDates.startDate} endDate={finishDates.endDate} onChange={setFinishDates} />
+            )}
+          </>
         ) : (
           <FormCard>
             <FormSwitchRow
@@ -336,7 +354,6 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
 
   if (isManual) {
     title = 'Crear libro'
-    const isAudiobook = manualDraft.format === 'audiolibro'
     body = (
       <div key="manual" className="animate-fade-in">
         <div className="relative z-10 flex gap-3.5 items-end mb-5.5">
@@ -393,31 +410,27 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         </div>
 
         <FormSection label="El libro">
-          <FormatPicker value={manualDraft.format} onChange={(format) => setManualDraft({ ...manualDraft, format })} />
           <FormCard>
-            {isAudiobook ? (
-              <FormRow label="Duración" optional>
-                <DurationMaskInput
-                  bare
-                  value={manualDraft.totalDuration}
-                  onChange={(v) => setManualDraft({ ...manualDraft, totalDuration: v })}
-                  className="text-right text-body-lg"
-                />
-              </FormRow>
-            ) : (
-              <FormRow label="Páginas" optional htmlFor="new-book-pages">
-                <Input
-                  bare
-                  id="new-book-pages"
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="000"
-                  value={manualDraft.totalPages}
-                  onChange={(e) => setManualDraft({ ...manualDraft, totalPages: e.target.value })}
-                  className="text-right text-body-lg"
-                />
-              </FormRow>
-            )}
+            <FormRow label="Páginas" optional htmlFor="new-book-pages">
+              <Input
+                bare
+                id="new-book-pages"
+                type="number"
+                inputMode="numeric"
+                placeholder="000"
+                value={manualDraft.totalPages}
+                onChange={(e) => setManualDraft({ ...manualDraft, totalPages: e.target.value })}
+                className="text-right text-body-lg"
+              />
+            </FormRow>
+            <FormRow label="Duración" optional>
+              <DurationMaskInput
+                bare
+                value={manualDraft.totalDuration}
+                onChange={(v) => setManualDraft({ ...manualDraft, totalDuration: v })}
+                className="text-right text-body-lg"
+              />
+            </FormRow>
             <FormRow label="Idioma" optional>
               <Select
                 bare
@@ -490,7 +503,6 @@ export function AddBookModal({ isOpen, onClose, sagaId, userId, initialStatus = 
         )}
 
         <FormSection label="El libro">
-          <FormatPicker value={format} onChange={setFormat} />
           <FormCard>
             <FormRow label="Categoría">
               <Select bare options={categoryOptions} value={category} onChange={(e) => setCategory(e.target.value)} />

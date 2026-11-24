@@ -5,6 +5,8 @@ export interface ReadHistoryEntry {
   id: string
   start_date: string | null
   end_date: string
+  /** Formato de esa lectura (V.4.6.0). */
+  format: string | null
 }
 
 const EMPTY: ReadHistoryEntry[] = []
@@ -19,7 +21,7 @@ export function useBookHistory(bookId: string | undefined) {
     async () => {
       const { data } = await supabase
         .from('reading_history')
-        .select('id, start_date, end_date')
+        .select('id, start_date, end_date, format')
         .eq('book_id', bookId!)
         .order('end_date', { ascending: false })
       return (data ?? []) as ReadHistoryEntry[]

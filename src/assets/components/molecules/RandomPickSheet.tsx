@@ -15,7 +15,8 @@ import { genreLabel, genreOptions, moodLabel, moodOptions, paceLabel, paceOption
 import { CoverImage } from '../atoms/CoverImage'
 import { coverDisplaySrc } from '../../../lib/coverSrc'
 import { CoverSkeleton, Skeleton } from '../atoms/Skeleton'
-import { StartReadingDateModal } from './StartReadingDateModal'
+import { StartReadingDateModal, type ReadingStartPatch } from './StartReadingDateModal'
+import { ownedOnStartingPhysical } from '../../../lib/owned'
 
 interface PendingBook {
   id: string
@@ -23,6 +24,9 @@ interface PendingBook {
   author: string | null
   cover_url: string | null
   total_pages: number | null
+  total_duration_seconds: number | null
+  format: string | null
+  owned: boolean
   saga_id: string | null
   genres: string[] | null
   moods: string[] | null
@@ -125,7 +129,7 @@ export function RandomPickSheet({ userId, onClose, initialSource = 'todos' }: Ra
     async () => {
       const { data } = await supabase
         .from('books')
-        .select('id, title, author, cover_url, total_pages, saga_id, genres, moods, custom_moods, pace, is_priority')
+        .select('id, title, author, cover_url, total_pages, total_duration_seconds, format, owned, saga_id, genres, moods, custom_moods, pace, is_priority')
         .eq('user_id', userId!)
         .eq('status', 'pendiente')
       return (data ?? []) as PendingBook[]
@@ -259,13 +263,13 @@ export function RandomPickSheet({ userId, onClose, initialSource = 'todos' }: Ra
     timerRef.current = window.setTimeout(tick, SHUFFLE_DELAYS_MS[0])
   }
 
-  async function startReading(startDate: string | null) {
+  async function startReading(startDate: string | null, patch: ReadingStartPatch) {
     if (!current) return
     setIsAskingDate(false)
     setIsStarting(true)
     await supabase
       .from('books')
-      .update({ status: 'leyendo', ...(startDate ? { start_date: startDate } : {}) })
+      .update({ status: 'leyendo', ...patch, ...ownedOnStartingPhysical(current, patch), ...(startDate ? { start_date: startDate } : {}) })
       .eq('id', current.id)
     await recomputeSagaStatus(current.saga_id)
     // Mesa, Estante, Perfil y Bitácora vuelven a pedir sus datos con el libro ya en Leyendo.
@@ -401,8 +405,8 @@ export function RandomPickSheet({ userId, onClose, initialSource = 'todos' }: Ra
       <StartReadingDateModal
         isOpen={isAskingDate}
         book={current}
-        onConfirm={(startDate) => startReading(startDate)}
-        onDismiss={() => startReading(null)}
+        onConfirm={(startDate, patch) => startReading(startDate, patch)}
+        onDismiss={(patch) => startReading(null, patch)}
       />
     </>
   )

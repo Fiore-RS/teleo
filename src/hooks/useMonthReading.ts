@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { readingAmounts, readingFormatOf } from '../lib/readingHistory'
 import { useCachedQuery } from './useCachedQuery'
 
 interface MonthReading {
@@ -21,12 +22,13 @@ export function useMonthReading(userId: string | undefined, year: number, month:
       const last = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
       const { data } = await supabase
         .from('reading_history')
-        .select('book_id, books(total_pages)')
+        .select('book_id, format, books(total_pages, total_duration_seconds, format)')
         .eq('user_id', userId!)
         .gte('end_date', first)
         .lte('end_date', last)
       const rows = data ?? []
-      const pages = rows.reduce((sum, r) => sum + (r.books?.total_pages ?? 0), 0)
+      // V.4.6.0: las lecturas en audiolibro no suman páginas.
+      const pages = rows.reduce((sum, r) => sum + (r.books ? readingAmounts(readingFormatOf(r.format, r.books.format), r.books).pages : 0), 0)
       return { finishedCount: rows.length, pages }
     },
     EMPTY,

@@ -458,6 +458,7 @@ export type Database = {
           book_id: string
           created_at: string | null
           end_date: string
+          format: string | null
           id: string
           start_date: string | null
           user_id: string
@@ -466,6 +467,7 @@ export type Database = {
           book_id: string
           created_at?: string | null
           end_date: string
+          format?: string | null
           id?: string
           start_date?: string | null
           user_id: string
@@ -474,6 +476,7 @@ export type Database = {
           book_id?: string
           created_at?: string | null
           end_date?: string
+          format?: string | null
           id?: string
           start_date?: string | null
           user_id?: string

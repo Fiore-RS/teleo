@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import { recomputeSagaStatus } from './sagaStatus'
 import { todayLocalDate } from './date'
-import { ownedOnLeavingWishlist } from './owned'
+import { ownedOnLeavingWishlist, ownedOnStartingPhysical } from './owned'
 
 /** "Sigue en la saga" (V.3.1.0): al terminar un libro de una saga, Teleo propone el siguiente
  *  si está en pendientes ("Empezar a leerlo") o en deseados ("Pasar a pendientes"). */
@@ -52,13 +52,23 @@ export function findNextInSaga(
   }
 }
 
-/** Avanza el siguiente libro: de pendientes a Leyendo (con la fecha de hoy como inicio) o de
+/** Avanza el siguiente libro: de pendientes a Leyendo (con la fecha de hoy como inicio y el
+ *  formato del libro terminado si no tiene uno, V.4.6.0) o de
  *  deseados a pendientes (si es físico, queda con "Lo tengo", V.3.7.0). Recalcula el estado
  *  de la saga. */
-export async function advanceNextInSaga(next: NextInSaga): Promise<void> {
-  let update: { status: string; start_date?: string; owned?: true }
+export async function advanceNextInSaga(next: NextInSaga, finishedFormat: string | null = null): Promise<void> {
+  let update: { status: string; start_date?: string; owned?: true; format?: string }
   if (next.status === 'pendiente') {
-    update = { status: 'leyendo', start_date: todayLocalDate() }
+    // V.4.6.0: el formato es de cada lectura. Si el siguiente no tiene uno (lo normal desde que
+    // se elige al empezar), se sigue en el mismo formato del libro que se acaba de terminar.
+    const { data: current } = await supabase.from('books').select('format, owned').eq('id', next.id).single()
+    const format = current?.format ?? finishedFormat
+    update = {
+      status: 'leyendo',
+      start_date: todayLocalDate(),
+      ...(format ? { format } : {}),
+      ...(current ? ownedOnStartingPhysical(current, { format }) : {}),
+    }
   } else {
     const { data: current } = await supabase.from('books').select('status, format, owned').eq('id', next.id).single()
     update = { status: 'pendiente', ...(current ? ownedOnLeavingWishlist(current, { status: 'pendiente' }) : {}) }
