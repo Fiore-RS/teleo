@@ -239,16 +239,27 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
             </div>
 
             <FormCard>
-              <FormRow label={isAudio ? 'Tiempo escuchado' : isDigital ? 'Porcentaje leído' : 'Página actual'} htmlFor="progress-value">
-                <span className="flex items-baseline justify-end gap-1.5">
-                  {isAudio ? (
+              {/* V.4.5.2: en audiolibros la cifra (00:00:00) y "de 12:13:00" no caben junto a la
+                  etiqueta en el teléfono y se montaban sobre ella; ahí la fila se apila. */}
+              {isAudio ? (
+                <div className="flex flex-col gap-1 px-3.5 py-2.5 min-h-12 tableta:flex-row tableta:items-center tableta:justify-between tableta:gap-3">
+                  <label htmlFor="progress-value" className="font-body font-semibold text-body-md text-text-secondary whitespace-nowrap shrink-0">
+                    Tiempo escuchado
+                  </label>
+                  <span className="flex items-baseline justify-end gap-1.5 min-w-0">
                     <DurationMaskInput
                       bare
+                      id="progress-value"
                       value={value}
                       onChange={setValue}
-                      className="w-28! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
+                      className="w-32! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
                     />
-                  ) : (
+                    {totalLabel && <span className="text-body-md text-text-muted whitespace-nowrap">{totalLabel}</span>}
+                  </span>
+                </div>
+              ) : (
+              <FormRow label={isDigital ? 'Porcentaje leído' : 'Página actual'} htmlFor="progress-value">
+                <span className="flex items-baseline justify-end gap-1.5">
                     <Input
                       bare
                       id="progress-value"
@@ -260,10 +271,10 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
                       onChange={(e) => setValue(e.target.value)}
                       className="w-18! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
                     />
-                  )}
                   {totalLabel && <span className="text-body-md text-text-muted whitespace-nowrap">{totalLabel}</span>}
                 </span>
               </FormRow>
+              )}
             </FormCard>
             {error && <p className="text-body-sm text-primary-text mt-2 animate-fade-in">{error}</p>}
             {pace && (
