@@ -95,6 +95,7 @@ export type Database = {
           price: number | null
           priority_sort_order: number | null
           progress_percent: number | null
+          progress_unit: string | null
           progress_updated_at: string | null
           purchase_date: string | null
           saga_id: string | null
@@ -138,6 +139,7 @@ export type Database = {
           price?: number | null
           priority_sort_order?: number | null
           progress_percent?: number | null
+          progress_unit?: string | null
           progress_updated_at?: string | null
           purchase_date?: string | null
           saga_id?: string | null
@@ -181,6 +183,7 @@ export type Database = {
           price?: number | null
           priority_sort_order?: number | null
           progress_percent?: number | null
+          progress_unit?: string | null
           progress_updated_at?: string | null
           purchase_date?: string | null
           saga_id?: string | null

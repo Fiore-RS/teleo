@@ -7,7 +7,7 @@ type Book = Database['public']['Tables']['books']['Row']
 export type ShareBook = Pick<Book, 'id' | 'title' | 'author' | 'cover_url'>
 export type ShareReadingBook = Pick<
   Book,
-  'id' | 'title' | 'author' | 'cover_url' | 'format' | 'total_pages' | 'current_page' | 'progress_percent' | 'total_duration_seconds' | 'current_duration_seconds'
+  'id' | 'title' | 'author' | 'cover_url' | 'format' | 'total_pages' | 'current_page' | 'progress_percent' | 'progress_unit' | 'total_duration_seconds' | 'current_duration_seconds'
 >
 
 interface ShareCardExtras {
@@ -41,7 +41,7 @@ export function useShareCardExtras(userId: string | undefined) {
         .maybeSingle(),
       supabase
         .from('books')
-        .select('id, title, author, cover_url, format, total_pages, current_page, progress_percent, total_duration_seconds, current_duration_seconds')
+        .select('id, title, author, cover_url, format, total_pages, current_page, progress_percent, progress_unit, total_duration_seconds, current_duration_seconds')
         .eq('user_id', userId)
         .eq('status', 'leyendo')
         .order('start_date', { ascending: false, nullsFirst: false })

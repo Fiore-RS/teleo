@@ -12,7 +12,7 @@ import { EstanteriaCelular, EstanteriaTabs, RepisaCelular } from '../assets/comp
 import type { Database } from '../types/database'
 import type { LastFinishedBook, ProfileCounts, ProfileQuote } from '../hooks/useProfileLists'
 import type { ReadingStatus } from '../lib/status'
-import { getProgressInfo } from '../lib/progress'
+import { getProgressInfo, progressUnitOf } from '../lib/progress'
 import { useStaggerOnce } from '../lib/motion'
 import { useBreakpoint } from '../hooks/useBreakpoint'
 import { GoalCard } from './mesa/MesaCards'
@@ -138,8 +138,10 @@ function NowCover({ book, size }: { book: Pick<BookRow, 'title' | 'cover_url'>; 
 
 /** Texto de progreso de "Leyendo": página de total, tiempo escuchado o porcentaje. */
 function progressText(book: BookRow): string {
-  if (book.format === 'audiolibro' && book.total_duration_seconds) return `${getProgressInfo(book).label} escuchado`
-  if (book.format === 'digital') return `${Math.round(book.progress_percent ?? 0)}%`
+  // V.4.6.0: en la unidad en que se lleva el progreso de este libro.
+  const unit = progressUnitOf(book)
+  if (unit === 'tiempo' && book.total_duration_seconds) return `${getProgressInfo(book).label} escuchado`
+  if (unit === 'porcentaje') return `${Math.round(book.progress_percent ?? 0)}%`
   if (book.total_pages) return `Página ${book.current_page ?? 0} de ${book.total_pages}`
   return 'Recién empezado'
 }

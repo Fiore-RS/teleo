@@ -133,6 +133,7 @@ export function useDataImport(userId: string | undefined) {
           total_pages: b.total_pages ?? null,
           current_page: b.current_page ?? null,
           progress_percent: b.progress_percent ?? null,
+          progress_unit: b.progress_unit ?? null,
           total_duration_seconds: b.total_duration_seconds ?? null,
           current_duration_seconds: b.current_duration_seconds ?? null,
           start_date: b.start_date ?? null,

@@ -1,5 +1,5 @@
 import type { Database } from '../../types/database'
-import { formatDuration } from '../../lib/progress'
+import { formatDuration, progressUnitOf } from '../../lib/progress'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -14,10 +14,12 @@ export function shortDate(value: string) {
 
 /** "Página 312 de 502", "01:20:00 de 09:15:00" o nada (digital: solo el porcentaje). */
 export function progressDetail(book: Book): string | null {
-  if (book.format === 'audiolibro' && book.total_duration_seconds) {
+  // V.4.6.0: en la unidad en que se lleva el progreso de este libro.
+  const unit = progressUnitOf(book)
+  if (unit === 'tiempo' && book.total_duration_seconds) {
     return `${formatDuration(book.current_duration_seconds ?? 0)} de ${formatDuration(book.total_duration_seconds)}`
   }
-  if (book.format !== 'digital' && book.total_pages) return `Página ${book.current_page ?? 0} de ${book.total_pages}`
+  if (unit === 'paginas' && book.total_pages) return `Página ${book.current_page ?? 0} de ${book.total_pages}`
   return null
 }
 

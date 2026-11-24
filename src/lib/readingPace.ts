@@ -1,11 +1,12 @@
 import type { Database } from '../types/database'
+import { progressUnitOf } from './progress'
 
 type Book = Database['public']['Tables']['books']['Row']
 
 type PaceFields = Pick<
   Book,
   'format' | 'start_date' | 'total_pages' | 'current_page' | 'progress_percent' | 'total_duration_seconds' | 'current_duration_seconds'
-> & { paused_days?: number | null }
+> & { paused_days?: number | null; progress_unit?: string | null }
 
 export interface ReadingPace {
   /** Fecha estimada de fin, en hora local. */
@@ -39,14 +40,16 @@ export function getReadingPace(book: PaceFields, today = new Date()): ReadingPac
   let done: number
   let total: number
   let format: (perDay: number) => string
-  if (book.format === 'audiolibro') {
+  // V.4.6.0: el ritmo va en la unidad en que se lleva el progreso de este libro.
+  const unit = progressUnitOf(book)
+  if (unit === 'tiempo') {
     done = book.current_duration_seconds ?? 0
     total = book.total_duration_seconds ?? 0
     format = (perDay) => {
       const min = Math.round(perDay / 60)
       return min >= 60 ? `${(min / 60).toFixed(1).replace('.0', '')} h por día` : `${Math.max(1, min)} min por día`
     }
-  } else if (book.format === 'digital') {
+  } else if (unit === 'porcentaje') {
     done = book.progress_percent ?? 0
     total = 100
     format = (perDay) => `${Math.max(1, Math.round(perDay))} % por día`
