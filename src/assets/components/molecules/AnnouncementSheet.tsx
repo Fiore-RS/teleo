@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useBreakpoint } from '../../../hooks/useBreakpoint'
 import { Button } from '../atoms/Button'
-import { ANNOUNCEMENT_VERSION, announcementItems, CATCH_UP_MIN } from '../../../lib/announcement'
+import { ANNOUNCEMENT_TITLE, ANNOUNCEMENT_VERSION, announcementItems, CATCH_UP_MIN } from '../../../lib/announcement'
 import { majorOf, versionOf, type ChangelogVersion } from '../../../lib/changelog'
 
 interface AnnouncementSheetProps {
@@ -80,7 +80,7 @@ function CatchUpCard({ missed, onSeeAll }: { missed: ChangelogVersion[]; onSeeAl
  *  ícono desde la V.3.3.0). */
 export function AnnouncementSheet({ onDone, missed = [], onSeeAll, onStartTour }: AnnouncementSheetProps) {
   const showCatchUp = missed.length >= CATCH_UP_MIN && !!onSeeAll
-  const announcedTitle = versionOf(ANNOUNCEMENT_VERSION)?.title
+  const announcedTitle = ANNOUNCEMENT_TITLE ?? versionOf(ANNOUNCEMENT_VERSION)?.title
 
   // La carta sobre la mesa en todos los tamaños (tableta y computadora desde la V.4.3.0;
   // celular desde la V.4.5.0, en lugar de la hoja que bajaba).

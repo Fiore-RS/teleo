@@ -30,6 +30,7 @@ const FECHA_V4 = '15 de noviembre de 2026'
 export const changelog: ChangelogEntry[] = [
   {
     version: '4.6.0',
+    announced: true,
     date: '24 de noviembre de 2026',
     title: 'Cada lectura a su manera',
     items: [
