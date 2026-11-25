@@ -680,7 +680,7 @@ export const RecapCard = forwardRef<HTMLDivElement, RecapCardProps>(function Rec
       className += ' cierre'
       const lines: [string, string | number][] = [['Libros', recap.readCount]]
       if (recap.pages > 0) lines.push(['Páginas', fmt(recap.pages)])
-      if (recap.audio) lines.push(['Escuchado', formatListenTime(recap.audio.seconds)])
+      if (recap.listenSeconds > 0) lines.push(['Escuchado', formatListenTime(recap.listenSeconds)])
       if (recap.bestMonth) lines.push(['Mes lector', MONTH_NAMES[recap.bestMonth.month - 1]])
       if (!isYear) lines.push(['Días con lectura', recap.readDays.length])
       if (recap.cards.includes('generos')) {

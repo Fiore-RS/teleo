@@ -27,6 +27,7 @@ import { useUserCustomMoods } from '../../../hooks/useUserCustomMoods'
 import { traitsFromBook, traitsToColumns, type BookTraits } from '../../../lib/bookTraits'
 import { useSaga } from '../../../hooks/useSaga'
 import { advanceNextInSaga, findNextInSaga, type NextInSaga } from '../../../lib/nextInSaga'
+import { logFinish, logProgressChange } from '../../../lib/progressLog'
 
 interface UpdateProgressModalProps {
   bookId: string
@@ -105,7 +106,10 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
     if (isPercent && (typedValue === null || typedValue > 100)) { setError('Ingresa un porcentaje entre 0 y 100'); return }
     if (activeUnit === 'paginas' && (typedValue === null || !Number.isInteger(typedValue))) { setError('Ingresa un número válido de páginas'); return }
     setIsSaving(true)
-    await updateBook(progressPatch(book, activeUnit, typedValue!))
+    const patch = progressPatch(book, activeUnit, typedValue!)
+    // V.4.6.0: se anota cuánto se avanzó hoy, para las páginas y el tiempo de cada mes.
+    await logProgressChange(user?.id, book, patch)
+    await updateBook(patch)
 
     setIsSaving(false)
     onUpdated()
@@ -118,6 +122,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   async function handleFinishConfirm(dates: ReadingDates) {
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
+    // V.4.6.0: lo que faltaba hasta el final cuenta el día en que se terminó.
+    await logFinish(user?.id, book!, endDate)
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
     // Se guarda esta lectura en el historial (primera vez o relectura) para que el reto anual,
     // "Mis años en libros" y el Resumen la cuenten en el año de la fecha de fin.

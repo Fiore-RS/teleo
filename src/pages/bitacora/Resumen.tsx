@@ -4,6 +4,7 @@ import { useYearGoal } from '../../hooks/useYearGoal'
 import { useProfile } from '../../hooks/useProfile'
 import { Check } from 'lucide-react'
 import { useYearReads, type YearRead } from '../../hooks/useYearReads'
+import { useReadingAmounts } from '../../hooks/useReadingAmounts'
 import { usePeriodFavorites } from '../../hooks/usePeriodFavorites'
 import { queryClient } from '../../lib/queryClient'
 import { MONTH_ABBR, MONTH_NAMES } from '../../lib/months'
@@ -114,7 +115,14 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
   // "Tu lectura en Teleo" (V.3.2.0): el periodo abierto en el visor.
   const [recapPeriod, setRecapPeriod] = useState<RecapPeriod | null>(null)
 
-  const { reads, totalPages, totalAudioSeconds, isLoading } = useYearReads(userId, year)
+  const { reads, isLoading: readsLoading } = useYearReads(userId, year)
+  // V.4.6.0: páginas y tiempo que se avanzaron en el año o el mes, no el total de los libros
+  // terminados en él.
+  const { between, isLoading: amountsLoading } = useReadingAmounts(userId)
+  const isLoading = readsLoading || amountsLoading
+  const yearAmounts = between(`${year}-01-01`, `${year}-12-31`)
+  const monthLast = new Date(year, month, 0).getDate()
+  const monthAmounts = between(`${year}-${String(month).padStart(2, '0')}-01`, `${year}-${String(month).padStart(2, '0')}-${monthLast}`)
 
   function goToMonth(y: number, m: number) {
     if (y !== year) onYearChange(y)
@@ -135,6 +143,7 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
           year={year}
           month={month}
           reads={reads.filter((r) => r.month === month)}
+          audioSeconds={monthAmounts.seconds}
           isLoading={isLoading}
           canGoNext={year < currentYear || month < currentMonth}
           onPrev={() => (month === 1 ? goToMonth(year - 1, 12) : setMonth(month - 1))}
@@ -151,8 +160,8 @@ export function Resumen({ userId, view, onViewChange, year, onYearChange }: Resu
           onViewChange={onViewChange}
           year={year}
           reads={reads}
-          totalPages={totalPages}
-          totalAudioSeconds={totalAudioSeconds}
+          totalPages={yearAmounts.pages}
+          totalAudioSeconds={yearAmounts.seconds}
           isLoading={isLoading}
           canGoNext={year < currentYear}
           onPrev={() => changeYear(year - 1)}
@@ -210,6 +219,8 @@ interface MonthViewProps extends SheetViewProps {
   year: number
   month: number
   reads: YearRead[]
+  /** Tiempo escuchado en el mes (V.4.6.0). */
+  audioSeconds: number
   isLoading: boolean
   canGoNext: boolean
   onPrev: () => void
@@ -219,7 +230,7 @@ interface MonthViewProps extends SheetViewProps {
 }
 
 /** Mes: los libros terminados ese mes, en repisas. */
-function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNext, onPrev, onNext, onBookClick, onOpenRecap }: MonthViewProps) {
+function MonthView({ view, onViewChange, year, month, reads, audioSeconds, isLoading, canGoNext, onPrev, onNext, onBookClick, onOpenRecap }: MonthViewProps) {
   // La hoja entra con la misma animación que las tarjetas de Estadísticas y Compras (solo la
   // primera vez en la sesión).
   const stagger = useStaggerOnce('resumen-mes')
@@ -228,8 +239,8 @@ function MonthView({ view, onViewChange, year, month, reads, isLoading, canGoNex
   const breakpoint = useBreakpoint()
   const hojaMode = useHojaMode()
   const perRow = breakpoint === 'escritorio' ? 6 : breakpoint === 'tableta' ? 5 : 3
-  // V.4.5.1: el tiempo de los audiolibros del mes (no tienen páginas).
-  const audioSeconds = reads.reduce((sum, r) => sum + (r.audioSeconds ?? 0), 0)
+  // V.4.5.1: el tiempo escuchado en el mes. V.4.6.0: lo que se escuchó ese mes (viene de
+  // useReadingAmounts), no la duración de los audiolibros terminados.
 
   // Tableta y computadora (V.4.2.0, lienzo "Resumen · Mes"): a la izquierda la hoja del mes con
   // el número grande y Compartir; a la derecha "Lo que terminaste", con la fecha de cada libro.
