@@ -95,6 +95,7 @@ export type Database = {
           price: number | null
           priority_sort_order: number | null
           progress_percent: number | null
+          progress_unit: string | null
           progress_updated_at: string | null
           purchase_date: string | null
           saga_id: string | null
@@ -138,6 +139,7 @@ export type Database = {
           price?: number | null
           priority_sort_order?: number | null
           progress_percent?: number | null
+          progress_unit?: string | null
           progress_updated_at?: string | null
           purchase_date?: string | null
           saga_id?: string | null
@@ -181,6 +183,7 @@ export type Database = {
           price?: number | null
           priority_sort_order?: number | null
           progress_percent?: number | null
+          progress_unit?: string | null
           progress_updated_at?: string | null
           purchase_date?: string | null
           saga_id?: string | null
@@ -347,6 +350,47 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_log: {
+        Row: {
+          book_id: string
+          created_at: string | null
+          format: string | null
+          id: string
+          logged_on: string
+          pages: number
+          seconds: number
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string | null
+          format?: string | null
+          id?: string
+          logged_on: string
+          pages?: number
+          seconds?: number
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string | null
+          format?: string | null
+          id?: string
+          logged_on?: string
+          pages?: number
+          seconds?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_log_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reading_goals: {
         Row: {
           created_at: string | null
@@ -458,6 +502,7 @@ export type Database = {
           book_id: string
           created_at: string | null
           end_date: string
+          format: string | null
           id: string
           start_date: string | null
           user_id: string
@@ -466,6 +511,7 @@ export type Database = {
           book_id: string
           created_at?: string | null
           end_date: string
+          format?: string | null
           id?: string
           start_date?: string | null
           user_id: string
@@ -474,6 +520,7 @@ export type Database = {
           book_id?: string
           created_at?: string | null
           end_date?: string
+          format?: string | null
           id?: string
           start_date?: string | null
           user_id?: string

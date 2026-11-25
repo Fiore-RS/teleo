@@ -14,6 +14,7 @@ import { BookTileSkeleton } from "../assets/components/atoms/Skeleton";
 import { FilterModal } from "../assets/components/molecules/FilterModal";
 import { defaultAdvancedFilters, hasActiveFilters, matchesSagaTraitFilters, matchesTraitFilters, type AdvancedFilters } from "../lib/advancedFilters";
 import { useTagsByBook } from "../hooks/useTagsByBook";
+import { useReadFormatsByBook } from "../hooks/useReadFormatsByBook";
 import { useUserTags } from "../hooks/useUserTags";
 import { useUserCustomMoods } from "../hooks/useUserCustomMoods";
 import { GenreSuggestSheet } from "../assets/components/molecules/GenreSuggestSheet";
@@ -185,6 +186,8 @@ export function Estante() {
   const hasActiveAdvFilters = hasActiveFilters(advFilters);
   // Género, ánimo, ritmo y etiquetas (V.3.1.0).
   const tagsByBook = useTagsByBook(user?.id);
+  // V.4.6.0: formatos de las lecturas terminadas de cada libro, para el filtro de formato.
+  const readFormatsByBook = useReadFormatsByBook(user?.id);
   const knownTags = useUserTags(user?.id);
   const knownCustomMoods = useUserCustomMoods(user?.id);
   const booksWithoutGenre = useMemo(() => books.filter((b) => (b.genres ?? []).length === 0).length, [books]);
@@ -207,7 +210,12 @@ export function Estante() {
       const matchesLanguage =
         advFilters.language === "todos" || normalizeLanguage(book.language) === advFilters.language;
       const matchesCategory = advFilters.category === "todos" || book.category === advFilters.category;
-      const matchesFormat = advFilters.format === "todos" || book.format === advFilters.format;
+      // V.4.6.0: el formato es de cada lectura; el filtro muestra los libros leídos alguna vez
+      // en ese formato (la lectura en curso o cualquiera ya terminada).
+      const matchesFormat =
+        advFilters.format === "todos" ||
+        (book.format === advFilters.format && book.status !== "pendiente" && book.status !== "deseado") ||
+        (readFormatsByBook[book.id] ?? []).includes(advFilters.format);
       const matchesOwned = !advFilters.owned || book.owned;
       const matchesTraits = matchesTraitFilters(book, tagsByBook[book.id] ?? [], advFilters);
       const matchesQuickFlag =
@@ -225,7 +233,7 @@ export function Estante() {
         matchesFilter && matchesLanguage && matchesCategory && matchesFormat && matchesOwned && matchesTraits && matchesQuickFlag && matchesSearch
       );
     });
-  }, [books, advFilters, quickFlag, search, tagsByBook]);
+  }, [books, advFilters, quickFlag, search, tagsByBook, readFormatsByBook]);
 
   const filteredSagas = useMemo(() => {
     const booksBySaga = new Map<string, typeof books>();

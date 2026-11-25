@@ -3,6 +3,8 @@ import { useCachedQuery } from './useCachedQuery'
 import type { Database } from '../types/database'
 import { computeMidpointOrder } from '../lib/reorder'
 import { refreshAll } from '../lib/queryClient'
+import type { ReadingStartPatch } from '../assets/components/molecules/StartReadingDateModal'
+import { ownedOnStartingPhysical } from '../lib/owned'
 
 type Book = Database['public']['Tables']['books']['Row']
 
@@ -48,10 +50,11 @@ export function usePriorityBooks(userId: string | undefined) {
 
   // Pasa el libro a "leyendo" — lo saca de esta lista automáticamente (el trigger de la base
   // de datos limpia is_priority en cuanto el estado deja de ser "pendiente").
-  async function startReading(bookId: string, startDate: string | null) {
+  async function startReading(bookId: string, startDate: string | null, patch: ReadingStartPatch) {
+    const book = books.find((b) => b.id === bookId)
     await supabase
       .from('books')
-      .update({ status: 'leyendo', ...(startDate ? { start_date: startDate } : {}) })
+      .update({ status: 'leyendo', ...patch, ...(book ? ownedOnStartingPhysical(book, patch) : {}), ...(startDate ? { start_date: startDate } : {}) })
       .eq('id', bookId)
     setBooks((prev) => prev.filter((b) => b.id !== bookId))
     // El libro pasa a Leyendo ahora (La mesa) y cambian las cifras de Perfil.

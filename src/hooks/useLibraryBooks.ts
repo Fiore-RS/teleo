@@ -60,7 +60,7 @@ export function useLibraryBooks(userId: string | undefined) {
       // Libro agregado ya terminado: si trae fecha de fin, se registra su lectura para que
       // cuente en el reto anual (antes no se registraba y nunca contaba).
       if (data.status === 'terminado') {
-        await recordBookCompletion({ bookId: data.id, userId, startDate: data.start_date, endDate: data.end_date })
+        await recordBookCompletion({ bookId: data.id, userId, startDate: data.start_date, endDate: data.end_date, format: data.format })
       }
       // Un libro nuevo puede mover la meta, Leyendo ahora, Bitácora o Perfil.
       void refreshAll()

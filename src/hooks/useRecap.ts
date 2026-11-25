@@ -6,6 +6,7 @@ import { useCachedQuery } from './useCachedQuery'
 import { useYearReads } from './useYearReads'
 import { usePeriodFavorites } from './usePeriodFavorites'
 import { useYearGoal } from './useYearGoal'
+import { useReadingAmounts } from './useReadingAmounts'
 
 const EMPTY_DATES: string[] = []
 const EMPTY_PRIOR: Record<string, number> = {}
@@ -38,7 +39,10 @@ export function useRecap(userId: string | undefined, periodInput: RecapPeriod) {
     () => (period.kind === 'mes' ? yearReads.filter((r) => r.month === period.month) : yearReads),
     [yearReads, period]
   )
-  const { start } = periodBounds(period)
+  const { start, last } = periodBounds(period)
+  // V.4.6.0: páginas y tiempo que se avanzaron en el periodo.
+  const { between, isLoading: amountsLoading } = useReadingAmounts(userId)
+  const amounts = useMemo(() => between(start, last), [between, start, last])
   const bookIds = useMemo(() => [...new Set(reads.map((r) => r.bookId))].sort(), [reads])
 
   const { data: prior, isLoading: priorLoading } = useCachedQuery<Record<string, number>>(
@@ -75,11 +79,12 @@ export function useRecap(userId: string | undefined, periodInput: RecapPeriod) {
         favoriteBookId,
         today,
         goal,
+        amounts,
       }),
-    [period, reads, sessionDates, prior, favoriteBookId, today, goal]
+    [period, reads, sessionDates, prior, favoriteBookId, today, goal, amounts]
   )
 
   const isLoading =
-    readsLoading || favoritesLoading || sessionsLoading || (bookIds.length > 0 && priorLoading) || (period.kind === 'anio' && goalLoading)
+    readsLoading || amountsLoading || favoritesLoading || sessionsLoading || (bookIds.length > 0 && priorLoading) || (period.kind === 'anio' && goalLoading)
   return { recap, isLoading }
 }

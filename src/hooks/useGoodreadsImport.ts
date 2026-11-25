@@ -246,7 +246,8 @@ export async function importGoodreadsBooks(
     author: book.author,
     isbn: book.isbn,
     status: book.status,
-    format: book.format,
+    // V.4.6.0: el formato es de la lectura. En Pendiente y Deseados se elige al empezar.
+    format: book.status === 'pendiente' || book.status === 'deseado' ? null : book.format,
     total_pages: book.totalPages,
     // Un libro leído queda en su última página, igual que al terminarlo en la app.
     current_page: book.status === 'terminado' ? book.totalPages : null,
@@ -290,7 +291,7 @@ export async function importGoodreadsBooks(
     'reading_history',
     books.flatMap((book, i) =>
       book.status === 'terminado' && book.endDate
-        ? [{ user_id: userId, book_id: ids[i], start_date: null, end_date: book.endDate }]
+        ? [{ user_id: userId, book_id: ids[i], start_date: null, end_date: book.endDate, format: book.format }]
         : []
     )
   )

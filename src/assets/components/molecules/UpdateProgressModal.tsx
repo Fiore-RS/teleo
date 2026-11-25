@@ -6,7 +6,7 @@ import { DetailSkeleton } from '../atoms/Skeleton'
 import { CoverImage } from '../atoms/CoverImage'
 import { useAuth } from '../../../hooks/useAuth'
 import { useBook } from '../../../hooks/useBook'
-import { getProgressInfo } from '../../../lib/progress'
+import { getProgressInfo, progressPatch, progressUnitLabel, progressUnitOf, progressUnitsFor, type ProgressUnit } from '../../../lib/progress'
 import { getReadingPace, paceSentence } from '../../../lib/readingPace'
 import { parseDurationInput, secondsToTimeInput } from '../../../lib/duration'
 import { recordBookCompletion } from '../../../lib/readingHistory'
@@ -27,6 +27,7 @@ import { useUserCustomMoods } from '../../../hooks/useUserCustomMoods'
 import { traitsFromBook, traitsToColumns, type BookTraits } from '../../../lib/bookTraits'
 import { useSaga } from '../../../hooks/useSaga'
 import { advanceNextInSaga, findNextInSaga, type NextInSaga } from '../../../lib/nextInSaga'
+import { logFinish, logProgressChange } from '../../../lib/progressLog'
 
 interface UpdateProgressModalProps {
   bookId: string
@@ -55,47 +56,60 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   // de datos, para que no vuelva a aparecer mientras este modal siga abierto.
   const [startDatePromptIgnored, setStartDatePromptIgnored] = useState(false)
 
-  const isAudio = book?.format === 'audiolibro'
-  const isDigital = book?.format === 'digital'
+  // V.4.6.0: unidad del progreso (páginas, tiempo o porcentaje), según el formato de esta
+  // lectura y la última que se eligió en el libro.
+  const units: ProgressUnit[] = book ? progressUnitsFor(book) : []
+  const savedUnit: ProgressUnit | null = book ? progressUnitOf(book) : null
+  const [unit, setUnit] = useState<ProgressUnit | null>(null)
+  const activeUnit = unit ?? savedUnit
+  const isTime = activeUnit === 'tiempo'
+  const isPercent = activeUnit === 'porcentaje'
   const showMissingStartDatePrompt = !!book && book.status === 'leyendo' && !book.start_date && !startDatePromptIgnored
 
   // El campo arranca con el progreso guardado y se vuelve a llenar solo cuando ese progreso
   // cambia (al abrir o después de guardar). Se ajusta durante el render en vez de en un efecto,
   // así no hay un render extra ni se borra lo que se está escribiendo si el libro se recarga
   // por otra cosa (por ejemplo, al poner la fecha de inicio).
-  const savedValue = !book
-    ? null
-    : isAudio
-      ? secondsToTimeInput(book.current_duration_seconds ?? 0)
-      : isDigital
-        ? String(book.progress_percent ?? 0)
-        : String(book.current_page ?? 0)
+  const savedValue = !book || !savedUnit ? null : valueIn(book, savedUnit)
   const [filledFrom, setFilledFrom] = useState<string | null>(null)
   if (savedValue !== null && savedValue !== filledFrom) {
     setFilledFrom(savedValue)
     setValue(savedValue)
+    setUnit(null)
+  }
+
+  /** Lo que se escribió, como número en la unidad activa (null si todavía no se entiende). */
+  function parseTyped(text: string): number | null {
+    if (isTime) return parseDurationInput(text)
+    const n = Number.parseFloat(text.replace(',', '.'))
+    return Number.isNaN(n) || n < 0 ? null : n
+  }
+
+  // Cambiar de unidad pasa lo escrito a la otra unidad (con el total de páginas o la duración),
+  // así no se pierde el avance.
+  function handleUnitChange(next: ProgressUnit) {
+    if (!book || !activeUnit || next === activeUnit) return
+    const typedNow = parseTyped(value)
+    const base = typedNow !== null ? { ...book, ...progressPatch(book, activeUnit, typedNow) } : book
+    setUnit(next)
+    setValue(valueIn(base, next))
+    setError(null)
   }
 
   async function handleUpdate() {
     if (!book) return
     setError(null)
 
-    if (isAudio) {
-      const seconds = parseDurationInput(value)
-      if (seconds === null) { setError('Formato inválido, usa hh:mm:ss'); return }
-      setIsSaving(true)
-      await updateBook({ current_duration_seconds: seconds })
-    } else if (isDigital) {
-      const percent = parseInt(value, 10)
-      if (isNaN(percent) || percent < 0 || percent > 100) { setError('Ingresa un porcentaje entre 0 y 100'); return }
-      setIsSaving(true)
-      await updateBook({ progress_percent: percent })
-    } else {
-      const pages = parseInt(value, 10)
-      if (isNaN(pages) || pages < 0) { setError('Ingresa un número válido de páginas'); return }
-      setIsSaving(true)
-      await updateBook({ current_page: pages })
-    }
+    if (!activeUnit) return
+    const typedValue = parseTyped(value)
+    if (isTime && typedValue === null) { setError('Formato inválido, usa hh:mm:ss'); return }
+    if (isPercent && (typedValue === null || typedValue > 100)) { setError('Ingresa un porcentaje entre 0 y 100'); return }
+    if (activeUnit === 'paginas' && (typedValue === null || !Number.isInteger(typedValue))) { setError('Ingresa un número válido de páginas'); return }
+    setIsSaving(true)
+    const patch = progressPatch(book, activeUnit, typedValue!)
+    // V.4.6.0: se anota cuánto se avanzó hoy, para las páginas y el tiempo de cada mes.
+    await logProgressChange(user?.id, book, patch)
+    await updateBook(patch)
 
     setIsSaving(false)
     onUpdated()
@@ -108,10 +122,12 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   async function handleFinishConfirm(dates: ReadingDates) {
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
+    // V.4.6.0: lo que faltaba hasta el final cuenta el día en que se terminó.
+    await logFinish(user?.id, book!, endDate)
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
     // Se guarda esta lectura en el historial (primera vez o relectura) para que el reto anual,
     // "Mis años en libros" y el Resumen la cuenten en el año de la fecha de fin.
-    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate })
+    await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate, format: book?.format ?? null })
     onUpdated()
   }
 
@@ -121,7 +137,7 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   }
 
   async function handleAdvanceNext(next: NextInSaga) {
-    await advanceNextInSaga(next)
+    await advanceNextInSaga(next, book?.format ?? null)
     void queryClient.invalidateQueries()
   }
 
@@ -158,36 +174,22 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
   // Vista previa en vivo: la barra y lo que falta se calculan con lo que se está escribiendo,
   // antes de guardar. Si el valor no se entiende todavía, se usa el guardado.
-  const typed = !book
-    ? null
-    : isAudio
-      ? parseDurationInput(value)
-      : Number.parseInt(value, 10)
-  const typedValid = typed !== null && !Number.isNaN(typed) && typed >= 0
-  const preview = book
-    ? {
-        ...book,
-        ...(typedValid
-          ? isAudio
-            ? { current_duration_seconds: typed }
-            : isDigital
-              ? { progress_percent: Math.min(typed, 100) }
-              : { current_page: typed }
-          : {}),
-      }
+  const typed = book ? parseTyped(value) : null
+  const preview = book && activeUnit
+    ? { ...book, ...(typed !== null ? progressPatch(book, activeUnit, isPercent ? Math.min(typed, 100) : typed) : { progress_unit: activeUnit }) }
     : null
   const percent = preview ? Math.min(100, Math.max(0, getProgressInfo(preview).percent)) : 0
 
   let remaining: string | null = null
   if (preview) {
-    if (isAudio && preview.total_duration_seconds) {
+    if (isTime && preview.total_duration_seconds) {
       const left = Math.max(0, preview.total_duration_seconds - (preview.current_duration_seconds ?? 0))
       const h = Math.floor(left / 3600)
       const m = Math.floor((left % 3600) / 60)
       remaining = left === 0 ? 'Ya lo terminaste' : `Te faltan ${h > 0 ? `${h} h ` : ''}${m} min`
-    } else if (isDigital) {
-      const left = 100 - (preview.progress_percent ?? 0)
-      remaining = left <= 0 ? 'Ya lo terminaste' : `Te falta ${left} %`
+    } else if (isPercent) {
+      const left = Math.round((100 - (preview.progress_percent ?? 0)) * 10) / 10
+      remaining = left <= 0 ? 'Ya lo terminaste' : `Te falta ${String(left).replace('.', ',')} %`
     } else if (preview.total_pages) {
       const left = Math.max(0, preview.total_pages - (preview.current_page ?? 0))
       remaining = left === 0 ? 'Ya lo terminaste' : `Te ${left === 1 ? 'falta 1 pág.' : `faltan ${left} págs.`}`
@@ -195,14 +197,36 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
   }
 
   const pace = book ? getReadingPace(book) : null
-  const hasChanges = savedValue !== null && value.trim() !== savedValue
+  const hasChanges = savedValue !== null && (value.trim() !== savedValue || (unit !== null && unit !== savedUnit))
 
   let totalLabel: string | null = null
   if (book) {
-    if (isAudio) totalLabel = book.total_duration_seconds ? `de ${secondsToTimeInput(book.total_duration_seconds)}` : null
-    else if (isDigital) totalLabel = '%'
+    if (isTime) totalLabel = book.total_duration_seconds ? `de ${secondsToTimeInput(book.total_duration_seconds)}` : null
+    else if (isPercent) totalLabel = '%'
     else totalLabel = book.total_pages ? `de ${book.total_pages}` : null
   }
+  const fieldLabel = isTime ? 'Tiempo escuchado' : isPercent ? 'Porcentaje leído' : 'Página actual'
+  const field = isTime ? (
+    <DurationMaskInput
+      bare
+      id="progress-value"
+      value={value}
+      onChange={setValue}
+      className="w-32! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
+    />
+  ) : (
+    <Input
+      bare
+      id="progress-value"
+      type="number"
+      inputMode={isPercent ? 'decimal' : 'numeric'}
+      min={0}
+      max={isPercent ? 100 : undefined}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      className="w-18! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
+    />
+  )
 
   return (
     <>
@@ -239,41 +263,24 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
             </div>
 
             <FormCard>
-              {/* V.4.5.2: en audiolibros la cifra (00:00:00) y "de 12:13:00" no caben junto a la
-                  etiqueta en el teléfono y se montaban sobre ella; ahí la fila se apila. */}
-              {isAudio ? (
-                <div className="flex flex-col gap-1 px-3.5 py-2.5 min-h-12 tableta:flex-row tableta:items-center tableta:justify-between tableta:gap-3">
-                  <label htmlFor="progress-value" className="font-body font-semibold text-body-md text-text-secondary whitespace-nowrap shrink-0">
-                    Tiempo escuchado
-                  </label>
-                  <span className="flex items-baseline justify-end gap-1.5 min-w-0">
-                    <DurationMaskInput
-                      bare
-                      id="progress-value"
-                      value={value}
-                      onChange={setValue}
-                      className="w-32! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
-                    />
+              {units.length > 1 ? (
+                // V.4.6.0 (opción 1 del lienzo): la unidad arriba, de lado a lado, y la cifra
+                // centrada con su total. Así no queda espacio vacío entre la etiqueta y el campo.
+                <div className="px-3 pt-3 pb-3.5">
+                  <UnitPicker units={units} value={activeUnit!} onChange={handleUnitChange} />
+                  <div className="flex items-baseline justify-center gap-2 mt-3">
+                    <label htmlFor="progress-value" className="sr-only">{fieldLabel}</label>
+                    {field}
                     {totalLabel && <span className="text-body-md text-text-muted whitespace-nowrap">{totalLabel}</span>}
-                  </span>
+                  </div>
                 </div>
               ) : (
-              <FormRow label={isDigital ? 'Porcentaje leído' : 'Página actual'} htmlFor="progress-value">
-                <span className="flex items-baseline justify-end gap-1.5">
-                    <Input
-                      bare
-                      id="progress-value"
-                      type="number"
-                      inputMode="numeric"
-                      min={0}
-                      max={isDigital ? 100 : undefined}
-                      value={value}
-                      onChange={(e) => setValue(e.target.value)}
-                      className="w-18! text-center font-display font-semibold text-[22px] tabular-nums border-b-[1.5px] border-border focus:border-primary-text"
-                    />
-                  {totalLabel && <span className="text-body-md text-text-muted whitespace-nowrap">{totalLabel}</span>}
-                </span>
-              </FormRow>
+                <FormRow label={fieldLabel} htmlFor="progress-value">
+                  <span className="flex items-baseline justify-end gap-1.5">
+                    {field}
+                    {totalLabel && <span className="text-body-md text-text-muted whitespace-nowrap">{totalLabel}</span>}
+                  </span>
+                </FormRow>
               )}
             </FormCard>
             {error && <p className="text-body-sm text-primary-text mt-2 animate-fade-in">{error}</p>}
@@ -342,8 +349,8 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
         <AddQuoteSheet
           userId={user?.id}
           initialBook={{ id: book.id, title: book.title, author: book.author, cover_url: book.cover_url, status: book.status }}
-          // En libros de papel arranca con la página escrita arriba (aunque aún no se guarde).
-          initialPage={!isAudio && !isDigital ? Number.parseInt(value, 10) || null : null}
+          // Si el progreso va en páginas, arranca con la página escrita arriba (aunque aún no se guarde).
+          initialPage={activeUnit === 'paginas' ? Number.parseInt(value, 10) || null : null}
           onClose={() => setIsAddingQuote(false)}
           onSave={addQuote}
         />
@@ -351,5 +358,39 @@ export function UpdateProgressModal({ bookId, onClose, onUpdated }: UpdateProgre
 
       {isReviewOpen && <Resena bookId={bookId} onClose={handleReviewClose} />}
     </>
+  )
+}
+/** Texto del campo en una unidad, con el progreso guardado (o el que se está escribiendo). */
+function valueIn(
+  book: { current_page: number | null; current_duration_seconds: number | null; progress_percent: number | null },
+  unit: ProgressUnit
+): string {
+  if (unit === 'tiempo') return secondsToTimeInput(book.current_duration_seconds ?? 0)
+  if (unit === 'porcentaje') return String(Math.round((book.progress_percent ?? 0) * 10) / 10)
+  return String(book.current_page ?? 0)
+}
+
+/** Selector de unidad (V.4.6.0): Páginas | Porcentaje o Tiempo | Porcentaje, de lado a lado. */
+function UnitPicker({ units, value, onChange }: { units: ProgressUnit[]; value: ProgressUnit; onChange: (unit: ProgressUnit) => void }) {
+  return (
+    <div role="radiogroup" aria-label="Unidad del progreso" className="grid grid-cols-2 gap-1 p-1 bg-surface border border-border rounded-field">
+      {units.map((u) => {
+        const isActive = u === value
+        return (
+          <button
+            key={u}
+            type="button"
+            role="radio"
+            aria-checked={isActive}
+            onClick={() => onChange(u)}
+            className={`py-2 px-1 rounded-[6px] font-body font-bold text-body-md transition-all duration-150 ${
+              isActive ? 'bg-surface-2 text-primary-text shadow-card' : 'text-text-secondary'
+            }`}
+          >
+            {progressUnitLabel[u]}
+          </button>
+        )
+      })}
+    </div>
   )
 }

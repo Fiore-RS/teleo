@@ -4,7 +4,11 @@ import { versiones, type ChangelogVersion } from './changelog'
  *  interno; en la carta se ve como "Versión 4"). Cuando haya otro lanzamiento grande, se cambia
  *  esta versión y sus puntos destacados. La Versión 4 sale toda junta, así que su carta cuenta
  *  todo lo de escritorio y teléfono. */
-export const ANNOUNCEMENT_VERSION = '4.5.0'
+export const ANNOUNCEMENT_VERSION = '4.6.0'
+
+/** Título de la carta. Sin esto se usa el de la versión grande (la Versión 4 salió toda junta
+ *  con "En cualquier mesa"); la 4.6.0 es una parte con carta propia (Fiorella, 24 nov 2026). */
+export const ANNOUNCEMENT_TITLE: string | null = 'Cada lectura a su manera'
 
 /** true si la hoja de esta versión ofrece "Ver el tutorial" (lo estrenó la 3.3.0). Se apaga
  *  en versiones que no tratan del tutorial; se puede volver a prender si cambia. */
@@ -16,12 +20,11 @@ export interface AnnouncementItem {
 }
 
 export const announcementItems: AnnouncementItem[] = [
-  { title: 'Teleo en la computadora', text: 'Ábrela desde el navegador, con cada pantalla pensada para pantallas grandes.' },
-  { title: 'Una dirección nueva', text: 'Teleo ahora vive en teleo.fiorers.dev, con todo lo tuyo en tu cuenta.' },
-  { title: 'Tu cuaderno, en el teléfono', text: 'Lo que estás leyendo, las hojas y tu Bitácora ahora son hojas de cuaderno.' },
-  { title: 'Tu librero', text: 'El Estante y las estanterías del Perfil son un librero de madera.' },
-  { title: 'Siempre al día', text: 'Lo que cambias en un dispositivo aparece solo en los demás.' },
-  { title: 'Una carta para ti', text: 'Las novedades llegan en una carta, como esta.' },
+  { title: 'El formato, en cada lectura', text: 'Eliges físico, digital o audiolibro al empezar a leer. Releer en otro formato cuenta como relectura.' },
+  { title: 'Páginas y duración', text: 'Al empezar puedes poner o corregir las páginas o la duración del libro.' },
+  { title: 'Tu progreso, a tu manera', text: 'Los digitales en páginas o porcentaje, los audiolibros en tiempo o porcentaje.' },
+  { title: 'Cada mes con lo suyo', text: 'Las páginas y el tiempo cuentan en el mes en que los leíste, aunque todavía no termines el libro.' },
+  { title: 'Tus lecturas anteriores', text: 'En Editar libro ves las fechas y el formato de cada una, y puedes corregirlo.' },
 ]
 
 /** true si la versión `seen` es anterior a `target` (compara números: 1.10.0 > 1.9.0). */

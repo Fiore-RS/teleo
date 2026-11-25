@@ -29,6 +29,21 @@ const FECHA_V4 = '15 de noviembre de 2026'
 
 export const changelog: ChangelogEntry[] = [
   {
+    version: '4.6.0',
+    announced: true,
+    date: '24 de noviembre de 2026',
+    title: 'Cada lectura a su manera',
+    items: [
+      'El formato se elige al empezar a leer, junto con la fecha de inicio. Si tienes un libro en físico y después lo escuchas en audiolibro, es el mismo libro y cuenta como relectura.',
+      'Al empezar, puedes poner o corregir las páginas o la duración del libro. Quedan guardadas en el libro.',
+      'En Editar libro, el formato está en Tu lectura, y tus lecturas anteriores muestran sus fechas y su formato, que puedes cambiar.',
+      'Cada lectura cuenta en tus estadísticas con su formato: lo que escuchas suma tiempo y lo que lees suma páginas.',
+      'Un libro digital se puede actualizar en páginas o en porcentaje, y un audiolibro en tiempo o en porcentaje. Teleo recuerda lo que elegiste en cada libro.',
+      'Las páginas y el tiempo de cada mes y cada año cuentan lo que leíste en ese periodo, también lo de los libros que todavía no terminas.',
+      'El filtro de formato del Estante muestra los libros que leíste alguna vez en ese formato.',
+    ],
+  },
+  {
     version: '4.5.2',
     date: '24 de noviembre de 2026',
     title: 'Con espacio para escuchar',
