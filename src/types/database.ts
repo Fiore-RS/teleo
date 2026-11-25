@@ -350,6 +350,47 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_log: {
+        Row: {
+          book_id: string
+          created_at: string | null
+          format: string | null
+          id: string
+          logged_on: string
+          pages: number
+          seconds: number
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string | null
+          format?: string | null
+          id?: string
+          logged_on: string
+          pages?: number
+          seconds?: number
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string | null
+          format?: string | null
+          id?: string
+          logged_on?: string
+          pages?: number
+          seconds?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_log_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reading_goals: {
         Row: {
           created_at: string | null

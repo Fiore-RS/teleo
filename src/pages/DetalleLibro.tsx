@@ -44,6 +44,7 @@ import { useUserCustomMoods } from '../hooks/useUserCustomMoods'
 import { useUserTags } from '../hooks/useUserTags'
 import { traitsFromBook, traitsSummary, traitsToColumns, type BookTraits } from '../lib/bookTraits'
 import { ownedOnLeavingWishlist, ownedOnStartingPhysical } from '../lib/owned'
+import { logFinish } from '../lib/progressLog'
 
 /** En Editar libro, al pasar el estado de Deseado a otro, un libro físico queda con "Lo tengo"
  *  (V.3.7.0). Después se puede quitar con el interruptor. */
@@ -219,6 +220,7 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
       // Terminado: las fechas se guardan desde acá, sin pasar por la reseña, y el historial
       // de lecturas (fuente del reto anual) queda igual a ellas.
       await updateBook({ ...updates, start_date: startDate, end_date: endDate })
+      if (book.status !== 'terminado') await logFinish(user?.id, { ...book, ...updates, status: book.status }, endDate)
       if (book.status === 'terminado') {
         await syncLatestReading({ bookId, userId: user?.id, startDate, endDate, format: draft.format })
       } else {
@@ -316,6 +318,8 @@ export function DetalleLibro({ bookId, onClose, onDeleted }: DetalleLibroProps) 
   async function handleFinishConfirm(dates: ReadingDates) {
     const startDate = dates.startDate || null
     const endDate = dates.endDate || null
+    // V.4.6.0: lo que faltaba hasta el final cuenta el día en que se terminó.
+    if (book) await logFinish(user?.id, book, endDate)
     await updateBook({ status: 'terminado', start_date: startDate, end_date: endDate })
     await recordBookCompletion({ bookId, userId: user?.id, startDate, endDate, format: book?.format ?? null })
     refetchReadCount()

@@ -6,6 +6,8 @@ import { computeTraitStats, type TraitStats } from '../lib/traitStats'
 import { languageLabel } from '../lib/languages'
 import { isReviewWritten, REVIEW_CONTENT_COLUMNS } from '../lib/reviews'
 import { readingAmounts, readingFormatOf } from '../lib/readingHistory'
+import { amountsBetween, dailyAmounts } from '../lib/readingAmounts'
+import { todayLocalDate } from '../lib/date'
 
 export type { CountEntry }
 
@@ -104,14 +106,17 @@ export function useLibraryStats(userId: string | undefined) {
       { data: reviewsData },
       { data: historyData },
       { data: sessionsData },
+      { data: logsData },
     ] = await Promise.all([
       supabase.from('books')
-        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, saga_id, created_at, genres, moods, custom_moods, pace, owned')
+        .select('id, title, author, status, category, format, language, total_pages, total_duration_seconds, current_page, current_duration_seconds, start_date, saga_id, created_at, genres, moods, custom_moods, pace, owned')
         .eq('user_id', userId),
       supabase.from('sagas').select('id, status').eq('user_id', userId),
       supabase.from('reviews').select(`id, book_id, ${REVIEW_CONTENT_COLUMNS}`).eq('user_id', userId),
-      supabase.from('reading_history').select('book_id, end_date, format').eq('user_id', userId),
+      supabase.from('reading_history').select('book_id, start_date, end_date, format').eq('user_id', userId),
       supabase.from('reading_sessions').select('session_date').eq('user_id', userId),
+      // V.4.6.0: avances anotados, para las páginas y el tiempo de cada año.
+      supabase.from('progress_log').select('book_id, logged_on, pages, seconds').eq('user_id', userId),
     ])
 
     const books = booksData ?? []
@@ -242,11 +247,12 @@ export function useLibraryStats(userId: string | undefined) {
     const ratingByBook = new Map(
       reviews.filter((r) => typeof r.general_rating === 'number').map((r) => [r.book_id, r.general_rating as number])
     )
+    // V.4.6.0: páginas y tiempo que se avanzaron en cada año (lib/readingAmounts.ts), no el
+    // total de los libros terminados en él.
+    const daily = dailyAmounts(reads, books, logsData ?? [], todayLocalDate())
     const porAnio = yearsBreakdown.map(({ year, count }) => {
       const yearReads = reads.filter((h) => h.end_date.startsWith(String(year)))
-      const pages = yearReads.reduce((sum, h) => sum + amountsOf(h).pages, 0)
-      // V.4.5.1: el tiempo de los audiolibros terminados ese año (una relectura suma otra vez).
-      const audioSeconds = yearReads.reduce((sum, h) => sum + amountsOf(h).audioSeconds, 0)
+      const { pages, seconds: audioSeconds } = amountsBetween(daily, `${year}-01-01`, `${year}-12-31`)
       const ratings = [...new Set(yearReads.map((h) => h.book_id))]
         .map((id) => ratingByBook.get(id))
         .filter((v): v is number => typeof v === 'number')

@@ -35,6 +35,7 @@ export function useDataExport(userId: string | undefined) {
         readingSessions,
         periodFavorites,
         releases,
+        progressLog,
       ] = await Promise.all([
         fetchAllRows((from, to) => supabase.from('sagas').select('*').eq('user_id', userId).order('id').range(from, to)),
         fetchAllRows((from, to) => supabase.from('books').select('*').eq('user_id', userId).order('id').range(from, to)),
@@ -71,6 +72,8 @@ export function useDataExport(userId: string | undefined) {
         fetchAllRows((from, to) => supabase.from('reading_sessions').select('*').eq('user_id', userId).order('id').range(from, to)),
         fetchAllRows((from, to) => supabase.from('period_favorites').select('*').eq('user_id', userId).order('id').range(from, to)),
         fetchAllRows((from, to) => supabase.from('releases').select('*').eq('user_id', userId).order('id').range(from, to)),
+        // V.4.6.0: avances de lectura.
+        fetchAllRows((from, to) => supabase.from('progress_log').select('*').eq('user_id', userId).order('id').range(from, to)),
       ])
 
       const exportPayload = {
@@ -89,6 +92,7 @@ export function useDataExport(userId: string | undefined) {
         readingSessions,
         periodFavorites,
         releases,
+        progressLog,
       }
 
       const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' })

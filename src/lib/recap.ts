@@ -69,6 +69,8 @@ export interface RecapData {
   /** V.4.5.1: tiempo escuchado (una relectura suma otra vez, como las páginas) y los audiolibros
    *  sin repetir, en orden de fin. null si en el periodo no hay audiolibros con duración. */
   audio: { seconds: number; books: RecapBook[] } | null
+  /** V.4.6.0: tiempo escuchado en el periodo (aunque no se haya terminado un audiolibro). */
+  listenSeconds: number
   /** Centímetros de las páginas apiladas. */
   stackCm: number
   /** Solo en el año: páginas por día, redondeado. */
@@ -109,6 +111,9 @@ export interface BuildRecapInput {
   today: string
   /** Meta de libros del año (reading_goals), 0 si no hay. Solo cuenta en el año. */
   goal?: number
+  /** V.4.6.0: páginas y segundos que se avanzaron en el periodo (useReadingAmounts). Sin esto,
+   *  se suman los libros terminados, como antes. */
+  amounts?: { pages: number; seconds: number }
 }
 
 function pad(n: number) {
@@ -130,7 +135,7 @@ function daysBetween(from: string, to: string) {
 
 const toBook = (r: YearRead): RecapBook => ({ bookId: r.bookId, title: r.title, author: r.author, coverUrl: r.coverUrl, endDate: r.endDate })
 
-export function buildRecap({ period, reads, sessionDates, priorCompletions, favoriteBookId, today, goal: goalTarget = 0 }: BuildRecapInput): RecapData {
+export function buildRecap({ period, reads, sessionDates, priorCompletions, favoriteBookId, today, goal: goalTarget = 0, amounts }: BuildRecapInput): RecapData {
   const { start, last } = periodBounds(period)
   const isOngoing = today >= start && today <= last
   const end = isOngoing ? today : last
@@ -141,13 +146,18 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
   for (const r of reads) if (!byId.has(r.bookId)) byId.set(r.bookId, toBook(r))
   const books = [...byId.values()]
 
-  // Como en Resumen: una relectura suma sus páginas otra vez.
-  const pages = reads.reduce((sum, r) => sum + r.pages, 0)
+  // V.4.6.0: las páginas que se avanzaron en el periodo. Sin ese dato, como antes: una
+  // relectura suma sus páginas otra vez.
+  const pages = amounts ? amounts.pages : reads.reduce((sum, r) => sum + r.pages, 0)
 
   // Audiolibros (V.4.5.1): su propia tarjeta, con el tiempo escuchado.
   const audioReads = reads.filter((r) => (r.audioSeconds ?? 0) > 0)
-  const audioSeconds = audioReads.reduce((sum, r) => sum + (r.audioSeconds ?? 0), 0)
-  const audio = audioSeconds > 0 ? { seconds: audioSeconds, books: [...new Map(audioReads.map((r) => [r.bookId, toBook(r)])).values()] } : null
+  // V.4.6.0: el tiempo es el que se escuchó en el periodo; la tarjeta sale si además se terminó
+  // algún audiolibro (sus portadas).
+  const listenSeconds = amounts ? amounts.seconds : audioReads.reduce((sum, r) => sum + (r.audioSeconds ?? 0), 0)
+  const audio = listenSeconds > 0 && audioReads.length > 0
+    ? { seconds: listenSeconds, books: [...new Map(audioReads.map((r) => [r.bookId, toBook(r)])).values()] }
+    : null
 
   // Mes más lector (solo en el año).
   let months: (number | null)[] | null = null
@@ -231,6 +241,7 @@ export function buildRecap({ period, reads, sessionDates, priorCompletions, favo
     books,
     pages,
     audio,
+    listenSeconds,
     stackCm: Math.round((pages * MM_PER_PAGE) / 10),
     pagesPerDay: period.kind === 'anio' && pages > 0 ? Math.round(pages / elapsedDays) : null,
     readDays: periodSessions,

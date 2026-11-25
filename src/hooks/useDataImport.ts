@@ -22,6 +22,7 @@ interface ImportableTables {
   reading_sessions: Tables<'reading_sessions'>
   period_favorites: Tables<'period_favorites'>
   releases: Tables<'releases'>
+  progress_log: Tables<'progress_log'>
   profiles: Tables<'profiles'>
 }
 
@@ -40,6 +41,8 @@ interface ExportPayload {
   readingSessions?: Backup<'reading_sessions'>[]
   periodFavorites?: Backup<'period_favorites'>[]
   releases?: Backup<'releases'>[]
+  // V.4.6.0:
+  progressLog?: Backup<'progress_log'>[]
 }
 
 /** Tamaño de cada tanda al insertar, para no mandar miles de filas en un solo pedido. */
@@ -66,7 +69,7 @@ async function insertReturningIds(
 
 /** Inserta filas por tandas, sin necesitar lo que devuelve la base. */
 async function insertAll(
-  table: 'book_tags' | 'custom_ratings' | 'favorite_quotes' | 'reading_goals' | 'reading_history' | 'reading_sessions' | 'period_favorites' | 'releases',
+  table: 'book_tags' | 'custom_ratings' | 'favorite_quotes' | 'reading_goals' | 'reading_history' | 'reading_sessions' | 'period_favorites' | 'releases' | 'progress_log',
   rows: Record<string, unknown>[]
 ) {
   for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
@@ -261,6 +264,21 @@ export function useDataImport(userId: string | undefined) {
               format: b.format ?? null,
             }))
       await insertAll('reading_history', historyRows)
+
+      // V.4.6.0: avances de lectura (respaldos desde la 4.6.0).
+      await insertAll(
+        'progress_log',
+        (parsed.progressLog ?? [])
+          .filter((l) => l.book_id && l.logged_on && bookIdMap.has(l.book_id))
+          .map((l) => ({
+            user_id: userId,
+            book_id: bookIdMap.get(l.book_id!)!,
+            logged_on: l.logged_on,
+            pages: l.pages ?? 0,
+            seconds: l.seconds ?? 0,
+            format: l.format ?? null,
+          }))
+      )
 
       // 8 a 10: metas, días de racha y favoritos del mes/año no pueden repetirse (un solo valor
       //    por año, por día o por mes). Si la cuenta ya tiene uno, se conserva el de la cuenta y
